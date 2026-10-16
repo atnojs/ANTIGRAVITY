@@ -3,35 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Descargas · Antigravity</title>
-<meta name="description" content="Descarga vídeo y audio de internet desde cualquier dispositivo: pega el enlace y el PC lo baja.">
+<title>Descargas Â· Antigravity</title>
+<meta name="description" content="Descarga vÃ­deo y audio de internet desde cualquier dispositivo: pega el enlace y el PC lo baja.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23001018'/%3E%3Cpath d='M16 6v14M10 15l6 6 6-6M8 26h16' stroke='%2300D0D0' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="app.css?v=2">
+<link rel="stylesheet" href="app.css?v=3">
 </head>
 <body>
 
 <div class="bg-halos" aria-hidden="true"></div>
 <div class="bg-grid" aria-hidden="true"></div>
 
-<!-- ══ LOGIN ══════════════════════════════════════════════════════════ -->
+<!-- â•â• LOGIN â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div id="auth-modal" class="modal-overlay auth-modal" hidden>
   <div class="modal-content auth-modal-content">
     <div class="auth-header">
-      <span class="auth-icon" aria-hidden="true">⬇</span>
+      <span class="auth-icon" aria-hidden="true">â¬‡</span>
       <h2>Acceso a Descargas</h2>
-      <p class="auth-subtitle">Esta app controla el PC de casa: entra con la contraseña de edición.</p>
+      <p class="auth-subtitle">Esta app controla el PC de casa: entra con la contraseÃ±a de ediciÃ³n.</p>
     </div>
     <form id="auth-form" novalidate>
       <!-- Campo de usuario oculto: Chrome avisa si un formulario con
            contrasena no declara ningun campo de nombre de usuario. -->
       <input type="text" id="auth-user" name="username" value="antonio" autocomplete="username" hidden>
       <div class="form-group">
-        <label for="auth-password">Contraseña</label>
-        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" required>
+        <label for="auth-password">ContraseÃ±a</label>
+        <input type="password" id="auth-password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password" required>
       </div>
       <div id="auth-error" class="auth-error" role="alert"></div>
       <button type="submit" id="auth-login-btn" class="btn-auth-login">Entrar</button>
@@ -39,31 +39,31 @@
   </div>
 </div>
 
-<!-- ══ APP ════════════════════════════════════════════════════════════ -->
+<!-- â•â• APP â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <main class="wrap" id="app-main" hidden>
 
   <header class="app-header">
     <h1 class="app-title">DESCARGAS</h1>
-    <p class="app-subtitle">Pega un enlace y tu PC lo descarga. Vídeo y audio, desde cualquier sitio.</p>
+    <p class="app-subtitle">Pega un enlace y tu PC lo descarga. VÃ­deo y audio, desde cualquier sitio.</p>
   </header>
 
   <div id="status-strip" class="status-strip" role="status" aria-live="polite">
     <span class="dot" id="worker-dot" aria-hidden="true"></span>
-    <span id="worker-text">Comprobando el PC…</span>
-    <span class="sep" aria-hidden="true">·</span>
-    <span id="disk-text">—</span>
+    <span id="worker-text">Comprobando el PCâ€¦</span>
+    <span class="sep" aria-hidden="true">Â·</span>
+    <span id="disk-text">â€”</span>
     <button type="button" id="logout-btn" class="link-btn">Salir</button>
   </div>
 
   <div class="main-layout">
     <div class="main-col">
 
-      <!-- ── Formulario ── -->
+      <!-- â”€â”€ Formulario â”€â”€ -->
       <section class="panel" aria-labelledby="form-title">
         <h2 id="form-title" class="section-title">Nueva descarga</h2>
 
         <div class="field">
-          <label for="url">Enlace (uno por línea si quieres varios)</label>
+          <label for="url">Enlace (uno por lÃ­nea si quieres varios)</label>
           <textarea id="url" rows="3" placeholder="https://www.youtube.com/watch?v=..." spellcheck="false" aria-required="true"></textarea>
         </div>
 
@@ -71,7 +71,7 @@
           <div class="model-provider-column">
             <span class="model-provider-title" id="lbl-modo">Modo</span>
             <div class="model-toggle-group" role="group" aria-labelledby="lbl-modo">
-              <button type="button" class="model-toggle active" data-mode="video" aria-pressed="true">Vídeo</button>
+              <button type="button" class="model-toggle active" data-mode="video" aria-pressed="true">VÃ­deo</button>
               <button type="button" class="model-toggle" data-mode="audio" aria-pressed="false">Solo audio</button>
             </div>
           </div>
@@ -101,17 +101,17 @@
 
         <label class="check">
           <input type="checkbox" id="playlist">
-          <span>Es una lista de reproducción: bajar la lista completa</span>
+          <span>Es una lista de reproducciÃ³n: bajar la lista completa</span>
         </label>
 
         <label class="check">
           <input type="checkbox" id="subir-web">
-          <span>Subirlo también a la web (para bajarlo desde el móvil)</span>
+          <span>Subirlo tambiÃ©n a la web (para bajarlo desde el mÃ³vil)</span>
         </label>
 
         <p class="hint" id="format-hint">
           MP4 (h264 + AAC) es lo que mejor abren Corel y Filmora. Si pides 1440p o 2160p,
-          YouTube solo los ofrece en VP9/AV1 y el fichero dejará de ser MP4.
+          YouTube solo los ofrece en VP9/AV1 y el fichero dejarÃ¡ de ser MP4.
         </p>
 
         <p class="hint" id="subida-hint">
@@ -126,15 +126,15 @@
         <div id="form-error" class="form-error" role="alert" hidden></div>
       </section>
 
-      <!-- ── Carpeta en el PC ── -->
+      <!-- â”€â”€ Carpeta en el PC â”€â”€ -->
       <section class="panel" aria-labelledby="dir-title">
         <h2 id="dir-title" class="section-title">Carpeta en el PC</h2>
-        <p class="dir-actual">Se guardan en: <code id="dir-actual">—</code></p>
+        <p class="dir-actual">Se guardan en: <code id="dir-actual">â€”</code></p>
         <div class="dir-controls">
           <label class="sr-only" for="dir-unidad">Unidad</label>
           <select id="dir-unidad"></select>
           <label class="sr-only" for="dir-ruta">Ruta de la carpeta</label>
-          <input type="text" id="dir-ruta" placeholder="D:\Vídeos o F:\" spellcheck="false" autocomplete="off">
+          <input type="text" id="dir-ruta" placeholder="D:\VÃ­deos o F:\" spellcheck="false" autocomplete="off">
           <button type="button" id="dir-btn" class="btn-sm">Cambiar</button>
         </div>
         <p class="hint" id="dir-hint">
@@ -142,19 +142,19 @@
         </p>
       </section>
 
-      <!-- ── Cola ── -->
+      <!-- â”€â”€ Cola â”€â”€ -->
       <section class="panel" aria-labelledby="queue-title">
         <h2 id="queue-title" class="section-title">
           Cola <span id="queue-count" class="badge">0</span>
         </h2>
         <div id="queue-list" class="queue-list" aria-live="polite" aria-busy="false">
-          <p class="empty">Todavía no has pedido ninguna descarga.</p>
+          <p class="empty">TodavÃ­a no has pedido ninguna descarga.</p>
         </div>
       </section>
 
     </div>
 
-    <!-- ── Historial ── -->
+    <!-- â”€â”€ Historial â”€â”€ -->
     <aside class="history-col" id="history-section">
       <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
       <div id="history-grid"></div>
@@ -163,7 +163,7 @@
   </div>
 </main>
 
-<!-- ══ OVERLAY DE CARGA ═══════════════════════════════════════════════ -->
+<!-- â•â• OVERLAY DE CARGA â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div class="loading-overlay hidden" id="loadingOverlay" role="status" aria-live="polite" aria-busy="true">
   <div class="spinner-triple">
     <div class="ring ring-1"></div>
@@ -180,6 +180,6 @@
 </div>
 
 <script src="history-manager.js"></script>
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
