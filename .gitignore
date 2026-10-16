@@ -248,6 +248,15 @@ tools/video-vault/_*.log
 tools/video-vault/_*.txt
 tools/video-vault/_upload_log.json
 
+# ── apps/descargas: datos de runtime ───────────────────────────────────────
+# La cola, los trozos en vuelo y los ficheros descargados son datos del usuario
+# y cambian en cada descarga: si entran en Git, cada despliegue de Hostinger los
+# pisa. Se ignora el CONTENIDO, no la carpeta, para poder versionar el
+# .htaccess que los protege en la raíz pública (git no deja re-incluir nada
+# dentro de un directorio ya excluido).
+apps/descargas/data/*
+!apps/descargas/data/.htaccess
+
 # ── Secretos y datos de terceros (NUNCA al repo) ──────────────────────────
 # auth.php guarda el hash sha256 de la contraseña de edición. El repositorio
 # es PÚBLICO: ver pendientes.md 0-bis.

@@ -66,7 +66,8 @@ if ($hash -notmatch '^[0-9a-f]{64}$') { throw "El hash no tiene forma de sha256:
 $destinos = @(
     @{ Ruta = 'apps\trickvault\auth.php';  Patron = '\$expectedHash = ''[0-9a-f]{64}''';         Nuevo = "`$expectedHash = '$hash'" },
     @{ Ruta = 'apps\video-vault\auth.php'; Patron = '\$expectedHash = ''[0-9a-f]{64}''';         Nuevo = "`$expectedHash = '$hash'" },
-    @{ Ruta = 'apps\json\auth.php';        Patron = 'const AUTH_PASSWORD_HASH = ''[0-9a-f]{64}'''; Nuevo = "const AUTH_PASSWORD_HASH = '$hash'" }
+    @{ Ruta = 'apps\json\auth.php';        Patron = 'const AUTH_PASSWORD_HASH = ''[0-9a-f]{64}'''; Nuevo = "const AUTH_PASSWORD_HASH = '$hash'" },
+    @{ Ruta = 'apps\descargas\auth.php';   Patron = '\$expectedHash = ''[0-9a-f]{64}''';         Nuevo = "`$expectedHash = '$hash'" }
 )
 
 # UTF8 SIN BOM: un BOM delante de <?php se enviaría como salida y rompería las

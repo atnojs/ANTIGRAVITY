@@ -1,0 +1,6 @@
+# Los datos de la app (cola, trozos y ficheros descargados) NO se sirven por web.
+# Se entregan unicamente a traves de api.php?action=download, y solo con sesion.
+Require all denied
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
