@@ -51,10 +51,11 @@ documentada en `credenciales.md` (con el procedimiento) y en `bitacora.md`.
 
 ## 0-quinquies. Descargas: lo que queda (2026-10-17)
 
-1. **Botón «Traer a la web»** en un trabajo ya terminado: si el fichero se quedó en el PC (en casa
-   sin marcar la casilla) y luego lo quiere en el móvil, hoy hay que volver a pegar el enlace. El
-   worker ya guarda `ruta_local` de cada elemento, así que es subir esos trozos a petición.
-2. **Limpiar copias de assets**: `app.css`, `app.20261017.css`, `...b`, `...c`, `...d`, `...e`. Las
+1. ✅ **HECHO el 2026-10-17 (madrugada): botón «Traer a la web».** Acción `subir_item`, el worker
+   sube esos trozos a petición y `item_done` con `item_id` **actualiza** la ficha (no duplica el
+   historial). Verificado en producción: `local=True` 117.029 B → pedir → `local=False` y descarga
+   HTTP 200 con los mismos 117.029 B.
+2. **Limpiar copias de assets**: `app.css`, `app.20261017.css`, `...b`, `...c`, `...d`, `...e`, `...f`. Las
    antiguas están por el HTML cacheado; cuando expire la caché (7 días desde el 17), dejar solo las
    vigentes y actualizar la referencia.
 3. **Ficheros locales que se acumulan** en `D:\Vídeos\descargas-app\<id>\`: decidir si se borran al

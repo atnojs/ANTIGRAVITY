@@ -618,3 +618,14 @@ anchos**.
 **Pendiente para cuando vuelva:** el botón «Traer a la web» para un fichero que ya está en el PC
 (él lo aprobó en la conversación y no ha dado tiempo), y borrar las copias de assets que se han ido
 acumulando cuando expire la caché de 7 días.
+**Cierre (21:50).** Se remata el hueco que quedaba: **botón «Traer a la web»**. Si un fichero se
+quedó en el PC (en casa, sin marcar la casilla) y luego lo quiere en el móvil, ya no hay que volver
+a pegar el enlace: se pide desde la web y el worker lo sube. Probado primero en el banco local y
+después en producción, con el fichero de siempre: `local=True` 117.029 B → pedir → `local=False` y
+**descarga HTTP 200 con los mismos 117.029 bytes**, y el historial con **una sola entrada** (la
+actualiza, no la duplica).
+
+Tres fallos propios por el camino, los tres cazados por la prueba y ninguno por lectura del código:
+el bloque de actualización quedó colocado **antes** de ensamblar el fichero (`$written` null →
+TypeError 500); el callback de progreso no puede ser `null` porque la cadena hace `.catch()`; y las
+subidas pendientes no se devolvían cuando **no había trabajo en cola**, que es justo el caso normal.
