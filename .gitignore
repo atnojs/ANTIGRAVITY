@@ -177,8 +177,12 @@ skills/diag_mic.py
 .tmp-build/
 
 # Restos rescatados de sitios raros (p. ej. apps/dev/null). No se publican: son
-# material a la espera de decision, no contenido del repo.
-tools/restos/
+# material a la espera de decision, no contenido del repo. El LEEME si se
+# versiona (explica que hay aqui); ojo: para poder re-incluirlo hay que excluir
+# el CONTENIDO, no la carpeta, porque git no re-incluye dentro de un directorio
+# ya excluido.
+tools/restos/*
+!tools/restos/LEEME.md
 
 # ═══════════════════════════════════════════════════════════════════════════
 # LIMPIEZA 2026-10-16 — material de trabajo que NO debe versionarse.
