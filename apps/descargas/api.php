@@ -473,6 +473,22 @@ function humanBytes(int $bytes): string {
     return round($value, $index === 0 ? 0 : 1) . ' ' . $units[$index];
 }
 
+/** IP enmascarada: para diagnosticar sin publicar la IP entera. */
+function maskIp(string $ip): string {
+    if ($ip === '') {
+        return '';
+    }
+    if (strpos($ip, ':') !== false) {
+        $partes = explode(':', $ip);
+        return $partes[0] . ':' . ($partes[1] ?? '') . ':xxxx';
+    }
+    $partes = explode('.', $ip);
+    if (count($partes) === 4) {
+        return $partes[0] . '.' . $partes[1] . '.x.x';
+    }
+    return 'rara';
+}
+
 /** Carpeta de descarga del PC, tal y como la cuenta el worker. */
 function dirInfo(): array {
     $worker = readJsonFile(WORKER_FILE, []);
@@ -569,6 +585,18 @@ if ($method === 'GET' && $action === 'health') {
         'counts'     => $counts,
         'retention_hours' => RETENTION_HOURS,
         'dir'        => dirInfo(),
+        // Para poder responder a "¿por que cree que estoy fuera de casa?".
+        'deteccion'  => [
+            'worker'      => maskIp((string)(readJsonFile(WORKER_FILE, [])['ip'] ?? '')),
+            'cliente'     => maskIp(clientIp()),
+            'coinciden'   => origenDelTrabajo() === 'casa',
+            'cabeceras'   => [
+                'xff'         => isset($_SERVER['HTTP_X_FORWARDED_FOR']),
+                'x_real_ip'   => isset($_SERVER['HTTP_X_REAL_IP']),
+                'cf'          => isset($_SERVER['HTTP_CF_CONNECTING_IP']),
+                'forwarded'   => isset($_SERVER['HTTP_FORWARDED']),
+            ],
+        ],
         'worker'     => [
             'last_seen'   => (string)($worker['last_seen'] ?? ''),
             'seconds_ago' => isset($worker['time']) ? max(0, time() - (int)$worker['time']) : null,
