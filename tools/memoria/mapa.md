@@ -32,6 +32,7 @@ estructura y dónde buscar, no la descripción de cada app.
 | `tools/link-dsh-skills.ps1` | Enlazar skills con DSH |
 | `tools/generar-punteros-skills.php` | Regenerar los punteros de `.claude/skills/` |
 | `tools/evidencias/`, `tools/json/`, `tools/legacy/` | Capturas y material de apoyo |
+| `apps/trickvault/publicar.php` | Publica en GitHub los cambios de TrickVault hechos **desde la app** (lo usa Antonio, no el agente) |
 
 ## Infraestructura compartida en `skills/`
 
@@ -52,6 +53,7 @@ estructura y dónde buscar, no la descripción de cada app.
 | Arreglar / refactorizar código que ya funciona | `cirujano-codigo-produccion` |
 | Analizar, clonar o sacar el prompt de una imagen | `analista-visual-pro` |
 | Imágenes de las tarjetas de trickvault | `trickvault-imagenes` |
+| Publicar cambios de TrickVault desde la app (lo hace Antonio) | `recetas.md` → «TrickVault: publicar cambios desde la propia app» |
 | Vídeos de video-vault | `videovault-videos` |
 | Vídeo gratis (Veo) con Google Flow | `google-flow` |
 | Claves de API / proxy PHP en Hostinger | `arquitecto-backend-php-hostinger` |

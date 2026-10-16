@@ -188,3 +188,49 @@ en modo `workspace-write`. Se resolvió reintentando esa misma operación con
 
 **Receta reutilizable:** `recetas.md` → «Organizar las descargas por mes» (para octubre, que
 ya tiene 245 archivos acumulados).
+
+---
+
+## 2026-10-16 (segunda parte) — El mecanismo con el que Antonio publica TrickVault
+
+Antonio pide documentar **cómo actualiza él TrickVault**. No estaba en la memoria: lo que había
+era el flujo del **agente** (`skills/SKILL_TRICKVAULT_IMAGENES.md`: generar imágenes, commit,
+push), no el suyo. Su pista: «cuando entro en modo edición, al final de la tarjeta aparece el
+botón de actualizar».
+
+**Lo que hace él**
+
+Entra en **modo edición** (candado → contraseña) y, **al final de la página, debajo de las
+tarjetas**, aparece el panel **«🚀 Publicar en GitHub»**: elige `solo lo que he cambiado (todas
+las carpetas)` o `solo «<carpeta>»`, pulsa **«🚀 Publicar cambios»**, acepta el `confirm` y la app
+llama a `publicar.php`. Hay además un «🔎 Comprobar conexión» que solo diagnostica.
+
+**Lo que salió de leer el código (y no estaba escrito en ninguna parte)**
+
+| Hallazgo | Detalle |
+|---|---|
+| **No lanza git** | Hostinger tiene `exec`/`shell_exec`/`proc_open` deshabilitados: usa la **API de GitHub** (blobs → tree → commit → ref) |
+| **Un solo commit** | `apps/trickvault/catalogo.json` + `apps/trickvault/assets/publicado/<id>.jpg` |
+| **Secretos fuera del alcance** | La contraseña se delega en `auth.php`; el token de GitHub vive solo en el `SetEnv` del `.htaccess` raíz y nunca vuelve al navegador |
+| **Crea commits reales en `main`** | Sin pasar por el agente: hay que mirar `origin/main` antes de tocar el catálogo, o el push choca |
+| **El «montón de carpetas»** | `resumen.carpetas` es el **total** de carpetas (`listaCarpetas.length`), no las cambiadas; lista y orden son globales y viajan en **todas** las publicaciones a propósito |
+
+Ese último punto resuelve la duda con la que venía: al publicar dos tarjetas ve
+«• N carpetas y su orden» y parece que va a subir todas las carpetas. **No es un fallo**: es el
+recuento de la lista global (así todos los navegadores ven lo mismo). Para publicar de verdad
+una sola carpeta hay que usar el selector **«Solo «<carpeta>»»**.
+
+**Verificación**
+
+- `https://atnojs.es/apps/trickvault/publicar.php` por GET responde **405** con el mismo mensaje
+  que `publicar.php:507` (`Este endpoint solo acepta POST.`) → lo desplegado es lo del repo.
+- El panel solo se pinta con `editUnlocked` (`index.html:6931`), después de las vistas de
+  tarjetas (`index.html:6881-6927`).
+- **No comprobado:** el clic real en producción (hace falta la contraseña de edición). Queda
+  dicho así en la receta en vez de darlo por probado.
+
+**Commits**
+
+- `PENDIENTE` — `docs(memoria): el flujo de Antonio para publicar TrickVault`
+
+**Receta reutilizable:** `recetas.md` → «TrickVault: publicar cambios desde la propia app».

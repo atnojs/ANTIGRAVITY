@@ -162,3 +162,74 @@ Hay que reintentar esa operación con `sandbox_permissions: danger-full-access`.
 **Antes de mover**, comprobar que el destino no exista y que no haya nombres repetidos en el
 lote (`Group-Object Name | Where-Object Count -gt 1`); al venir de una carpeta plana no
 debería haberlos, pero el destino podría tenerlos de una pasada anterior.
+
+## TrickVault: publicar cambios desde la propia app (el flujo de Antonio)
+
+Esto **no** es el flujo del agente. El del agente está en
+`skills/SKILL_TRICKVAULT_IMAGENES.md` (generar imágenes → `assets/` → commit + push). Este es
+el que usa **Antonio**, y **crea commits reales en `main`** que el agente no ha hecho.
+
+### Cómo se hace (lado usuario)
+
+1. Abrir la app (`https://atnojs.es/apps/trickvault/`).
+2. Entrar en **modo edición** (candado → contraseña).
+3. Al desbloquearse (`editUnlocked`), aparece **al final de la página, debajo de las tarjetas**,
+   el panel **«🚀 Publicar en GitHub»** (`index.html`, ~líneas 6931-6958). Antes no existe en el
+   DOM: sin la contraseña no hay botón.
+4. En el panel:
+   - **«Qué publicar:»** → `Solo lo que he cambiado (todas las carpetas)` o `Solo «<carpeta>»`.
+   - **«🚀 Publicar cambios»**.
+   - **«🔎 Comprobar conexión»** → diagnóstico (`action=estado`), no publica nada.
+5. Al pulsar «Publicar cambios» sale un `window.confirm` con el resumen, y **solo si se acepta**
+   se envía.
+
+### Qué pasa por dentro
+
+- `publicarCambios()` calcula la diferencia con el catálogo de serie (`buildPublishPayload`) y
+  hace POST a `publicar.php` (`publishCatalogue`; FormData con `action=publicar`, `password`,
+  `catalogo`, `imagenes`, `mensaje`).
+- `publicar.php` **no lanza git** (en Hostinger están deshabilitados `exec`, `shell_exec` y
+  `proc_open`): usa la **API de GitHub** (blobs → tree → commit → ref) y escribe **en un solo
+  commit**:
+  - `apps/trickvault/catalogo.json` — la capa de cambios;
+  - `apps/trickvault/assets/publicado/<id>.jpg` — las imágenes propias.
+- La contraseña se delega en `auth.php` (aquí no se guarda ni se conoce su hash). El **token de
+  GitHub vive solo en el entorno del servidor** (`SetEnv` del `.htaccess` raíz) y nunca vuelve
+  al navegador. Límites: 4 MB de JSON, 60 imágenes, 400 KB por imagen, 200 carpetas.
+- El despliegue automático de Hostinger trae luego esos ficheros, así que el checkout del
+  servidor queda limpio y el `pull` del despliegue no choca.
+- La app espera hasta 10 × 3 s a que la capa publicada en el aire coincida
+  (`loadPublishedCatalogue`) y entonces dice «✅ Publicado y ya en el aire».
+
+### Consecuencia para el agente (importante)
+
+Esos commits **aparecen en `main` de GitHub** sin pasar por el agente. Antes de tocar
+`apps/trickvault/catalogo.json` o `assets/publicado/`, comprobar `origin/main` (o `git pull`):
+si no, el push choca o se pisa lo que Antonio acaba de publicar.
+
+### La confusión de «un montón de carpetas por subir» (no es un error)
+
+En el `confirm` sale, cuando toca publicar carpetas:
+
+```
+• N carpetas y su orden
+```
+
+y ese **N es el TOTAL de carpetas** (`resumen.carpetas = listaCarpetas.length`), no las que han
+cambiado. La lista de carpetas y su orden son datos **globales** que viajan en **todas** las
+publicaciones a propósito (para que móvil, incógnito y cualquier otro navegador vean lo mismo),
+y `foldersNeedPublish()` devuelve `true` si no hay capa publicada, si su `listaCarpetas` está
+vacía, si difiere la lista o el orden, o si hay carpetas borradas pendientes.
+
+O sea: ver «• 23 carpetas y su orden» al publicar dos tarjetas **no** quiere decir que vaya a
+subir 23 carpetas de ficheros. Es el recuento informativo de la lista global. Para limitar de
+verdad lo que se publica, usar **«Solo «<carpeta>»»**.
+
+### Verificado el 2026-10-16
+
+- `https://atnojs.es/apps/trickvault/publicar.php` por GET responde **405** con
+  `{"success":false,"error":"Este endpoint solo acepta POST."}`, que es literalmente el mensaje
+  de `publicar.php:507` → **lo desplegado es lo del repo**.
+- El panel es cliente: solo se pinta con `editUnlocked` (`index.html:6931`) y va **después** de
+  las vistas de tarjetas (`index.html:6881-6927`).
+- **Lo que NO se comprobó:** el clic real en producción (hace falta la contraseña de edición).
