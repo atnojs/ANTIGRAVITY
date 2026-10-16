@@ -46,14 +46,21 @@ const HISTORY_LOCK   = 'history_store/history.lock';
 const MAX_JOBS         = 200;
 const MAX_HISTORY      = 200;
 const MAX_URL_LEN      = 2048;
-const MAX_CHUNK_BYTES  = 12 * 1024 * 1024;
+/**
+ * Tope de un trozo de subida. Va EMPAREJADO con `chunk_mb` de la configuracion
+ * del worker: si el worker manda trozos mas grandes que este tope, la API
+ * responde 413 y la descarga se pierde despues de haberse bajado entera.
+ * El servidor admite mucho mas (upload_max_filesize = 2 GB); este limite es
+ * nuestro, para no aceptar un cuerpo absurdo. Hay holgura a proposito.
+ */
+const MAX_CHUNK_BYTES  = 24 * 1024 * 1024;
 const MAX_ITEM_BYTES   = 4 * 1024 * 1024 * 1024;
 const RETENTION_DAYS   = 7;
 const STALE_RUNNING_S  = 900;   // 15 min sin señales => el trabajo se puede reclamar
 const CLEANUP_EVERY_S  = 300;
 
 const APP_NAME     = 'descargas';
-const APP_VERSION  = '1.0.1';
+const APP_VERSION  = '1.0.2';
 
 function respond(int $status, array $payload): never {
     http_response_code($status);
@@ -613,7 +620,11 @@ if (in_array($action, $workerActions, true)) {
         if ($size <= 0 || $size > MAX_CHUNK_BYTES) {
             flock($lock, LOCK_UN);
             fclose($lock);
-            respond(413, ['success' => false, 'error' => 'Tamaño de trozo no valido.']);
+            respond(413, [
+                'success' => false,
+                'error'   => 'El trozo pesa ' . humanBytes($size) . ' y el maximo es '
+                             . humanBytes(MAX_CHUNK_BYTES) . '. Baja "chunk_mb" en la configuracion del worker.',
+            ]);
         }
         $dir = __DIR__ . '/' . PARTS_DIR . '/' . $jobId . '/' . $itemIndex;
         if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {

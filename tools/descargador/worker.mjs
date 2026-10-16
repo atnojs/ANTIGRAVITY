@@ -206,8 +206,7 @@ function cargarConfig() {
     server: String(datos.server).trim(),
     token,
     ytdlp: String(datos.ytdlp),
-    ffmpegDir: datos.ffmpeg_dir ? String(datos.ffmpeg_dir) : path.dirname(String(datos.ytdlp)),
-    downloadDir: String(datos.download_dir),
+    ffmpegDir: datos.ffmpeg_dir ? String(datos.ffmpeg_dir) : path.dirname(String(datos.ytdlp)),    downloadDir: String(datos.download_dir),
     pollSeconds: Number(datos.poll_seconds) > 0 ? Number(datos.poll_seconds) : 5,
     maxParallel: Number(datos.max_parallel) > 0 ? Number(datos.max_parallel) : 1,
     chunkMb: Number(datos.chunk_mb) > 0 ? Number(datos.chunk_mb) : 4,
@@ -507,6 +506,40 @@ function normalizarJob(job) {
   return { id, url, modo, calidad, formato, playlist: job.playlist === true, attempts: Number(job.attempts) || 0 };
 }
 
+/**
+ * Traduce los fallos mas habituales de yt-dlp a algo que se entienda.
+ * Lo que devuelve se antepone al log crudo en el error que ve el usuario: el
+ * log de yt-dlp, solo, no le dice nada.
+ */
+function mensajeUtil(texto) {
+  const t = String(texto || '');
+  if (/HTTP Error 403/i.test(t)) {
+    return 'YouTube ha bloqueado la descarga desde este PC (error 403). Casi siempre es temporal y pasa tras muchas peticiones seguidas: espera unos minutos y reintentalo. Si sigue igual, YouTube esta pidiendo una sesion: exporta las cookies del navegador a un cookies.txt y pon su ruta en "cookies_file" de la configuracion del worker.';
+  }
+  if (/Sign in to confirm you.?re not a bot/i.test(t)) {
+    return 'YouTube exige comprobar que no eres un robot. Necesita cookies: exporta las del navegador a un cookies.txt y pon la ruta en "cookies_file" del worker.';
+  }
+  if (/Incomplete YouTube ID|looks truncated/i.test(t)) {
+    return 'El enlace esta cortado: el identificador del video esta incompleto. Copia la direccion entera desde el navegador.';
+  }
+  if (/Private video|Video unavailable|This video is not available|has been removed|removed by the uploader/i.test(t)) {
+    return 'El video no esta disponible: puede ser privado, estar borrado o restringido por pais.';
+  }
+  if (/age.?restricted|confirm your age/i.test(t)) {
+    return 'El video tiene restriccion de edad: hace falta iniciar sesion (cookies).';
+  }
+  if (/Requested format is not available/i.test(t)) {
+    return 'Esa calidad o formato no existe para este video. Prueba con la calidad "Mejor" y formato MP4.';
+  }
+  if (/Unable to download webpage|getaddrinfo|ENOTFOUND|Temporary failure in name resolution|timed out/i.test(t)) {
+    return 'No se pudo conectar: revisa que el PC tenga internet y que el enlace siga vivo.';
+  }
+  if (/Unsupported URL/i.test(t)) {
+    return 'Esa direccion no es de una web que yt-dlp sepa descargar.';
+  }
+  return 'La descarga fallo.';
+}
+
 function construirArgumentos(job, dirJob) {
   const args = ['--newline', '--no-warnings', '--progress', '--no-color'];
 
@@ -528,6 +561,13 @@ function construirArgumentos(job, dirJob) {
       // Compatibilidad con editores: H.264 + AAC dentro de MP4
       args.push('-S', 'vcodec:h264,acodec:aac,ext:mp4:m4a');
     }
+  }
+
+  // Cookies opcionales. YouTube responde 403 o pide "confirma que no eres un
+  // robot" cuando no le consta una sesion; con un cookies.txt exportado del
+  // navegador se resuelve. Solo se usa si el fichero existe de verdad.
+  if (config.cookiesFile && fs.existsSync(config.cookiesFile)) {
+    args.push('--cookies', config.cookiesFile);
   }
 
   args.push('--ffmpeg-location', config.ffmpegDir);
@@ -967,7 +1007,9 @@ async function procesarJob(jobBruto) {
     const resumen = cola.slice(-5).join(' | ') || `yt-dlp terminó con código ${resultado.codigo}`;
     logError(`Trabajo ${job.id} falló (código ${resultado.codigo}): ${resumen}`);
     consola(`Trabajo ${job.id} FALLÓ: ${recortar(resumen, 160)}`);
-    await informarFallo(job, `yt-dlp código ${resultado.codigo}: ${resumen}`);
+    // Se antepone una explicacion en castellano: el log crudo de yt-dlp no le
+    // dice nada al usuario y estos fallos se repiten.
+    await informarFallo(job, `${mensajeUtil(resumen)} || yt-dlp código ${resultado.codigo}: ${resumen}`);
     return;
   }
 
