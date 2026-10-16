@@ -6,19 +6,13 @@ pre{position:fixed;left:0;bottom:0;width:100%;max-height:70%;overflow:auto;backg
 <iframe id="f" src="/app/index.html"></iframe>
 <pre id="out">midiendo...</pre>
 <script>
+const BASE = new URLSearchParams(location.search).get('base') || '/app';
 const f = document.getElementById('f'), out = document.getElementById('out');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 20000); }); }
 (async () => {
   try {
-    await cargar('/app/index.html?' + Date.now());
-    await sleep(12000);
-    // simular que las tarjetas de moda estaban guardadas en la carpeta vieja
-    const previos = JSON.parse(ls.getItem('trickvault_data') || '[]');
-    for (const t of previos) if (t.category === 'xl-moda') t.category = 'xl-comidamoda';
-    ls.setItem('trickvault_data', JSON.stringify(previos));
-    ls.setItem('trickvault_folders_schema', '5');
-    await cargar('/app/index.html?r=' + Date.now());
+    await cargar(BASE + '/index.html?' + Date.now());
     await sleep(12000);
     const win = f.contentWindow, ls = win.localStorage;
     const carpetas = JSON.parse(ls.getItem('trickvault_folders') || '[]');
@@ -26,10 +20,18 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
     const cuenta = {};
     for (const t of datos) cuenta[t.category || '(sin carpeta)'] = (cuenta[t.category || '(sin carpeta)'] || 0) + 1;
     out.textContent = carpetas.map(c => (c.id + ' | ' + c.label + ' | tarjetas=' + (cuenta[c.id] || 0))).join('\n')
-      + '\n\n--- categorias sin carpeta en la lista ---\n'
+      + '\n\n--- categorias que NO estan en la lista de carpetas ---\n'
       + Object.keys(cuenta).filter(k => !carpetas.some(c => c.id === k)).map(k => k + ' (' + cuenta[k] + ')').join('\n');
-    document.title = 'carpetas=' + carpetas.length + ' moda=' + (cuenta['xl-moda'] || 0) + ' comida=' + (cuenta['xl-comidamoda'] || 0);
-  } catch (e) { out.textContent = 'ERROR ' + e.message; document.title = 'ERROR'; }
+    out.textContent += '\n\n--- tarjetas en xl-carteles (' + (cuenta['xl-carteles'] || 0) + ') ---\n'
+      + datos.filter(t => t.category === 'xl-carteles').map(t => t.codeSnippet).join(' ');
+    out.textContent += '\n\n--- tarjetas en la carpeta f_mv73ghs02h22sxpzp ---\n'
+      + datos.filter(t => t.category === 'f_mv73ghs02h22sxpzp').map(t => t.codeSnippet).join(' ');
+    const mirar = ['/banner', '/crosssection', '/invitation', '/museumplaque', '/securitycam'];
+    out.textContent += '\n\n--- donde estan las 5 que faltan ---\n'
+      + mirar.map(c => { const t = datos.find(x => x.codeSnippet === c); return c + ' -> ' + (t ? t.category + ' (id ' + t.id + ')' : 'NO EXISTE'); }).join('\n');
+    document.title = 'carpetas=' + carpetas.length + ' moda=' + (cuenta['xl-moda'] || 0)
+      + ' comida=' + (cuenta['xl-comidamoda'] || 0) + ' carteles=' + (cuenta['xl-carteles'] || 0);
+  } catch (e) { out.textContent = 'ERROR ' + (e && e.message || e); document.title = 'ERROR'; }
 })();
 </script>
 </body></html>
