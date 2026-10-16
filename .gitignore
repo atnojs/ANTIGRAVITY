@@ -176,13 +176,14 @@ skills/diag_mic.py
 # Carpeta temporal de builds locales
 .tmp-build/
 
-# Restos rescatados de sitios raros (p. ej. apps/dev/null). No se publican: son
-# material a la espera de decision, no contenido del repo. El LEEME si se
-# versiona (explica que hay aqui); ojo: para poder re-incluirlo hay que excluir
-# el CONTENIDO, no la carpeta, porque git no re-incluye dentro de un directorio
-# ya excluido.
-tools/restos/*
-!tools/restos/LEEME.md
+# Rescatados de sitios raros (p. ej. apps/dev/null). No se publican: son material
+# a la espera de decision, no contenido del repo. El LEEME si se versiona.
+# OJO: la carpeta NO puede llamarse «Restos» — hay una regla `Restos/` mas
+# arriba (para la de Corel) que casa a CUALQUIER profundidad y git no deja
+# re-incluir nada dentro de un directorio ya excluido.
+# Para poder re-incluir el LEEME hay que excluir el CONTENIDO, no la carpeta.
+tools/rescatados/*
+!tools/rescatados/LEEME.md
 
 # ═══════════════════════════════════════════════════════════════════════════
 # LIMPIEZA 2026-10-16 — material de trabajo que NO debe versionarse.
