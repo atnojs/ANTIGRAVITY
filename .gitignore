@@ -143,6 +143,8 @@ apps/decorar_habitacion/crops/
 # Excepción: los ejemplos de las tarjetas de TrickVault SÍ van al repositorio y al
 # despliegue (son la pareja código -> imagen de cada truco).
 !apps/trickvault/assets/**/*.jpg
+# Los iconos de la PWA de descargas son parte de la app (manifest), no evidencia.
+!apps/descargas/icono-*.png
 
 # Cache en runtime de los proxies (modelos de OpenAI y resultados de Qwen).
 # Se conservan versionados el .gitignore y el .htaccess de cada carpeta (protegen
