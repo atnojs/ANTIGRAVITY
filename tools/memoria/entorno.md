@@ -63,6 +63,9 @@ Ficha de la máquina y del entorno del agente. Si algo de aquí cambia, se actua
 - Los **globs recursivos** sobre este repo agotan el timeout de 30 s. Usar rutas concretas
   o `Get-ChildItem -Depth`.
 - Las **capturas de pantalla** llegan como adjuntos del usuario; el agente no ve el escritorio.
+- **Pillow 13 instalado en el Python 3.12 del proyecto** (2026-10-17): lo exige el pipeline de
+  TrickVault (`_carpeta_lote.py`, que convierte y monta hojas de contacto) y los scripts de
+  revisión. Ejecutar esos scripts con el Python del proyecto, **no** con el venv de Hermes.
 - **Navegador headless en DSH**: con el sandbox `workspace-write`, Chrome **no arranca**
   (`spawn EPERM` con Playwright; `Start-Process: Acceso denegado` con Chrome directo). Hay que
   reintentar con permiso ampliado. Playwright **1.63** está en el venv de Hermes

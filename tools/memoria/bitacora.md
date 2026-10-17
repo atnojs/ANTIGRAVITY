@@ -768,3 +768,28 @@ descargas quedó con sus ficheros.
   (`HTTP 401 Malformed access token`, OAuthException 190) y se borró el token de prueba
   (estado: desactivado y vacío). Solo falta el token real de Antonio.
 - Limpieza: cola = 7 trabajos suyos, historial = 6 suyos, carpeta sin restos, banco local borrado.
+## 2026-10-17 (noche) — Fases 2 y 3, y tanda Xabatz en TrickVault
+
+Continuación del plan del vídeo de `revolutia` y encargo nuevo: examinar el Short de Xabatz
+(`recursos.xabatz.com`, 16 códigos para editar fotos) y añadir a TrickVault lo que faltaba,
+revisando las tarjetas.
+
+- **Fase 2 (commit `a4d27a5`):** copia fijada de las Web Interface Guidelines de Vercel en
+  `skills/recursos/web-interface-guidelines/` (README + `2026-10-17_command.md`) y sección H
+  nueva en `auditor-lighthouse-accesibilidad` (20 items + anti-patrones + formato de salida).
+  Sin descargar reglas remotas en cada auditoría.
+- **Fase 3 (mismo commit):** skill `recrear-desde-referencia` + puntero (15 punteros, 0 a revisar):
+  captura → tokens → mapeo a marca hoola → construcción → verificación con Playwright y capturas.
+  Prohíbe copiar fotos, logos o textos de la referencia.
+- **Xabatz (commit `73360d2`):** de los 16 códigos, 10 ya existían y se revisaron con hoja de
+  contacto (imagen↔prompt↔código y texto en español: correctos). Se añadieron 6: `/phantom`,
+  `/speedframe`, `/hairstylegrid` (imagen; ejemplos con `openai-image-2-low` y el sujeto único de
+  cada carpeta) y `/faceharmony`, `/skinglowtips`, `/colourfittips` (texto). Verificado en
+  producción: 1242 trucos, los 6 aparecen en su carpeta, las 3 imágenes cargan 1024×1024 y no hay
+  errores nuevos de consola ni 4xx/5xx.
+- **Hallazgo:** `/proshot` y `/together` siguen en «Tú en otro mundo» aunque son retoque de
+  persona; queda anotado en `pendientes.md` para decidir si se mueven a «Cámara y retrato».
+- **Entorno:** Pillow 13 instalado en el Python 3.12 del proyecto (lo exige el pipeline de
+  TrickVault); el pipeline se ejecuta con ese Python, no con el venv de Hermes.
+- **Evidencias:** `tools/evidencias/2026-10-17-xabatz/` (hoja de las 10 existentes, hoja de las 3
+  nuevas y capturas de producción).

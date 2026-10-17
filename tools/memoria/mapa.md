@@ -41,6 +41,7 @@ estructura y dónde buscar, no la descripción de cada app.
 | `proxy.php` | Proxy PHP para llamadas a APIs de IA con la clave fuera del frontend |
 | `history.php` + `history-manager.js` | Historial persistente server-side (Hostinger) |
 | `POLITICA_modelos-imagen.md` | Qué modelo de imagen se usa y con qué ajustes |
+| `recursos/web-interface-guidelines/` | Copia fijada de las reglas de UI de Vercel (sección H del auditor) |
 | `HERMES_BOOTSTRAP.md` | Arranque de Hermes |
 | `.htaccess` | Protección de la carpeta |
 

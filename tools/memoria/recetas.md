@@ -261,3 +261,33 @@ playwright-cli list                   # no debe quedar sesión
   Antonio): cerrar con `-s=<app> close`.
 - Detalle del flujo y checklist: skill `verificacion-playwright`
   (`skills/SKILL_VERIFICACION_PLAYWRIGHT.md`).
+
+## Añadir un código nuevo a TrickVault (tanda tipo Xabatz) — verificado 2026-10-17
+
+Un código de **imagen** necesita 4 sitios en `apps/trickvault/index.html`; uno de **texto**, 3:
+
+1. `CODE_FOLDER`: `'/codigo': 'xl-<carpeta>'`.
+2. La lista de comandos que toque (`ADDITIONAL_IMAGE_COMMANDS`, `CAPTURE_COMMANDS`, `REEL_COMMANDS`…):
+   `['/codigo', 'descripción corta en español']`.
+3. `PROMPT_TEMPLATES` (imagen) o `TEXT_COMMAND_TEMPLATES` (texto).
+4. Solo imagen: el ejemplo. Pista en `tools/trickvault/_ejemplos_<carpeta>.json` con la clave del id
+   (`ig-dcek-NNN`) y **el sujeto único de esa carpeta**.
+
+**Cuidado con las comas:** la última entrada de cada bloque no lleva coma; si se inserta después
+sin añadirla, el JSX rompe (pasó y lo cazó `validar`). Los ids son posicionales: añadir al final
+del array no desplaza los existentes.
+
+Generar y registrar (Python 3.12 del proyecto, con Pillow):
+
+```powershell
+$py='C:\Users\atnojs\AppData\Local\Programs\Python\Python312\python.exe'
+& $py tools\trickvault\_carpeta_lote.py <carpeta> plan      # da el id nuevo y el pendiente
+& $py tools\trickvault\_carpeta_lote.py <carpeta> rehacer <id>   # solo ese (backup antes de los _xl-*.json versionados)
+& $py tools\trickvault\_carpeta_lote.py <carpeta> aplicar  # PNG→JPG, SEED_COMMAND_IMAGES y release
+& $py tools\trickvault\_carpeta_lote.py <carpeta> validar  # sintaxis JSX con @babel/parser
+```
+
+Después: revisar las imágenes generadas en una hoja de contacto (que coincidan con el prompt y el
+código), commit + push, esperar el despliegue y verificar en producción con
+`verificacion-playwright`: buscar el código, comprobar que aparece su carpeta y que la imagen
+carga (`naturalWidth > 0`), consola y red.

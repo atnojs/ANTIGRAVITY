@@ -68,11 +68,31 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 - **Motivo:** cada worktree genera historia paralela con SHAs distintos y deja ramas
   huérfanas. Ya está en `claude.md`; se repite aquí porque es el error más caro de deshacer.
 
-### [2026-10-15] Se documenta con guía + scripts, no con capturas
+### [2026-10-17] Se documenta con guía + scripts, no con capturas
 
 - **Decisión:** para montajes de sistema, guía en Markdown y scripts ejecutables.
 - **Motivo:** las capturas caducan y no se pueden volver a ejecutar. La regla de
   `capturas-verificacion` es para resultados **visuales** de apps/web, no para esto.
+
+### [2026-10-17] Web Interface Guidelines, copia fijada en el repo
+
+- **Decisión:** las reglas de interfaz de Vercel se guardan fechadas en
+  `skills/recursos/web-interface-guidelines/` y se aplican desde la sección H de
+  `auditor-lighthouse-accesibilidad`; no se descargan en cada revisión.
+- **Motivo:** una skill que baja instrucciones de una URL cada vez es superficie de inyección y
+  cambia el criterio sin avisar. Fijarla hace la auditoría reproducible; actualizarla es una
+  decisión explícita (nueva copia fechada + revisar la sección H).
+- **Contrapartida:** hay que actualizarla a mano cuando cambien las guías.
+
+### [2026-10-17] Recrear desde referencia: sistema sí, assets no
+
+- **Decisión:** `recrear-desde-referencia` copia el **sistema** de la referencia (jerarquía, ritmo,
+  layout) y lo mapea a los tokens hoola; nunca copia fotos, logos, ilustraciones ni textos ajenos,
+  y las imágenes se generan con `openai-image-2-low`.
+- **Motivo:** derechos de terceros y coherencia de marca. El pixel-perfect no aporta y el material
+  ajeno no se puede usar.
+- **Contrapartida:** si Antonio pide el look exacto, se avisa de la desviación de marca y se decide
+  juntos.
 
 ### [2026-10-17] Playwright CLI como verificación funcional estándar
 

@@ -7,7 +7,7 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ## 🧪 5 herramientas del vídeo «…no parezca de 2006» — Fase 1 hecha (2026-10-17)
 
-- **Estado:** Fase 1 hecha el 2026-10-17: Playwright CLI **0.1.22** instalado global, skill `verificacion-playwright` creada, enganchada y probada (commit `124556e`). Quedan Fase 2 y Fase 3.
+- **Estado:** Fases 1-3 hechas (commits `124556e` y `a4d27a5`): Playwright CLI integrado y probado; Web Interface Guidelines fijadas y enganchadas al auditor; skill `recrear-desde-referencia` creada. Solo queda lo opcional: Taste Skill/Awesome Design como referencia puntual si Antonio quiere un look fuera de la marca.
 - **Origen:** Short de `revolutia` (15-10-2026, 74 s) «5 Herramientas Para Que Tu App De Claude Code No Parezca De 2006». YouTube bloqueó la descarga del vídeo (403): la lista se reconstruyó con la descripción y se verificó cada repo.
 - **Las 5:** (1) **Taste Skill** `Leonxlnx/taste-skill` (MIT; dirección de arte + chequeo en navegador a 3 anchos; 30-45 min y cientos de miles de tokens por página; usa fotos de archivos abiertos). (2) **Web Interface Guidelines** de Vercel + skill `web-design-guidelines` (interacción, animación, formularios, a11y; la skill se descarga las reglas de una URL en cada revisión). (3) **Awesome Design** `bergside/awesome-design-skills` (67 sistemas con `DESIGN.md` + `SKILL.md`; CLI `typeui.sh`). (4) **Image to Code** (`plugin87/ux-ui-agent-skills` o la de taste-skill): captura → tokens → código. (5) **Playwright CLI** `microsoft/playwright-cli` (npm `@playwright/cli`: snapshot con refs, clics, formularios, consola, red, capturas, vídeo, emulación móvil).
 - **Encaje real:** **Playwright CLI** tapa el hueco grande (el flujo exige clics/formularios/descargas/consola y hoy solo hay Chrome `--headless` + harness, sin interacción). **Web Guidelines** refuerza `auditor-lighthouse`. **Image to Code** encaja con `analista-visual-pro`. **Taste Skill** y **Awesome Design** chocan con la marca fija hoola: solo como referencia puntual, nunca instalados en bloque (brand drift + coste + fotos externas frente a la política de OpenAI image 2).
@@ -15,6 +15,15 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 - **Verificación:** `playwright-cli open https://atnojs.es` + `snapshot` + `screenshot` dejan fichero en disco; capturas de la prueba en `tools/evidencias/2026-10-17_prueba_playwright_atnojs_*.png` y en `tools/evidencias/2026-10-17-verificacion-playwright/`; `git status` sin restos.
 - **Probado hoy:** Playwright **1.63** (venv de Hermes) + Chrome **155** capturó `https://atnojs.es` en escritorio (1440×1622) y a 393 px de ancho. También `npx -y @playwright/cli@latest` (**0.1.22**): abrió Chrome, escribió en TodoMVC, pulsó Enter, capturó y leyó la consola (1 error: favicon 404), y cerró. Sin permiso ampliado, Chrome no arranca (`spawn EPERM`); el `--device` de la CLI de Python fuerza webkit (usar viewport o el CLI de Microsoft). Evidencias en `tools/evidencias/2026-10-17_prueba_playwright_*`.
 - **Hallazgo de la prueba (TrickVault):** la consola de producción muestra un error y un warning de **Babel en el navegador** (`@babel/standalone` desde unpkg y script inline >500 KB). No rompe la app, pero penaliza la carga; evaluar precompilar o quitar Babel en una pasada de rendimiento.
+
+---
+
+## 🃏 TrickVault: tanda Xabatz añadida (2026-10-17)
+
+- **Estado:** hecha y publicada (commit `73360d2`). De los 16 códigos del Short, 10 ya existían y se revisaron (imagen↔prompt↔código y texto en español: correctos); se añadieron 6: `/phantom`, `/speedframe`, `/hairstylegrid` (imagen, con ejemplo `openai-image-2-low` en Carteles, Planos y Moda) y `/faceharmony`, `/skinglowtips`, `/colourfittips` (texto, en Comandos de texto).
+- **Verificación:** producción sirve el catálogo con **1242 trucos**; la búsqueda de los 6 devuelve tarjeta; las 3 imágenes cargan 1024×1024; consola sin errores nuevos (solo el aviso de Babel ya conocido); red sin 4xx/5xx.
+- **Hallazgo (decisión pendiente):** `/proshot` y `/together` están en `xl-otromundo` («Tú en otro mundo») aunque son retoque de persona; lo lógico sería `xl-camararetrato`. No se movieron para no alterar el catálogo sin permiso expreso.
+- **Evidencias:** `tools/evidencias/2026-10-17-xabatz/` (revisión de las 10 existentes, las 3 nuevas y capturas de producción).
 
 ---
 
