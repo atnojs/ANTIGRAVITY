@@ -571,6 +571,22 @@ function marcarHistorialEnWeb(string $itemId, int $bytes): void {
     fclose($lock);
 }
 
+/**
+ * Reclama el pedido de abrir el explorador de carpetas. Es de un solo uso: se
+ * atiende desde el sondeo (cada 5 s) o desde el latido, el que llegue antes,
+ * para que el dialogo salga rapido al pulsar el boton.
+ */
+function reclamarDialogo(): bool {
+    $estado = readJsonFile(DIR_FILE, []);
+    if (empty($estado['dialog_pending'])) {
+        return false;
+    }
+    $estado['dialog_pending'] = false;
+    $estado['dialog_at'] = time();
+    writeJsonFile(DIR_FILE, $estado);
+    return true;
+}
+
 /** Carpeta de descarga del PC, tal y como la cuenta el worker. */
 function dirInfo(): array {
     $worker = readJsonFile(WORKER_FILE, []);
@@ -732,11 +748,8 @@ if (in_array($action, $workerActions, true)) {
         // El usuario ha pulsado «elegir carpeta»: el worker abre el explorador de
         // Windows. Se manda una sola vez (si el PC estaba apagado se descarta a
         // los 5 minutos, que es lo que mira dirInfo).
-        if (!empty($estadoDir['dialog_pending'])) {
+        if (reclamarDialogo()) {
             $respuesta['abrir_dialogo'] = true;
-            $estadoDir['dialog_pending'] = false;
-            $estadoDir['dialog_at'] = time();
-            writeJsonFile(DIR_FILE, $estadoDir);
         }
         if (!empty($estadoDir['pending'])) {
             // El worker aplica el cambio y confirma con `dir_applied`.
@@ -799,7 +812,7 @@ if (in_array($action, $workerActions, true)) {
             $subidas = subidasPendientes($queue);
             flock($lock, LOCK_UN);
             fclose($lock);
-            respond(200, ['success' => true, 'job' => null, 'subidas' => $subidas]);
+            respond(200, ['success' => true, 'job' => null, 'subidas' => $subidas, 'abrir_dialogo' => reclamarDialogo()]);
         }
         $queue['jobs'][$chosen]['status'] = 'running';
         $queue['jobs'][$chosen]['claimed_at'] = nowIso();
@@ -826,6 +839,8 @@ if (in_array($action, $workerActions, true)) {
             ],
             // Elementos que el usuario ha pedido traer a la web desde el PC.
             'subidas' => subidasPendientes($queue),
+            // Y si toca abrir el explorador de carpetas, que salga ya (sondeo 5 s).
+            'abrir_dialogo' => reclamarDialogo(),
         ]);
     }
 

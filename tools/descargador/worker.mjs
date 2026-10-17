@@ -1463,6 +1463,13 @@ async function principal() {
       const respuesta = await peticion({ action: 'next' }, { etiqueta: 'next' });
       const job = respuesta.job;
 
+      // El boton «elegir carpeta» de la web pide abrir el explorador en el PC.
+      // Viaja por aqui (sondeo cada 5 s) para que el dialogo salga enseguida.
+      if (respuesta && respuesta.abrir_dialogo) {
+        pedirCarpetaConDialogo().catch((e) => logAviso(`Fallo el explorador de carpetas: ${e.message}`));
+        continue;
+      }
+
       // Antes de pedir trabajo nuevo: atender los «traer a la web» pendientes.
       const pedidos = Array.isArray(respuesta.subidas) ? respuesta.subidas : [];
       if (pedidos.length) {
