@@ -629,3 +629,30 @@ Tres fallos propios por el camino, los tres cazados por la prueba y ninguno por 
 el bloque de actualización quedó colocado **antes** de ensamblar el fichero (`$written` null →
 TypeError 500); el callback de progreso no puede ser `null` porque la cadena hace `.catch()`; y las
 subidas pendientes no se devolvían cuando **no había trabajo en cola**, que es justo el caso normal.
+## 2026-10-17 (mañana) — Un botón para elegir carpeta y el fichero suelto en la carpeta
+
+Antonio, con la app ya en marcha: «lo de seleccionar la ubicacion de descargas no me gusta, quiero
+que sea un solo boton donde yo clique y se abra el explorador para seleccionar la carpeta» y «cuando
+se descarga el archivo se crea una carpeta nueva y tiene esos 3 archivos y no los quiero así. el
+archivo debe alojarse solo y en la carpeta seleccionada».
+
+**1. Un solo botón con el explorador de Windows.** Fuera el desplegable de unidades, el campo de
+texto y el botón "Cambiar": queda la carpeta actual y **un botón**. El diálogo lo abre el worker
+(el navegador no puede revelar rutas reales del disco): `FolderBrowserDialog` por PowerShell en modo
+`-STA`, con un formulario oculto siempre encima para que salga delante. Probado de extremo a
+extremo: el botón pide `elegir_carpeta` → el worker abre "Buscar carpeta" (captura guardada) →
+pulsado **Aceptar** por automatización → carpeta aplicada y guardada en la config. Y el camino de
+**Cancelar** también: cierra y la web muestra "Has cerrado el explorador sin elegir carpeta".
+
+**2. El fichero, suelto en la carpeta elegida.** Antes cada descarga creaba `j_<id>/` con el mp3,
+`_ytdlp.log` y `.info.json`, y ahí se quedaba. Ahora la descarga trabaja en
+`<carpeta>/.descargas-tmp/j_<id>` (**oculta**), al terminar **mueve** los ficheros de audio/vídeo a
+la carpeta elegida, borra la carpeta de trabajo (y la base si queda vacía) y no pisa nada: si ya
+existe el nombre, añade " (2)". Verificado en producción: la carpeta del usuario quedó con **un
+solo fichero** y **cero carpetas**; con ffmpeg se comprobó que el mp3 es válido (3:15, 130 kb/s).
+
+**Lo que salió mal (está en `errores.md`):** 4 workers a la vez por mi forma de reiniciar (uno viejo
+atendió un trabajo y lo dejó en carpeta); filtrar procesos por `CommandLine` mata tu propio script;
+`$pid` es reservado; el bloque de `item_done` estaba antes de ensamblar el fichero (500); y **borrar
+las carpetas `j_*` viejas se llevó por delante ficheros que solo estaban en el PC** (un mp3 de
+Chayanne, recuperado descargándolo otra vez; el resto estaban subidos y a salvo).

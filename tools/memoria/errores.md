@@ -5,6 +5,51 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-17] Cuatro workers a la vez (mi forma de reiniciar los multiplicaba)
+
+- **Síntoma:** un trabajo acabó dentro de una carpeta `j_xxx` cuando el código nuevo ya no las
+  crea. El log del worker que lo atendió era el de una instancia vieja.
+- **Causa:** cada "reinicio" lanzaba `cmd /c start /min iniciar-worker.bat`. El `.bat` corre un
+  bucle (`/K`) que relanza node cuando termina; al matar solo el node, el bucle lo volvía a
+  arrancar, y además cada `start` añadía un bucle nuevo. Resultado: **4 workers** (uno de la noche
+  anterior) compitiendo por la misma cola.
+- **Solución:** matar **node Y los `cmd` padres** del bucle, y arrancar **una** sola instancia.
+  Comprobar con:
+  `Get-CimInstance Win32_Process -Filter "Name='node.exe'" | ? CommandLine -like '*worker.mjs*'`
+  (debe haber exactamente 1).
+- **Regla:** para reiniciar el worker, matar el árbol completo (node + cmd del .bat) y volver a
+  lanzarlo UNA vez. El acceso de Inicio lanza uno solo al iniciar sesión.
+
+### [2026-10-17] Filtrar procesos por `CommandLine` mata tu propio script
+
+- **Síntoma:** un comando murió a mitad con `[exit code: 4294967295]` justo después de "matando PID X".
+- **Causa:** filtraba `powershell.exe` por `CommandLine -like '*FolderBrowserDialog*'`… y **mi propio
+  script contenía ese texto en su línea de comandos**. Se mató a sí mismo.
+- **Solución:** excluir siempre el proceso actual: `Where-Object { $_.ProcessId -ne $PID }`.
+- **Extra:** en PowerShell `$pid` es una **variable reservada** (PID del proceso actual); no se
+  puede asignar. Usar `$procId`.
+
+### [2026-10-17] Borrar las carpetas `j_*` de descargas se llevó por delante ficheros
+
+- **Qué pasó:** para limpiar el desorden que vio Antonio (carpeta por descarga con log y
+  `.info.json`), borré las 17 carpetas `j_*` de su carpeta de descargas. **Dentro estaban los
+  ficheros descargados**: los que se habían quedado solo en el PC se perdieron (uno: un mp3 de
+  Chayanne, que volví a descargar). Los demás estaban subidos a la web y no se perdió nada.
+- **Regla:** antes de borrar una carpeta de descargas, **listar y mirar el contenido**, y distinguir
+  restos (log, `.info.json`) de originales (`.mp3`, `.mp4`). Y si hay que borrar, comprobar
+  primero qué fichas de la cola/historial apuntan ahí.
+- **Arreglo de fondo:** ahora el fichero se mueve a la carpeta elegida y la carpeta de trabajo
+  (oculta, `.descargas-tmp`) se borra sola al terminar, así que no hay nada que limpiar a mano.
+
+### [2026-10-17] `item_done` con `item_id`: el bloque de actualización iba ANTES de ensamblar
+
+- **Síntoma:** "traer a la web" subía los trozos pero `item_done` devolvía **500 con el cuerpo
+  vacío**; el elemento quedaba a medias (`local=False, bytes=0`).
+- **Causa:** el bloque que actualiza la ficha existente lo inserté antes de `$itemId = ...`, es
+  decir **antes** de ensamblar el fichero: `$written` y `$relative` valían `null` → TypeError en
+  `marcarHistorialEnWeb(int $bytes)`.
+- **Solución:** mover el bloque detrás del ensamblado y la limpieza de trozos, justo antes de crear
+  la ficha. **Comprobar el orden con los índices**: `$written = 0` < bloque < `$item = [`.
 ### [2026-10-17] El móvil se veía fatal: `align-items: flex-start` sobre un flex que pasa a columna
 
 - **Síntoma:** en el móvil, botones enormes que se salían de la pantalla y scroll horizontal.

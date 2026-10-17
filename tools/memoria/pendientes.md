@@ -55,7 +55,7 @@ documentada en `credenciales.md` (con el procedimiento) y en `bitacora.md`.
    sube esos trozos a petición y `item_done` con `item_id` **actualiza** la ficha (no duplica el
    historial). Verificado en producción: `local=True` 117.029 B → pedir → `local=False` y descarga
    HTTP 200 con los mismos 117.029 B.
-2. **Limpiar copias de assets**: `app.css`, `app.20261017.css`, `...b`, `...c`, `...d`, `...e`, `...f`. Las
+2. ✅ El fichero ya se guarda suelto (2026-10-17). Queda **limpiar copias de assets**: `app.css`, `app.20261017.css`, `...b`, `...c`, `...d`, `...e`, `...f`. Las
    antiguas están por el HTML cacheado; cuando expire la caché (7 días desde el 17), dejar solo las
    vigentes y actualizar la referencia.
 3. **Ficheros locales que se acumulan** en `D:\Vídeos\descargas-app\<id>\`: decidir si se borran al
