@@ -274,3 +274,8 @@ tools/veronicaz/*.xlsx
 # Capturas.xlsx vive en la RAÍZ PÚBLICA: si se versiona, queda servido por web.
 /Capturas.xlsx
 
+# ── Playwright CLI: snapshots y logs de sesión ──────────────────────────────
+# Se crean en el cwd de cada verificación (por convenio, la carpeta de
+# evidencias). No se versionan: las capturas .png ya están ignoradas arriba.
+.playwright-cli/
+

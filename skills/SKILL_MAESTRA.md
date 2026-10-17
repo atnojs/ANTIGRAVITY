@@ -510,7 +510,7 @@ Cuando se cree o modifique una app/web, la validación debe realizarse siempre d
 4. Sincronizar de forma segura con la rama de despliegue, preservando cambios ajenos.
 5. Hacer push. El push es obligatorio porque activa el despliegue de Hostinger.
 6. Esperar la publicación y confirmar que no se está viendo una caché antigua.
-7. Abrir la URL real en Chrome y recorrer el flujo visible: clics, navegación, formularios, API, loader, resultado, historial, recarga, errores y responsive.
+7. Abrir la URL real en Chrome y recorrer el flujo visible con `verificacion-playwright` (Playwright CLI): clics, navegación, formularios, API, loader, resultado, historial, recarga, errores y responsive.
 8. Revisar consola y red cuando algo falle.
 9. Si se detecta un problema, corregirlo, validar localmente, crear otro commit, hacer push y repetir la prueba en servidor.
 

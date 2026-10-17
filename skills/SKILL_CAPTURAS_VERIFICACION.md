@@ -9,6 +9,8 @@ description: "Úsala en TODA creación, edición o revisión de app, web o compo
 
 Antonio quiere **ver** el resultado, no leer que "queda mejor". Toda entrega con efecto visual termina con pruebas medidas y con capturas adjuntas en la respuesta. En arreglos, la misma imagen muestra el **antes y el después**.
 
+> **Si el flujo tiene clics, formularios, subida/descarga o hay que leer consola y red**, completa esta verificación con `verificacion-playwright` (Playwright CLI): recorre la URL desplegada como un usuario y deja captura de cada paso. Esta skill mide geometría; aquella comprueba comportamiento.
+
 ### 1. Antes de tocar nada, fija el estado "antes"
 
 - Guarda el original para poder reproducirlo: `git show HEAD:<ruta/app.css> | Set-Content tools\_antes.css -Encoding UTF8`.
@@ -68,6 +70,7 @@ Usa `skills/recursos/capturas-verificacion/plantilla-harness.html` (iframes a an
 
 ## Checklist de salida
 
+- [ ] Flujo interactivo recorrido con `verificacion-playwright` (clics, formularios, descargas, consola) si la app lo tiene.
 - [ ] Estado "antes" reproducido con el original de `git HEAD`.
 - [ ] Medido en Chrome a los anchos reales (escritorio, tablet y móvil), antes y después.
 - [ ] Comparativa antes/después en una sola imagen etiquetada, guardada en `tools/`.
