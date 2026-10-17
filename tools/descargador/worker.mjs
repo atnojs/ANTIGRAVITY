@@ -1183,6 +1183,79 @@ async function informarFallo(job, mensaje) {
 // ---------------------------------------------------------------------
 // Procesamiento de un trabajo completo
 // ---------------------------------------------------------------------
+/* ── El fichero va SUELTO a la carpeta elegida ──────────────────────────── */
+
+/**
+ * Deja los ficheros descargados directamente en la carpeta elegida y borra la
+ * carpeta de trabajo (donde yt-dlp deja el log y el .info.json).
+ *
+ * Antonio: «cuando se descarga el archivo se crea una carpeta nueva y tiene esos
+ * 3 archivos y no los quiero así. el archivo debe alojarse solo y en la carpeta
+ * seleccionada».
+ */
+function moverFicherosAlDestino(dirJob, ficheros) {
+  const destino = config.downloadDir;
+  const movidos = [];
+
+  for (const fichero of ficheros) {
+    let nombre = fichero.nombre;
+    let final = path.join(destino, nombre);
+
+    // Si ya existe uno con ese nombre NO se pisa: se numera.
+    if (path.resolve(final) !== path.resolve(fichero.ruta) && fs.existsSync(final)) {
+      const ext = path.extname(nombre);
+      const base = nombre.slice(0, nombre.length - ext.length);
+      let n = 2;
+      do {
+        nombre = `${base} (${n})${ext}`;
+        final = path.join(destino, nombre);
+        n += 1;
+      } while (fs.existsSync(final) && n < 1000);
+    }
+
+    try {
+      fs.renameSync(fichero.ruta, final);
+    } catch (e) {
+      // Volumenes distintos (un USB, por ejemplo): copiar y borrar el original.
+      fs.copyFileSync(fichero.ruta, final);
+      fs.unlinkSync(fichero.ruta);
+    }
+
+    const info = fs.statSync(final);
+    movidos.push({
+      ...fichero,
+      nombre,
+      ruta: final,
+      bytes: info.size,
+      ext: path.extname(nombre).slice(1).toLowerCase(),
+    });
+    logInfo(`Fichero movido a la carpeta elegida: ${final}`);
+    consola(`  → ${nombre}`);
+  }
+
+  borrarCarpetaDeTrabajo(dirJob);
+  return movidos;
+}
+
+/** Borra la carpeta temporal del trabajo (log, .info.json, restos). */
+function borrarCarpetaDeTrabajo(dirJob) {
+  try {
+    fs.rmSync(dirJob, { recursive: true, force: true });
+    logDepurar(`Carpeta de trabajo borrada: ${dirJob}`);
+  } catch (e) {
+    logAviso(`No se pudo borrar la carpeta de trabajo ${dirJob}: ${e.message}`);
+  }
+  // Y la base .descargas-tmp si se ha quedado vacia: la carpeta elegida queda
+  // limpia del todo.
+  try {
+    const base = path.dirname(dirJob);
+    if (path.basename(base) === '.descargas-tmp' && fs.readdirSync(base).length === 0) {
+      fs.rmdirSync(base);
+      logDepurar('Carpeta temporal .descargas-tmp eliminada (vacia)');
+    }
+  } catch (e) { /* si no esta o no se puede, da igual */ }
+}
+
 async function procesarJob(jobBruto) {
   let job;
   try {
@@ -1193,8 +1266,15 @@ async function procesarJob(jobBruto) {
     return;
   }
 
-  const dirJob = path.join(config.downloadDir, job.id);
+  // La descarga se hace en una carpeta OCULTA y temporal dentro de la elegida:
+  // asi no aparecen carpetas ni ficheros sueltos (log, .info.json) a la vista, y
+  // al terminar el fichero se mueve arriba y la carpeta se borra.
+  const dirTrabajoBase = path.join(config.downloadDir, '.descargas-tmp');
+  const dirJob = path.join(dirTrabajoBase, job.id);
   await fsp.mkdir(dirJob, { recursive: true });
+  try {
+    spawnSync('attrib', ['+h', dirTrabajoBase], { windowsHide: true });
+  } catch (e) { /* si no se puede ocultar, no pasa nada */ }
 
   consola(`Trabajo ${job.id} recibido: ${job.modo}/${job.calidad}/${job.formato}${job.playlist ? ' (lista)' : ''}${job.attempts ? ` · intento ${job.attempts}` : ''}`);
   consola(`  ${job.url}`);
@@ -1210,6 +1290,7 @@ async function procesarJob(jobBruto) {
   if (resultado.cancelado) {
     consola(`Trabajo ${job.id} CANCELADO por el usuario.`);
     logAviso(`Trabajo ${job.id} cancelado por el usuario.`);
+    borrarCarpetaDeTrabajo(dirJob);
     await informarFallo(job, 'Cancelado por el usuario');
     return;
   }
@@ -1218,6 +1299,7 @@ async function procesarJob(jobBruto) {
     const resumen = cola.slice(-5).join(' | ') || `yt-dlp terminó con código ${resultado.codigo}`;
     logError(`Trabajo ${job.id} falló (código ${resultado.codigo}): ${resumen}`);
     consola(`Trabajo ${job.id} FALLÓ: ${recortar(resumen, 160)}`);
+    borrarCarpetaDeTrabajo(dirJob);
     // Se antepone una explicacion en castellano: el log crudo de yt-dlp no le
     // dice nada al usuario y estos fallos se repiten.
     await informarFallo(job, `${mensajeUtil(resumen)} || yt-dlp código ${resultado.codigo}: ${resumen}`);
@@ -1229,13 +1311,22 @@ async function procesarJob(jobBruto) {
   if (!ficheros.length) {
     const resumen = cola.slice(-5).join(' | ') || 'sin salida de yt-dlp';
     logError(`Trabajo ${job.id}: yt-dlp terminó bien pero no hay ficheros. ${resumen}`);
+    borrarCarpetaDeTrabajo(dirJob);
     await informarFallo(job, `No se generó ningún fichero. ${resumen}`);
     return;
   }
 
   const metadatos = await leerMetadatos(dirJob);
+
+  // El fichero, SUELTO en la carpeta elegida; la carpeta de trabajo se borra.
+  // Los metadatos se leen antes (el .info.json vive en esa carpeta).
+  ficheros = ficheros.map((f) => ({
+    ...f,
+    meta: metadatos.get(f.nombre.replace(/\.[^.]+$/, '')) || null,
+  }));
+  ficheros = moverFicherosAlDestino(dirJob, ficheros);
   contexto.itemCount = ficheros.length;
-  consola(`Descarga terminada: ${ficheros.length} fichero(s).`);
+  consola(`Descarga terminada: ${ficheros.length} fichero(s) en ${config.downloadDir}.`);
 
   // 3) Subida por trozos + item_done (en orden)… o nada, si va solo al PC.
   if (job.subir === false) {
@@ -1248,7 +1339,7 @@ async function procesarJob(jobBruto) {
     for (let i = 0; i < ficheros.length; i++) {
       const fichero = ficheros[i];
       const itemIndex = i + 1;
-      const meta = metadatos.get(fichero.nombre.replace(/\.[^.]+$/, '')) || null;
+      const meta = fichero.meta || null;
       const titulo = (meta && meta.titulo) || tituloDesdeRuta(fichero.nombre) || fichero.nombre;
       let duracion = meta && meta.duracion ? meta.duracion : 0;
       if (!duracion) {
@@ -1275,7 +1366,7 @@ async function procesarJob(jobBruto) {
     for (let i = 0; i < ficheros.length; i++) {
       const fichero = ficheros[i];
       const itemIndex = i + 1;
-      const meta = metadatos.get(fichero.nombre.replace(/\.[^.]+$/, '')) || null;
+      const meta = fichero.meta || null;
       const titulo = (meta && meta.titulo) || tituloDesdeRuta(fichero.nombre) || fichero.nombre;
       let duracion = meta && meta.duracion ? meta.duracion : 0;
       if (!duracion) {
