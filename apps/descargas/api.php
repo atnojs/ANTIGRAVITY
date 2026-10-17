@@ -1679,7 +1679,9 @@ if ($action === 'whatsapp_estado') {
 if ($action === 'whatsapp_config') {
     $cfg = configWhatsapp();
     $tokenNuevo = trim((string)($body['token'] ?? ''));
-    if ($tokenNuevo !== '') {
+    if (!empty($body['borrar_token'])) {
+        unset($cfg['token']);   // para poder borrarlo de verdad desde el panel
+    } elseif ($tokenNuevo !== '') {
         $cfg['token'] = $tokenNuevo;
     }
     $cfg['phone_number_id']  = substr(trim((string)($body['phone_number_id'] ?? '')), 0, 60);
