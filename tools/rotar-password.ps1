@@ -1,10 +1,10 @@
-# Rota la contraseña de edición de TrickVault / video-vault / json.
+# Rota la contraseña de edición de TrickVault / video-vault / json / descargas.
 #
 # Qué hace, en este orden:
 #   1. Coge la contraseña nueva (la que le pases, o una generada al azar).
 #   2. Calcula su sha256 — con PHP si está en el PATH (que es lo que ejecuta el
 #      servidor), y si no con .NET, que da el mismo resultado para ASCII.
-#   3. Escribe el hash en los tres auth.php y lo LEE DE VUELTA para comprobar
+#   3. Escribe el hash en los CUATRO auth.php y lo LEE DE VUELTA para comprobar
 #      que quedó bien.
 #   4. Guarda la contraseña en claro en .private/ (no se versiona ni se sirve
 #      por web) para que no se pierda.
