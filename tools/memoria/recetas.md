@@ -233,3 +233,31 @@ verdad lo que se publica, usar **«Solo «<carpeta>»»**.
 - El panel es cliente: solo se pinta con `editUnlocked` (`index.html:6931`) y va **después** de
   las vistas de tarjetas (`index.html:6881-6927`).
 - **Lo que NO se comprobó:** el clic real en producción (hace falta la contraseña de edición).
+
+## Verificar una app en Chrome con Playwright CLI (verificado 2026-10-17)
+
+`@playwright/cli` **0.1.22** global → `E:\npm\playwright-cli.ps1` (ya en PATH). No descarga
+navegadores: `--browser=chrome` usa el Chrome 155 instalado.
+
+```powershell
+$ev = 'tools\evidencias\2026-10-17-mi-app'; New-Item -ItemType Directory -Force $ev | Out-Null
+Set-Location $ev                      # el CLI escribe .playwright-cli\ aquí (ignorado por git)
+playwright-cli -s=miapp open https://atnojs.es/apps/mi-app/ --browser=chrome
+playwright-cli -s=miapp snapshot      # refs e12, e32... (YAML en .playwright-cli\)
+playwright-cli -s=miapp fill e32 "texto"
+playwright-cli -s=miapp press Enter
+playwright-cli -s=miapp screenshot --filename=01-resultado.png
+playwright-cli -s=miapp console       # errores y warnings
+playwright-cli -s=miapp requests      # red (--static para estáticas)
+playwright-cli -s=miapp resize 393 844
+playwright-cli -s=miapp screenshot --filename=02-movil.png
+playwright-cli -s=miapp close
+playwright-cli list                   # no debe quedar sesión
+```
+
+- **Sandbox:** en DSH `workspace-write` el navegador no arranca (`spawn EPERM`); hace falta permiso
+  ampliado. En Claude Code no aplica.
+- **No matar Chrome por nombre** (`Get-Process chrome | Stop-Process` se lleva también el de
+  Antonio): cerrar con `-s=<app> close`.
+- Detalle del flujo y checklist: skill `verificacion-playwright`
+  (`skills/SKILL_VERIFICACION_PLAYWRIGHT.md`).

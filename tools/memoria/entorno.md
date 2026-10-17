@@ -65,6 +65,8 @@ Ficha de la máquina y del entorno del agente. Si algo de aquí cambia, se actua
 - Las **capturas de pantalla** llegan como adjuntos del usuario; el agente no ve el escritorio.
 - **Navegador headless en DSH**: con el sandbox `workspace-write`, Chrome **no arranca**
   (`spawn EPERM` con Playwright; `Start-Process: Acceso denegado` con Chrome directo). Hay que
-  reintentar con permiso ampliado. Playwright **1.63** ya está en el venv de Hermes
+  reintentar con permiso ampliado. Playwright **1.63** está en el venv de Hermes
   (`...\hermes-agent\venv\Scripts\playwright.exe`) y usa el Chrome 155 instalado con
-  `--channel chrome`; `--device` exige `-b chromium`.
+  `--channel chrome`; `--device` exige `-b chromium`. Además, `@playwright/cli` **0.1.22** está
+  instalado global (`E:\npm\playwright-cli.ps1`, en PATH): es el que usa la skill
+  `verificacion-playwright`.

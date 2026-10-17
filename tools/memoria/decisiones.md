@@ -73,3 +73,15 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 - **Decisión:** para montajes de sistema, guía en Markdown y scripts ejecutables.
 - **Motivo:** las capturas caducan y no se pueden volver a ejecutar. La regla de
   `capturas-verificacion` es para resultados **visuales** de apps/web, no para esto.
+
+### [2026-10-17] Playwright CLI como verificación funcional estándar
+
+- **Decisión:** el flujo real en navegador (clics, formularios, subida/descarga, consola, red,
+  recarga y 3 anchos) se comprueba con `playwright-cli` siguiendo la skill `verificacion-playwright`.
+  `capturas-verificacion` sigue siendo la herramienta de **medida de geometría** (harness + iframes + PIL).
+- **Motivo:** `capturas-verificacion` no puede pulsar ni rellenar, y la regla del proyecto exige
+  recorrer el flujo completo en el navegador y verificar descargas. Playwright CLI es oficial
+  (Microsoft), reutiliza el Chrome instalado (no descarga navegadores) y evita cargar en contexto
+  esquemas MCP grandes.
+- **Contrapartida:** en DSH con sandbox `workspace-write` Chrome no arranca (`spawn EPERM`): hay que
+  ejecutarlo con permiso ampliado. No sustituye a Safari/iOS real (webkit no está instalado).

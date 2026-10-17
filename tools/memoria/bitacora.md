@@ -688,3 +688,21 @@ avanzar. Era mío: si el sondeo devolvía a la vez un trabajo y la petición de 
 guardián que cierra los trabajos con más de 15 minutos sin progreso. También se limpiaron 7 entradas
 de prueba del historial y la carpeta quedó devuelta a `D:\Vídeos\descargas-app` (un diálogo de
 prueba la había puesto en el Escritorio).
+## 2026-10-17 (tarde) — Fase 1: Playwright CLI y verificación funcional en el flujo
+
+Antonio pidió examinar el Short de `revolutia` «5 Herramientas Para Que Tu App De Claude Code No
+Parezca De 2006» y arrancar la Fase 1 del plan. De las cinco, se integra la que tapa el hueco real:
+**Playwright CLI** (`microsoft/playwright-cli`).
+
+- **Instalado:** `@playwright/cli` **0.1.22** global (`npm i -g @playwright/cli@latest`), binario
+  `E:\npm\playwright-cli.ps1` (ya en PATH). Node 24.14 y Chrome 155 existentes; no descarga navegadores.
+- **Skill nueva:** `skills/SKILL_VERIFICACION_PLAYWRIGHT.md` + puntero
+  `.claude/skills/verificacion-playwright/` (regenerado con `tools/generar-punteros-skills.php`:
+  14 punteros, 0 a revisar). Enganchada en `capturas-verificacion` (llamada + checklist) y en
+  `SKILL_MAESTRA` Fase 5. `.gitignore` ignora ya `.playwright-cli/`.
+- **Prueba real (producción):** TrickVault. Abrir → snapshot → `fill e32 "logo"` (14 resultados) →
+  clic carpeta «Comida» → `console` → `requests` (dinámicas 200) → resize 768/393 → `close`.
+  Evidencias en `tools/evidencias/2026-10-17-verificacion-playwright/`.
+- **Hallazgo:** error y warning de **Babel en el navegador** en producción (preexistente, anotado
+  en `pendientes.md`).
+- **Commit:** `124556e`.
