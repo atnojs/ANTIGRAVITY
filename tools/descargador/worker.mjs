@@ -752,7 +752,7 @@ function mensajeUtil(texto) {
   if (/Unsupported URL/i.test(t)) {
     return 'Esa direccion no es de una web que yt-dlp sepa descargar.';
   }
-  return 'La descarga fallo.';
+  return 'La descarga fallo. Abajo tienes el detalle de yt-dlp: casi siempre el enlace no es valido o el video ya no esta.';
 }
 
 function construirArgumentos(job, dirJob) {
