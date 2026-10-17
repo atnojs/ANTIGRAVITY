@@ -62,6 +62,23 @@ documentada en `credenciales.md` (con el procedimiento) y en `bitacora.md`.
 
 ---
 
+## 0-sexies. Descargas: lo que queda (2026-10-17, tras las seis mejoras)
+
+1. **Activar el WhatsApp**: falta que Antonio cree la app en Meta, añada su número como
+   destinatario, genere el token permanente y lo pegue en el panel de la app
+   (`tools/descargador/whatsapp-LEEME.md`). El código ya está y responde bien.
+2. **Probar la PWA en el móvil de verdad**: instalar y usar «Compartir → Descargas» desde YouTube.
+   Solo se ha verificado que el manifest, el service worker y `compartir.php` se sirven y
+   redirigen bien; la instalación real y el share target necesitan su móvil.
+3. **Copias de assets**: van por `app.20261017i.*`; quedan `app.css`, `...h`, `...g`, etc. Cuando
+   expire la caché de la CDN, dejar solo las vigentes.
+4. **`VERSION_WORKER` sigue en 1.0** en el worker.
+5. **Mensaje de error de yt-dlp**: el fallo por vídeo no disponible mostró «La descarga falló»
+   seguido del texto crudo, en vez del mensaje amable de `mensajeUtil`. Revisar por qué no casó.
+6. **Títulos con caracteres no latinos**: en una prueba temprana el título coreano de PSY salió
+   como `()`, aunque después salió bien. Vigilarlo.
+
+---
 ## 0-quinquies. Descargas: lo que queda (2026-10-17)
 
 1. ✅ **HECHO el 2026-10-17 (madrugada): botón «Traer a la web».** Acción `subir_item`, el worker

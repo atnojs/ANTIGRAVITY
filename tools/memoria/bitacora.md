@@ -706,3 +706,31 @@ Parezca De 2006» y arrancar la Fase 1 del plan. De las cinco, se integra la que
 - **Hallazgo:** error y warning de **Babel en el navegador** en producción (preexistente, anotado
   en `pendientes.md`).
 - **Commit:** `124556e`.
+## 2026-10-17 (tarde-noche) — Las seis mejoras que eligió Antonio
+
+De la lluvia de ideas eligió: buscar en YouTube dentro de la app, reintentar, PWA con «compartir»,
+MP4 h264 de verdad, cola en paralelo, y el aviso SOLO si llega por WhatsApp.
+
+1. **Buscar en YouTube:** la consulta la resuelve el PC con `yt-dlp "ytsearch10:..."` (sin clave de
+   API; el hosting no se come los bloqueos). La web pide, hace polling y pinta 10 tarjetas con
+   miniatura, canal y duración, con botón DESCARGAR que encola con los ajustes actuales.
+   Probado en local y en producción: 10 resultados reales.
+2. **Reintentar:** botón en fallidos/cancelados que reutiliza la URL guardada; y **reintento
+   automático** con espera 30/120/300 s solo para errores temporales (403, red, timeouts). Los
+   permanentes (vídeo privado, enlace cortado) no se repiten. Probados los dos caminos por API.
+3. **Cola en paralelo:** `max_parallel` (1..3, por defecto 2); el worker solo pide trabajo cuando
+   tiene hueco. Verificado en producción: «Trabajos en curso: 2/2».
+4. **MP4 h264 de verdad:** a 1440p/2160p YouTube no da h264, así que se baja la resolución pedida y
+   el worker la convierte con ffmpeg (progreso «convirtiendo»). **Verificado con un 1440p: entrada
+   VP9 → salida H.264 High 2560x1440 AAC, 238 MB**, en ~76 s. A 1080p o menos no se convierte.
+5. **PWA + compartir:** `manifest.json`, `sw.js` e iconos 192/512; `share_target` →
+   `compartir.php` que redirige a `index.html?compartido=<url>` y la app lo encola sola.
+   Los iconos dieron guerra: el `.gitignore` global `*.png` los excluía y la CDN cacheó su 404.
+6. **WhatsApp:** aviso al terminar con la Cloud API oficial de Meta. Panel en la app para
+   configurarlo (sin token en git: `data/whatsapp.json` en el servidor) + botón Probar + log.
+   CallMeBot está cerrado a altas nuevas (comprobado), así que se va por la vía oficial; los pasos
+   para activarlo están en `tools/descargador/whatsapp-LEEME.md`. **Pendiente de que Antonio cree
+   la app de Meta y meta el token.**
+
+De propina, dos fallos del worker cazados y arreglados: el selector de formato MP4 prefería h264
+SIEMPRE (a 1440p bajaba 1080p en vez de convertir) y el `max_parallel` de su config estaba a 1.
