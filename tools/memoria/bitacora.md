@@ -656,3 +656,35 @@ atendió un trabajo y lo dejó en carpeta); filtrar procesos por `CommandLine` m
 `$pid` es reservado; el bloque de `item_done` estaba antes de ensamblar el fichero (500); y **borrar
 las carpetas `j_*` viejas se llevó por delante ficheros que solo estaban en el PC** (un mp3 de
 Chayanne, recuperado descargándolo otra vez; el resto estaban subidos y a salvo).
+## 2026-10-17 (tarde) — Explorador grande y app centrada
+
+Dos encargos de Antonio: «el explorador que se abre es muy pequeño, lo quiero mucho más grande» y
+«has hecho la app del ancho de la pantalla y se ve fea, deja los campos un pelín más pequeños y
+centra el contenido».
+
+**1. Explorador grande.** El `FolderBrowserDialog` de PowerShell 5.1 es el diálogo antiguo: 334x383
+y de tamaño fijo. Se cambia al `IFileOpenDialog` moderno de Windows (interop COM en
+`elegir-carpeta.ps1`): **960x540**, redimensionable, con barra de ruta y centrado. Comprobado en
+producción: abre directamente en `BACKUPS (D:) > Vídeos > descargas-app`, y al aceptar devuelve esa
+carpeta. Costó tres cosas: ventana propietaria invisible para que salga delante, salida en UTF-8
+(sin eso la tilde de `Vídeos` llegaba corrupta) y no esperar el diálogo en el latido.
+
+**2. App centrada.** `.wrap` de 1800 a **1240 px** centrado; campos y controles un poco más
+compactos. Medido en Chrome sirviendo la versión anterior (git HEAD) y la nueva:
+
+  ancho   .wrap antes   .wrap ahora   desborde
+   320        320            320          0
+   390        390            390          0
+   768        768            768          0
+  1024       1024           1024          0
+  1440       1440           1240          0
+  1920       1800           1240          0
+
+Comparativa en `tools/evidencias/comparativa_ancho_descargas.png`.
+
+**Fallo grave cazado usando la app de verdad:** un trabajo real (HA-ASH) se quedó `running` sin
+avanzar. Era mío: si el sondeo devolvía a la vez un trabajo y la petición de abrir el explorador, el
+`continue` descartaba el trabajo ya marcado como `running` en el servidor. Arreglado, y añadido un
+guardián que cierra los trabajos con más de 15 minutos sin progreso. También se limpiaron 7 entradas
+de prueba del historial y la carpeta quedó devuelta a `D:\Vídeos\descargas-app` (un diálogo de
+prueba la había puesto en el Escritorio).

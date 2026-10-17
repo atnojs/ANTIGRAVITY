@@ -5,6 +5,52 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-17] El explorador de carpetas "pequeño": era el diálogo antiguo
+
+- **Síntoma:** Antonio: «el explorador que se abre es muy pequeño, lo quiero mucho más grande».
+- **Causa:** `System.Windows.Forms.FolderBrowserDialog` en PowerShell 5.1 (.NET Framework) es el
+  diálogo **antiguo**, de tamaño fijo: **334x383 px**. No se puede agrandar de forma decente.
+- **Solución:** usar el `IFileOpenDialog` **moderno** de Windows (Vista+) con `FOS_PICKFOLDERS`, por
+  interop COM compilado con `Add-Type` en `tools/descargador/elegir-carpeta.ps1`. Medido:
+  **960x540**, con barra de ruta, redimensionable y centrado en pantalla.
+- **Detalles que hubo que resolver:** hay que pasar el HANDLE de una ventana propietaria invisible
+  (si no, sale detrás o en la esquina); y la ruta elegida hay que escribirla en **UTF-8**
+  (`[Console]::OutputEncoding`), o al worker le llega `D:\V¡deos`.
+- **Trampa de medición:** leer la salida de PowerShell con `Get-Content` (ANSI) hace parecer que las
+  tildes están corruptas cuando no lo están. Leer siempre con `[System.IO.File]::ReadAllText(UTF8)`.
+
+### [2026-10-17] `continue` tras abrir el explorador: se comía el trabajo
+
+- **Síntoma:** un trabajo real (HA-ASH) se quedó en `running` sin título y sin avanzar.
+- **Causa:** el sondeo (cada 5 s) puede devolver **a la vez** un trabajo y la petición de abrir el
+  explorador. El código abría el diálogo y hacía `continue`, **descartando el trabajo**; como el
+  servidor ya lo había marcado `running` al entregarlo, quedaba muerto para siempre.
+- **Solución:** abrir el diálogo **sin** `continue` y seguir con el trabajo. Además se añadió
+  `cerrarTrabajosColgados()` en la API: los trabajos con más de 15 min en `running` sin progreso se
+  cierran con un mensaje claro (worker reiniciado, PC apagado…).
+- **Lección:** al matar un worker a mitad de descarga, el trabajo queda `running`; ahora se cierra
+  solo, pero conviene no reiniciar el worker con trabajos en curso.
+
+### [2026-10-17] El banco de medidas daba 404 y medía una app muerta
+
+- **Síntoma:** el harness devolvía `.wrap` con ancho 0 y "entra: false" en todas las variantes.
+- **Causa:** el `index.html` del banco apuntaba a los assets **con fecha** (`app.20261017g.*`) que
+  no se habían copiado → 404 de CSS y JS → la app nunca arrancaba.
+- **Solución:** copiar también esos ficheros al banco o reescribir las referencias a `app.css` y
+  `app.js` en la copia.
+- **Pista:** el navegador lo dice en la consola (`Failed to load resource: 404`). Mirar siempre la
+  consola del escenario, no solo la captura.
+
+### [2026-10-17] Medir con iframes y `--virtual-time-budget`: los temporizadores engañan
+
+- **Síntoma:** el harness de iframes se quedaba "midiendo" o medía antes de que la app entrara
+  (`#app-main` seguía oculto por el login asíncrono).
+- **Causa:** con tiempo virtual los `setTimeout` se disparan todos de golpe antes de que lleguen los
+  `fetch`; los bucles de espera se agotan al instante. Y `--dump-dom` vuelca al cargar, no cuando
+  termina el trabajo asíncrono.
+- **Solución:** esperar al evento `load` del iframe y, para cambios de DOM posteriores, usar un
+  `MutationObserver` (reacciona a cambios reales, no a temporizadores). Una medición por ejecución
+  de Chrome con `?w=<ancho>` es lo que funciona de forma fiable.
 ### [2026-10-17] Cuatro workers a la vez (mi forma de reiniciar los multiplicaba)
 
 - **Síntoma:** un trabajo acabó dentro de una carpeta `j_xxx` cuando el código nuevo ya no las
