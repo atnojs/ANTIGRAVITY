@@ -753,3 +753,18 @@ SIEMPRE (a 1440p bajaba 1080p en vez de convertir) y el `max_parallel` de su con
 
 Se limpiaron todos los trabajos de prueba (cola = 7 suyos, historial = 6 suyos) y la carpeta de
 descargas quedó con sus ficheros.
+**Cierre de la verificación (tercera pasada, en producción).**
+
+- **«Compartir» del móvil, simulado de verdad:** POST a `compartir.php` con un enlace de YouTube →
+  redirige a `index.html?compartido=<url>` → abierto en Chrome con sesión → **la app rellenó el
+  campo y encoló el vídeo sola** (trabajo `Me at the zoo`, 16:47, bajado). Es exactamente lo que
+  hará el móvil al compartir desde YouTube.
+- **Progreso por elemento:** el worker ya manda `item_index`/`item_count` (parsea
+  `[download] Downloading item N of M`) y la cola lo pinta: verificado con la web mostrando
+  **«Audio MP3 · elemento 2/3»**.
+- **PWA consistente:** manifest → `icono-192/512.png`, `share_target` con `display: standalone`,
+  `sw.js` servido, `index` con `app.20261017j.*`; todo HTTP 200.
+- **WhatsApp:** con un token FALSO se comprobó la fontanería completa contra Meta
+  (`HTTP 401 Malformed access token`, OAuthException 190) y se borró el token de prueba
+  (estado: desactivado y vacío). Solo falta el token real de Antonio.
+- Limpieza: cola = 7 trabajos suyos, historial = 6 suyos, carpeta sin restos, banco local borrado.
