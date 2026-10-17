@@ -8,8 +8,8 @@ const CARCASA = [
   './',
   './index.html',
   './manifest.json',
-  './icono-pwa-192.png',
-  './icono-pwa-512.png',
+  './icono-192.png',
+  './icono-512.png',
 ];
 
 self.addEventListener('install', (evento) => {
