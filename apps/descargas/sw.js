@@ -3,13 +3,13 @@
    haya red (la cola se actualizara sola cuando vuelva).
    Nunca intercepta POST ni la API: eso tiene que ir siempre a la red. */
 
-const CACHE = 'descargas-v1';
+const CACHE = 'descargas-v2';
 const CARCASA = [
   './',
   './index.html',
   './manifest.json',
-  './icono-192.png',
-  './icono-512.png',
+  './icono-pwa-192.png',
+  './icono-pwa-512.png',
 ];
 
 self.addEventListener('install', (evento) => {
