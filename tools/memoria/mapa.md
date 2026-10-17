@@ -61,6 +61,7 @@ estructura y dónde buscar, no la descripción de cada app.
 | Control de calidad final de una web | `auditor-lighthouse-accesibilidad` |
 | Medir y enseñar un resultado visual | `capturas-verificacion` |
 | Verificar el flujo real en navegador (clics, formularios, descargas, consola) | `verificacion-playwright` |
+| Recrear una interfaz desde una captura o referencia | `recrear-desde-referencia` |
 | Plan por fases con riesgos | `planificacion-pro` |
 | Opciones creativas con criterio | `brainstorming-pro` |
 | Prompts con el Método Copiloto | `metodo-copiloto` |

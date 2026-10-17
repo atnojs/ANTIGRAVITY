@@ -123,6 +123,40 @@ Reglas adicionales:
 | 4 | Lightbox: foco se mueve al abrir, vuelve al cerrar | Focus management con `.focus()` |
 | 5 | La app debe tener estado visual "PROCESANDO..." | Botón + spinner + overlay (ver `style_guide_skill`) |
 
+## Sección H: Interacción y UX (Web Interface Guidelines) 🖱️
+
+Reglas fijadas de Vercel en `skills/recursos/web-interface-guidelines/2026-10-17_command.md`
+(no se descargan de internet en cada auditoría). Se revisan en código **y** en navegador con
+`verificacion-playwright`. Un fallo se anota `archivo:línea` y se corrige; nada de ✅ a ojo.
+
+| # | Item | Cómo verificar |
+|---|------|----------------|
+| 1 | Botones solo-icono con `aria-label` | Buscar `<button>` sin texto visible |
+| 2 | Controles con `<label>` o `aria-label` | Inputs/selects/checkbox sin label asociado |
+| 3 | Foco visible real con `:focus-visible` | Nunca `outline: none` sin reemplazo; probar Tab |
+| 4 | El foco no queda tapado por sticky/overlays | Tab hasta el final y comprobar en captura |
+| 5 | `<button>` para acciones, `<a>` para navegar | Sin `<div onclick>` ni `href="#"` |
+| 6 | `prefers-reduced-motion` respetado | Animaciones con media query o variante reducida |
+| 7 | Solo `transform`/`opacity`; nunca `transition: all` | Buscar `transition: all` y propiedades de layout |
+| 8 | Formularios: `autocomplete`, `name`, `type`/`inputmode` | Revisar cada campo |
+| 9 | No bloquear pegar; errores junto al campo | Buscar `onPaste`/`preventDefault`; probar error |
+| 10 | Submit habilitado hasta enviar; spinner sin cambiar label | Probar envío y estado de carga |
+| 11 | Estados vacío, carga, error y contenido largo | Provocar y comprobar (o revisar CSS) |
+| 12 | Imágenes con `width`/`height`, `loading="lazy"` bajo el fold | Buscar `<img>` sin dimensiones |
+| 13 | Enlaces y estado en URL (filtros, tabs, paginación) | Deep-link y recarga |
+| 14 | Acciones destructivas con confirmación o deshacer | Probar borrar |
+| 15 | Táctil: `touch-action: manipulation`, `-webkit-tap-highlight-color` | Revisar CSS |
+| 16 | Modales: `overscroll-behavior: contain`, foco atrapado, Escape | Probar modal con teclado |
+| 17 | Tema oscuro: `color-scheme: dark`, `theme-color`, selects con color | Revisar `<html>` y `<select>` |
+| 18 | Fechas/números con `Intl.*`, no formatos a mano | Buscar `toLocale`/formatos hardcodeados |
+| 19 | Marcas/códigos con `translate="no"` | Buscar nombres propios y códigos |
+| 20 | Antipatrones: `user-scalable=no`, GIF animado, listas >50 sin virtualizar | Buscar en HTML/CSS |
+
+**Anti-patrones que se marcan como fallo directo:** `maximum-scale=1`/`user-scalable=no`,
+`onPaste` + `preventDefault`, `transition: all`, `outline: none` sin foco alternativo,
+navegación con `<div onClick>`, imágenes sin dimensiones, inputs sin label, botones de icono
+sin `aria-label`, formatos de fecha/número hardcodeados y `autoFocus` injustificado.
+
 ---
 
 ## Workflow de Auditoría
@@ -136,10 +170,11 @@ Reglas adicionales:
 6.  AUDITAR Imágenes y Multimedia (Sección E)
 7.  VERIFICAR Formularios si existen (Sección F)
 8.  VERIFICAR Contenido Dinámico si la app usa IA (Sección G)
-9.  LISTAR problemas encontrados priorizados
-10. CORREGIR directamente en el código
-11. RE-PROBAR en navegador (Tab completo + visual)
-12. REPORTAR resultado
+9.  VERIFICAR Interacción y UX con Web Interface Guidelines (Sección H)
+10. LISTAR problemas encontrados priorizados
+11. CORREGIR directamente en el código
+12. RE-PROBAR en navegador (Tab completo + visual) con `verificacion-playwright`
+13. REPORTAR resultado
 ```
 
 ## Criterio de Salida
@@ -148,6 +183,7 @@ Reglas adicionales:
 - Sección E: **100%** (obligatorio).
 - Sección F: **100%** si hay formularios, N/A si no.
 - Sección G: **100%** si la app usa IA/contenido dinámico, N/A si no.
+- Sección H: **100%** de los anti-patrones y de los 20 items aplicables; N/A justificado.
 - Excepciones documentadas en el reporte.
 
 ## Output (Formato)
@@ -162,6 +198,7 @@ Reglas adicionales:
 - Imágenes: 3/3 ✅ (1 N/A: no hay video)
 - Formularios: 5/5 ✅
 - Contenido Dinámico: 5/5 ✅
+- Interacción/UX (WIG): 20/20 ✅
 
 - Correcciones aplicadas:
   1. Añadido `defer` a 2 scripts
