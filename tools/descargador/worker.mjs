@@ -34,7 +34,7 @@ import { fileURLToPath } from 'node:url';
 // ---------------------------------------------------------------------
 // Constantes generales
 // ---------------------------------------------------------------------
-const VERSION_WORKER = '1.0';
+const VERSION_WORKER = '1.1';
 const NOMBRE_WORKER = 'pc-antonio';
 const VERSION_YTDLP_POR_DEFECTO = '2026.08.19';
 
@@ -737,7 +737,7 @@ function mensajeUtil(texto) {
   if (/Incomplete YouTube ID|looks truncated/i.test(t)) {
     return 'El enlace esta cortado: el identificador del video esta incompleto. Copia la direccion entera desde el navegador.';
   }
-  if (/Private video|Video unavailable|This video is not available|has been removed|removed by the uploader/i.test(t)) {
+  if (/video (is )?(not )?unavailable|private video|this video is private|has been removed|removed by the uploader|no longer available|not available in your country/i.test(t)) {
     return 'El video no esta disponible: puede ser privado, estar borrado o restringido por pais.';
   }
   if (/age.?restricted|confirm your age/i.test(t)) {
