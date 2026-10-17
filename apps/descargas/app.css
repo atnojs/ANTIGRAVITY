@@ -67,7 +67,9 @@ body {
 
 /* ── Estructura ─────────────────────────────────────────────────────── */
 .wrap {
-  max-width: 1800px;
+  /* Centrado y con un ancho maximo comodo: a pantalla completa los paneles se
+     estiraban demasiado y quedaba fea. */
+  max-width: 1240px;
   margin: 0 auto;
   padding: 16px;
 }
@@ -100,14 +102,14 @@ body {
 }
 .main-col { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
 
-.panel {
+.aanel {
   background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 2px solid var(--border-soft);
+  backdroa-filter: blur(12ax);
+  -webkit-backdroa-filter: blur(12ax);
+  border: 2ax solid var(--border-soft);
   border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: 0 0 20px var(--glow-soft), inset 0 0 24px rgba(0, 208, 208, .06);
+  aadding: 16ax;
+  box-shadow: 0 0 20ax var(--glow-soft), inset 0 0 24ax rgba(0, 208, 208, .06);
 }
 
 .section-title {
@@ -158,21 +160,21 @@ body {
 .link-btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; border-radius: 4px; }
 
 /* ── Formulario ─────────────────────────────────────────────────────── */
-.field { margin-bottom: 14px; }
+.field { margin-bottom: 12px; }
 .field label {
   display: block; margin-bottom: 6px;
-  color: var(--muted); font-size: .85rem; letter-spacing: .04em;
+  color: var(--muted); font-size: .82rem; letter-spacing: .04em;
 }
 .field textarea,
 .field input[type="text"] {
   width: 100%;
-  padding: 12px 14px;
+  padding: 10px 12px;
   background: rgba(23, 79, 122, .8);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: .95rem;
+  font-size: .9rem;
   resize: vertical;
   transition: var(--transition-main);
 }
@@ -186,7 +188,7 @@ body {
 
 .selectors {
   display: flex; flex-wrap: wrap; align-items: flex-start;
-  gap: .55rem 1.4rem; margin: 1.1rem 0;
+  gap: .5rem 1.2rem; margin: 1rem 0;
 }
 
 /* ── Píldoras (bloque canónico de SKILL_MAESTRA) ────────────────────── */
@@ -199,14 +201,14 @@ body {
 }
 .model-toggle-group {
   display: inline-flex; flex-wrap: wrap; justify-content: center; max-width: 100%;
-  gap: .35rem; padding: .25rem; border-radius: 999px;
+  gap: .3rem; padding: .22rem; border-radius: 999px;
   background: var(--card-bg); border: 1px solid var(--border-soft);
   box-shadow: 0 0 12px var(--glow-soft);
 }
 .model-toggle {
   flex: 0 0 auto; max-width: 100%;
-  font-family: var(--font-ui); font-size: .9rem; letter-spacing: .04em;
-  padding: .5rem .85rem; border-radius: 999px; border: 1px solid transparent;
+  font-family: var(--font-ui); font-size: .87rem; letter-spacing: .04em;
+  padding: .44rem .78rem; border-radius: 999px; border: 1px solid transparent;
   background: transparent; color: var(--muted); cursor: pointer;
   transition: var(--transition-main); text-transform: uppercase; white-space: nowrap;
 }
@@ -226,7 +228,7 @@ body {
   display: flex; align-items: center; gap: 10px;
   margin: 6px 0 2px; color: var(--muted); font-size: .88rem; cursor: pointer;
 }
-.check input { width: 18px; height: 18px; accent-color: var(--acc); cursor: pointer; }
+.check input { width: 16px; height: 16px; accent-color: var(--acc); cursor: pointer; }
 
 .hint { color: var(--faint); font-size: .78rem; line-height: 1.5; margin: 10px 0 14px; }
 .hint strong { color: var(--muted); font-weight: 400; }
@@ -281,12 +283,12 @@ body {
 
 .btn-primary {
   width: 100%;
-  padding: 14px 24px;
+  padding: 12px 20px;
   border-radius: 12px;
   border: 2px solid var(--acc);
   background: linear-gradient(135deg, rgba(0, 208, 208, .3), rgba(38, 198, 38, .3));
   color: #fff;
-  font-family: var(--font-ui); font-size: 1rem; font-weight: 400;
+  font-family: var(--font-ui); font-size: .96rem; font-weight: 400;
   text-transform: uppercase; letter-spacing: .08em;
   cursor: pointer;
   transition: var(--transition-main);

@@ -211,26 +211,20 @@ function guardarCarpetaEnConfig(ruta) {
  */
 function abrirExploradorDeCarpetas() {
   return new Promise((resolve) => {
-    const actual = String(config.downloadDir || '').replace(/'/g, "''");
-    const ps = [
-      'Add-Type -AssemblyName System.Windows.Forms',
-      '$d = New-Object System.Windows.Forms.FolderBrowserDialog',
-      "$d.Description = 'Elige la carpeta donde guardar las descargas'",
-      `try { $d.SelectedPath = '${actual}' } catch { }`,
-      '$d.ShowNewFolderButton = $true',
-      '$f = New-Object System.Windows.Forms.Form',
-      '$f.TopMost = $true',
-      '$f.ShowInTaskbar = $false',
-      '$f.WindowState = [System.Windows.Forms.FormWindowState]::Minimized',
-      '$f.Show()',
-      '$r = $d.ShowDialog($f)',
-      'if ($r -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($d.SelectedPath) }',
-      '$f.Close()',
-    ].join('; ');
+    // El dialogo moderno (grande, con barra de ruta y redimensionable) lo abre
+    // elegir-carpeta.ps1: el FolderBrowserDialog clasico de PowerShell 5.1 es el
+    // antiguo, pequeno y de tamano fijo.
+    const script = path.join(DIR_SCRIPT, 'elegir-carpeta.ps1');
+    const argumentos = [
+      '-NoProfile', '-STA', '-ExecutionPolicy', 'Bypass', '-File', script,
+      '-Titulo', 'Elige la carpeta donde guardar las descargas',
+      '-Inicial', String(config.downloadDir || ''),
+      '-Boton', 'Elegir esta carpeta',
+    ];
 
     let hijo;
     try {
-      hijo = spawn('powershell.exe', ['-NoProfile', '-STA', '-ExecutionPolicy', 'Bypass', '-Command', ps], { windowsHide: false });
+      hijo = spawn('powershell.exe', argumentos, { windowsHide: true });
     } catch (e) {
       resolve({ ruta: '', error: 'no se pudo abrir el explorador: ' + e.message });
       return;
@@ -254,15 +248,20 @@ function abrirExploradorDeCarpetas() {
       clearTimeout(reloj);
       resolve({ ruta: '', error: 'no se pudo lanzar el explorador: ' + e.message });
     });
-    hijo.on('close', () => {
+
+    hijo.on('close', (codigo) => {
       if (terminado) return;
       terminado = true;
       clearTimeout(reloj);
-      resolve({ ruta: salida.trim().replace(/\r/g, ''), error: '' });
+      const ruta = salida.trim().replace(/\r/g, '');
+      if (!ruta) {
+        resolve({ ruta: '', error: codigo === 2 ? '' : 'el explorador no devolvio ninguna carpeta' });
+        return;
+      }
+      resolve({ ruta, error: '' });
     });
   });
 }
-
 /** Atiende la peticion «elegir carpeta» que llega desde la web. */
 async function pedirCarpetaConDialogo() {
   if (dialogoAbierto) {
