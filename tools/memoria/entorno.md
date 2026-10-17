@@ -23,7 +23,7 @@ Ficha de la máquina y del entorno del agente. Si algo de aquí cambia, se actua
 
 | Herramienta | Ruta / versión |
 |---|---|
-| Node | `C:\Program Files\nodejs\node.exe` · npm global en `%APPDATA%\npm` |
+| Node | `C:\Program Files\nodejs\node.exe` · npm global en `E:\npm` (verificado 2026-10-17) |
 | Python | `C:\Users\atnojs\AppData\Local\Programs\Python\Python312\python.exe` (+ `pythonw.exe`) |
 | ⚠️ PATH | **Empieza por el venv de Hermes** (`...\hermes-agent\venv\Scripts`). Nunca usar ese python para scripts propios |
 | Git | configurado; commits con `-c user.name='atnojs' -c user.email='atnojs@gmail.com'` si hiciera falta |
@@ -63,3 +63,8 @@ Ficha de la máquina y del entorno del agente. Si algo de aquí cambia, se actua
 - Los **globs recursivos** sobre este repo agotan el timeout de 30 s. Usar rutas concretas
   o `Get-ChildItem -Depth`.
 - Las **capturas de pantalla** llegan como adjuntos del usuario; el agente no ve el escritorio.
+- **Navegador headless en DSH**: con el sandbox `workspace-write`, Chrome **no arranca**
+  (`spawn EPERM` con Playwright; `Start-Process: Acceso denegado` con Chrome directo). Hay que
+  reintentar con permiso ampliado. Playwright **1.63** ya está en el venv de Hermes
+  (`...\hermes-agent\venv\Scripts\playwright.exe`) y usa el Chrome 155 instalado con
+  `--channel chrome`; `--device` exige `-b chromium`.
