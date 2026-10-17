@@ -734,3 +734,22 @@ MP4 h264 de verdad, cola en paralelo, y el aviso SOLO si llega por WhatsApp.
 
 De propina, dos fallos del worker cazados y arreglados: el selector de formato MP4 prefería h264
 SIEMPRE (a 1440p bajaba 1080p en vez de convertir) y el `max_parallel` de su config estaba a 1.
+**Verificación de cierre (misma tarde).** Las seis mejoras quedaron comprobadas así:
+
+- **Buscar en YouTube, flujo completo en navegador real:** escribir «me at the zoo» → BUSCAR →
+  10 tarjetas con miniatura → clic en DESCARGAR → trabajo encolado (`Me at the zoo`, 16:35) → bajado.
+  Las miniaturas se piden a i.ytimg.com y cargan (200).
+- **PWA:** el navegador pide `manifest.json`, los iconos 192/512 y **`sw.js` (3 peticiones: registro
+  y actualización)** → service worker registrado, que es el requisito de instalación. Ojo: los
+  iconos renombrados dieron 404 un buen rato porque la CDN había cacheado el 404; acabaron
+  sirviéndose solos (los originales siempre funcionaron y ahora el manifest apunta a esos).
+- **WhatsApp:** con un token FALSO se verificó toda la fontanería: la petición llega a Meta y
+  responde `HTTP 401 Malformed access token (OAuthException 190)`; la app lo traduce («token
+  caducado o incorrecto…») y lo registra en `data/whatsapp.log`. Solo falta el token real.
+- **MP4 h264 en producción:** trabajo real de 1440p → descarga VP9 → conversión con progreso
+  (0,3 %→96,7 %, ~54 s) → `h264 High 2560x1440 + AAC`, 238 MB, verificado con ffmpeg.
+- **Cola en paralelo:** `Trabajos en curso: 2/2` en el log de producción.
+- **Reintentos:** manual y automático (espera 30 s) por API; los errores permanentes no se repiten.
+
+Se limpiaron todos los trabajos de prueba (cola = 7 suyos, historial = 6 suyos) y la carpeta de
+descargas quedó con sus ficheros.
