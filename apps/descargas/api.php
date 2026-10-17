@@ -587,6 +587,32 @@ function reclamarDialogo(): bool {
     return true;
 }
 
+/**
+ * Cierra trabajos que se quedaron en "running" sin dar senales (el worker se
+ * reinicio, se apago el PC, se corto la luz...). Sin esto se quedan colgados
+ * para siempre y el usuario no puede ni cancelarlos.
+ */
+function cerrarTrabajosColgados(array &$queue): int {
+    $cerrados = 0;
+    $limite = time() - 900; // 15 minutos sin progreso
+    foreach ($queue['jobs'] as $i => $job) {
+        if (($job['status'] ?? '') !== 'running') {
+            continue;
+        }
+        $marca = (string)($job['updated_at'] ?? ($job['started_at'] ?? ''));
+        $ts = $marca !== '' ? strtotime($marca) : false;
+        if ($ts === false || $ts > $limite) {
+            continue;
+        }
+        $queue['jobs'][$i]['status'] = 'error';
+        $queue['jobs'][$i]['error'] = 'Se interrumpio (se reinicio el PC o el worker). Vuelve a pedirlo.';
+        $queue['jobs'][$i]['finished_at'] = nowIso();
+        $queue['jobs'][$i]['updated_at'] = nowIso();
+        $cerrados++;
+    }
+    return $cerrados;
+}
+
 /** Carpeta de descarga del PC, tal y como la cuenta el worker. */
 function dirInfo(): array {
     $worker = readJsonFile(WORKER_FILE, []);
@@ -723,6 +749,9 @@ if (in_array($action, $workerActions, true)) {
     }
     $queue = loadQueue();
     cleanupExpired($queue);
+    if (cerrarTrabajosColgados($queue) > 0) {
+        writeJsonFile(QUEUE_FILE, $queue);
+    }
     $body = $action === 'upload_chunk' ? $_POST : readJsonBody();
 
     if ($action === 'heartbeat') {

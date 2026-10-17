@@ -1555,9 +1555,11 @@ async function principal() {
 
       // El boton «elegir carpeta» de la web pide abrir el explorador en el PC.
       // Viaja por aqui (sondeo cada 5 s) para que el dialogo salga enseguida.
+      // OJO: NO se puede hacer `continue` despues. El servidor ya ha marcado el
+      // trabajo como "running" al entregarlo, asi que si se descarta aqui se
+      // queda colgado para siempre (pasaba cuando coincidian las dos cosas).
       if (respuesta && respuesta.abrir_dialogo) {
         pedirCarpetaConDialogo().catch((e) => logAviso(`Fallo el explorador de carpetas: ${e.message}`));
-        continue;
       }
 
       // Antes de pedir trabajo nuevo: atender los «traer a la web» pendientes.
