@@ -40,6 +40,9 @@ const QUEUE_LOCK     = 'data/queue.lock';
 const WORKER_FILE    = 'data/worker.json';
 /** Carpeta de descarga del PC: la actual, la pedida y el error si fallo. */
 const DIR_FILE       = 'data/dir.json';
+const BUSQUEDAS_FILE = 'data/busquedas.json';
+const BUSQUEDAS_LOCK = 'data/busquedas.lock';
+const MAX_RESULTADOS = 12;
 const CLEANUP_STAMP  = 'data/.cleanup';
 const HISTORY_DIR    = 'history_store';
 const HISTORY_FILE   = 'history_store/history.json';
@@ -62,7 +65,9 @@ const MAX_ITEM_BYTES   = 4 * 1024 * 1024 * 1024;
  * queria corto: la idea es bajarlo al movil y que no se acumule.
  */
 const RETENTION_HOURS  = 48;
-const STALE_RUNNING_S  = 900;   // 15 min sin señales => el trabajo se puede reclamar
+const STALE_RUNNING_S  = 900;   // 15 min sin senales => el trabajo se puede reclamar
+const MAX_AUTO_REINTENTOS = 3;  // reintentos automaticos antes de darse por vencido
+const ESPERAS_REINTENTO = [30, 120, 300]; // segundos entre reintentos
 const CLEANUP_EVERY_S  = 300;
 
 const APP_NAME     = 'descargas';
@@ -613,6 +618,59 @@ function cerrarTrabajosColgados(array &$queue): int {
     return $cerrados;
 }
 
+/* ── Buscar en YouTube (lo hace el worker con yt-dlp) ───────────────────── */
+
+/**
+ * La busqueda la ejecuta el PC, no el hosting: yt-dlp ya sabe buscar en YouTube
+ * (`ytsearch10:consulta`) y no hace falta clave de API ni proxy que se lie con
+ * los bloqueos de YouTube a las IPs de hosting compartido.
+ */
+function leerBusquedas(): array {
+    $datos = readJsonFile(BUSQUEDAS_FILE, []);
+    if (!is_array($datos) || !isset($datos['peticiones']) || !is_array($datos['peticiones'])) {
+        return ['peticiones' => []];
+    }
+    // Caducan a los 10 minutos y no se guardan mas de 20.
+    $ahora = time();
+    $datos['peticiones'] = array_values(array_filter($datos['peticiones'], static function (array $p) use ($ahora): bool {
+        return ($ahora - (int)($p['creada'] ?? 0)) < 600;
+    }));
+    if (count($datos['peticiones']) > 20) {
+        $datos['peticiones'] = array_slice($datos['peticiones'], -20);
+    }
+    return $datos;
+}
+
+function guardarBusquedas(array $datos): void {
+    writeJsonFile(BUSQUEDAS_FILE, $datos);
+}
+
+/** El worker pide las busquedas pendientes (y se marcan como en curso). */
+function reclamarBusquedas(): array {
+    $lock = lockFile(BUSQUEDAS_LOCK);
+    if (!flock($lock, LOCK_EX)) {
+        return [];
+    }
+    $datos = leerBusquedas();
+    $pendientes = [];
+    foreach ($datos['peticiones'] as $i => $peticion) {
+        if (($peticion['estado'] ?? '') !== 'pendiente') {
+            continue;
+        }
+        $datos['peticiones'][$i]['estado'] = 'en_curso';
+        $pendientes[] = ['id' => (string)$peticion['id'], 'q' => (string)$peticion['q']];
+        if (count($pendientes) >= 2) {
+            break;
+        }
+    }
+    if ($pendientes) {
+        guardarBusquedas($datos);
+    }
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    return $pendientes;
+}
+
 /** Carpeta de descarga del PC, tal y como la cuenta el worker. */
 function dirInfo(): array {
     $worker = readJsonFile(WORKER_FILE, []);
@@ -737,9 +795,147 @@ if ($method !== 'POST') {
     respond(405, ['success' => false, 'error' => 'Metodo no permitido.']);
 }
 
+/* ── Aviso por WhatsApp (API oficial de Meta) ───────────────────────────── */
+
+/**
+ * Cuando una descarga termina, avisar al movil por WhatsApp.
+ *
+ * Se usa la Cloud API oficial de Meta (graph.facebook.com). El numero de prueba
+ * gratuito sirve para mandarte mensajes a ti mismo; el texto libre solo llega
+ * dentro de las 24 h siguientes a un mensaje tuyo al bot, asi que para que llegue
+ * siempre hay que crear una plantilla ("utility") con una variable y poner su
+ * nombre aqui. Los pasos estan en tools/descargador/whatsapp-LEEME.md.
+ *
+ * La configuracion vive en data/whatsapp.json (en el servidor, fuera de git).
+ */
+function configWhatsapp(): array {
+    $ruta = __DIR__ . '/data/whatsapp.json';
+    if (!is_file($ruta)) {
+        return [];
+    }
+    $datos = json_decode((string)@file_get_contents($ruta), true);
+    return is_array($datos) ? $datos : [];
+}
+
+function registrarLogWhatsapp(string $linea): void {
+    $ruta = __DIR__ . '/data/whatsapp.log';
+    @file_put_contents($ruta, '[' . nowIso() . '] ' . substr($linea, 0, 600) . "\n", FILE_APPEND | LOCK_EX);
+    if (@filesize($ruta) > 131072) {
+        @file_put_contents($ruta, '');
+    }
+}
+
+/** Manda un WhatsApp al numero configurado. Devuelve ['ok'=>bool,'error'=>texto]. */
+function enviarWhatsapp(string $texto): array {
+    $cfg = configWhatsapp();
+    if (empty($cfg['activo'])) {
+        return ['ok' => false, 'error' => 'Los avisos por WhatsApp estan desactivados.'];
+    }
+    if (empty($cfg['token']) || empty($cfg['phone_number_id']) || empty($cfg['destinatario'])) {
+        return ['ok' => false, 'error' => 'Falta el token, el phone_number_id o tu numero.'];
+    }
+    if (!function_exists('curl_init')) {
+        return ['ok' => false, 'error' => 'Este PHP no tiene cURL.'];
+    }
+
+    $destino = preg_replace('/[^0-9]/', '', (string)$cfg['destinatario']);
+    $texto = substr($texto, 0, 900);
+    if (!empty($cfg['plantilla'])) {
+        $cuerpo = [
+            'messaging_product' => 'whatsapp',
+            'to'                => $destino,
+            'type'              => 'template',
+            'template'          => [
+                'name'       => (string)$cfg['plantilla'],
+                'language'   => ['code' => (string)($cfg['idioma_plantilla'] ?? 'es')],
+                'components' => [[
+                    'type'       => 'body',
+                    'parameters' => [['type' => 'text', 'text' => $texto]],
+                ]],
+            ],
+        ];
+    } else {
+        $cuerpo = [
+            'messaging_product' => 'whatsapp',
+            'recipient_type'    => 'individual',
+            'to'                => $destino,
+            'type'              => 'text',
+            'text'              => ['body' => $texto],
+        ];
+    }
+
+    $url = 'https://graph.facebook.com/v23.0/' . rawurlencode((string)$cfg['phone_number_id']) . '/messages';
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 8,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_POSTFIELDS     => json_encode($cuerpo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_HTTPHEADER     => [
+            'Authorization: Bearer ' . (string)$cfg['token'],
+            'Content-Type: application/json',
+        ],
+    ]);
+    $respuesta = (string)curl_exec($ch);
+    $codigo = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $errorCurl = curl_error($ch);
+    curl_close($ch);
+
+    if ($errorCurl !== '') {
+        registrarLogWhatsapp('cURL: ' . $errorCurl);
+        return ['ok' => false, 'error' => 'No se pudo conectar con Meta: ' . $errorCurl];
+    }
+    if ($codigo >= 200 && $codigo < 300) {
+        registrarLogWhatsapp('OK ' . $codigo . ' ' . substr($respuesta, 0, 200));
+        return ['ok' => true, 'error' => ''];
+    }
+    $detalle = substr($respuesta, 0, 400);
+    registrarLogWhatsapp('HTTP ' . $codigo . ' ' . $detalle);
+    $pista = '';
+    if (strpos($respuesta, '131047') !== false) {
+        $pista = ' (ha pasado mas de 24 h desde tu ultimo mensaje al bot: hace falta una plantilla aprobada; lee whatsapp-LEEME.md)';
+    } elseif ($codigo === 401) {
+        $pista = ' (token caducado o incorrecto: genera uno permanente con un System User)';
+    }
+    return ['ok' => false, 'error' => 'Meta respondio HTTP ' . $codigo . $pista . ' ' . $detalle];
+}
+
+/** Aviso al terminar un trabajo (solo si esta activado). Nunca rompe la cola. */
+function avisarTrabajoTerminado(array $job): void {
+    try {
+        $cfg = configWhatsapp();
+        if (empty($cfg['activo'])) {
+            return;
+        }
+        $estado = (string)($job['status'] ?? '');
+        if ($estado === 'done' && empty($cfg['avisar_fin'])) {
+            return;
+        }
+        if ($estado !== 'done' && empty($cfg['avisar_errores'])) {
+            return;
+        }
+        $titulo = (string)($job['title'] ?? '');
+        if ($titulo === '') {
+            $titulo = (string)($job['url'] ?? 'Descarga');
+        }
+        $titulo = recortarUtf8($titulo, 120);
+        if ($estado === 'done') {
+            $eraLocal = empty($job['subir']);
+            $texto = $eraLocal
+                ? 'Descarga lista en el PC: ' . $titulo
+                : 'Descarga lista: ' . $titulo . ' — ya puedes bajarla desde la web';
+        } else {
+            $texto = 'No se pudo bajar: ' . $titulo . '. ' . recortarUtf8((string)($job['error'] ?? ''), 200);
+        }
+        enviarWhatsapp($texto);
+    } catch (Throwable $e) {
+        registrarLogWhatsapp('Excepcion: ' . $e->getMessage());
+    }
+}
 /* ── Acciones del worker (multipart o JSON) ─────────────────────────────── */
 
-$workerActions = ['next', 'progress', 'upload_chunk', 'item_done', 'item_local', 'finish', 'fail', 'heartbeat', 'dir_applied'];
+$workerActions = ['next', 'progress', 'upload_chunk', 'search_results', 'item_done', 'item_local', 'finish', 'fail', 'heartbeat', 'dir_applied'];
 if (in_array($action, $workerActions, true)) {
     requireWorker();
     $lock = lockFile(QUEUE_LOCK);
@@ -789,6 +985,45 @@ if (in_array($action, $workerActions, true)) {
         respond(200, $respuesta);
     }
 
+    if ($action === 'search_results') {
+        $idBusqueda = cleanId((string)($body['id'] ?? ''));
+        $resultados = [];
+        foreach ((array)($body['resultados'] ?? []) as $r) {
+            if (!is_array($r)) {
+                continue;
+            }
+            $resultados[] = [
+                'id'        => substr((string)($r['id'] ?? ''), 0, 24),
+                'title'     => substr((string)($r['title'] ?? ''), 0, 200),
+                'url'       => substr((string)($r['url'] ?? ''), 0, 300),
+                'duration'  => (int)($r['duration'] ?? 0),
+                'channel'   => substr((string)($r['channel'] ?? ''), 0, 120),
+                'thumbnail' => substr((string)($r['thumbnail'] ?? ''), 0, 400),
+            ];
+            if (count($resultados) >= MAX_RESULTADOS) {
+                break;
+            }
+        }
+        $lockB = lockFile(BUSQUEDAS_LOCK);
+        if (flock($lockB, LOCK_EX)) {
+            $datos = leerBusquedas();
+            foreach ($datos['peticiones'] as $i => $peticion) {
+                if ((string)($peticion['id'] ?? '') !== $idBusqueda) {
+                    continue;
+                }
+                $datos['peticiones'][$i]['estado'] = 'lista';
+                $datos['peticiones'][$i]['resultados'] = $resultados;
+                $datos['peticiones'][$i]['error'] = substr((string)($body['error'] ?? ''), 0, 300);
+            }
+            guardarBusquedas($datos);
+            flock($lockB, LOCK_UN);
+        }
+        fclose($lockB);
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(200, ['success' => true]);
+    }
+
     if ($action === 'dir_applied') {
         $estadoDir = readJsonFile(DIR_FILE, []);
         if (!empty($body['ok'])) {
@@ -830,6 +1065,11 @@ if (in_array($action, $workerActions, true)) {
                 }
             }
             if ($claimable && empty($job['cancel_requested'])) {
+                // Reintento automatico: hasta que no pase la espera no se vuelve a coger.
+                $reintentoEn = (int)strtotime((string)($job['retry_at'] ?? ''));
+                if ($reintentoEn > $now) {
+                    continue;
+                }
                 $chosen = $index;
                 break;
             }
@@ -841,13 +1081,14 @@ if (in_array($action, $workerActions, true)) {
             $subidas = subidasPendientes($queue);
             flock($lock, LOCK_UN);
             fclose($lock);
-            respond(200, ['success' => true, 'job' => null, 'subidas' => $subidas, 'abrir_dialogo' => reclamarDialogo()]);
+            respond(200, ['success' => true, 'job' => null, 'subidas' => $subidas, 'abrir_dialogo' => reclamarDialogo(), 'busquedas' => reclamarBusquedas()]);
         }
         $queue['jobs'][$chosen]['status'] = 'running';
         $queue['jobs'][$chosen]['claimed_at'] = nowIso();
         $queue['jobs'][$chosen]['started_at'] = (string)($queue['jobs'][$chosen]['started_at'] ?? '') ?: nowIso();
         $queue['jobs'][$chosen]['updated_at'] = nowIso();
         $queue['jobs'][$chosen]['attempts'] = (int)($queue['jobs'][$chosen]['attempts'] ?? 0) + 1;
+        unset($queue['jobs'][$chosen]['retry_at']);
         $job = $queue['jobs'][$chosen];
         writeJsonFile(QUEUE_FILE, $queue);
         flock($lock, LOCK_UN);
@@ -870,6 +1111,7 @@ if (in_array($action, $workerActions, true)) {
             'subidas' => subidasPendientes($queue),
             // Y si toca abrir el explorador de carpetas, que salga ya (sondeo 5 s).
             'abrir_dialogo' => reclamarDialogo(),
+            'busquedas' => reclamarBusquedas(),
         ]);
     }
 
@@ -1140,14 +1382,36 @@ if (in_array($action, $workerActions, true)) {
         $queue['jobs'][$index]['updated_at'] = nowIso();
         $queue['jobs'][$index]['log_tail'] = substr((string)($body['log_tail'] ?? ''), -2000);
         writeJsonFile(QUEUE_FILE, $queue);
+        $trabajoTerminado = $queue['jobs'][$index];
         flock($lock, LOCK_UN);
         fclose($lock);
+        avisarTrabajoTerminado($trabajoTerminado);
         respond(200, ['success' => true]);
     }
 
     if ($action === 'fail') {
+        $mensaje = substr((string)($body['error'] ?? 'Error desconocido.'), 0, 500);
+        $intentos = (int)($queue['jobs'][$index]['attempts'] ?? 0);
+        $temporal = !empty($body['reintentar']) && !$cancelRequested;
+        if ($temporal && $intentos < MAX_AUTO_REINTENTOS) {
+            // Reintento automatico con espera creciente: un 403 puntual o un corte
+            // de red se arreglan solos en medio minuto sin que el usuario haga nada.
+            $espera = ESPERAS_REINTENTO[min(max($intentos - 1, 0), count(ESPERAS_REINTENTO) - 1)];
+            $queue['jobs'][$index]['status'] = 'queued';
+            $queue['jobs'][$index]['error'] = $mensaje;
+            $queue['jobs'][$index]['stage'] = 'reintentando';
+            $queue['jobs'][$index]['retry_at'] = date('c', time() + (int)$espera);
+            $queue['jobs'][$index]['finished_at'] = '';
+            $queue['jobs'][$index]['updated_at'] = nowIso();
+            $queue['jobs'][$index]['log_tail'] = substr((string)($body['log_tail'] ?? ''), -2000);
+            writeJsonFile(QUEUE_FILE, $queue);
+            removeJobFiles($jobId);
+            flock($lock, LOCK_UN);
+            fclose($lock);
+            respond(200, ['success' => true, 'reintento' => $intentos + 1, 'espera' => $espera]);
+        }
         $queue['jobs'][$index]['status'] = $cancelRequested ? 'cancelled' : 'error';
-        $queue['jobs'][$index]['error'] = substr((string)($body['error'] ?? 'Error desconocido.'), 0, 500);
+        $queue['jobs'][$index]['error'] = $mensaje;
         $queue['jobs'][$index]['stage'] = '';
         $queue['jobs'][$index]['finished_at'] = nowIso();
         $queue['jobs'][$index]['updated_at'] = nowIso();
@@ -1321,6 +1585,157 @@ $jobId = cleanId((string)($body['job_id'] ?? $_GET['job_id'] ?? ''));
  * el usuario escoja la carpeta con el raton. El navegador no puede dar una ruta
  * real del PC, asi que el dialogo lo abre el worker.
  */
+/**
+ * Reintentar un trabajo que fallo o se cancelo. No hay que volver a pegar el
+ * enlace: la URL, la calidad y el formato ya estan guardados en el propio trabajo.
+ */
+/**
+ * Buscar en YouTube. La peticion se deja en una cola aparte y la resuelve el PC
+ * con yt-dlp; el navegador pregunta hasta que hay resultados.
+ */
+if ($action === 'search') {
+    $consulta = trim((string)($body['q'] ?? ''));
+    if ($consulta === '' || strlen($consulta) > 120) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(400, ['success' => false, 'error' => 'Escribe que quieres buscar.']);
+    }
+    $idBusqueda = 'b_' . bin2hex(random_bytes(6));
+    $lockB = lockFile(BUSQUEDAS_LOCK);
+    if (flock($lockB, LOCK_EX)) {
+        $datos = leerBusquedas();
+        $datos['peticiones'][] = [
+            'id'     => $idBusqueda,
+            'q'      => $consulta,
+            'estado' => 'pendiente',
+            'creada' => time(),
+        ];
+        guardarBusquedas($datos);
+        flock($lockB, LOCK_UN);
+    }
+    fclose($lockB);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'id' => $idBusqueda]);
+}
+
+if ($action === 'search_status') {
+    $idBusqueda = cleanId((string)($body['id'] ?? ''));
+    $lockB = lockFile(BUSQUEDAS_LOCK);
+    $peticion = null;
+    if (flock($lockB, LOCK_SH)) {
+        $datos = leerBusquedas();
+        foreach ($datos['peticiones'] as $p) {
+            if ((string)($p['id'] ?? '') === $idBusqueda) {
+                $peticion = $p;
+                break;
+            }
+        }
+        flock($lockB, LOCK_UN);
+    }
+    fclose($lockB);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    if ($peticion === null) {
+        respond(404, ['success' => false, 'error' => 'Busqueda no encontrada o caducada.']);
+    }
+    respond(200, [
+        'success'    => true,
+        'estado'     => (string)($peticion['estado'] ?? 'pendiente'),
+        'resultados' => is_array($peticion['resultados'] ?? null) ? $peticion['resultados'] : [],
+        'error'      => (string)($peticion['error'] ?? ''),
+    ]);
+}
+
+/* ── Avisos por WhatsApp: estado, configuracion y prueba ─────────────────── */
+
+if ($action === 'whatsapp_estado') {
+    $cfg = configWhatsapp();
+    $log = '';
+    $rutaLog = __DIR__ . '/data/whatsapp.log';
+    if (is_file($rutaLog)) {
+        $log = (string)@file_get_contents($rutaLog);
+        $log = implode("\n", array_slice(explode("\n", $log), -8));
+    }
+    $token = (string)($cfg['token'] ?? '');
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, [
+        'success'          => true,
+        'activo'           => !empty($cfg['activo']),
+        'phone_number_id'  => (string)($cfg['phone_number_id'] ?? ''),
+        'destinatario'     => (string)($cfg['destinatario'] ?? ''),
+        'plantilla'        => (string)($cfg['plantilla'] ?? ''),
+        'idioma_plantilla' => (string)($cfg['idioma_plantilla'] ?? 'es'),
+        'avisar_fin'       => !isset($cfg['avisar_fin']) || !empty($cfg['avisar_fin']),
+        'avisar_errores'   => !empty($cfg['avisar_errores']),
+        // El token no se devuelve nunca: solo si hay uno guardado.
+        'token_guardado'   => $token !== '',
+        'token_pista'      => $token !== '' ? substr($token, 0, 6) . '…' . substr($token, -4) : '',
+        'ultimo_log'       => trim($log),
+    ]);
+}
+
+if ($action === 'whatsapp_config') {
+    $cfg = configWhatsapp();
+    $tokenNuevo = trim((string)($body['token'] ?? ''));
+    if ($tokenNuevo !== '') {
+        $cfg['token'] = $tokenNuevo;
+    }
+    $cfg['phone_number_id']  = substr(trim((string)($body['phone_number_id'] ?? '')), 0, 60);
+    $cfg['destinatario']     = substr(trim((string)($body['destinatario'] ?? '')), 0, 25);
+    $cfg['plantilla']        = substr(trim((string)($body['plantilla'] ?? '')), 0, 60);
+    $cfg['idioma_plantilla'] = substr(trim((string)($body['idioma_plantilla'] ?? 'es')), 0, 10) ?: 'es';
+    $cfg['activo']           = !empty($body['activo']);
+    $cfg['avisar_fin']       = !empty($body['avisar_fin']);
+    $cfg['avisar_errores']   = !empty($body['avisar_errores']);
+    $cfg['actualizado']      = nowIso();
+    writeJsonFile('data/whatsapp.json', $cfg);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true]);
+}
+
+if ($action === 'whatsapp_test') {
+    $resultado = enviarWhatsapp('Prueba de avisos de la app de descargas ✅');
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => $resultado['ok'], 'error' => $resultado['error']]);
+}
+
+if ($action === 'retry') {
+    $jobId = cleanId((string)($body['job_id'] ?? ''));
+    $index = $jobId !== '' ? findJob($queue, $jobId) : null;
+    if ($index === null) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(404, ['success' => false, 'error' => 'Trabajo no encontrado.']);
+    }
+    $estado = (string)($queue['jobs'][$index]['status'] ?? '');
+    if (!in_array($estado, ['error', 'cancelled'], true)) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(409, ['success' => false, 'error' => 'Ese trabajo no ha fallado; no hay que reintentarlo.']);
+    }
+    $queue['jobs'][$index]['status'] = 'queued';
+    $queue['jobs'][$index]['error'] = '';
+    $queue['jobs'][$index]['stage'] = 'en cola';
+    $queue['jobs'][$index]['percent'] = 0;
+    $queue['jobs'][$index]['speed'] = '';
+    $queue['jobs'][$index]['eta'] = '';
+    $queue['jobs'][$index]['attempts'] = 0;       // cuenta nueva
+    $queue['jobs'][$index]['retry_at'] = '';
+    $queue['jobs'][$index]['cancel_requested'] = false;
+    $queue['jobs'][$index]['started_at'] = '';
+    $queue['jobs'][$index]['claimed_at'] = '';
+    $queue['jobs'][$index]['finished_at'] = '';
+    $queue['jobs'][$index]['updated_at'] = nowIso();
+    writeJsonFile(QUEUE_FILE, $queue);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'reintentado' => $jobId]);
+}
+
 if ($action === 'elegir_carpeta') {
     $estadoDir = readJsonFile(DIR_FILE, []);
     $estadoDir['dialog_pending'] = true;
@@ -1419,7 +1834,7 @@ fclose($lock);
 respond(400, [
     'success' => false,
     'error'   => 'Accion no valida.',
-    'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download', 'set_dir', 'subir_item', 'elegir_carpeta',
-                       'next', 'progress', 'upload_chunk', 'item_done', 'item_local', 'finish', 'fail',
+    'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download', 'set_dir', 'subir_item', 'elegir_carpeta', 'retry', 'search', 'search_status', 'whatsapp_estado', 'whatsapp_config', 'whatsapp_test',
+                       'next', 'progress', 'upload_chunk', 'search_results', 'item_done', 'item_local', 'finish', 'fail',
                        'heartbeat', 'dir_applied'],
 ]);

@@ -10,7 +10,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23001018'/%3E%3Cpath d='M16 6v14M10 15l6 6 6-6M8 26h16' stroke='%2300D0D0' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="app.20261017h.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00D0D0">
+<link rel="apple-touch-icon" href="icono-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Descargas">
+<link rel="stylesheet" href="app.20261017i.css">
 </head>
 <body>
 
@@ -64,7 +70,13 @@
         <h2 id="form-title" class="section-title">Nueva descarga</h2>
 
         <div class="field">
-          <label for="url">Enlace (uno por línea si quieres varios)</label>
+          <label for="url">          <div class="yt-search">
+            <label class="sr-only" for="yt-q">Buscar en YouTube</label>
+            <input type="search" id="yt-q" placeholder="Buscar en YouTube…" autocomplete="off" spellcheck="false">
+            <button type="button" id="yt-search" class="btn-sm">Buscar</button>
+          </div>
+          <div id="yt-results" class="yt-results" hidden></div>
+Enlace (uno por línea si quieres varios)</label>
           <textarea id="url" rows="3" placeholder="https://www.youtube.com/watch?v=..." spellcheck="false" aria-required="true"></textarea>
         </div>
 
@@ -127,7 +139,39 @@
       </section>
 
       <!-- ── Carpeta en el PC ── -->
-      <section class="panel" aria-labelledby="dir-title">
+            <!-- ── Avisos por WhatsApp ── -->
+      <section class="panel" aria-labelledby="wa-title">
+        <details class="wa-detalle">
+          <summary id="wa-title" class="section-title">Avisos por WhatsApp</summary>
+          <p class="hint">
+            Cuando termina una descarga te llega un WhatsApp. Se configura una sola vez;
+            los pasos están en <code>tools/descargador/whatsapp-LEEME.md</code>.
+          </p>
+          <div class="wa-grid">
+            <label class="wa-campo">Phone number ID
+              <input type="text" id="wa-phone" placeholder="123456789012345" autocomplete="off" spellcheck="false">
+            </label>
+            <label class="wa-campo">Token de Meta
+              <input type="password" id="wa-token" placeholder="si lo dejas vacío no se cambia" autocomplete="off">
+            </label>
+            <label class="wa-campo">Tu número (con prefijo)
+              <input type="text" id="wa-destino" placeholder="34600111222" autocomplete="off" inputmode="tel">
+            </label>
+            <label class="wa-campo">Plantilla (opcional)
+              <input type="text" id="wa-plantilla" placeholder="descarga_lista" autocomplete="off" spellcheck="false">
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" id="wa-activo"><span>Avisos activados</span></label>
+          <label class="check"><input type="checkbox" id="wa-fin" checked><span>Avisar cuando termina bien</span></label>
+          <label class="check"><input type="checkbox" id="wa-errores"><span>Avisar también de los errores</span></label>
+          <div class="wa-acciones">
+            <button type="button" id="wa-guardar" class="btn-sm">Guardar</button>
+            <button type="button" id="wa-probar" class="btn-sm">Probar</button>
+            <span id="wa-estado" class="hint" role="status"></span>
+          </div>
+        </details>
+      </section>
+<section class="panel" aria-labelledby="dir-title">
         <h2 id="dir-title" class="section-title">Carpeta en el PC</h2>
         <p class="dir-actual">Se guardan en: <code id="dir-actual">—</code></p>
         <button type="button" id="dir-btn" class="btn-primary dir-btn">
@@ -177,6 +221,6 @@
 </div>
 
 <script src="history-manager.js"></script>
-<script src="app.20261017h.js"></script>
+<script src="app.20261017i.js"></script>
 </body>
 </html>

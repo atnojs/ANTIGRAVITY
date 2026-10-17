@@ -618,3 +618,74 @@ button.donde-estoy:focus-visible { outline: 2px solid var(--acc); outline-offset
 /* Boton unico para elegir carpeta: ancho completo, comodo en movil */
 .dir-btn { width: 100%; justify-content: center; }
 #dir-btn[disabled] { opacity: .65; cursor: progress; }
+/* ── Buscar en YouTube ──────────────────────────────────────────────── */
+.yt-search { display: flex; gap: 8px; margin: 0 0 12px; }
+.yt-search input[type="search"] {
+  flex: 1 1 auto; min-width: 0;
+  padding: 10px 12px;
+  background: rgba(23, 79, 122, .8);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  color: var(--text); font-family: var(--font-ui); font-size: .9rem;
+  transition: var(--transition-main);
+}
+.yt-search input[type="search"]:focus {
+  outline: none; border-color: var(--acc); box-shadow: 0 0 15px rgba(0, 208, 208, .3);
+}
+.yt-search .btn-sm { flex: 0 0 auto; padding: 10px 16px; }
+.yt-results {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px; margin: 0 0 14px;
+}
+.yt-card {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px; border-radius: var(--radius-sm);
+  background: rgba(6, 16, 24, .45); border: 1px solid var(--border-soft);
+}
+.yt-card img {
+  width: 96px; height: 54px; object-fit: cover; flex: 0 0 auto;
+  border-radius: 6px; background: rgba(0, 208, 208, .08);
+}
+.yt-card .yt-info { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 4px; }
+.yt-card .yt-title {
+  font-size: .82rem; line-height: 1.35; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.yt-card .yt-meta { font-size: .72rem; color: var(--faint); }
+.yt-card .btn-sm { align-self: flex-start; padding: 6px 10px; font-size: .72rem; }
+.yt-vacio { color: var(--faint); font-size: .82rem; margin: 0 0 12px; }
+@media (max-width: 480px) {
+  .yt-results { grid-template-columns: 1fr; }
+  .yt-search { flex-wrap: wrap; }
+  .yt-search .btn-sm { width: 100%; }
+}
+/* Aviso flotante (enlace compartido, etc.) */
+.aviso-flotante {
+  position: fixed; left: 50%; bottom: 18px; transform: translate(-50%, 140%);
+  max-width: min(92vw, 640px);
+  padding: 10px 16px; border-radius: 999px;
+  background: rgba(6, 16, 24, .96); border: 1px solid var(--acc);
+  color: var(--text); font-size: .85rem; line-height: 1.35;
+  box-shadow: 0 0 22px var(--glow-soft);
+  transition: transform .28s ease, opacity .28s ease;
+  opacity: 0; pointer-events: none; z-index: 60;
+  overflow-wrap: anywhere;
+}
+.aviso-flotante.visible { transform: translate(-50%, 0); opacity: 1; }
+.aviso-flotante.error { border-color: #ff6b6b; }
+/* ── Avisos por WhatsApp ────────────────────────────────────────────── */
+.wa-detalle summary { cursor: pointer; list-style: none; }
+.wa-detalle summary::-webkit-details-marker { display: none; }
+.wa-detalle summary::after { content: '▾'; margin-left: auto; color: var(--acc); }
+.wa-detalle[open] summary::after { content: '▴'; }
+.wa-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 10px 0; }
+.wa-campo { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; color: var(--muted); }
+.wa-campo input {
+  padding: 8px 10px; background: rgba(23, 79, 122, .8);
+  border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
+  color: var(--text); font-family: var(--font-ui); font-size: .85rem;
+}
+.wa-campo input:focus { outline: none; border-color: var(--acc); box-shadow: 0 0 12px rgba(0, 208, 208, .3); }
+.wa-acciones { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.wa-acciones .btn-sm { padding: 8px 14px; }
+.wa-acciones #wa-estado { margin: 0; }

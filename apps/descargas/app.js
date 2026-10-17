@@ -31,6 +31,7 @@ const state = {
   playlist: false,
   subirWeb: false,
   enCasa: false,
+  compartido: '',
   enCasaIp: false,
   carpetaPc: '',
   jobs: [],
@@ -263,6 +264,125 @@ function alternarDondeEstoy() {
   pintarDondeEstoy();
 }
 
+
+/* ── Aviso flotante (para cosas puntuales: enlace compartido, subidas...) ── */
+
+let temporizadorAviso = null;
+
+function mostrarAviso(mensaje, tipo) {
+  let capa = document.getElementById('aviso-flotante');
+  if (!capa) {
+    capa = document.createElement('div');
+    capa.id = 'aviso-flotante';
+    capa.setAttribute('role', 'status');
+    document.body.appendChild(capa);
+  }
+  capa.textContent = mensaje;
+  capa.className = 'aviso-flotante visible' + (tipo === 'error' ? ' error' : '');
+  if (temporizadorAviso) clearTimeout(temporizadorAviso);
+  temporizadorAviso = setTimeout(() => { capa.className = 'aviso-flotante'; }, 6000);
+}
+
+/* ── Avisos por WhatsApp: configurar y probar ───────────────────────── */
+
+async function cargarWhatsapp() {
+  try {
+    const r = await postJson(API + '?action=whatsapp_estado', {});
+    if (!r.ok) return;
+    const d = r.data;
+    if ($('wa-phone')) $('wa-phone').value = d.phone_number_id || '';
+    if ($('wa-destino')) $('wa-destino').value = d.destinatario || '';
+    if ($('wa-plantilla')) $('wa-plantilla').value = d.plantilla || '';
+    if ($('wa-activo')) $('wa-activo').checked = d.activo === true;
+    if ($('wa-fin')) $('wa-fin').checked = d.avisar_fin === true;
+    if ($('wa-errores')) $('wa-errores').checked = d.avisar_errores === true;
+    if ($('wa-token')) $('wa-token').placeholder = d.token_guardado ? ('guardado (' + d.token_pista + ')') : 'pega aquí el token';
+    const estado = $('wa-estado');
+    if (estado) {
+      estado.textContent = d.activo ? 'Activado' : 'Desactivado';
+      estado.className = 'hint ' + (d.activo ? 'dir-ok' : '');
+      if (d.ultimo_log) estado.title = d.ultimo_log;
+    }
+  } catch (e) { /* si falla, el panel se queda como esta */ }
+}
+
+async function guardarWhatsapp() {
+  const estado = $('wa-estado');
+  try {
+    const r = await postJson(API + '?action=whatsapp_config', {
+      phone_number_id: $('wa-phone') ? $('wa-phone').value : '',
+      token: $('wa-token') ? $('wa-token').value : '',
+      destinatario: $('wa-destino') ? $('wa-destino').value : '',
+      plantilla: $('wa-plantilla') ? $('wa-plantilla').value : '',
+      activo: $('wa-activo') ? $('wa-activo').checked : false,
+      avisar_fin: $('wa-fin') ? $('wa-fin').checked : true,
+      avisar_errores: $('wa-errores') ? $('wa-errores').checked : false,
+    });
+    if (estado) {
+      estado.textContent = r.ok ? 'Guardado' : (r.data.error || 'No se pudo guardar');
+      estado.className = 'hint ' + (r.ok ? 'dir-ok' : 'dir-mal');
+    }
+    if ($('wa-token')) $('wa-token').value = '';
+    await cargarWhatsapp();
+  } catch (e) {
+    if (estado) { estado.textContent = 'No hay conexión con el servidor.'; estado.className = 'hint dir-mal'; }
+  }
+}
+
+async function probarWhatsapp() {
+  const estado = $('wa-estado');
+  if (estado) { estado.textContent = 'Enviando prueba…'; estado.className = 'hint'; }
+  try {
+    const r = await postJson(API + '?action=whatsapp_test', {});
+    if (estado) {
+      estado.textContent = r.ok ? 'Prueba enviada: mira el móvil' : ('No se pudo: ' + (r.data.error || 'error desconocido'));
+      estado.className = 'hint ' + (r.ok ? 'dir-ok' : 'dir-mal');
+      if (r.data.error) estado.title = r.data.error;
+    }
+  } catch (e) {
+    if (estado) { estado.textContent = 'No hay conexión con el servidor.'; estado.className = 'hint dir-mal'; }
+  }
+}
+/* ── PWA: instalable y «Compartir enlace» del móvil ──────────────────── */
+
+/**
+ * El boton "Compartir" del movil llega a compartir.php y este redirige aqui con
+ * ?compartido=<enlace>. Se guarda para encolarlo en cuanto la app este lista.
+ */
+function leerCompartido() {
+  try {
+    const params = new URLSearchParams(location.search);
+    const enlace = params.get('compartido');
+    if (enlace && /^https?:\/\//i.test(enlace)) {
+      state.compartido = enlace;
+    }
+    if (enlace) {
+      // Se limpia la barra para que al recargar no se vuelva a encolar.
+      history.replaceState(null, '', location.pathname + location.hash);
+    }
+  } catch (e) { /* sin URLSearchParams no pasa nada */ }
+}
+
+function registrarServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  const seguro = location.protocol === 'https:' || location.hostname === '127.0.0.1' || location.hostname === 'localhost';
+  if (!seguro) return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* la app funciona igual sin PWA */ });
+  });
+}
+
+/** Si venía un enlace compartido, se encola solo con los ajustes actuales. */
+function procesarCompartido() {
+  if (!state.compartido) return;
+  const enlace = state.compartido;
+  state.compartido = '';
+  const campo = $('url');
+  if (!campo) return;
+  campo.value = enlace;
+  mostrarAviso('Enlace compartido: ' + enlace);
+  setTimeout(() => { addDownloads(); }, 400);
+}
 /* ── Arranque de la app ─────────────────────────────────────────────── */
 
 async function enterApp() {
@@ -285,6 +405,8 @@ async function enterApp() {
   state.enCasaSonda = await detectarPcLocal();
   state.enCasa = decidirEnCasa();
   pintarDondeEstoy();
+  procesarCompartido();
+  cargarWhatsapp();
   if (listTimer) clearInterval(listTimer);
   if (healthTimer) clearInterval(healthTimer);
   listTimer = setInterval(refreshQueue, 4000);
@@ -361,6 +483,7 @@ function renderQueue() {
   list.innerHTML = jobs.map((job) => {
     const status = String(job.status || 'queued');
     const labels = { queued: 'En cola', running: 'Descargando', done: 'Listo', error: 'Error', cancelled: 'Cancelado' };
+    if (status === 'queued' && job.retry_at) { labels.queued = 'Reintentando'; }
     const percent = Math.max(0, Math.min(100, Number(job.percent) || 0));
     const indeterminate = status === 'running' && percent <= 0;
     const title = job.title || job.url || 'Descarga';
@@ -400,10 +523,20 @@ function renderQueue() {
       </a>`;
     }).join('');
 
+    // Reintento automatico: mientras dura la espera se dice cuanto falta.
+    if (job.retry_at && status === 'queued') {
+      const faltan = Math.round((new Date(job.retry_at).getTime() - Date.now()) / 1000);
+      if (faltan > 0) meta.push(`reintento automatico en ${faltan} s`);
+      else meta.push('reintentando…');
+    }
+
     const actions = [];
     if (status === 'queued' || status === 'running') {
       actions.push(`<button type="button" class="btn-sm" data-act="cancel" data-id="${esc(job.id)}">Cancelar</button>`);
     } else {
+      if (status === 'error' || status === 'cancelled') {
+        actions.push(`<button type="button" class="btn-sm" data-act="retry" data-id="${esc(job.id)}">Reintentar</button>`);
+      }
       actions.push(`<button type="button" class="btn-sm danger" data-act="delete" data-id="${esc(job.id)}">Borrar</button>`);
     }
 
@@ -426,6 +559,95 @@ function renderQueue() {
   }).join('');
 }
 
+/* ── Buscar en YouTube ──────────────────────────────────────────────── */
+
+function pintarResultados(resultados, error) {
+  const caja = $('yt-results');
+  if (!caja) return;
+  if (error) {
+    caja.hidden = false;
+    caja.innerHTML = '<p class="yt-vacio">' + esc(error) + '</p>';
+    return;
+  }
+  if (!resultados || !resultados.length) {
+    caja.hidden = false;
+    caja.innerHTML = '<p class="yt-vacio">Sin resultados.</p>';
+    return;
+  }
+  caja.hidden = false;
+  caja.innerHTML = resultados.map((r) => {
+    const total = Number(r.duration) || 0;
+    const duracion = total > 0 ? Math.floor(total / 60) + ':' + String(total % 60).padStart(2, '0') : '';
+    const miniatura = r.thumbnail
+      ? '<img src="' + esc(r.thumbnail) + '" alt="" loading="lazy" width="96" height="54">'
+      : '<span class="yt-thumb"></span>';
+    const meta = [esc(r.channel || ''), duracion].filter(Boolean).join(' · ');
+    return '<article class="yt-card">' + miniatura +
+      '<div class="yt-info">' +
+        '<span class="yt-title">' + esc(r.title || '') + '</span>' +
+        '<span class="yt-meta">' + meta + '</span>' +
+        '<button type="button" class="btn-sm" data-act="bajar" data-url="' + esc(r.url || '') + '">DESCARGAR</button>' +
+      '</div></article>';
+  }).join('');
+}
+
+async function buscarEnYoutube() {
+  const entrada = $('yt-q');
+  const boton = $('yt-search');
+  const consulta = (entrada && entrada.value ? entrada.value : '').trim();
+  if (!consulta) {
+    showFormError('Escribe qué quieres buscar.');
+    return;
+  }
+  showFormError('');
+  boton.disabled = true;
+  boton.textContent = 'Buscando…';
+  const caja = $('yt-results');
+  if (caja) {
+    caja.hidden = false;
+    caja.innerHTML = '<p class="yt-vacio">Buscando en YouTube en tu PC…</p>';
+  }
+  try {
+    const alta = await postJson(API + '?action=search', { q: consulta });
+    if (!alta.ok) {
+      pintarResultados(null, alta.data.error || 'No se pudo buscar.');
+      return;
+    }
+    const id = alta.data.id;
+    // La busqueda la hace el PC: se pregunta hasta que conteste (max ~25 s).
+    for (let intento = 0; intento < 25; intento++) {
+      await new Promise((r) => setTimeout(r, 1000));
+      const estado = await postJson(API + '?action=search_status', { id });
+      if (!estado.ok) {
+        pintarResultados(null, estado.data.error || 'La búsqueda caducó.');
+        return;
+      }
+      if (estado.data.estado === 'lista') {
+        if (estado.data.error) pintarResultados(null, estado.data.error);
+        else pintarResultados(estado.data.resultados, '');
+        return;
+      }
+    }
+    pintarResultados(null, 'El PC no contestó a la búsqueda. ¿Está encendido el worker?');
+  } catch (e) {
+    pintarResultados(null, 'No hay conexión con el servidor.');
+  } finally {
+    boton.disabled = false;
+    boton.textContent = 'Buscar';
+  }
+}
+
+/** De un resultado: lo pone como enlace y pide la descarga con los ajustes actuales. */
+function descargarResultado(url) {
+  const entrada = $('url');
+  if (!entrada || !url) return;
+  const actuales = entrada.value.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (actuales.indexOf(url) === -1) actuales.push(url);
+  entrada.value = actuales.join('\n');
+  const caja = $('yt-results');
+  if (caja) caja.hidden = true;
+  addDownloads();
+}
 async function onQueueClick(event) {
   const button = event.target.closest('button[data-act]');
   if (!button) return;
@@ -434,7 +656,11 @@ async function onQueueClick(event) {
   button.disabled = true;
 
   try {
-    if (act === 'cancel') {
+    if (act === 'retry') {
+      const result = await postJson(API + '?action=retry', { job_id: id });
+      if (!result.ok) showFormError(result.data.error || 'No se pudo reintentar.');
+      await refreshQueue();
+    } else if (act === 'cancel') {
       const result = await postJson(API + '?action=cancel', { job_id: id });
       if (!result.ok) showFormError(result.data.error || 'No se pudo cancelar.');
     } else if (act === 'traer') {
@@ -637,6 +863,28 @@ function paintGroup(group, attribute, value) {
   });
 }
 
+/**
+ * Aviso bajo los selectores. Lo importante: a 1440p/2160p YouTube no da h264, asi
+ * que el worker convierte el video con ffmpeg (tarda mas) para que sea un MP4 que
+ * abran Corel y Filmora.
+ */
+function actualizarAvisoConversion() {
+  const hint = $('format-hint');
+  if (!hint) return;
+  if (state.mode === 'audio') {
+    hint.textContent = 'El audio se extrae del vídeo y se convierte con ffmpeg. MP3 es lo más compatible; M4A conserva mejor la calidad original.';
+    return;
+  }
+  const calidadAlta = state.quality !== 'best' && Number(state.quality) > 1080;
+  if (state.format === 'mp4' && calidadAlta) {
+    hint.textContent = 'A ' + state.quality + 'p YouTube solo ofrece VP9/AV1: al terminar se convierte a H.264 para que Corel y Filmora lo abran bien (tarda un poco más).';
+  } else if (state.format === 'mp4') {
+    hint.textContent = 'MP4 (H.264 + AAC): lo que mejor abren Corel y Filmora.';
+  } else {
+    hint.textContent = String(state.format).toUpperCase() + ' guarda el formato original de YouTube (VP9/AV1): más pequeño, pero peor de abrir en editores.';
+  }
+}
+
 function applyMode(mode) {
   state.mode = mode;
   const config = MODES[mode];
@@ -657,9 +905,7 @@ function applyMode(mode) {
   ).join('');
   state.format = config.formats[0][0];
 
-  $('format-hint').textContent = mode === 'audio'
-    ? 'El audio se extrae del vídeo y se convierte con ffmpeg. MP3 es lo más compatible; M4A conserva mejor la calidad original.'
-    : 'MP4 (h264 + AAC) es lo que mejor abren Corel y Filmora. Si pides 1440p o 2160p, YouTube solo los ofrece en VP9/AV1 y el fichero dejará de ser MP4.';
+  actualizarAvisoConversion();
 }
 
 function bindSelectors() {
@@ -672,6 +918,7 @@ function bindSelectors() {
     if (!button) return;
     state.quality = button.dataset.quality;
     paintGroup(button.parentElement, 'quality', state.quality);
+    actualizarAvisoConversion();
   });
 
   $('format-group').addEventListener('click', (event) => {
@@ -679,6 +926,7 @@ function bindSelectors() {
     if (!button) return;
     state.format = button.dataset.format;
     paintGroup(button.parentElement, 'format', state.format);
+    actualizarAvisoConversion();
   });
 }
 
@@ -687,7 +935,16 @@ function bindSelectors() {
 function bindUI() {
   $('auth-form').addEventListener('submit', doLogin);
   $('add-btn').addEventListener('click', addDownloads);
-  $('queue-list').addEventListener('click', onQueueClick);
+  $('yt-search').addEventListener('click', buscarEnYoutube);
+  $('wa-guardar').addEventListener('click', guardarWhatsapp);
+  $('wa-probar').addEventListener('click', probarWhatsapp);
+  $('yt-q').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') { event.preventDefault(); buscarEnYoutube(); }
+  });
+  $('yt-results').addEventListener('click', (event) => {
+    const botonResultado = event.target.closest('button[data-act="bajar"]');
+    if (botonResultado) descargarResultado(botonResultado.getAttribute('data-url'));
+  });  $('queue-list').addEventListener('click', onQueueClick);
   $('history-grid').addEventListener('click', onHistoryClick);
   $('logout-btn').addEventListener('click', doLogout);
   $('playlist').addEventListener('change', (event) => { state.playlist = event.target.checked; });
@@ -711,6 +968,8 @@ function bindUI() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  leerCompartido();
+  registrarServiceWorker();
   bindUI();
   const authed = await checkAuth();
   if (authed) await enterApp();

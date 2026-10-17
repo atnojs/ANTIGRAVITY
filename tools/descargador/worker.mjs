@@ -65,7 +65,8 @@ const RUTA_LOG = path.join(DIR_LOG, 'worker.log');
 let config = null;
 let versionYtDlp = VERSION_YTDLP_POR_DEFECTO;
 let parando = false;
-let hijoActual = null;          // proceso yt-dlp en curso
+let hijoActual = null;          // ultimo proceso yt-dlp (compatibilidad)
+const hijosActivos = new Map();  // job.id -> proceso yt-dlp (varias descargas a la vez)
 let temporizadorHeartbeat = null;
 let servidorLocal = null;
 let dialogoAbierto = false;
@@ -409,7 +410,11 @@ function cargarConfig() {
     ytdlp: String(datos.ytdlp),
     ffmpegDir: datos.ffmpeg_dir ? String(datos.ffmpeg_dir) : path.dirname(String(datos.ytdlp)),    downloadDir: String(datos.download_dir),
     pollSeconds: Number(datos.poll_seconds) > 0 ? Number(datos.poll_seconds) : 5,
-    maxParallel: Number(datos.max_parallel) > 0 ? Number(datos.max_parallel) : 1,
+      // Descargas simultaneas: 2 por defecto. Mas de 3 satura la linea y YouTube.
+      maxParallel: Math.min(3, Math.max(1, Number(datos.max_parallel) > 0 ? Number(datos.max_parallel) : 2)),
+      // Si el video no viene en h264 (1440p/2160p solo existen en VP9/AV1) se
+      // convierte con ffmpeg para que sea un MP4 de verdad (Corel, Filmora).
+      convertirH264: datos.convertir_h264 !== false,
     chunkMb: Number(datos.chunk_mb) > 0 ? Number(datos.chunk_mb) : 4,
     puertoLocal: Number(datos.puerto_local) > 0 ? Number(datos.puerto_local) : 8125,
     ytdlpVersion: typeof datos.ytdlp_version === 'string' ? datos.ytdlp_version : null,
@@ -768,8 +773,16 @@ function construirArgumentos(job, dirJob) {
     args.push('-f', filtro);
     args.push('--merge-output-format', job.formato);
     if (job.formato === 'mp4') {
-      // Compatibilidad con editores: H.264 + AAC dentro de MP4
-      args.push('-S', 'vcodec:h264,acodec:aac,ext:mp4:m4a');
+      const calidadAlta = job.calidad !== 'best' && Number(job.calidad) > 1080;
+      if (calidadAlta) {
+        // A 1440p y 2160p NO existe h264 en YouTube (solo VP9/AV1). Si se forzara
+        // h264, yt-dlp bajaria 1080p y el usuario pediria 1440p para nada: se baja
+        // la resolucion pedida y el worker la convierte luego a h264.
+        args.push('-S', 'res,acodec:aac,ext:mp4:m4a');
+      } else {
+        // Compatibilidad con editores: H.264 + AAC dentro de MP4
+        args.push('-S', 'vcodec:h264,acodec:aac,ext:mp4:m4a');
+      }
     }
   }
 
@@ -849,6 +862,7 @@ function ejecutarYtDlp(job, dirJob, { alProgreso }) {
 
     const hijo = spawn(config.ytdlp, args, opciones);
     hijoActual = hijo;
+    hijosActivos.set(job.id, hijo);
     if (fd !== null) { try { fs.closeSync(fd); } catch { /* nada */ } }
 
     // ---- Estado del análisis ----
@@ -1048,6 +1062,8 @@ function ejecutarYtDlp(job, dirJob, { alProgreso }) {
       }
       if (fdLectura !== null) { try { fs.closeSync(fdLectura); } catch { /* nada */ } }
       hijoActual = null;
+      hijosActivos.delete(job.id);
+      if (hijoActual && hijoActual.pid === hijo.pid) hijoActual = null;
       resolve({ codigo, cancelado, lineas, rutaLogYtDlp });
     };
 
@@ -1167,13 +1183,38 @@ async function subirFichero(job, itemIndex, fichero, contexto, alProgreso) {
  * Si el worker se está parando (Ctrl+C) NO se envía nada: no es un fallo del
  * trabajo, y el servidor lo reintentará por su cuenta.
  */
+/**
+ * ¿El fallo es de los que se arreglan solos en un rato? Un 403 puntual de YouTube,
+ * un corte de red o un tiempo de espera agotado merecen reintentarse solos; un
+ * video privado o un enlace cortado no.
+ */
+function esErrorTemporal(mensaje) {
+  const t = String(mensaje || '');
+  const definitivo = /no esta disponible|Private video|removed by|Unsupported URL|cortado|calidad o formato no existe|restriccion de edad|no se genero ningun fichero|sin salida de yt-dlp|URL no valida|identificador del video esta incompleto/i;
+  if (definitivo.test(t)) {
+    return false;
+  }
+  const temporal = /403|no eres un robot|not a bot|timed out|tiempo de espera|getaddrinfo|ENOTFOUND|ECONNRESET|ETIMEDOUT|429|Too Many Requests|conectar|interrump|se reinicio|temporal|fallo la descarga pl/i;
+  return temporal.test(t);
+}
+
 async function informarFallo(job, mensaje) {
   if (parando) {
     logInfo('Parada en curso: no se envía "fail" (el servidor reintentará el trabajo).');
     return;
   }
+  const reintentar = esErrorTemporal(mensaje);
   try {
-    await peticion({ action: 'fail', job_id: job && job.id, error: recortar(mensaje, 900) }, { etiqueta: 'fail' });
+    const respuesta = await peticion({
+      action: 'fail',
+      job_id: job && job.id,
+      error: recortar(mensaje, 900),
+      reintentar,
+    }, { etiqueta: 'fail' });
+    if (respuesta && respuesta.reintento) {
+      logInfo(`Se reintentara solo (intento ${respuesta.reintento}) en ${respuesta.espera} s`);
+      consola(`  Se reintentara solo en ${respuesta.espera} s (intento ${respuesta.reintento}).`);
+    }
   } catch (e) {
     logError(`No se pudo informar del fallo: ${e.message}`);
   }
@@ -1255,6 +1296,136 @@ function borrarCarpetaDeTrabajo(dirJob) {
   } catch (e) { /* si no esta o no se puede, da igual */ }
 }
 
+/* ── MP4 de verdad: convertir a h264 cuando no lo trae ──────────────────── */
+
+function ffmpegExe() {
+  return path.join(config.ffmpegDir, process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
+}
+
+/** Codec de video del fichero (h264, vp9, av01...). Cadena vacia si no se sabe. */
+async function codecDeVideo(ruta) {
+  const r = await ejecutarCapturando(ffmpegExe(), ['-hide_banner', '-i', ruta], { timeoutMs: 60_000 });
+  const m = /Stream #\d+:\d+[^:]*: Video: ([A-Za-z0-9]+)/.exec(r.texto || '');
+  if (!m) return '';
+  const codec = m[1].toLowerCase();
+  return (codec === 'avc1' || codec === 'h264') ? 'h264' : codec;
+}
+
+/**
+ * Convierte un video a MP4 h264 (el formato que abren Corel y Filmora sin
+ * problemas). 1440p y 2160p solo existen en VP9/AV1, asi que hay que recodificar.
+ */
+function convertirAH264(ruta, duracion, alPorcentaje) {
+  return new Promise((resolve, reject) => {
+    const ext = path.extname(ruta);
+    const base = ruta.slice(0, ruta.length - ext.length);
+    const salida = base + '.h264.mp4';
+    const args = [
+      '-y', '-hide_banner', '-loglevel', 'error', '-i', ruta,
+      '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-pix_fmt', 'yuv420p',
+      '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart',
+      '-progress', 'pipe:1', '-nostats', salida,
+    ];
+    let hijo;
+    try {
+      hijo = spawn(ffmpegExe(), args, { windowsHide: true });
+    } catch (e) {
+      reject(e);
+      return;
+    }
+    hijosActivos.set('conv:' + ruta, hijo);
+    const terminar = (fn, valor) => {
+      hijosActivos.delete('conv:' + ruta);
+      fn(valor);
+    };
+    let resto = '';
+    let ultimoAviso = 0;
+    hijo.stdout.on('data', (trozo) => {
+      resto += trozo.toString('utf8');
+      const lineas = resto.split('\n');
+      resto = lineas.pop() || '';
+      for (const linea of lineas) {
+        const m = /^out_time_us=(\d+)/.exec(linea.trim());
+        if (!m || !(duracion > 0)) continue;
+        const pct = Math.min(99, (Number(m[1]) / 1e6 / duracion) * 100);
+        const ahora = Date.now();
+        if (ahora - ultimoAviso > 900) {
+          ultimoAviso = ahora;
+          if (typeof alPorcentaje === 'function') alPorcentaje(pct);
+        }
+      }
+    });
+    hijo.stderr.on('data', (trozo) => logDepurar('ffmpeg> ' + trozo.toString('utf8').trim()));
+    hijo.on('error', (e) => terminar(reject, new Error('no se pudo lanzar ffmpeg: ' + e.message)));
+    hijo.on('close', (codigo) => {
+      if (codigo === 0) terminar(resolve, salida);
+      else terminar(reject, new Error('ffmpeg termino con codigo ' + codigo));
+    });
+  });
+}
+
+/* ── Buscar en YouTube para la web ──────────────────────────────────────── */
+
+/**
+ * Busca en YouTube con yt-dlp (`ytsearchN:consulta`) y devuelve los resultados al
+ * servidor. Se hace en el PC a proposito: el hosting compartido no puede con los
+ * bloqueos de YouTube y asi no hace falta clave de la API de YouTube.
+ */
+async function buscarEnYoutube(peticionBusqueda) {
+  const idBusqueda = String(peticionBusqueda.id || '');
+  const consulta = String(peticionBusqueda.q || '').trim();
+  if (!consulta) {
+    return;
+  }
+  logInfo(`Busqueda en YouTube: "${consulta}" (${idBusqueda})`);
+  consola(`Buscando en YouTube: ${consulta}`);
+  const args = [
+    '--flat-playlist', '--dump-json', '--no-warnings', '--no-color',
+    `ytsearch${10}:${consulta}`,
+  ];
+  try {
+    const salida = await ejecutarCapturando(config.ytdlp, args, { timeoutMs: 90_000 });
+    const resultados = [];
+    for (const linea of String(salida.texto || '').split(/\r?\n/)) {
+      const limpia = linea.trim();
+      if (!limpia.startsWith('{')) continue;
+      let datos;
+      try { datos = JSON.parse(limpia); } catch { continue; }
+      if (!datos || !datos.id) continue;
+      const miniaturas = Array.isArray(datos.thumbnails) ? datos.thumbnails : [];
+      const elegida = miniaturas.find((m) => Number(m.width) >= 320) || miniaturas[0] || {};
+      resultados.push({
+        id: String(datos.id),
+        title: String(datos.title || 'Sin titulo'),
+        url: 'https://www.youtube.com/watch?v=' + String(datos.id),
+        duration: Math.round(Number(datos.duration) || 0),
+        channel: String(datos.uploader || datos.channel || ''),
+        thumbnail: String(elegida.url || ''),
+      });
+      if (resultados.length >= 12) break;
+    }
+    if (!resultados.length) {
+      throw new Error('YouTube no devolvio resultados (o los bloqueo un momento)');
+    }
+    await peticion({
+      action: 'search_results',
+      id: idBusqueda,
+      resultados,
+    }, { etiqueta: 'search_results' });
+    consola(`  ${resultados.length} resultado(s) enviados a la web.`);
+    logInfo(`Busqueda ${idBusqueda}: ${resultados.length} resultados`);
+  } catch (e) {
+    logAviso(`Fallo la busqueda "${consulta}": ${e.message}`);
+    consola(`  La busqueda fallo: ${recortar(e.message, 120)}`);
+    await peticion({
+      action: 'search_results',
+      id: idBusqueda,
+      resultados: [],
+      error: e.message,
+    }, { etiqueta: 'search_results' }).catch(() => {});
+  }
+}
+
 async function procesarJob(jobBruto) {
   let job;
   try {
@@ -1316,6 +1487,58 @@ async function procesarJob(jobBruto) {
   }
 
   const metadatos = await leerMetadatos(dirJob);
+
+  // 2b) MP4 de verdad: 1440p y 2160p no existen en h264 (solo VP9/AV1), asi que
+  // si el video no es h264 se recodifica para que Corel y Filmora lo abran bien.
+  if (job.modo === 'video' && job.formato === 'mp4' && config.convertirH264) {
+    for (const fichero of ficheros) {
+      if (!/^\.(mp4|mkv|webm)$/i.test(path.extname(fichero.nombre))) continue;
+      let codec = '';
+      try {
+        codec = await codecDeVideo(fichero.ruta);
+      } catch (e) {
+        logAviso(`No se pudo mirar el codec de ${fichero.nombre}: ${e.message}`);
+      }
+      if (!codec || codec === 'h264') continue;
+
+      const metaConv = metadatos.get(fichero.nombre.replace(/\.[^.]+$/, '')) || null;
+      let duracionConv = metaConv && metaConv.duracion ? metaConv.duracion : 0;
+      if (!duracionConv) duracionConv = await duracionConFfmpeg(fichero.ruta);
+
+      consola(`  Viene en ${codec.toUpperCase()}; convirtiendo a H.264 para editar (tarda un poco)...`);
+      logInfo(`Convirtiendo a h264: ${fichero.nombre} (codec ${codec}, ${duracionConv}s)`);
+      const aviso = (pct) => {
+        alProgreso({
+          job_id: job.id,
+          percent: Number(pct.toFixed(1)),
+          speed: '',
+          eta: '',
+          stage: 'convirtiendo',
+          item_index: 1,
+          item_count: ficheros.length,
+        }).catch(() => { /* el progreso nunca debe romper la conversion */ });
+      };
+
+      try {
+        const convertido = await convertirAH264(fichero.ruta, duracionConv, aviso);
+        try { fs.unlinkSync(fichero.ruta); } catch { /* puede no estar */ }
+        const nombreFinal = path.basename(fichero.ruta, path.extname(fichero.ruta)) + '.mp4';
+        const rutaFinal = path.join(dirJob, nombreFinal);
+        fs.renameSync(convertido, rutaFinal);
+        const infoFinal = fs.statSync(rutaFinal);
+        fichero.ruta = rutaFinal;
+        fichero.nombre = nombreFinal;
+        fichero.bytes = infoFinal.size;
+        fichero.ext = 'mp4';
+        consola(`  Convertido a H.264: ${nombreFinal} (${(infoFinal.size / 1048576).toFixed(1)} MiB)`);
+        logInfo(`Conversion terminada: ${nombreFinal} (${infoFinal.size} bytes)`);
+      } catch (e) {
+        // Si falla la conversion se queda el original: es mejor un VP9 que nada.
+        logAviso(`No se pudo convertir ${fichero.nombre} a h264: ${e.message}`);
+        consola(`  Aviso: no se pudo convertir a H.264 (${recortar(e.message, 80)}); se queda el original.`);
+      }
+    }
+  }
 
   // El fichero, SUELTO en la carpeta elegida; la carpeta de trabajo se borra.
   // Los metadatos se leen antes (el .info.json vive en esa carpeta).
@@ -1479,10 +1702,14 @@ function pararLimpiamente(motivo) {
   if (servidorLocal) {
     try { servidorLocal.close(); } catch (e) { /* da igual al cerrar */ }
   }
-  if (hijoActual && hijoActual.pid) {
-    consola('  Matando el proceso de yt-dlp en curso…');
-    matarArbol(hijoActual.pid);
+  for (const [idJob, proceso] of hijosActivos) {
+    if (proceso && proceso.pid) {
+      consola('  Matando la descarga en curso (' + idJob + ')…');
+      matarArbol(proceso.pid);
+    }
   }
+  hijosActivos.clear();
+
   setTimeout(() => {
     logInfo('Worker detenido.');
     process.exit(0);
@@ -1547,9 +1774,16 @@ async function principal() {
   // Puerto local: la web lo consulta para saber si se abre desde ESTE PC.
   servidorLocal = arrancarServidorLocal();
 
-  // Bucle de trabajo
+  // Bucle de trabajo: hasta `max_parallel` descargas a la vez. Solo se pide
+  // trabajo cuando hay hueco, para no reclamar algo que no se puede empezar.
+  const trabajosActivos = new Set();
   while (!parando) {
     try {
+      if (trabajosActivos.size >= config.maxParallel) {
+        await dormir(1000);
+        continue;
+      }
+
       const respuesta = await peticion({ action: 'next' }, { etiqueta: 'next' });
       const job = respuesta.job;
 
@@ -1562,13 +1796,17 @@ async function principal() {
         pedirCarpetaConDialogo().catch((e) => logAviso(`Fallo el explorador de carpetas: ${e.message}`));
       }
 
-      // Antes de pedir trabajo nuevo: atender los «traer a la web» pendientes.
+      // Los «traer a la web» pendientes se atienden en segundo plano: no deben
+      // parar la cola.
+      // Busquedas de YouTube pedidas desde la web (en segundo plano).
+      const busquedas = Array.isArray(respuesta.busquedas) ? respuesta.busquedas : [];
+      for (const busqueda of busquedas) {
+        buscarEnYoutube(busqueda).catch((e) => logAviso('Fallo la busqueda: ' + e.message));
+      }
+
       const pedidos = Array.isArray(respuesta.subidas) ? respuesta.subidas : [];
-      if (pedidos.length) {
-        for (const pedido of pedidos) {
-          await subirPedido(pedido);
-        }
-        continue;
+      for (const pedido of pedidos) {
+        subirPedido(pedido).catch((e) => logAviso(`Fallo trayendo a la web ${pedido.item_id}: ${e.message}`));
       }
 
       if (!job) {
@@ -1577,13 +1815,21 @@ async function principal() {
         continue;
       }
 
-      try {
-        await procesarJob(job);
-      } catch (e) {
-        logError(`Error procesando el trabajo ${job && job.id}: ${e.message}`);
-        consola(`ERROR en el trabajo ${job && job.id}: ${recortar(e.message, 200)}`);
-        await informarFallo(job, e.message);
-      }
+      trabajosActivos.add(job.id);
+      logInfo(`Trabajos en curso: ${trabajosActivos.size}/${config.maxParallel}`);
+      procesarJob(job)
+        .catch(async (e) => {
+          logError(`Error procesando el trabajo ${job && job.id}: ${e.message}`);
+          consola(`ERROR en el trabajo ${job && job.id}: ${recortar(e.message, 200)}`);
+          await informarFallo(job, e.message);
+        })
+        .finally(() => {
+          trabajosActivos.delete(job.id);
+          hijosActivos.delete(job.id);
+        });
+
+      // Pequena pausa para no encadenar peticiones sin respiro.
+      await dormir(150);
     } catch (e) {
       logError(`Error en el bucle principal: ${e.message}`);
       await dormir(config.pollSeconds * 1000);
@@ -1603,5 +1849,8 @@ principal().catch((e) => {
 // Red de seguridad: nunca dejar un yt-dlp huérfano.
 // matarArbol es síncrono (taskkill /T /F), así que puede usarse aquí.
 process.on('exit', () => {
-  if (hijoActual && hijoActual.pid) matarArbol(hijoActual.pid);
+  for (const proceso of hijosActivos.values()) {
+    if (proceso && proceso.pid) matarArbol(proceso.pid);
+  }
+  hijosActivos.clear();
 });
