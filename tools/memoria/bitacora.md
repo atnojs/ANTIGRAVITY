@@ -793,3 +793,14 @@ revisando las tarjetas.
   TrickVault); el pipeline se ejecuta con ese Python, no con el venv de Hermes.
 - **Evidencias:** `tools/evidencias/2026-10-17-xabatz/` (hoja de las 10 existentes, hoja de las 3
   nuevas y capturas de producción).
+**Remate de T1 (misma tarde).** Dos cosas más, ambas verificadas:
+
+- El botón **REINTENTAR** se probó con un **clic real** en Chrome sobre un trabajo fallido: el
+  trabajo volvió al worker y se reintentó (`updated_at` pasó de 16:50:42 a 17:01:06). T1 cerrado
+  de punta a punta (API + worker + botón).
+- Los fallos por vídeo no disponible mostraban el texto crudo de yt-dlp porque el patrón pedía
+  «Video unavailable» y YouTube dice «This video is **unavailable**» (con «is» en medio). Arreglado
+  y comprobado: ahora sale «El video no esta disponible: puede ser privado, estar borrado o
+  restringido por pais.» delante del detalle. De paso, `VERSION_WORKER` ya dice **1.1**.
+
+Estado: T3 (WhatsApp) sigue esperando el token de Meta de Antonio; T2 solo necesita el móvil.
