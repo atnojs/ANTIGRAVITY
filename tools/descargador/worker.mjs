@@ -68,6 +68,7 @@ let parando = false;
 let hijoActual = null;          // proceso yt-dlp en curso
 let temporizadorHeartbeat = null;
 let servidorLocal = null;
+let dialogoAbierto = false;
 let bytesEscritosLog = 0;
 let ultimaPeticion = 0;         // marca de tiempo de la última petición HTTP
 let colaHttp = Promise.resolve(); // serializa las peticiones (>1 s entre ellas)
@@ -194,6 +195,95 @@ function guardarCarpetaEnConfig(ruta) {
     logDepurar('carpeta de descarga guardada en la configuración');
   } catch (e) {
     logAviso(`No se pudo guardar la carpeta en la configuración: ${e.message}`);
+  }
+}
+
+/* ── Elegir carpeta con el explorador de Windows ─────────────────────────── */
+
+/**
+ * Abre el explorador de carpetas de Windows EN EL PC y devuelve la ruta elegida.
+ * El navegador no puede revelar rutas reales del disco (por seguridad), asi que
+ * el dialogo tiene que abrirlo el worker, que es quien ve el disco.
+ *
+ * PowerShell en modo -STA porque Windows Forms lo exige; el formulario oculto
+ * y siempre encima es solo para que el dialogo salga delante y no detras de la
+ * ventana del worker (que esta minimizada).
+ */
+function abrirExploradorDeCarpetas() {
+  return new Promise((resolve) => {
+    const actual = String(config.downloadDir || '').replace(/'/g, "''");
+    const ps = [
+      'Add-Type -AssemblyName System.Windows.Forms',
+      '$d = New-Object System.Windows.Forms.FolderBrowserDialog',
+      "$d.Description = 'Elige la carpeta donde guardar las descargas'",
+      `try { $d.SelectedPath = '${actual}' } catch { }`,
+      '$d.ShowNewFolderButton = $true',
+      '$f = New-Object System.Windows.Forms.Form',
+      '$f.TopMost = $true',
+      '$f.ShowInTaskbar = $false',
+      '$f.WindowState = [System.Windows.Forms.FormWindowState]::Minimized',
+      '$f.Show()',
+      '$r = $d.ShowDialog($f)',
+      'if ($r -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($d.SelectedPath) }',
+      '$f.Close()',
+    ].join('; ');
+
+    let hijo;
+    try {
+      hijo = spawn('powershell.exe', ['-NoProfile', '-STA', '-ExecutionPolicy', 'Bypass', '-Command', ps], { windowsHide: false });
+    } catch (e) {
+      resolve({ ruta: '', error: 'no se pudo abrir el explorador: ' + e.message });
+      return;
+    }
+
+    let salida = '';
+    let terminado = false;
+    hijo.stdout.on('data', (trozo) => { salida += trozo.toString('utf8'); });
+    hijo.stderr.on('data', (trozo) => logDepurar('explorador: ' + trozo.toString('utf8').trim()));
+
+    const reloj = setTimeout(() => {
+      if (terminado) return;
+      terminado = true;
+      try { hijo.kill(); } catch (e) { /* ya no esta */ }
+      resolve({ ruta: '', error: 'se cerro solo tras 4 minutos sin elegir carpeta' });
+    }, 240000);
+
+    hijo.on('error', (e) => {
+      if (terminado) return;
+      terminado = true;
+      clearTimeout(reloj);
+      resolve({ ruta: '', error: 'no se pudo lanzar el explorador: ' + e.message });
+    });
+    hijo.on('close', () => {
+      if (terminado) return;
+      terminado = true;
+      clearTimeout(reloj);
+      resolve({ ruta: salida.trim().replace(/\r/g, ''), error: '' });
+    });
+  });
+}
+
+/** Atiende la peticion «elegir carpeta» que llega desde la web. */
+async function pedirCarpetaConDialogo() {
+  if (dialogoAbierto) {
+    return;
+  }
+  dialogoAbierto = true;
+  try {
+    consola('Abriendo el explorador de carpetas en el PC…');
+    logInfo('Explorador de carpetas abierto (peticion desde la web)');
+    const resultado = await abrirExploradorDeCarpetas();
+    if (!resultado.ruta) {
+      const motivo = resultado.error || 'Has cerrado el explorador sin elegir carpeta.';
+      logInfo(`Explorador cerrado sin elegir: ${motivo}`);
+      consola(`  No se eligio ninguna carpeta: ${motivo}`);
+      await peticion({ action: 'dir_applied', ok: false, error: motivo }, { etiqueta: 'dir_applied' })
+        .catch(() => { /* si falla, el aviso se queda en el historial */ });
+      return;
+    }
+    await aplicarCambioDeCarpeta(resultado.ruta);
+  } finally {
+    dialogoAbierto = false;
   }
 }
 
@@ -1351,6 +1441,11 @@ async function principal() {
       // USB). La aplica el worker, que es quien ve el disco del PC.
       if (respuesta && respuesta.cambiar_dir) {
         await aplicarCambioDeCarpeta(String(respuesta.cambiar_dir));
+      }
+      // El explorador NO se espera aqui: puede tardar minutos y el latido tiene
+      // que seguir vivo (si no, el servidor creeria que el worker se cayo).
+      if (respuesta && respuesta.abrir_dialogo) {
+        pedirCarpetaConDialogo().catch((e) => logAviso(`Fallo el explorador de carpetas: ${e.message}`));
       }
     } catch (e) {
       logAviso(`Heartbeat fallido: ${e.message}`);

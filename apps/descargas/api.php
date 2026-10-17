@@ -580,6 +580,9 @@ function dirInfo(): array {
         'unidades'  => is_array($worker['unidades'] ?? null) ? $worker['unidades'] : [],
         'pendiente' => (string)($estado['pending'] ?? ''),
         'error'     => (string)($estado['error'] ?? ''),
+        // Hay un explorador de carpetas pedido y el worker aun no ha contestado.
+        'dialogo'   => (int)($estado['dialog_at'] ?? 0) > 0
+            && (time() - (int)$estado['dialog_at']) < 300,
     ];
 }
 
@@ -726,6 +729,15 @@ if (in_array($action, $workerActions, true)) {
         ]);
         $estadoDir = readJsonFile(DIR_FILE, []);
         $respuesta = ['success' => true];
+        // El usuario ha pulsado «elegir carpeta»: el worker abre el explorador de
+        // Windows. Se manda una sola vez (si el PC estaba apagado se descarta a
+        // los 5 minutos, que es lo que mira dirInfo).
+        if (!empty($estadoDir['dialog_pending'])) {
+            $respuesta['abrir_dialogo'] = true;
+            $estadoDir['dialog_pending'] = false;
+            $estadoDir['dialog_at'] = time();
+            writeJsonFile(DIR_FILE, $estadoDir);
+        }
         if (!empty($estadoDir['pending'])) {
             // El worker aplica el cambio y confirma con `dir_applied`.
             $respuesta['cambiar_dir'] = (string)$estadoDir['pending'];
@@ -752,6 +764,8 @@ if (in_array($action, $workerActions, true)) {
             $estadoDir['error'] = substr((string)($body['error'] ?? 'No se pudo cambiar la carpeta.'), 0, 300);
         }
         $estadoDir['pending'] = '';
+        $estadoDir['dialog_pending'] = false;
+        unset($estadoDir['dialog_at']);
         $estadoDir['at'] = nowIso();
         writeJsonFile(DIR_FILE, $estadoDir);
         flock($lock, LOCK_UN);
@@ -1258,6 +1272,20 @@ $jobId = cleanId((string)($body['job_id'] ?? $_GET['job_id'] ?? ''));
  * suba en la siguiente vuelta. Hoy, si se quedo en casa, no habia forma de
  * bajarlo desde el movil sin volver a pegar el enlace.
  */
+/**
+ * «Elegir carpeta»: pide al worker que abra el explorador de Windows para que
+ * el usuario escoja la carpeta con el raton. El navegador no puede dar una ruta
+ * real del PC, asi que el dialogo lo abre el worker.
+ */
+if ($action === 'elegir_carpeta') {
+    $estadoDir = readJsonFile(DIR_FILE, []);
+    $estadoDir['dialog_pending'] = true;
+    $estadoDir['dialog_at'] = 0;
+    $estadoDir['error'] = '';
+    writeJsonFile(DIR_FILE, $estadoDir);
+    respond(200, ['success' => true]);
+}
+
 if ($action === 'subir_item') {
     $itemId = cleanId((string)($body['item_id'] ?? ''));
     $hecho = false;
@@ -1347,7 +1375,7 @@ fclose($lock);
 respond(400, [
     'success' => false,
     'error'   => 'Accion no valida.',
-    'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download', 'set_dir', 'subir_item',
+    'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download', 'set_dir', 'subir_item', 'elegir_carpeta',
                        'next', 'progress', 'upload_chunk', 'item_done', 'item_local', 'finish', 'fail',
                        'heartbeat', 'dir_applied'],
 ]);

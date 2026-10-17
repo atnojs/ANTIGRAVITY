@@ -567,66 +567,66 @@ async function onHistoryClick(event) {
 
 /* ── Carpeta de descarga en el PC ───────────────────────────────────── */
 
-let unidadesPintadas = '';
+/**
+ * Un solo boton: pide al worker que abra el explorador de Windows en el PC.
+ * El navegador no puede dar una ruta real del disco, asi que el dialogo lo abre
+ * el worker; aqui solo se pide y se espera la respuesta.
+ */
+async function elegirCarpetaEnPc() {
+  const boton = $('dir-btn');
+  const texto = $('dir-btn-text');
+  if (!boton) return;
+  boton.disabled = true;
+  if (texto) texto.textContent = 'PIDIENDO AL PC…';
+  try {
+    const resultado = await postJson(API + '?action=elegir_carpeta', {});
+    if (!resultado.ok) {
+      showFormError(resultado.data.error || 'No se pudo pedir el cambio de carpeta.');
+      boton.disabled = false;
+      if (texto) texto.textContent = 'ELEGIR CARPETA EN EL PC';
+      return;
+    }
+    const hint = $('dir-hint');
+    if (hint) {
+      hint.className = 'hint';
+      hint.textContent = 'Se ha abierto el explorador en tu PC. Elige la carpeta y acepta.';
+    }
+    await refreshQueue();
+  } catch (e) {
+    showFormError('No hay conexión con el servidor.');
+    boton.disabled = false;
+    if (texto) texto.textContent = 'ELEGIR CARPETA EN EL PC';
+  }
+}
 
 function renderDir(dir) {
   if (!dir) return;
   const actual = $('dir-actual');
-  const select = $('dir-unidad');
   const hint = $('dir-hint');
+  const boton = $('dir-btn');
+  const texto = $('dir-btn-text');
 
   if (actual) {
     actual.textContent = dir.actual || 'sin datos todavía (¿está encendido el PC?)';
   }
 
-  const unidades = Array.isArray(dir.unidades) ? dir.unidades : [];
-  const firma = unidades.join(',');
-  if (select && firma !== unidadesPintadas) {
-    const previo = select.value;
-    select.innerHTML = '<option value="">Unidad…</option>' +
-      unidades.map((u) => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
-    select.value = previo;
-    unidadesPintadas = firma;
-  }
+  const esperando = dir.dialogo === true;
+  if (boton) boton.disabled = esperando;
+  if (texto) texto.textContent = esperando ? 'ESPERANDO EN EL PC…' : 'ELEGIR CARPETA EN EL PC';
 
   if (hint) {
-    if (dir.pendiente) {
+    if (esperando) {
       hint.className = 'hint';
-      hint.textContent = 'Pidiendo al PC cambiar a ' + dir.pendiente + '…';
+      hint.textContent = 'Se ha abierto el explorador en tu PC. Elige la carpeta y acepta.';
     } else if (dir.error) {
       hint.className = 'hint dir-mal';
-      hint.textContent = 'No se pudo cambiar la carpeta: ' + dir.error;
+      hint.textContent = dir.error;
     } else {
       hint.className = 'hint';
-      hint.textContent = 'Elige una unidad para bajar directo a un USB. El PC crea la carpeta si no existe.';
+      hint.textContent = 'Se abre el explorador de Windows en tu PC para que elijas la carpeta (o un USB). Se crea si no existe.';
     }
   }
 }
-
-async function cambiarCarpeta() {
-  const ruta = ($('dir-ruta').value || '').trim();
-  if (!ruta) {
-    showFormError('Escribe la carpeta de destino, por ejemplo D:\\Vídeos o F:\\');
-    return;
-  }
-  const boton = $('dir-btn');
-  boton.disabled = true;
-  try {
-    const resultado = await postJson(API + '?action=set_dir', { ruta });
-    if (!resultado.ok) {
-      showFormError(resultado.data.error || 'No se pudo pedir el cambio de carpeta.');
-    } else {
-      showFormError('');
-      $('dir-ruta').value = '';
-      await refreshQueue();
-    }
-  } catch (e) {
-    showFormError('No hay conexión con el servidor.');
-  } finally {
-    boton.disabled = false;
-  }
-}
-
 /* ── Selectores ─────────────────────────────────────────────────────── */
 
 function paintGroup(group, attribute, value) {
@@ -692,14 +692,8 @@ function bindUI() {
   $('logout-btn').addEventListener('click', doLogout);
   $('playlist').addEventListener('change', (event) => { state.playlist = event.target.checked; });
   $('subir-web').addEventListener('change', (event) => { state.subirWeb = event.target.checked; });
-  $('dir-btn').addEventListener('click', cambiarCarpeta);
+  $('dir-btn').addEventListener('click', elegirCarpetaEnPc);
   $('donde-estoy').addEventListener('click', alternarDondeEstoy);
-  $('dir-unidad').addEventListener('change', (event) => {
-    const unidad = event.target.value;
-    if (unidad) {
-      $('dir-ruta').value = unidad.replace(/\\+$/, '') + '\\Descargas';
-    }
-  });
   $('url').addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) addDownloads();
   });

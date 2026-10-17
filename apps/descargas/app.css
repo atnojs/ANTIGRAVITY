@@ -613,3 +613,6 @@ input:focus-visible,
 button.donde-estoy { font-family: var(--font-ui); cursor: pointer; }
 button.donde-estoy:hover { filter: brightness(1.25); }
 button.donde-estoy:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+/* Boton unico para elegir carpeta: ancho completo, comodo en movil */
+.dir-btn { width: 100%; justify-content: center; }
+#dir-btn[disabled] { opacity: .65; cursor: progress; }
