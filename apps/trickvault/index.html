@@ -693,6 +693,12 @@ const CODE_FOLDER = {
     '/rooftopview': 'xl-casaviajes',
     '/citystreet': 'xl-casaviajes',
     '/cabinview': 'xl-casaviajes',
+    '/phantom': 'xl-carteles',
+    '/speedframe': 'xl-planos',
+    '/hairstylegrid': 'xl-moda',
+    '/faceharmony': 'xl-texto',
+    '/skinglowtips': 'xl-texto',
+    '/colourfittips': 'xl-texto',
 };;
 
 const DIFFICULTIES = [
@@ -1310,6 +1316,13 @@ const ADDITIONAL_IMAGE_COMMANDS = [
     ['/inputs', 'muestra las entradas del proceso'],
     ['/outputs', 'muestra las salidas o resultados del proceso'],
     ['/story', 'escribir una historia'],
+    // Tanda Xabatz 2026-10-17 (Short «códigos para editar fotos»): 3 de imagen y 3 de texto.
+    ['/phantom', 'póster de cine oscuro con tu silueta fantasma'],
+    ['/speedframe', 'sensación de velocidad en una escena de acción'],
+    ['/hairstylegrid', 'cuadrícula de cortes de pelo sobre tu cara'],
+    ['/faceharmony', 'analiza el equilibrio de tus rasgos'],
+    ['/skinglowtips', 'rutina de cuidado de la piel de día y de noche'],
+    ['/colourfittips', 'qué colores de ropa te favorecen'],
 ];
 
 const ALL_IMAGE_COMMANDS = [
@@ -2474,6 +2487,9 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/sketch': 'assets/xl-ilustracion/sketch.jpg',
     '/papercraft': 'assets/xl-carteles/papercraft.jpg',
     '/pixelart': 'assets/xl-carteles/pixelart.jpg?v=20261016-pixelart-es',
+    '/phantom': 'assets/xl-carteles/phantom.jpg',
+    '/speedframe': 'assets/planos/speedframe.jpg',
+    '/hairstylegrid': 'assets/comida-moda/hairstylegrid.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -4778,6 +4794,9 @@ const PROMPT_TEMPLATES = {
     "/rooftopview": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Rooftop terrace view featuring [OBJETO], city skyline beyond, golden hour light, outdoor furniture, aspirational lifestyle, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/citystreet": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. City street scene with [OBJETO], buildings and traffic around, overcast urban light, realistic location photography, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/cabinview": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Wooden cabin scene with [OBJETO], large windows onto a forest or lake, warm interior light, peaceful retreat mood, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/phantom": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dark cinematic movie poster of the subject as a ghostly silhouette repeated in a fading trail across a moody black and teal background, dramatic backlight, volumetric fog, film noir layout, high contrast, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/speedframe": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. High-speed action frame of the subject in motion, strong motion blur streaks, dynamic camera pan, dramatic rim lighting, cinematic action scene, explosive sense of speed, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/hairstylegrid": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean grid layout showing the same face with several different haircuts and hair colors, evenly spaced studio portrait tiles, soft neutral background, consistent lighting and framing across every cell, professional salon lookbook style, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
 };;
 
 const TEXT_COMMAND_TEMPLATES = {
@@ -4900,7 +4919,10 @@ const TEXT_COMMAND_TEMPLATES = {
     '/json': 'Devuelve la respuesta en JSON válido sobre [DATOS].',
     '/reverse': 'Trabaja hacia atrás desde [RESULTADO DESEADO] hasta el primer paso.',
     '/ultimate': 'Respuesta completa y potente sobre [TEMA], sin límite de detalle.',
-    '/story': 'Escribe una historia sobre [TEMA] con personajes, conflicto y final.'
+    '/story': 'Escribe una historia sobre [TEMA] con personajes, conflicto y final.',
+    '/faceharmony': 'Analiza mi cara en la foto adjunta y explica qué rasgos están más equilibrados: proporciones, simetría y una valoración clara y respetuosa, con un consejo práctico para cada punto.',
+    '/skinglowtips': 'Dame una rutina de cuidado de la piel de día y de noche para mi tipo de piel [TIPO DE PIEL], con pasos, productos, frecuencia y errores que debo evitar.',
+    '/colourfittips': 'Analiza mi colorimetría y dime qué colores de ropa me favorecen y cuáles evitar, con una paleta de ejemplo y una recomendación para [OCASIÓN].',
 };
 
 function isTextCommandTrick(trick) { return TEXT_COMMAND_PROMPTS.has(getImageCommandKey(trick)); }
@@ -5349,6 +5371,7 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-planos', prefix: 'assets/planos/', key: 'trickvault-xl-planos-images-version', version: '2026-10-14-pullout' },
     { category: 'xl-juegos', prefix: 'assets/xl-juegos/', key: 'trickvault-xl-juegos-images-version', version: '20261015-sujeto-unico' },
     { category: 'xl-restauracion', prefix: 'assets/xl-restauracion/', key: 'trickvault-xl-restauracion-images-version', version: '2026-10-13-reel-fundido-3-tarjetas' },
+    { category: 'xl-moda', prefix: 'assets/comida-moda/', key: 'trickvault-xl-moda-images-version', version: '2026-10-06-gpt-image-2-low' },
 ];
 function isGeneratedCardImage(imageUrl) {
     return typeof imageUrl === 'string' && GENERATED_IMAGE_RELEASES.some(release => imageUrl.startsWith(release.prefix));
