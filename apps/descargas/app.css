@@ -689,3 +689,13 @@ button.donde-estoy:focus-visible { outline: 2px solid var(--acc); outline-offset
 .wa-acciones { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
 .wa-acciones .btn-sm { padding: 8px 14px; }
 .wa-acciones #wa-estado { margin: 0; }
+/* ── Botones de origen (YouTube / Instagram / TikTok) ───────────────── */
+.fuente-botones {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  margin: 0 0 12px;
+}
+.fuente-botones .model-toggle { padding: 8px 16px; font-size: .82rem; }
+.fuente-ir { margin-left: auto; text-decoration: none; display: inline-flex; align-items: center; }
+@media (max-width: 560px) {
+  .fuente-botones .fuente-ir { margin-left: 0; width: 100%; justify-content: center; }
+}

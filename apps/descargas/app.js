@@ -32,6 +32,7 @@ const state = {
   subirWeb: false,
   enCasa: false,
   compartido: '',
+  fuente: 'youtube',
   enCasaIp: false,
   carpetaPc: '',
   jobs: [],
@@ -406,6 +407,7 @@ async function enterApp() {
   state.enCasa = decidirEnCasa();
   pintarDondeEstoy();
   procesarCompartido();
+  aplicarFuente(state.fuente || 'youtube');
   cargarWhatsapp();
   if (listTimer) clearInterval(listTimer);
   if (healthTimer) clearInterval(healthTimer);
@@ -493,6 +495,7 @@ function renderQueue() {
       meta.push(String(job.format || 'mp4').toUpperCase());
       if (job.quality && job.quality !== 'best') meta.push(job.quality + 'p');
     }
+    if (job.fuente === 'instagram' || job.fuente === 'tiktok') meta.push(FUENTES[job.fuente].nombre);
     if (job.playlist) meta.push('lista completa');
     if (job.item_count > 1) meta.push('elemento ' + Math.max(1, job.item_index) + '/' + job.item_count);
     if (status === 'running') {
@@ -720,6 +723,7 @@ async function addDownloads() {
         playlist: state.playlist,
         subir_web: state.subirWeb,
         en_casa: state.enCasa === true,
+        fuente: state.fuente,
       });
       if (result.ok) sent++;
       else if (result.status === 401) { authLost = true; break; }
@@ -885,6 +889,71 @@ function actualizarAvisoConversion() {
   }
 }
 
+/* ── De dónde se descarga: YouTube (por defecto), Instagram o TikTok ──── */
+
+const FUENTES = {
+  youtube: {
+    nombre: 'YouTube',
+    etiqueta: 'Enlace de YouTube (uno por línea si quieres varios)',
+    placeholder: 'https://www.youtube.com/watch?v=...',
+    ayuda: 'Pega el enlace del vídeo o búscalo aquí arriba con el buscador.',
+    sitio: 'https://www.youtube.com',
+    boton: 'Ir a YouTube ↗',
+    buscar: true,
+    calidad: true,
+  },
+  instagram: {
+    nombre: 'Instagram',
+    etiqueta: 'Enlace de Instagram (uno por línea si quieres varios)',
+    placeholder: 'https://www.instagram.com/reel/...',
+    ayuda: 'Pega el enlace del reel o del post. Instagram casi siempre pide sesión: si falla, el aviso te dice qué hacer.',
+    sitio: 'https://www.instagram.com',
+    boton: 'Ir a Instagram ↗',
+    buscar: false,
+    calidad: false,
+  },
+  tiktok: {
+    nombre: 'TikTok',
+    etiqueta: 'Enlace de TikTok (uno por línea si quieres varios)',
+    placeholder: 'https://www.tiktok.com/@usuario/video/...',
+    ayuda: 'Pega el enlace del vídeo (tiktok.com/@usuario/video/… o vm.tiktok.com/…). Se baja el archivo tal cual.',
+    sitio: 'https://www.tiktok.com',
+    boton: 'Ir a TikTok ↗',
+    buscar: false,
+    calidad: false,
+  },
+};
+
+function actualizarVisibilidadCalidad() {
+  const col = $('quality-col');
+  if (!col) return;
+  const fuente = FUENTES[state.fuente] || FUENTES.youtube;
+  col.hidden = state.mode === 'audio' || !fuente.calidad;
+}
+
+function aplicarFuente(fuente) {
+  if (!FUENTES[fuente]) fuente = 'youtube';
+  state.fuente = fuente;
+  const datos = FUENTES[fuente];
+
+  const grupo = document.querySelector('[data-fuente]');
+  if (grupo) paintGroup(grupo.parentElement, 'fuente', fuente);
+
+  if ($('url-label')) $('url-label').textContent = datos.etiqueta;
+  if ($('url')) $('url').placeholder = datos.placeholder;
+  if ($('fuente-ayuda')) $('fuente-ayuda').textContent = datos.ayuda;
+  const enlace = $('fuente-ir');
+  if (enlace) { enlace.href = datos.sitio; enlace.textContent = datos.boton; }
+
+  // El buscador de la app solo funciona con YouTube.
+  const caja = $('yt-search-box');
+  if (caja) caja.hidden = !datos.buscar;
+  if (!datos.buscar) {
+    const resultados = $('yt-results');
+    if (resultados) { resultados.hidden = true; resultados.innerHTML = ''; }
+  }
+  actualizarVisibilidadCalidad();
+}
 function applyMode(mode) {
   state.mode = mode;
   const config = MODES[mode];
@@ -892,7 +961,7 @@ function applyMode(mode) {
   paintGroup(document.querySelector('[data-mode="' + mode + '"]').parentElement, 'mode', mode);
 
   const qualityCol = $('quality-col');
-  qualityCol.hidden = mode === 'audio';
+  actualizarVisibilidadCalidad();
   if (mode === 'audio') {
     state.quality = 'best';
   } else {
@@ -935,6 +1004,9 @@ function bindSelectors() {
 function bindUI() {
   $('auth-form').addEventListener('submit', doLogin);
   $('add-btn').addEventListener('click', addDownloads);
+  document.querySelectorAll('[data-fuente]').forEach((boton) => {
+    boton.addEventListener('click', () => aplicarFuente(boton.dataset.fuente));
+  });
   $('yt-search').addEventListener('click', buscarEnYoutube);
   $('wa-guardar').addEventListener('click', guardarWhatsapp);
   $('wa-probar').addEventListener('click', probarWhatsapp);

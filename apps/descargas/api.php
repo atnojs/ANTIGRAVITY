@@ -327,6 +327,7 @@ function findJob(array &$queue, string $jobId): ?int {
 
 function publicJob(array $job): array {
     unset($job['_internal']);
+    $job['fuente'] = (string)($job['fuente'] ?? 'youtube');
     return $job;
 }
 
@@ -1450,6 +1451,18 @@ if ($action === 'add') {
         respond(400, ['success' => false, 'error' => 'La direccion debe empezar por http:// o https://']);
     }
 
+    // De que red viene: se mira el dominio (asi da igual el boton que se pulse) y,
+    // si no se reconoce, se usa el boton que haya elegido el usuario.
+    $hostEnlace = strtolower((string)($parts['host'] ?? ''));
+    if (preg_match('/(^|\.)instagram\.com$|(^|\.)instagr\.am$/', $hostEnlace)) {
+        $fuente = 'instagram';
+    } elseif (preg_match('/(^|\.)tiktok\.com$|(^|\.)tiktokv\.com$/', $hostEnlace)) {
+        $fuente = 'tiktok';
+    } else {
+        $pedida = strtolower((string)($body['fuente'] ?? 'youtube'));
+        $fuente = in_array($pedida, ['youtube', 'instagram', 'tiktok'], true) ? $pedida : 'youtube';
+    }
+
     $mode = strtolower((string)($body['mode'] ?? 'video'));
     $mode = in_array($mode, ['video', 'audio'], true) ? $mode : 'video';
 
@@ -1496,6 +1509,7 @@ if ($action === 'add') {
         'mode'             => $mode,
         'quality'          => $quality,
         'format'           => $format,
+        'fuente'           => $fuente,
         'playlist'         => !empty($body['playlist']),
         // De donde se pidio y si hay que subirlo a la web o dejarlo en el PC.
         'origen'           => $origen,

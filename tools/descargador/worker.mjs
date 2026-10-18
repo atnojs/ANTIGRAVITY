@@ -424,7 +424,11 @@ function cargarConfig() {
     //   instagram_browser : navegador del que leer las cookies (chrome por defecto)
     cookiesFile: datos.cookies_file ? String(datos.cookies_file) : null,
     instagramCookies: datos.instagram_cookies ? String(datos.instagram_cookies) : null,
-    instagramBrowser: datos.instagram_browser === false ? null : String(datos.instagram_browser || 'chrome'),
+    // OJO: por defecto NO se leen cookies del navegador. En Chrome/Edge modernos
+  // yt-dlp no puede abrir su base de datos («Could not copy Chrome cookie
+  // database») y el error es fatal incluso para posts publicos. Solo se usa si
+  // Antonio lo pone a proposito en la configuracion.
+  instagramBrowser: datos.instagram_browser ? String(datos.instagram_browser) : null,
   };
 
   if (!fs.existsSync(cfg.ytdlp)) {
@@ -742,7 +746,7 @@ function mensajeUtil(texto, url = '') {
 
   // Instagram: sin sesion no sirve casi nada y ademas limita por peticiones.
   if (esInstagram && /login required|rate-?limit|Please wait a few minutes|not available|empty media response/i.test(t)) {
-    return 'Instagram pide sesion para ver esto (o te ha limitado por muchas peticiones seguidas). Entra en Instagram con Chrome en este PC y reintentalo: el worker lee tus cookies del navegador. Si prefieres un fichero, exporta un cookies.txt y pon su ruta en "instagram_cookies" del worker.';
+    return 'Instagram no da este contenido sin sesion (o te ha limitado por muchas peticiones seguidas). Para que funcione: inicia sesion en Instagram desde el navegador, exporta las cookies con una extension (por ejemplo "Get cookies.txt LOCALLY") y guarda el fichero en el PC; despues pon su ruta en "instagram_cookies" dentro de .private/descargas-worker.json y reinicia el worker. Leer las cookies del navegador automaticamente no funciona con Chrome/Edge modernos.';
   }
   // TikTok: el video puede haberse borrado o estar restringido por pais.
   if (esTikTok && /unavailable|not available|item doesn.?t exist|status code 10204/i.test(t)) {

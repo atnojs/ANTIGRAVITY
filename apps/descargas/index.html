@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Descargas">
-<link rel="stylesheet" href="app.20261017j.css">
+<link rel="stylesheet" href="app.20261018a.css">
 </head>
 <body>
 
@@ -69,15 +69,26 @@
       <section class="panel" aria-labelledby="form-title">
         <h2 id="form-title" class="section-title">Nueva descarga</h2>
 
+        <div class="fuente-botones" role="group" aria-label="De dónde quieres descargar">
+          <button type="button" class="model-toggle active" data-fuente="youtube" aria-pressed="true">YouTube</button>
+          <button type="button" class="model-toggle" data-fuente="instagram" aria-pressed="false">Instagram</button>
+          <button type="button" class="model-toggle" data-fuente="tiktok" aria-pressed="false">TikTok</button>
+          <a class="btn-sm fuente-ir" id="fuente-ir" href="https://www.youtube.com" target="_blank" rel="noopener">Ir a YouTube ↗</a>
+        </div>
+
+        <!-- Buscador dentro de la app: solo tiene sentido con YouTube (yt-dlp busca
+             en YouTube; Instagram y TikTok no tienen busqueda por API). -->
+        <div class="yt-search" id="yt-search-box">
+          <label class="sr-only" for="yt-q">Buscar en YouTube</label>
+          <input type="search" id="yt-q" placeholder="Buscar en YouTube…" autocomplete="off" spellcheck="false">
+          <button type="button" id="yt-search" class="btn-sm">Buscar</button>
+        </div>
+        <div id="yt-results" class="yt-results" hidden></div>
+
         <div class="field">
-          <label for="url">          <div class="yt-search">
-            <label class="sr-only" for="yt-q">Buscar en YouTube</label>
-            <input type="search" id="yt-q" placeholder="Buscar en YouTube…" autocomplete="off" spellcheck="false">
-            <button type="button" id="yt-search" class="btn-sm">Buscar</button>
-          </div>
-          <div id="yt-results" class="yt-results" hidden></div>
-Enlace de YouTube, Instagram o TikTok (uno por línea si quieres varios)</label>
-          <textarea id="url" rows="3" placeholder="https://www.youtube.com/watch?v=... · https://www.instagram.com/reel/... · https://www.tiktok.com/@usuario/video/..." spellcheck="false" aria-required="true"></textarea>
+          <label for="url" id="url-label">Enlace de YouTube (uno por línea si quieres varios)</label>
+          <textarea id="url" rows="3" placeholder="https://www.youtube.com/watch?v=..." spellcheck="false" aria-required="true"></textarea>
+          <p class="hint" id="fuente-ayuda">Pega el enlace del vídeo o búscalo aquí arriba.</p>
         </div>
 
         <div class="selectors">
@@ -221,6 +232,6 @@ Enlace de YouTube, Instagram o TikTok (uno por línea si quieres varios)</label>
 </div>
 
 <script src="history-manager.js"></script>
-<script src="app.20261017j.js"></script>
+<script src="app.20261018a.js"></script>
 </body>
 </html>
