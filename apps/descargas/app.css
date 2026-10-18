@@ -725,7 +725,7 @@ button.donde-estoy:focus-visible { outline: 2px solid var(--acc); outline-offset
 @media (max-width: 560px) {
   .acciones-fila { flex-direction: column; }
   .acciones-fila .btn-sm { flex: 1 1 auto; width: 100%; }
-  .acciones-fila #add-btn { order: -1; }
+  .acciones-fila #add-btn { order: -1; flex: 1 1 auto; width: 100%; }
 }
 /* ── Cola con scroll propio: se activa a partir de la 6ª descarga ────── */
 .queue-list.scroll {
