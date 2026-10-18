@@ -1,8 +1,8 @@
-# Instagram en la app de Descargas: hace falta la sesión
+# Instagram en la app de Descargas: qué funciona y qué necesita sesión
 
-**TikTok y YouTube funcionan sin configurar nada. Instagram no**: desde hace un par de años
-Instagram no entrega los vídeos a quien no ha iniciado sesión. La app lo intenta, y si el vídeo es
-privado o de una cuenta que no sigues, te dice exactamente eso:
+**Actualizado el 2026-10-18 (comprobado en producción):** los vídeos **públicos de Instagram se
+bajan sin configurar nada**. Solo hacen falta cookies cuando el contenido es de una **cuenta
+privada** o Instagram exige **seguir a esa cuenta**. En ese caso la app te dice exactamente eso:
 
 - *«Instagram no da este contenido sin sesión…»* → hay que darle tus cookies de Instagram.
 - *«This content is only available for registered users who follow this account»* → además de la

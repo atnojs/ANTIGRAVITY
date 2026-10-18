@@ -906,7 +906,7 @@ const FUENTES = {
     nombre: 'Instagram',
     etiqueta: 'Enlace de Instagram (uno por línea si quieres varios)',
     placeholder: 'https://www.instagram.com/reel/...',
-    ayuda: 'Pega el enlace del reel o del post. Instagram casi siempre pide sesión: si falla, el aviso te dice qué hacer.',
+    ayuda: 'Pega el enlace del reel o del post. Los vídeos públicos se bajan directamente; los de cuentas privadas (o que exigen seguir la cuenta) necesitan sesión: el aviso te dice cómo.',
     sitio: 'https://www.instagram.com',
     boton: 'Ir a Instagram ↗',
     buscar: false,
