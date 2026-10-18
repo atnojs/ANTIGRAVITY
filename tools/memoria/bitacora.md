@@ -900,3 +900,22 @@ que no lo necesita. El panel queda en la app, desactivado, por si cambia de idea
   1024×1024; migración probada forzando `category='xl-otromundo'` en localStorage y recargando →
   las dos vuelven a `xl-camararetrato`; consola sin errores nuevos (Babel preexistente), red sin
   4xx/5xx. Capturas en `tools/evidencias/2026-10-18-camararetrato/`.
+**Ajustes de layout pedidos por Antonio (2026-10-18, tarde-noche).**
+
+- La pestaña de origen (YouTube/Instagram/TikTok) ya existía; ahora el formulario va a la izquierda,
+  el **historial justo debajo** y la **cola (estado de las descargas) a la derecha** (rejilla CSS con
+  `grid-template-areas: "form queue" "history queue"`; en móvil `"form" "queue" "history"`).
+- Los botones **DESCARGAR** y **ELEGIR CARPETA EN EL PC** quedaron en **una sola fila** con el estilo
+  de botón normal (`.btn-sm` tipo pastilla): carpeta ancha a la izquierda, Descargar pequeño a la
+  derecha. Se quitó la regla vieja `.dir-btn { width: 100% }` que los deformaba.
+- Fuera el panel de **Avisos por WhatsApp** (Antonio no lo usará: las descargas bajan rápido). Los
+  endpoints siguen en el servidor, sin interfaz.
+- «Se guardan en: …» pasa **debajo** del botón de carpeta y se quitó la frase del explorador.
+- Las dos líneas de ayuda se sustituyeron por el texto de la nube que pidió Antonio
+  («Para descargar el archivo en el móvil debe estar en la nube…»).
+- **Scroll propio en la cola a partir de la 6ª descarga**: `ajustarAltoCola()` mide las 5 primeras
+  fichas y fija ese alto como `max-height`; con 5 o menos no hay barra. Se recalcula al repintar la
+  cola (MutationObserver) y al cambiar el tamaño de la ventana. Probado en banco con 6 trabajos:
+  se ven 5 y la sexta queda dentro del scroll.
+- Assets actuales: `app.20261018h.*` (pendiente de desplegar al escribir esto; Hostinger iba muy
+  lento, entre 5 y 10 minutos por despliegue, y a veces la CDN sirve versiones mezcladas).
