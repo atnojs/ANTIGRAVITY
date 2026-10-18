@@ -165,7 +165,7 @@ const CODE_FOLDER = {
     '/charactersheet': 'xl-hechomano', '/turnaround': 'xl-hechomano', '/expressionsheet': 'xl-hechomano', '/costumedesign': 'xl-hechomano',
     '/environmentalportrait': 'xl-luzcamara', '/magazinecover': 'xl-carteles', '/movieposter': 'xl-carteles', '/bookcover': 'xl-escenaprueba',
     '/albumcover': 'xl-escenaprueba', '/newspaper': 'xl-escenaprueba', '/quotecard': 'xl-escenaprueba', '/4K': 'xl-estilos',
-    '/whiteteeth': 'xl-camararetrato', '/srinkless': 'xl-camararetrato', '/together': 'xl-otromundo', '/nombrafamoso': 'xl-camararetrato',
+    '/whiteteeth': 'xl-camararetrato', '/srinkless': 'xl-camararetrato', '/together': 'xl-camararetrato', '/nombrafamoso': 'xl-camararetrato',
     '/repairhd': 'xl-camararetrato', '/fullcolour': 'xl-camararetrato', '/transferoutfit': 'xl-moda', '/fullbody': 'xl-camararetrato',
     '/transfer': 'xl-otromundo', '/profesión': 'xl-moda',
     // Escenarios y efectos
@@ -177,7 +177,7 @@ const CODE_FOLDER = {
     '/aerialview': 'xl-planos', '/topdown': 'xl-planos', '/highangle': 'xl-planos', '/closeup': 'xl-planos', '/fisheye': 'xl-camararetrato', '/pov': 'xl-planos', '/birdseyeview': 'xl-planos', '/wormseyeview': 'xl-planos', '/motionblur': 'xl-efectosempaque', '/freezeaction': 'xl-planos', '/throughobject': 'xl-planos', '/framewithinframe': 'xl-planos', '/foregroundframe': 'xl-planos', '/threequarter': 'xl-planos', '/trackingshot': 'xl-planos', '/pullin': 'xl-planos', '/pullout': 'xl-planos', '/extremepov': 'xl-planos', '/cinematicpov': 'xl-planos', '/leadinglines': 'xl-planos', '/vanishingpoint': 'xl-planos', '/foregrounddepth': 'xl-planos', '/symmetricalshot': 'xl-planos', '/reflectionshot': 'xl-planos', '/epicperspective': 'xl-planos', '/24mmwide': 'xl-planos', '/35mmstreet': 'xl-planos', '/50mmnatural': 'xl-planos', '/85mmportrait': 'xl-planos', '/105mmclose': 'xl-planos', '/macrolook': 'xl-planos', '/deeperperspective': 'xl-planos',
     '/fog': 'xl-luzcamara', '/mist': 'xl-luzcamara', '/rainynight': 'xl-luzcamara', '/rain': 'xl-luzcamara', '/snow': 'xl-luzcamara', '/sunset': 'xl-luzcamara', '/sunrise': 'xl-luzcamara', '/moonlight': 'xl-luzcamara', '/neonlights': 'xl-luzcamara', '/darkmoody': 'xl-luzcamara', '/godrays': 'xl-luzcamara', '/studio': 'xl-luzcamara', '/silhouette': 'xl-luzcamara',
     '/forcedperspective': 'xl-planos', '/giantperspective': 'xl-planos', '/microworld': 'xl-efectosempaque', '/reflectionhack': 'xl-efectosempaque', '/groundreflection': 'xl-efectosempaque', '/parallaxshot': 'xl-planos', '/viralshot': 'xl-planos', '/dynamicshot': 'xl-planos', '/portalshot': 'xl-efectosempaque', '/cloneeffect': 'xl-efectosempaque', '/objecttransition': 'xl-efectosempaque', '/mirrorportal': 'xl-efectosempaque', '/skyfall': 'xl-efectosempaque', '/realitybend': 'xl-efectosempaque', '/doorreveal': 'xl-efectosempaque', '/scrollstopper': 'xl-planos',
-    '/proshot': 'xl-otromundo', '/newbg': 'xl-camararetrato', '/hairstyles': 'xl-moda', '/sunglassesstryon': 'xl-moda',
+    '/proshot': 'xl-camararetrato', '/newbg': 'xl-camararetrato', '/hairstyles': 'xl-moda', '/sunglassesstryon': 'xl-moda',
     '/lifestyleshot': 'xl-escenaprueba', '/gravitydefying': 'xl-fotoproducto', '/timesquaread': 'xl-escenaprueba',
     // 249-351 (capturas WhatsApp 2026-09-20)
     '/dollyzoom': 'xl-planos', '/mediumshot': 'xl-planos', '/orbit': 'xl-planos', '/eyelevel': 'xl-planos', '/groundlevel': 'xl-planos', '/timelapse': 'xl-planos', '/panorama': 'xl-planos', '/portraitmode': 'xl-planos', '/pan': 'xl-planos', '/tilt': 'xl-planos', '/zoom': 'xl-planos', '/establishing': 'xl-planos', '/hyperlapse': 'xl-planos', '/slowmo': 'xl-planos',
@@ -3532,6 +3532,10 @@ const CATEGORY_MOVES = {
     '/fabricdrape': 'xl-moda', '/outfit': 'xl-moda', '/underglasseditorial': 'xl-moda',
     '/crosswalkprofileeditorial': 'xl-moda', '/fashioncontentsheet': 'xl-moda',
     '/motionblureditorial': 'xl-moda', '/luxurylifestyle': 'xl-moda',
+    // 2026-10-18: /proshot y /together son retoque de persona y pasan de
+    // «Tú en otro mundo» a «Cámara y retrato». Los ejemplos siguen en
+    // assets/xl-otromundo/ porque la imagen se resuelve por código.
+    '/proshot': 'xl-camararetrato', '/together': 'xl-camararetrato',
 };
 // Renombrados de código: una tarjeta ya guardada cuyo código cambia de nombre no
 // se renombra sola, así que se apunta aquí para hacerlo UNA vez. /calavery salió
