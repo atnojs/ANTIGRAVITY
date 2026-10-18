@@ -864,3 +864,11 @@ worker dejó de forzar las cookies de Chrome (era eso lo que rompía TODAS las d
 también las públicas). Solo las cuentas privadas o que exigen seguir a la cuenta siguen necesitando
 el `cookies.txt`/Firefox, y la app lo explica en el propio error. También cambió su carpeta de
 descargas a `D:\Descargas Y, I y T` desde el botón de la app.
+**Instagram con sesión (16:20).** Antonio exportó las cookies con Cookie-Editor (el botón Export
+copia el JSON al **portapapeles**, no lo descarga: por eso en Descargas no aparecía nada y hubo que
+leerlo con `Get-Clipboard`). Se convirtieron a formato Netscape en
+`D:\Vídeos\ytdownloader\cookies-instagram.txt` (fuera del repo) y se añadió `instagram_cookies` a
+`.private\descargas-worker.json`; worker reiniciado. Verificado con yt-dlp: `[Instagram] Found
+Instagram account cookies` y el reel público baja con la sesión. Los dos reels que fallaron son de
+cuentas que **no sigue**: Instagram no los da ni con cookies (sin sesión dice «only available for
+registered users who follow this account»; con sesión, HTTP 400).

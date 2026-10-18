@@ -73,7 +73,7 @@ documentada en `credenciales.md` (con el procedimiento) y en `bitacora.md`.
 
 ## 0-septies. Descargas: Instagram necesita cookies.txt (2026-10-18)
 
-- **Instagram: confirmado que NO se puede sin sesión** (2026-10-18, probado con un reel de Antonio):
+- **Instagram: cookies ya configuradas (2026-10-18 16:20)** en `D:\Vídeos\ytdownloader\cookies-instagram.txt` + `instagram_cookies` en el worker. Renovar cuando caduque (Export de Cookie-Editor otra vez). Confirmado que NO se puede sin sesión (2026-10-18, probado con un reel de Antonio):
   yt-dlp responde «This content is only available for registered users who follow this account» y
   «empty media response». Probado también `--simulate` del enlace `/embed/` y `/embed/captioned/`
   (página de login: 584 KB sin ningún `.mp4`) — no hay atajo. Las dos vías están en

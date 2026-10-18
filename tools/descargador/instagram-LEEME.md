@@ -64,3 +64,26 @@ paso de exportar (o vuelve a iniciar sesión en Firefox).
 > Ojo con las cuentas privadas: aunque tengas sesión, un reel de una cuenta que **no sigues** no se
 > puede bajar. El propio mensaje de error lo dice («only available for registered users who follow
 > this account»).
+
+---
+
+## ESTADO ACTUAL (2026-10-18 16:20) — ya está configurado
+
+Antonio exportó las cookies con **Cookie-Editor** (botón Export → `.json`, que las copia al
+portapapeles) y se convirtieron al formato Netscape. Está todo puesto:
+
+- Fichero: `D:\Vídeos\ytdownloader\cookies-instagram.txt` (fuera del repositorio; contiene su
+  sesión, no se versiona).
+- Configuración: `"instagram_cookies": "D:\\Vídeos\\ytdownloader\\cookies-instagram.txt"` en
+  `.private\descargas-worker.json` (worker reiniciado para que lo lea).
+- Comprobado: yt-dlp dice `[Instagram] Found Instagram account cookies` y los reels públicos bajan
+  con la sesión puesta.
+
+**Cuándo hay que repetirlo:** cuando Instagram caduque la sesión (semanas o meses). El síntoma es
+que vuelve el error de «Instagram no da este contenido sin sesión». Para renovarlo: repetir el
+Export en Cookie-Editor (Instagram abierto y con sesión) y volver a convertir el JSON a Netscape en
+esa misma ruta.
+
+**Lo que NO se puede ni con cookies:** contenido de una cuenta privada que **no sigues**. Instagram
+responde `only available for registered users who follow this account` (sin sesión) o `HTTP 400`
+(con sesión). Hay que seguir a esa cuenta.
