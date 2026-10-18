@@ -878,3 +878,14 @@ los reels **públicos funcionan sin sesión**; él creía que eran privados, per
 sin login. Y los dos reels que fallaron al principio (`DemQccogGmdey…`, `DeS9kSUjQkF…`) **siguen
 fallando con cookies** (`HTTP 400`): esos posts no están disponibles, no era problema de sesión. Las
 cookies quedan puestas para lo que sí exija login.
+**Layout de Descargas (2026-10-18, tarde).** A petición de Antonio se intercambiaron las dos zonas:
+el **historial pasa a la izquierda** y el **formulario de descargas a la derecha**, con los anchos
+intactos (historial estrecho, formulario ancho). Se hizo moviendo el `<aside class="history-col">`
+antes de `.main-col` en el HTML (flex en fila) y, en móvil, con `order: 1` / `order: 2` para que el
+formulario siga saliendo primero. Assets `app.20261018c.*`. Verificado en banco local (escritorio
+1500 px y móvil 390 px) y en producción por HTTP: el HTML servido tiene el aside en la posición
+3328 y el main-col en la 3622. **El despliegue de Hostinger tardó ~4 minutos**; mientras tanto el
+navegador de Antonio servía la página vieja de caché (hay que recargar con Ctrl+Shift+R).
+
+También queda **descartado el aviso por WhatsApp**: Antonio dice que las descargas bajan tan rápido
+que no lo necesita. El panel queda en la app, desactivado, por si cambia de idea.
