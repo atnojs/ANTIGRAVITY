@@ -857,3 +857,10 @@ toca), la guarda en el trabajo y la cola la muestra («MP4 · TikTok»).
 
 Desplegado: assets `app.20261018a.*` (200 en producción) y API nueva. El worker de producción se
 reinició con el código nuevo.
+**Confirmado en producción (14:39).** Antonio bajó **dos enlaces de Instagram** (un vídeo de 41 MB,
+`Video by emmaagiil [DecVZs_uTQo].mp4`, y un MP3) y **uno de TikTok**, todo con el worker ya
+corregido y sin tocar nada más. Es decir: **Instagram funciona para contenido público** desde que el
+worker dejó de forzar las cookies de Chrome (era eso lo que rompía TODAS las descargas de Instagram,
+también las públicas). Solo las cuentas privadas o que exigen seguir a la cuenta siguen necesitando
+el `cookies.txt`/Firefox, y la app lo explica en el propio error. También cambió su carpeta de
+descargas a `D:\Descargas Y, I y T` desde el botón de la app.
