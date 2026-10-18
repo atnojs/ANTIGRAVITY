@@ -700,3 +700,27 @@ button.donde-estoy:focus-visible { outline: 2px solid var(--acc); outline-offset
 @media (max-width: 560px) {
   .fuente-botones .fuente-ir { margin-left: 0; width: 100%; justify-content: center; }
 }
+/* ── Fila de acciones: DESCARGAR + ELEGIR CARPETA en la misma fila ──── */
+.acciones-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 4px;
+}
+.acciones-fila .btn-primary { flex: 1 1 260px; width: auto; }
+.acciones-fila .dir-btn { flex: 0 1 auto; }
+.dir-linea { margin: 10px 0 0; font-size: .82rem; color: var(--muted); }
+.dir-linea code {
+  font-family: var(--font-ui);
+  color: var(--acc);
+  background: rgba(0, 208, 208, .1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  word-break: break-all;
+}
+@media (max-width: 560px) {
+  .acciones-fila { flex-direction: column; }
+  .acciones-fila .btn-primary { flex: 1 1 auto; width: 100%; }
+}

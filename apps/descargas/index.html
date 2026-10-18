@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Descargas">
-<link rel="stylesheet" href="app.20261018d.css">
+<link rel="stylesheet" href="app.20261018e.css">
 </head>
 <body>
 
@@ -142,55 +142,22 @@
           la casilla. Lo que se sube se borra solo a las 48 h.
         </p>
 
-        <button type="button" id="add-btn" class="btn-primary">
-          <span id="add-btn-text">Descargar</span>
-        </button>
+        <div class="acciones-fila">
+          <button type="button" id="add-btn" class="btn-primary">
+            <span id="add-btn-text">Descargar</span>
+          </button>
+          <button type="button" id="dir-btn" class="btn-primary dir-btn">
+            <span id="dir-btn-text">ELEGIR CARPETA EN EL PC</span>
+          </button>
+        </div>
+        <p class="dir-linea">Se guardan en: <code id="dir-actual">—</code></p>
+        <p class="hint" id="dir-hint">Se abre el explorador de Windows en tu PC para que elijas la carpeta (o un USB). Se crea si no existe.</p>
         <div id="form-error" class="form-error" role="alert" hidden></div>
       </section>
 
-<section class="panel" aria-labelledby="dir-title">
-        <h2 id="dir-title" class="section-title">Carpeta en el PC</h2>
-        <p class="dir-actual">Se guardan en: <code id="dir-actual">—</code></p>
-        <button type="button" id="dir-btn" class="btn-primary dir-btn">
-          <span id="dir-btn-text">ELEGIR CARPETA EN EL PC</span>
-        </button>
-        <p class="hint" id="dir-hint">
-          Se abre el explorador de Windows en tu PC para que elijas la carpeta (o un USB).
-          Se crea si no existe.
-        </p>
-      </section>
 
-<section class="panel" aria-labelledby="wa-title">
-        <details class="wa-detalle">
-          <summary id="wa-title" class="section-title">Avisos por WhatsApp</summary>
-          <p class="hint">
-            Cuando termina una descarga te llega un WhatsApp. Se configura una sola vez;
-            los pasos están en <code>tools/descargador/whatsapp-LEEME.md</code>.
-          </p>
-          <div class="wa-grid">
-            <label class="wa-campo">Phone number ID
-              <input type="text" id="wa-phone" placeholder="123456789012345" autocomplete="off" spellcheck="false">
-            </label>
-            <label class="wa-campo">Token de Meta
-              <input type="password" id="wa-token" placeholder="si lo dejas vacío no se cambia" autocomplete="off">
-            </label>
-            <label class="wa-campo">Tu número (con prefijo)
-              <input type="text" id="wa-destino" placeholder="34600111222" autocomplete="off" inputmode="tel">
-            </label>
-            <label class="wa-campo">Plantilla (opcional)
-              <input type="text" id="wa-plantilla" placeholder="descarga_lista" autocomplete="off" spellcheck="false">
-            </label>
-          </div>
-          <label class="check"><input type="checkbox" id="wa-activo"><span>Avisos activados</span></label>
-          <label class="check"><input type="checkbox" id="wa-fin" checked><span>Avisar cuando termina bien</span></label>
-          <label class="check"><input type="checkbox" id="wa-errores"><span>Avisar también de los errores</span></label>
-          <div class="wa-acciones">
-            <button type="button" id="wa-guardar" class="btn-sm">Guardar</button>
-            <button type="button" id="wa-probar" class="btn-sm">Probar</button>
-            <span id="wa-estado" class="hint" role="status"></span>
-          </div>
-        </details>
-      </section>
+
+
 
     </div>
 
@@ -231,6 +198,6 @@
 </div>
 
 <script src="history-manager.js"></script>
-<script src="app.20261018d.js"></script>
+<script src="app.20261018e.js"></script>
 </body>
 </html>

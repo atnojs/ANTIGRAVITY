@@ -408,7 +408,6 @@ async function enterApp() {
   pintarDondeEstoy();
   procesarCompartido();
   aplicarFuente(state.fuente || 'youtube');
-  cargarWhatsapp();
   if (listTimer) clearInterval(listTimer);
   if (healthTimer) clearInterval(healthTimer);
   listTimer = setInterval(refreshQueue, 4000);
@@ -1008,8 +1007,6 @@ function bindUI() {
     boton.addEventListener('click', () => aplicarFuente(boton.dataset.fuente));
   });
   $('yt-search').addEventListener('click', buscarEnYoutube);
-  $('wa-guardar').addEventListener('click', guardarWhatsapp);
-  $('wa-probar').addEventListener('click', probarWhatsapp);
   $('yt-q').addEventListener('keydown', (event) => {
     if (event.key === 'Enter') { event.preventDefault(); buscarEnYoutube(); }
   });
