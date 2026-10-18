@@ -63,10 +63,10 @@ if ($action === 'logout') {
 }
 
 $password = (string)($_POST['password'] ?? '');
-$expectedHash = 'c97550ce8213ef5cf6ed4ba48790c137df3ef6a5da20b48961001a634b6cead2';
+$expectedHash = 'ae4cd6ac3271e966a3eed8adc9401329e994a4588bf99b6510d851ffb58ff5d6';
 
-// Freno a la fuerza bruta: 1 s por intento fallido. La contraseña son 20
-// caracteres aleatorios; con esto el ataque por fuerza bruta deja de ser barato.
+// Freno a la fuerza bruta: 1 s por intento fallido. La contraseña no es larga,
+// así que este segundo por fallo es el único freno real.
 if (!hash_equals($expectedHash, hash('sha256', $password))) {
     sleep(1);
     respond(403, ['success' => false, 'error' => 'Contraseña incorrecta.']);
