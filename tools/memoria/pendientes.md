@@ -73,6 +73,16 @@ documentada en `credenciales.md` (con el procedimiento) y en `bitacora.md`.
 
 ## 0-septies. Descargas: Instagram necesita cookies.txt (2026-10-18)
 
+- **Instagram: confirmado que NO se puede sin sesión** (2026-10-18, probado con un reel de Antonio):
+  yt-dlp responde «This content is only available for registered users who follow this account» y
+  «empty media response». Probado también `--simulate` del enlace `/embed/` y `/embed/captioned/`
+  (página de login: 584 KB sin ningún `.mp4`) — no hay atajo. Las dos vías están en
+  `tools/descargador/instagram-LEEME.md`: (A) exportar `cookies.txt` con Cookie-Editor y poner
+  `instagram_cookies`; (B) instalar Firefox, iniciar sesión allí y poner `"instagram_browser":
+  "firefox"` (Firefox no cifra las cookies; Chrome/Edge sí y yt-dlp no puede leerlas).
+  **Fallo corregido de paso:** el mensaje de error era el genérico porque el texto «only available
+  for registered users who follow this account» no casaba con los patrones; ahora distingue «cuenta
+  privada a la que no sigues» de «falta sesión».
 - **TikTok ya funciona sin nada más.** Instagram pide sesión: para que baje reels/posts hay que
   exportar las cookies de Instagram con una extensión del navegador («Get cookies.txt LOCALLY»),
   guardar el fichero en el PC y añadir `"instagram_cookies": "ruta\\al\\cookies.txt"` en
