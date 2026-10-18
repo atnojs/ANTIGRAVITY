@@ -71,6 +71,20 @@ documentada en `credenciales.md` (con el procedimiento) y en `bitacora.md`.
 
 ---
 
+## 0-septies. Descargas: Instagram necesita cookies.txt (2026-10-18)
+
+- **TikTok ya funciona sin nada más.** Instagram pide sesión: para que baje reels/posts hay que
+  exportar las cookies de Instagram con una extensión del navegador («Get cookies.txt LOCALLY»),
+  guardar el fichero en el PC y añadir `"instagram_cookies": "ruta\\al\\cookies.txt"` en
+  `.private/descargas-worker.json`. Leer las cookies del navegador automáticamente NO funciona con
+  Chrome/Edge modernos (App-Bound Encryption): yt-dlp no puede abrir su base de datos.
+- **Contraseña de Descargas**: la eligió Antonio (6 caracteres) y NO está guardada en el repo ni en
+  `.private`. Por eso las verificaciones automatizadas de la app en producción se hacen en banco
+  local (con sesión sembrada) y del despliegue se comprueba por HTTP.
+- Pendiente de probar en producción con su sesión: bajar un TikTok y un Instagram reales, y el
+  botón «Ir a YouTube» en el móvil.
+
+---
 ## 0-sexies. Descargas: lo que queda (2026-10-17, tras las seis mejoras)
 
 1. **Activar el WhatsApp**: falta que Antonio cree la app en Meta, añada su número como

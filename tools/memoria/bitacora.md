@@ -824,3 +824,36 @@ revisando las tarjetas.
   restringido por pais.» delante del detalle. De paso, `VERSION_WORKER` ya dice **1.1**.
 
 Estado: T3 (WhatsApp) sigue esperando el token de Meta de Antonio; T2 solo necesita el móvil.
+## 2026-10-18 — Descargas: tres botones de origen (YouTube, Instagram y TikTok)
+
+Antonio: «Quiero poder descargar archivos de Instagram y tiktok. Añade 3 botones y clico en el botón
+correspondiente para pegar el enlace. Por defecto que sea el de youtube. La opción de youtube que
+tenga un botón para ir a la página de youtube y poder buscar el archivo».
+
+**Lo que se hizo.** En el formulario hay tres botones de origen (YouTube activo por defecto,
+Instagram, TikTok). Al pulsar uno cambia la etiqueta del campo, el placeholder y la ayuda, y el
+botón de al lado pasa a «Ir a YouTube / Instagram / TikTok» (abre la web en otra pestaña para
+buscar y copiar el enlace). Con YouTube se mantiene además el buscador dentro de la app (yt-dlp
+solo busca en YouTube, así que con Instagram/TikTok se oculta) y se mantiene el selector de
+calidad; con Instagram y TikTok se oculta porque esas redes sirven un único fichero y se baja tal
+cual. `api.php` detecta la red **por el dominio** (así funciona aunque se pulse el botón que no
+toca), la guarda en el trabajo y la cola la muestra («MP4 · TikTok»).
+
+**Dos fallos corregidos de paso.**
+- `worker.mjs` forzaba leer cookies de Chrome para Instagram. En Chrome/Edge modernos yt-dlp no
+  puede abrir esa base de datos («Could not copy Chrome cookie database») y el error es **fatal**,
+  así que fallaban incluso los posts públicos. Ahora por defecto NO usa cookies del navegador y el
+  mensaje de error explica cómo exportar un `cookies.txt` y ponerlo en `instagram_cookies`.
+- El buscador había quedado metido dentro del `<label>` del campo de enlace (HTML inválido que
+  funcionaba de milagro). Formulario reestructurado.
+
+**Verificado en banco local (mismo código que producción):**
+- Detección de red: YouTube → youtube, Instagram → instagram (aunque se pulsara YouTube),
+  TikTok → tiktok, `vm.tiktok.com` → tiktok.
+- **TikTok baja de verdad**: vídeo mp4 de 2,82 MB con su título.
+- **Instagram** devuelve el aviso claro («Instagram no da este contenido sin sesión… cómo exportar
+  cookies.txt»), no un error técnico. Instagram exige sesión: hace falta el cookies.txt.
+- Capturas en escritorio (1500) y móvil (390): los tres botones caben, sin desbordes.
+
+Desplegado: assets `app.20261018a.*` (200 en producción) y API nueva. El worker de producción se
+reinició con el código nuevo.
