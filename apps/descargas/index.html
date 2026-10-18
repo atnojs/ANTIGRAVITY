@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Descargas">
-<link rel="stylesheet" href="app.20261018j.css">
+<link rel="stylesheet" href="app.20261018k.css">
 </head>
 <body>
 
@@ -75,7 +75,9 @@
         <div class="field">
           <label for="url" id="url-label">Enlace de YouTube (uno por línea si quieres varios)</label>
           <textarea id="url" rows="3" placeholder="https://www.youtube.com/watch?v=..." spellcheck="false" aria-required="true"></textarea>
-          
+          <div class="url-acciones">
+            <button type="button" id="url-limpiar" class="btn-sm">Limpiar campo</button>
+          </div>
         </div>
 
         <div class="selectors">
@@ -142,12 +144,7 @@
 
     </div>
 
-    <!-- ── Historial (debajo del formulario) ── -->
-    <div class="col-history" id="history-section">
-      <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
-      <div id="history-grid"></div>
-      <button id="history-clear-btn" class="btn-danger-outline" style="display:none;">Limpiar</button>
-    </div>
+    
 
     <!-- ── Estado de las descargas (cola) ── -->
     <aside class="col-queue">
@@ -178,7 +175,7 @@
   </div>
 </div>
 
-<script src="history-manager.js"></script>
-<script src="app.20261018j.js"></script>
+
+<script src="app.20261018k.js"></script>
 </body>
 </html>

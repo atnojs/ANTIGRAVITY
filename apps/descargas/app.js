@@ -39,7 +39,6 @@ const state = {
   busy: false,
 };
 
-let history = null;
 let listTimer = null;
 let healthTimer = null;
 let authLost = false;
@@ -360,17 +359,6 @@ async function enterApp() {
   $('auth-modal').hidden = true;
   $('app-main').hidden = false;
 
-  if (window.HistoryManager) {
-    history = new HistoryManager('descargas');
-    history.onChange(() => renderHistory());
-    try {
-      await history.load();
-    } catch (e) {
-      console.warn('No se pudo cargar el historial:', e);
-    }
-    renderHistory();
-  }
-
   await refreshQueue();
   await refreshHealth();
   state.enCasaSonda = await detectarPcLocal();
@@ -438,35 +426,17 @@ function vigilarCola() {
   observador.observe(lista, { childList: true });
   ajustarAltoCola();
 }
-/** El historial muestra N filas y luego hace scroll (2 filas en escritorio, 1 en movil). */
-function ajustarAltoHistorial() {
-  const grid = $('history-grid');
-  if (!grid) return;
-  grid.classList.remove('scroll');
-  grid.style.maxHeight = '';
-  const fichas = Array.from(grid.children);
-  if (!fichas.length) return;
-  const estilo = window.getComputedStyle(grid);
-  const columnas = (estilo.gridTemplateColumns || '').split(' ').filter(Boolean).length || 1;
-  const filasVisibles = window.innerWidth <= 480 ? 1 : 2;
-  const visibles = columnas * filasVisibles;
-  if (fichas.length <= visibles) return;
-  const alto = fichas[visibles].offsetTop - fichas[0].offsetTop;
-  if (alto > 0) {
-    grid.style.maxHeight = alto + 'px';
-    grid.classList.add('scroll');
-  }
-}
 function ajustarAltoCola() {
   const lista = $('queue-list');
   if (!lista) return;
   lista.classList.remove('scroll');
   lista.style.maxHeight = '';
   const fichas = Array.from(lista.children);
-  if (fichas.length <= 5) return;
+  if (fichas.length <= 3) return;
   const primera = fichas[0];
-  const quinta = fichas[4];
-  const alto = (quinta.offsetTop + quinta.offsetHeight) - primera.offsetTop;
+  const tercera = fichas[2];
+  // Alto exacto de las 3 primeras: la 4a queda dentro del scroll.
+  const alto = (tercera.offsetTop + tercera.offsetHeight) - primera.offsetTop;
   if (alto > 0) {
     lista.style.maxHeight = alto + 'px';
     lista.classList.add('scroll');
@@ -665,48 +635,6 @@ async function addDownloads() {
 }
 
 /* ── Historial (panel canónico) ─────────────────────────────────────── */
-
-function renderHistory() {
-  const grid = $('history-grid');
-  const title = $('history-title');
-  const clearBtn = $('history-clear-btn');
-  if (!grid || !history) return;
-
-  const items = history.getAll() || [];
-  if (!items.length) {
-    grid.innerHTML = '<p class="empty">Aquí aparecerá lo que vayas descargando.</p>';
-    if (title) title.style.display = 'none';
-    if (clearBtn) clearBtn.style.display = 'none';
-    return;
-  }
-  if (title) title.style.display = 'block';
-  if (clearBtn) clearBtn.style.display = 'block';
-
-  grid.innerHTML = items.map((item) => {
-    const data = item.data || {};
-    const url = data.fileUrl || '';
-    const name = data.title || data.url || 'Descarga';
-    return `<div class="history-item">
-      ${url ? `<a href="${esc(url)}" download>${esc(name)}</a>` : `<span>${esc(name)}</span>`}
-      <span class="meta">${esc((data.format || '').toUpperCase())}${data.bytes ? ' · ' + humanBytes(data.bytes) : ''} · ${esc(fmtDate(item.createdAt))}</span>
-      <button type="button" class="del" data-del="${esc(item.id)}" aria-label="Quitar del historial">✕</button>
-    </div>`;
-  }).join('');
-  ajustarAltoHistorial();
-}
-
-async function onHistoryClick(event) {
-  const button = event.target.closest('button[data-del]');
-  if (!button || !history) return;
-  if (!confirm('¿Quitar esta entrada del historial? El fichero del servidor no se borra.')) return;
-  button.disabled = true;
-  try {
-    await history.delete(button.getAttribute('data-del'));
-  } catch (e) {
-    console.warn('No se pudo borrar del historial:', e);
-  }
-  renderHistory();
-}
 
 /* ── Carpeta de descarga en el PC ───────────────────────────────────── */
 
@@ -908,16 +836,16 @@ function bindSelectors() {
 function bindUI() {
   $('auth-form').addEventListener('submit', doLogin);
   $('add-btn').addEventListener('click', addDownloads);
+  $('url-limpiar').addEventListener('click', () => {
+    $('url').value = '';
+    $('url').focus();
+    showFormError('');
+  });
+  $('queue-list').addEventListener('click', onQueueClick);
   document.querySelectorAll('[data-fuente]').forEach((boton) => {
     boton.addEventListener('click', () => aplicarFuente(boton.dataset.fuente));
   });
-  $('history-clear-btn').addEventListener('click', async () => {
-    if (!history) return;
-    if (!confirm('¿Vaciar todo el historial? Los ficheros del servidor no se borran.')) return;
-    try { await history.clear(); } catch (e) { console.warn('No se pudo vaciar:', e); }
-    renderHistory();
-  });
-  document.addEventListener('visibilitychange', () => {
+ document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !authLost && !$('app-main').hidden) refreshQueue();
   });
   bindSelectors();
@@ -926,7 +854,7 @@ function bindUI() {
 
 window.addEventListener('resize', () => {
   clearTimeout(window.__colaTimer);
-  window.__colaTimer = setTimeout(() => { ajustarAltoCola(); ajustarAltoHistorial(); }, 200);
+  window.__colaTimer = setTimeout(ajustarAltoCola, 200);
 });
 
 document.addEventListener('DOMContentLoaded', async () => {

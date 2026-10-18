@@ -367,6 +367,36 @@ function jobsForClient(array $jobs): array {
  * cerrada. El formato es identico al de `history.php` (mismo fichero y mismo
  * bloqueo), para que HistoryManager lo lea y lo borre con normalidad.
  */
+/**
+ * Etiqueta rapida para la cola a partir del propio enlace, cuando la red social
+ * todavia no ha dado el titulo real (TikTok/Instagram tardan hasta el final).
+ *  - TikTok:    "TikTok · @usuario"
+ *  - Instagram: "Instagram · @usuario · Reel XXXX" (lo que se pueda sacar del enlace)
+ * Devuelve '' en YouTube: ahi el titulo real llega enseguida.
+ */
+function etiquetaDesdeEnlace(string $url, string $fuente): string {
+    $partes = parse_url($url);
+    $ruta = (string)($partes['path'] ?? '');
+    if ($fuente === 'tiktok') {
+        if (preg_match('~^/@([A-Za-z0-9_.]+)~', $ruta, $m)) {
+            return 'TikTok · @' . $m[1];
+        }
+        return 'TikTok';
+    }
+    if ($fuente === 'instagram') {
+        $etiquetas = ['Instagram'];
+        if (preg_match('~^/([A-Za-z0-9_.]+)/~', $ruta, $m)
+            && !in_array(strtolower($m[1]), ['reel', 'reels', 'p', 'tv', 'stories', 'share', 'explore'], true)) {
+            $etiquetas[] = '@' . $m[1];
+        }
+        if (preg_match('~/(reel|reels|p|tv)/([A-Za-z0-9_-]+)~', $ruta, $m)) {
+            $tipos = ['reel' => 'Reel', 'reels' => 'Reel', 'p' => 'Publicacion', 'tv' => 'IGTV'];
+            $etiquetas[] = ($tipos[strtolower($m[1])] ?? 'Video') . ' ' . $m[2];
+        }
+        return implode(' · ', $etiquetas);
+    }
+    return '';
+}
 function appendHistory(array $job, array $item): void {
     $dir = __DIR__ . '/' . HISTORY_DIR;
     if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
@@ -1160,7 +1190,12 @@ if (in_array($action, $workerActions, true)) {
         $queue['jobs'][$index]['speed']      = substr((string)($body['speed'] ?? ''), 0, 32);
         $queue['jobs'][$index]['eta']        = substr((string)($body['eta'] ?? ''), 0, 32);
         $queue['jobs'][$index]['stage']      = substr((string)($body['stage'] ?? ''), 0, 64);
-        $queue['jobs'][$index]['title']      = substr((string)($body['title'] ?? ''), 0, 200);
+        // Durante la descarga el worker manda titulo vacio en TikTok/Instagram:
+        // no debe borrar la etiqueta que ya se puso al encolar.
+        $tituloEntrante = substr(trim((string)($body['title'] ?? '')), 0, 200);
+        if ($tituloEntrante !== '') {
+            $queue['jobs'][$index]['title'] = $tituloEntrante;
+        }
         $queue['jobs'][$index]['item_index'] = (int)($body['item_index'] ?? 0);
         $queue['jobs'][$index]['item_count'] = (int)($body['item_count'] ?? 0);
         $queue['jobs'][$index]['updated_at'] = nowIso();
@@ -1519,7 +1554,7 @@ if ($action === 'add') {
         'speed'            => '',
         'eta'              => '',
         'stage'            => 'en cola',
-        'title'            => '',
+        'title'            => etiquetaDesdeEnlace($url, $fuente),
         'item_index'       => 0,
         'item_count'       => 0,
         'items'            => [],
