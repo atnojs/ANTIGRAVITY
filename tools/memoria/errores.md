@@ -598,3 +598,12 @@ Ampliación con datos de la entrada del 2026-10-16:
   regla de clase del media query.
 - **Solución:** en el media query, `.acciones-fila #add-btn { order: -1; flex: 1 1 auto; width: 100%; }`.
 - **Regla:** al pasar una fila a columna, revisar siempre los `flex-basis` con valor fijo.
+## 2026-10-18 — Al borrar un bloque de JS se llevó los enganches de la cola y el historial
+
+- **Síntoma:** los botones BORRAR de la cola y la X del historial se veían pero no hacían nada.
+- **Causa:** al quitar el bloque del buscador de YouTube se borró el rango «desde `function
+  pintarResultados(` hasta `async function onQueueClick(`». En `bindUI` los enganches
+  `$('queue-list').addEventListener(...)` y `$('history-grid').addEventListener(...)` estaban
+  **en la misma línea** que el cierre del bloque `yt-results`, así que se fueron con él.
+- **Solución:** reponer los dos `addEventListener` de `#queue-list`; la X desapareció con el
+  historial. Comprobar SIEMPRE `grep 'addEventListener'` tras quitar bloques por índices.

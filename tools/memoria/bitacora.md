@@ -927,3 +927,12 @@ estado (PC conectado · yt-dlp · servidor) y el interruptor casa/nube (el estad
 solo, pero ya no hay botón manual); «Salir» arriba a la derecha del título; fuera la frase de ayuda
 bajo el campo de URLs; scroll del historial con 2 filas visibles en escritorio (4 historiales) y 1
 fila en móvil; assets `app.20261018i.*` y `app.20261018j.*`.
+**Descargas: historial fuera y cola con scroll desde la 4ª (2026-10-18, noche; commit `ef3bf08`+`8d510d5`+ posterior).**
+
+Tras probar, Antonio decidió: el historial se solapaba con la cola, así que **se elimina el panel de
+historial** (queda solo la COLA). Cambios de esa tanda: botón DESCARGAR de **320 px**, «ELEGIR OTRA
+CARPETA» ocupa el resto; **cola con scroll a partir de la 4ª descarga** (3 visibles); **botón «Limpiar
+campo»** bajo el campo de URLs; fuera el buscador de YouTube y la barra de estado (ya de antes);
+**títulos desde el enlace** en TikTok («TikTok · @usuario») e Instagram («Instagram · Reel ID»), que
+luego se sustituyen por el título real cuando termina. Arreglado el BORRAR de la cola y la X del
+historial (los enganches se habían perdido al borrar el bloque del buscador).
