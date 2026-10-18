@@ -889,3 +889,14 @@ navegador de Antonio servía la página vieja de caché (hay que recargar con Ct
 
 También queda **descartado el aviso por WhatsApp**: Antonio dice que las descargas bajan tan rápido
 que no lo necesita. El panel queda en la app, desactivado, por si cambia de idea.
+## 2026-10-18 (tarde) — /proshot y /together pasan a «Cámara y retrato»
+
+- **Cambio (commit `ca59b61`):** en `CODE_FOLDER`, `/proshot` y `/together` pasan de `xl-otromundo`
+  a `xl-camararetrato`, y se añaden a `CATEGORY_MOVES` para que las tarjetas **ya guardadas** se
+  muevan al recargar (el mismo mecanismo que se usó al partir «Comida y moda»).
+- **Por qué no rompe las imágenes:** la imagen se resuelve por **código** (`SEED_COMMAND_IMAGES`),
+  no por carpeta; los ejemplos siguen en `assets/xl-otromundo/` y cargan igual.
+- **Verificación en producción:** búsqueda de ambos códigos → chip «Cámara y retrato» e imagen
+  1024×1024; migración probada forzando `category='xl-otromundo'` en localStorage y recargando →
+  las dos vuelven a `xl-camararetrato`; consola sin errores nuevos (Babel preexistente), red sin
+  4xx/5xx. Capturas en `tools/evidencias/2026-10-18-camararetrato/`.

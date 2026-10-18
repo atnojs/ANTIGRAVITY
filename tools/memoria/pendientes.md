@@ -22,7 +22,7 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 - **Estado:** hecha y publicada (commit `73360d2`). De los 16 códigos del Short, 10 ya existían y se revisaron (imagen↔prompt↔código y texto en español: correctos); se añadieron 6: `/phantom`, `/speedframe`, `/hairstylegrid` (imagen, con ejemplo `openai-image-2-low` en Carteles, Planos y Moda) y `/faceharmony`, `/skinglowtips`, `/colourfittips` (texto, en Comandos de texto).
 - **Verificación:** producción sirve el catálogo con **1242 trucos**; la búsqueda de los 6 devuelve tarjeta; las 3 imágenes cargan 1024×1024; consola sin errores nuevos (solo el aviso de Babel ya conocido); red sin 4xx/5xx.
-- **Hallazgo (decisión pendiente):** `/proshot` y `/together` están en `xl-otromundo` («Tú en otro mundo») aunque son retoque de persona; lo lógico sería `xl-camararetrato`. No se movieron para no alterar el catálogo sin permiso expreso.
+- **Resuelto 2026-10-18 (commit `ca59b61`):** `/proshot` y `/together` pasan de `xl-otromundo` a «Cámara y retrato» con `CODE_FOLDER` + `CATEGORY_MOVES`; verificado en producción (chip correcto, imagen intacta y migración de tarjeta guardada).
 - **Evidencias:** `tools/evidencias/2026-10-17-xabatz/` (revisión de las 10 existentes, las 3 nuevas y capturas de producción).
 
 ---
