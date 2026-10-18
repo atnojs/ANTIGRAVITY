@@ -745,8 +745,11 @@ function mensajeUtil(texto, url = '') {
   const esTikTok = /(^|\.)tiktok\.com$/.test(host) || /(^|\.)tiktokv\.com$/.test(host);
 
   // Instagram: sin sesion no sirve casi nada y ademas limita por peticiones.
-  if (esInstagram && /login required|rate-?limit|Please wait a few minutes|not available|empty media response/i.test(t)) {
-    return 'Instagram no da este contenido sin sesion (o te ha limitado por muchas peticiones seguidas). Para que funcione: inicia sesion en Instagram desde el navegador, exporta las cookies con una extension (por ejemplo "Get cookies.txt LOCALLY") y guarda el fichero en el PC; despues pon su ruta en "instagram_cookies" dentro de .private/descargas-worker.json y reinicia el worker. Leer las cookies del navegador automaticamente no funciona con Chrome/Edge modernos.';
+  if (esInstagram && /login required|only available for registered users|follow this account|log ?in to|please log ?in|rate-?limit|Please wait a few minutes|not available|empty media response|require.*login/i.test(t)) {
+    if (/follow this account/i.test(t)) {
+      return 'Ese video es de una cuenta privada: hace falta tener la sesion de Instagram iniciada Y seguir a esa cuenta. Si ya has configurado las cookies de Instagram, sigue a esa cuenta desde tu movil y reintentalo.';
+    }
+    return 'Instagram no da este contenido sin sesion (o te ha limitado por muchas peticiones seguidas). Para que funcione: exporta tus cookies de Instagram con la extension Cookie-Editor (boton Export, formato Netscape), guarda el fichero en el PC y pon su ruta en "instagram_cookies" dentro de .private/descargas-worker.json; despues reinicia el worker. Tienes los pasos en tools/descargador/instagram-LEEME.md. Leer las cookies del navegador automaticamente no funciona con Chrome/Edge modernos: usa Firefox con "instagram_browser": "firefox".';
   }
   // TikTok: el video puede haberse borrado o estar restringido por pais.
   if (esTikTok && /unavailable|not available|item doesn.?t exist|status code 10204/i.test(t)) {
