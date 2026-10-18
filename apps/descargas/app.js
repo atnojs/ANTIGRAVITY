@@ -407,6 +407,7 @@ async function enterApp() {
   state.enCasa = decidirEnCasa();
   pintarDondeEstoy();
   procesarCompartido();
+  vigilarCola();
   aplicarFuente(state.fuente || 'youtube');
   if (listTimer) clearInterval(listTimer);
   if (healthTimer) clearInterval(healthTimer);
@@ -467,6 +468,39 @@ async function refreshQueue() {
   }
 }
 
+/* ── La cola se queda con scroll a partir de la 6ª descarga ──────────── */
+
+/**
+ * Mide las 5 primeras fichas y fija ese alto como máximo. Si hay 5 o menos,
+ * no hay scroll (no aparece la barra). Asi el panel derecho no crece sin fin.
+ */
+/** Observa la lista de la cola: cada vez que se repinta, recalcula el alto. */
+function vigilarCola() {
+  const lista = $('queue-list');
+  if (!lista || typeof MutationObserver === 'undefined') return;
+  let t = null;
+  const observador = new MutationObserver(() => {
+    clearTimeout(t);
+    t = setTimeout(ajustarAltoCola, 60);
+  });
+  observador.observe(lista, { childList: true });
+  ajustarAltoCola();
+}
+function ajustarAltoCola() {
+  const lista = $('queue-list');
+  if (!lista) return;
+  lista.classList.remove('scroll');
+  lista.style.maxHeight = '';
+  const fichas = Array.from(lista.children);
+  if (fichas.length <= 5) return;
+  const primera = fichas[0];
+  const quinta = fichas[4];
+  const alto = (quinta.offsetTop + quinta.offsetHeight) - primera.offsetTop;
+  if (alto > 0) {
+    lista.style.maxHeight = alto + 'px';
+    lista.classList.add('scroll');
+  }
+}
 function renderQueue() {
   const list = $('queue-list');
   const jobs = state.jobs;
@@ -1035,6 +1069,11 @@ function bindUI() {
   bindSelectors();
   applyMode('audio');
 }
+
+window.addEventListener('resize', () => {
+  clearTimeout(window.__colaTimer);
+  window.__colaTimer = setTimeout(ajustarAltoCola, 200);
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   leerCompartido();

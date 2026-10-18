@@ -726,3 +726,14 @@ button.donde-estoy:focus-visible { outline: 2px solid var(--acc); outline-offset
   .acciones-fila .btn-primary { flex: 1 1 auto; width: 100%; }
   .acciones-fila #add-btn { order: -1; }
 }
+/* ── Cola con scroll propio: se activa a partir de la 6ª descarga ────── */
+.queue-list.scroll {
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--acc) transparent;
+}
+.queue-list.scroll::-webkit-scrollbar { width: 6px; }
+.queue-list.scroll::-webkit-scrollbar-track { background: transparent; }
+.queue-list.scroll::-webkit-scrollbar-thumb { background: var(--acc); border-radius: 999px; }
+.queue-list.scroll::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
