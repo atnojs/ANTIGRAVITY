@@ -418,6 +418,13 @@ function cargarConfig() {
     chunkMb: Number(datos.chunk_mb) > 0 ? Number(datos.chunk_mb) : 4,
     puertoLocal: Number(datos.puerto_local) > 0 ? Number(datos.puerto_local) : 8125,
     ytdlpVersion: typeof datos.ytdlp_version === 'string' ? datos.ytdlp_version : null,
+    // Cookies (opcionales). `cookies_file` vale para cualquier web; Instagram
+    // casi siempre exige sesion, asi que tiene sus propias claves:
+    //   instagram_cookies : ruta a un cookies.txt exportado del navegador
+    //   instagram_browser : navegador del que leer las cookies (chrome por defecto)
+    cookiesFile: datos.cookies_file ? String(datos.cookies_file) : null,
+    instagramCookies: datos.instagram_cookies ? String(datos.instagram_cookies) : null,
+    instagramBrowser: datos.instagram_browser === false ? null : String(datos.instagram_browser || 'chrome'),
   };
 
   if (!fs.existsSync(cfg.ytdlp)) {
@@ -726,8 +733,21 @@ function normalizarJob(job) {
  * Lo que devuelve se antepone al log crudo en el error que ve el usuario: el
  * log de yt-dlp, solo, no le dice nada.
  */
-function mensajeUtil(texto) {
+function mensajeUtil(texto, url = '') {
   const t = String(texto || '');
+  let host = '';
+  try { host = new URL(url).hostname.toLowerCase(); } catch (e) { /* sin url */ }
+  const esInstagram = /(^|\.)instagram\.com$/.test(host) || host === 'instagr.am';
+  const esTikTok = /(^|\.)tiktok\.com$/.test(host) || /(^|\.)tiktokv\.com$/.test(host);
+
+  // Instagram: sin sesion no sirve casi nada y ademas limita por peticiones.
+  if (esInstagram && /login required|rate-?limit|Please wait a few minutes|not available|empty media response/i.test(t)) {
+    return 'Instagram pide sesion para ver esto (o te ha limitado por muchas peticiones seguidas). Entra en Instagram con Chrome en este PC y reintentalo: el worker lee tus cookies del navegador. Si prefieres un fichero, exporta un cookies.txt y pon su ruta en "instagram_cookies" del worker.';
+  }
+  // TikTok: el video puede haberse borrado o estar restringido por pais.
+  if (esTikTok && /unavailable|not available|item doesn.?t exist|status code 10204/i.test(t)) {
+    return 'Ese video de TikTok ya no esta disponible (borrado, privado o restringido por pais).';
+  }
   if (/HTTP Error 403/i.test(t)) {
     return 'YouTube ha bloqueado la descarga desde este PC (error 403). Casi siempre es temporal y pasa tras muchas peticiones seguidas: espera unos minutos y reintentalo. Si sigue igual, YouTube esta pidiendo una sesion: exporta las cookies del navegador a un cookies.txt y pon su ruta en "cookies_file" de la configuracion del worker.';
   }
@@ -758,6 +778,15 @@ function mensajeUtil(texto) {
 function construirArgumentos(job, dirJob) {
   const args = ['--newline', '--no-warnings', '--progress', '--no-color'];
 
+  // Red social del enlace: Instagram y TikTok solo sirven un fichero ya montado
+  // (mp4 con audio dentro), asi que no se les puede pedir "bestvideo+bestaudio"
+  // ni forzar codecs: se baja el mejor fichero unico y punto.
+  let host = '';
+  try { host = new URL(job.url).hostname.toLowerCase(); } catch (e) { /* url rara */ }
+  const esInstagram = /(^|\.)instagram\.com$/.test(host) || host === 'instagr.am';
+  const esTikTok = /(^|\.)tiktok\.com$/.test(host) || /(^|\.)tiktokv\.com$/.test(host);
+  const redSocial = esInstagram || esTikTok;
+
   // Carpeta de destino y plantilla de nombre
   args.push('-P', dirJob);
   args.push('-o', job.playlist
@@ -766,6 +795,9 @@ function construirArgumentos(job, dirJob) {
 
   if (job.modo === 'audio') {
     args.push('-x', '--audio-format', job.formato);
+  } else if (redSocial) {
+    args.push('-f', 'b');
+    args.push('--merge-output-format', 'mp4');
   } else {
     const filtro = job.calidad === 'best'
       ? 'bv*+ba/b'
@@ -788,9 +820,18 @@ function construirArgumentos(job, dirJob) {
 
   // Cookies opcionales. YouTube responde 403 o pide "confirma que no eres un
   // robot" cuando no le consta una sesion; con un cookies.txt exportado del
-  // navegador se resuelve. Solo se usa si el fichero existe de verdad.
+  // navegador se resuelve. Instagram va mas alla: sin sesion devuelve
+  // "login required" casi siempre, asi que tiene sus propias claves.
   if (config.cookiesFile && fs.existsSync(config.cookiesFile)) {
     args.push('--cookies', config.cookiesFile);
+  } else if (esInstagram) {
+    if (config.instagramCookies && fs.existsSync(config.instagramCookies)) {
+      args.push('--cookies', config.instagramCookies);
+    } else if (config.instagramBrowser) {
+      // Lee las cookies del navegador del PC (hay que tener la sesion abierta
+      // en Instagram en ese navegador). No falla si el navegador esta cerrado.
+      args.push('--cookies-from-browser', config.instagramBrowser);
+    }
   }
 
   args.push('--ffmpeg-location', config.ffmpegDir);
@@ -1472,7 +1513,7 @@ async function procesarJob(jobBruto) {
     borrarCarpetaDeTrabajo(dirJob);
     // Se antepone una explicacion en castellano: el log crudo de yt-dlp no le
     // dice nada al usuario y estos fallos se repiten.
-    await informarFallo(job, `${mensajeUtil(resumen)} || yt-dlp código ${resultado.codigo}: ${resumen}`);
+    await informarFallo(job, `${mensajeUtil(resumen, job.url)} || yt-dlp código ${resultado.codigo}: ${resumen}`);
     return;
   }
 
@@ -1717,6 +1758,34 @@ function pararLimpiamente(motivo) {
 }
 
 async function principal() {
+  // Modo de diagnostico: imprime la orden de yt-dlp que se lanzaria y no descarga
+  // nada. Sirve para comprobar de un vistazo como se trata cada web (YouTube,
+  // Instagram, TikTok...).
+  //   node worker.mjs --args <url> [--modo video|audio] [--calidad best|1080] [--formato mp4|mp3]
+  const iArgs = process.argv.indexOf('--args');
+  if (iArgs !== -1) {
+    const url = process.argv[iArgs + 1];
+    if (!url) {
+      console.error('Uso: node worker.mjs --args <url> [--modo video|audio] [--calidad best|2160|1080|720...] [--formato mp4|mp3|m4a]');
+      process.exit(2);
+    }
+    const leerOpcion = (nombre, defecto) => {
+      const i = process.argv.indexOf('--' + nombre);
+      return i !== -1 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : defecto;
+    };
+    config = cargarConfig();
+    const job = normalizarJob({
+      id: 'diagnostico',
+      url,
+      mode: leerOpcion('modo', 'video'),
+      quality: leerOpcion('calidad', 'best'),
+      format: leerOpcion('formato', 'mp4'),
+    });
+    const args = construirArgumentos(job, path.join(config.downloadDir, job.id));
+    console.log(args.map((a) => (/\s/.test(a) ? '"' + a + '"' : a)).join(' '));
+    process.exit(0);
+  }
+
   prepararLog();
 
   config = cargarConfig();

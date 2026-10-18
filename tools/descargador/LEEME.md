@@ -54,6 +54,23 @@ Claves:
 | `poll_seconds` | Cada cuántos segundos se pregunta por trabajo (por defecto 5). |
 | `max_parallel` | Informativo: el worker procesa **un trabajo a la vez**. |
 | `chunk_mb` | Tamaño de cada trozo al subir (por defecto 4 MB). |
+| `cookies_file` | (Opcional) `cookies.txt` para cualquier web (YouTube 403, edad…). |
+| `instagram_cookies` | (Opcional) `cookies.txt` solo para Instagram. Si no está, se usan las del navegador. |
+| `instagram_browser` | (Opcional) navegador del que leer las cookies de Instagram: `chrome` por defecto; `false` para desactivarlo. |
+
+### Instagram y TikTok
+
+Los enlaces de **Instagram** (`/reel/`, `/p/`, `/tv/`) y **TikTok** (`/@usuario/video/…`)
+funcionan con el mismo worker: se les pide el mejor fichero único (`-f b`) porque esas webs
+ya entregan un MP4 con audio dentro.
+
+- **TikTok** no necesita nada más.
+- **Instagram** a veces pide sesión (`login required`) o limita por peticiones. Por defecto el
+  worker lee las cookies de **Chrome**: basta con tener la sesión abierta en Instagram en ese
+  navegador. Si prefieres un fichero, exporta un `cookies.txt` y pon su ruta en
+  `instagram_cookies`.
+- Para ver qué orden exacta se lanzaría, sin descargar nada:
+  `node worker.mjs --args <url> [--modo audio] [--calidad 1080] [--formato mp4]`.
 
 Se puede usar **otro fichero de configuración** con la variable de entorno:
 
