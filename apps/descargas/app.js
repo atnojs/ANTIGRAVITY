@@ -852,7 +852,7 @@ function renderDir(dir) {
       hint.textContent = dir.error;
     } else {
       hint.className = 'hint';
-      hint.textContent = 'Se abre el explorador de Windows en tu PC para que elijas la carpeta (o un USB). Se crea si no existe.';
+      hint.textContent = '';   // sin texto de ayuda fijo (lo quito Antonio)
     }
   }
 }
