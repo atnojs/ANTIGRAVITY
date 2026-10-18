@@ -102,7 +102,7 @@ body {
     "form    queue"
     "history queue";
   align-items: start;
-  gap: 16px;
+  gap: 12px;
 }
 .col-form { grid-area: form; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .col-queue { grid-area: queue; display: flex; flex-direction: column; gap: 14px; min-width: 0; position: sticky; top: 16px; align-self: start; }
@@ -617,7 +617,7 @@ button.donde-estoy { font-family: var(--font-ui); cursor: pointer; }
 button.donde-estoy:hover { filter: brightness(1.25); }
 button.donde-estoy:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
 /* Boton unico para elegir carpeta: ancho completo, comodo en movil */
-.dir-btn { width: 100%; justify-content: center; }
+/* (la regla vieja de .dir-btn a ancho completo ya no aplica: vive en la fila) */
 #dir-btn[disabled] { opacity: .65; cursor: progress; }
 /* ── Buscar en YouTube ──────────────────────────────────────────────── */
 .yt-search { display: flex; gap: 8px; margin: 0 0 12px; }
@@ -708,8 +708,9 @@ button.donde-estoy:focus-visible { outline: 2px solid var(--acc); outline-offset
   align-items: stretch;
   margin-top: 4px;
 }
-.acciones-fila .btn-primary { flex: 1 1 260px; width: auto; }
-.acciones-fila .dir-btn { flex: 0 1 auto; }
+.acciones-fila .btn-primary { width: auto; }
+.acciones-fila .dir-btn { flex: 1 1 auto; }
+.acciones-fila #add-btn { flex: 0 0 auto; padding: 12px 30px; }
 .dir-linea { margin: 10px 0 0; font-size: .82rem; color: var(--muted); }
 .dir-linea code {
   font-family: var(--font-ui);
@@ -723,4 +724,5 @@ button.donde-estoy:focus-visible { outline: 2px solid var(--acc); outline-offset
 @media (max-width: 560px) {
   .acciones-fila { flex-direction: column; }
   .acciones-fila .btn-primary { flex: 1 1 auto; width: 100%; }
+  .acciones-fila #add-btn { order: -1; }
 }
