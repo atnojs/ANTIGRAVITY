@@ -236,36 +236,6 @@ function decidirEnCasa() {
   return state.enCasaSonda === true || state.enCasaIp === true;
 }
 
-function pintarDondeEstoy() {
-  const capa = document.getElementById('donde-estoy');
-  if (!capa) return;
-  const d = state.deteccion;
-  const manual = leerModoManual();
-  capa.title = (d ? 'worker=' + d.worker + ' cliente=' + d.cliente + ' coinciden=' + d.coinciden : '')
-    + ' sonda=' + state.enCasaSonda
-    + ' manual=' + (manual === null ? 'auto' : manual)
-    + '  ·  pulsa para cambiarlo';
-
-  if (state.enCasa) {
-    capa.textContent = (manual === true ? 'En casa (fijado)' : 'Estás en el PC')
-      + ': se queda en tu carpeta';
-    capa.className = 'donde-estoy en-casa';
-  } else {
-    capa.textContent = (manual === false ? 'Fuera (fijado)' : 'Desde fuera')
-      + ': se suben a la web (48 h)';
-    capa.className = 'donde-estoy fuera';
-  }
-}
-
-/** Un toque: cambia entre "en casa" y "fuera" y lo recuerda en este dispositivo. */
-function alternarDondeEstoy() {
-  const actual = decidirEnCasa();
-  guardarModoManual(!actual);
-  state.enCasa = !actual;
-  pintarDondeEstoy();
-}
-
-
 /* ── Aviso flotante (para cosas puntuales: enlace compartido, subidas...) ── */
 
 let temporizadorAviso = null;
@@ -405,7 +375,6 @@ async function enterApp() {
   await refreshHealth();
   state.enCasaSonda = await detectarPcLocal();
   state.enCasa = decidirEnCasa();
-  pintarDondeEstoy();
   procesarCompartido();
   vigilarCola();
   aplicarFuente(state.fuente || 'youtube');
@@ -418,31 +387,17 @@ async function enterApp() {
 /* ── Estado del PC y el disco ───────────────────────────────────────── */
 
 async function refreshHealth() {
+  // La barra de estado ya no esta: aqui solo se mantiene la deteccion de
+  // 'estoy en casa o fuera', que decide si el fichero se queda en el PC o se sube.
   try {
     const response = await fetch(API + '?action=health', { cache: 'no-store' });
     const data = await response.json();
     if (!data || !data.success) return;
-
-    const dot = $('worker-dot');
-    const text = $('worker-text');
-    const seconds = data.worker && typeof data.worker.seconds_ago === 'number' ? data.worker.seconds_ago : null;
-
-    if (seconds === null) {
-      dot.className = 'dot off';
-      text.textContent = 'PC desconectado: arranca el worker para que baje algo';
-    } else if (seconds < 90) {
-      dot.className = 'dot on';
-      text.textContent = 'PC conectado' + (data.worker.ytdlp ? ' · yt-dlp ' + data.worker.ytdlp : '');
-    } else {
-      dot.className = 'dot off';
-      text.textContent = 'PC sin señales desde hace ' + Math.round(seconds / 60) + ' min';
+    if (data.deteccion) {
+      state.enCasaIp = data.deteccion.coinciden === true;
+      state.deteccion = data.deteccion;
     }
-
-    if (data.deteccion) { state.enCasaIp = data.deteccion.coinciden === true; state.deteccion = data.deteccion; }
-    const free = data.disk && data.disk.free_human ? data.disk.free_human : '';
-    const pending = data.counts ? (data.counts.queued || 0) + (data.counts.running || 0) : 0;
-    $('disk-text').textContent = (free ? 'Servidor: ' + free + ' libres' : '') +
-      (pending ? ' · ' + pending + ' en curso' : '');
+    state.enCasa = decidirEnCasa();
   } catch (e) { /* silencio: es solo informativo */ }
 }
 
@@ -459,10 +414,7 @@ async function refreshQueue() {
     state.jobs = result.data.jobs || [];
     renderQueue();
     renderDir(result.data.dir);
-    if (result.data.disk_free) {
-      const current = $('disk-text').textContent || '';
-      if (!/libres/.test(current)) $('disk-text').textContent = 'Servidor: ' + result.data.disk_free + ' libres';
-    }
+
   } catch (e) {
     console.warn('No se pudo leer la cola:', e);
   }
@@ -485,6 +437,25 @@ function vigilarCola() {
   });
   observador.observe(lista, { childList: true });
   ajustarAltoCola();
+}
+/** El historial muestra N filas y luego hace scroll (2 filas en escritorio, 1 en movil). */
+function ajustarAltoHistorial() {
+  const grid = $('history-grid');
+  if (!grid) return;
+  grid.classList.remove('scroll');
+  grid.style.maxHeight = '';
+  const fichas = Array.from(grid.children);
+  if (!fichas.length) return;
+  const estilo = window.getComputedStyle(grid);
+  const columnas = (estilo.gridTemplateColumns || '').split(' ').filter(Boolean).length || 1;
+  const filasVisibles = window.innerWidth <= 480 ? 1 : 2;
+  const visibles = columnas * filasVisibles;
+  if (fichas.length <= visibles) return;
+  const alto = fichas[visibles].offsetTop - fichas[0].offsetTop;
+  if (alto > 0) {
+    grid.style.maxHeight = alto + 'px';
+    grid.classList.add('scroll');
+  }
 }
 function ajustarAltoCola() {
   const lista = $('queue-list');
@@ -597,93 +568,6 @@ function renderQueue() {
 
 /* ── Buscar en YouTube ──────────────────────────────────────────────── */
 
-function pintarResultados(resultados, error) {
-  const caja = $('yt-results');
-  if (!caja) return;
-  if (error) {
-    caja.hidden = false;
-    caja.innerHTML = '<p class="yt-vacio">' + esc(error) + '</p>';
-    return;
-  }
-  if (!resultados || !resultados.length) {
-    caja.hidden = false;
-    caja.innerHTML = '<p class="yt-vacio">Sin resultados.</p>';
-    return;
-  }
-  caja.hidden = false;
-  caja.innerHTML = resultados.map((r) => {
-    const total = Number(r.duration) || 0;
-    const duracion = total > 0 ? Math.floor(total / 60) + ':' + String(total % 60).padStart(2, '0') : '';
-    const miniatura = r.thumbnail
-      ? '<img src="' + esc(r.thumbnail) + '" alt="" loading="lazy" width="96" height="54">'
-      : '<span class="yt-thumb"></span>';
-    const meta = [esc(r.channel || ''), duracion].filter(Boolean).join(' · ');
-    return '<article class="yt-card">' + miniatura +
-      '<div class="yt-info">' +
-        '<span class="yt-title">' + esc(r.title || '') + '</span>' +
-        '<span class="yt-meta">' + meta + '</span>' +
-        '<button type="button" class="btn-sm" data-act="bajar" data-url="' + esc(r.url || '') + '">DESCARGAR</button>' +
-      '</div></article>';
-  }).join('');
-}
-
-async function buscarEnYoutube() {
-  const entrada = $('yt-q');
-  const boton = $('yt-search');
-  const consulta = (entrada && entrada.value ? entrada.value : '').trim();
-  if (!consulta) {
-    showFormError('Escribe qué quieres buscar.');
-    return;
-  }
-  showFormError('');
-  boton.disabled = true;
-  boton.textContent = 'Buscando…';
-  const caja = $('yt-results');
-  if (caja) {
-    caja.hidden = false;
-    caja.innerHTML = '<p class="yt-vacio">Buscando en YouTube en tu PC…</p>';
-  }
-  try {
-    const alta = await postJson(API + '?action=search', { q: consulta });
-    if (!alta.ok) {
-      pintarResultados(null, alta.data.error || 'No se pudo buscar.');
-      return;
-    }
-    const id = alta.data.id;
-    // La busqueda la hace el PC: se pregunta hasta que conteste (max ~25 s).
-    for (let intento = 0; intento < 25; intento++) {
-      await new Promise((r) => setTimeout(r, 1000));
-      const estado = await postJson(API + '?action=search_status', { id });
-      if (!estado.ok) {
-        pintarResultados(null, estado.data.error || 'La búsqueda caducó.');
-        return;
-      }
-      if (estado.data.estado === 'lista') {
-        if (estado.data.error) pintarResultados(null, estado.data.error);
-        else pintarResultados(estado.data.resultados, '');
-        return;
-      }
-    }
-    pintarResultados(null, 'El PC no contestó a la búsqueda. ¿Está encendido el worker?');
-  } catch (e) {
-    pintarResultados(null, 'No hay conexión con el servidor.');
-  } finally {
-    boton.disabled = false;
-    boton.textContent = 'Buscar';
-  }
-}
-
-/** De un resultado: lo pone como enlace y pide la descarga con los ajustes actuales. */
-function descargarResultado(url) {
-  const entrada = $('url');
-  if (!entrada || !url) return;
-  const actuales = entrada.value.split('\n').map((l) => l.trim()).filter(Boolean);
-  if (actuales.indexOf(url) === -1) actuales.push(url);
-  entrada.value = actuales.join('\n');
-  const caja = $('yt-results');
-  if (caja) caja.hidden = true;
-  addDownloads();
-}
 async function onQueueClick(event) {
   const button = event.target.closest('button[data-act]');
   if (!button) return;
@@ -777,11 +661,6 @@ async function addDownloads() {
   }
   if (failures.length) {
     showFormError(failures.slice(0, 3).join(' · '));
-  } else if (sent > 0) {
-    const strip = $('worker-text');
-    if (strip && /desconectado|sin señales/.test(strip.textContent)) {
-      showFormError('Enviado, pero el PC está desconectado: no bajará hasta que arranques el worker.');
-    }
   }
 }
 
@@ -813,6 +692,7 @@ function renderHistory() {
       <button type="button" class="del" data-del="${esc(item.id)}" aria-label="Quitar del historial">✕</button>
     </div>`;
   }).join('');
+  ajustarAltoHistorial();
 }
 
 async function onHistoryClick(event) {
@@ -846,7 +726,7 @@ async function elegirCarpetaEnPc() {
     if (!resultado.ok) {
       showFormError(resultado.data.error || 'No se pudo pedir el cambio de carpeta.');
       boton.disabled = false;
-      if (texto) texto.textContent = 'ELEGIR CARPETA EN EL PC';
+      if (texto) texto.textContent = 'ELEGIR OTRA CARPETA';
       return;
     }
     const hint = $('dir-hint');
@@ -858,7 +738,7 @@ async function elegirCarpetaEnPc() {
   } catch (e) {
     showFormError('No hay conexión con el servidor.');
     boton.disabled = false;
-    if (texto) texto.textContent = 'ELEGIR CARPETA EN EL PC';
+    if (texto) texto.textContent = 'ELEGIR OTRA CARPETA';
   }
 }
 
@@ -875,7 +755,7 @@ function renderDir(dir) {
 
   const esperando = dir.dialogo === true;
   if (boton) boton.disabled = esperando;
-  if (texto) texto.textContent = esperando ? 'ESPERANDO EN EL PC…' : 'ELEGIR CARPETA EN EL PC';
+  if (texto) texto.textContent = esperando ? 'ESPERANDO EN EL PC…' : 'ELEGIR OTRA CARPETA';
 
   if (hint) {
     if (esperando) {
@@ -974,17 +854,8 @@ function aplicarFuente(fuente) {
 
   if ($('url-label')) $('url-label').textContent = datos.etiqueta;
   if ($('url')) $('url').placeholder = datos.placeholder;
-  if ($('fuente-ayuda')) $('fuente-ayuda').textContent = datos.ayuda;
   const enlace = $('fuente-ir');
   if (enlace) { enlace.href = datos.sitio; enlace.textContent = datos.boton; }
-
-  // El buscador de la app solo funciona con YouTube.
-  const caja = $('yt-search-box');
-  if (caja) caja.hidden = !datos.buscar;
-  if (!datos.buscar) {
-    const resultados = $('yt-results');
-    if (resultados) { resultados.hidden = true; resultados.innerHTML = ''; }
-  }
   actualizarVisibilidadCalidad();
 }
 function applyMode(mode) {
@@ -1040,23 +911,6 @@ function bindUI() {
   document.querySelectorAll('[data-fuente]').forEach((boton) => {
     boton.addEventListener('click', () => aplicarFuente(boton.dataset.fuente));
   });
-  $('yt-search').addEventListener('click', buscarEnYoutube);
-  $('yt-q').addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') { event.preventDefault(); buscarEnYoutube(); }
-  });
-  $('yt-results').addEventListener('click', (event) => {
-    const botonResultado = event.target.closest('button[data-act="bajar"]');
-    if (botonResultado) descargarResultado(botonResultado.getAttribute('data-url'));
-  });  $('queue-list').addEventListener('click', onQueueClick);
-  $('history-grid').addEventListener('click', onHistoryClick);
-  $('logout-btn').addEventListener('click', doLogout);
-  $('playlist').addEventListener('change', (event) => { state.playlist = event.target.checked; });
-  $('subir-web').addEventListener('change', (event) => { state.subirWeb = event.target.checked; });
-  $('dir-btn').addEventListener('click', elegirCarpetaEnPc);
-  $('donde-estoy').addEventListener('click', alternarDondeEstoy);
-  $('url').addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) addDownloads();
-  });
   $('history-clear-btn').addEventListener('click', async () => {
     if (!history) return;
     if (!confirm('¿Vaciar todo el historial? Los ficheros del servidor no se borran.')) return;
@@ -1072,7 +926,7 @@ function bindUI() {
 
 window.addEventListener('resize', () => {
   clearTimeout(window.__colaTimer);
-  window.__colaTimer = setTimeout(ajustarAltoCola, 200);
+  window.__colaTimer = setTimeout(() => { ajustarAltoCola(); ajustarAltoHistorial(); }, 200);
 });
 
 document.addEventListener('DOMContentLoaded', async () => {

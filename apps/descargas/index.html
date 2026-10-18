@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Descargas">
-<link rel="stylesheet" href="app.20261018h.css">
+<link rel="stylesheet" href="app.20261018i.css">
 </head>
 <body>
 
@@ -51,16 +51,10 @@
   <header class="app-header">
     <h1 class="app-title">DESCARGAS</h1>
     <p class="app-subtitle">Pega un enlace y tu PC lo descarga. YouTube, Instagram y TikTok; vídeo y audio, desde cualquier sitio.</p>
+    <button type="button" id="logout-btn" class="link-btn header-salir">Salir</button>
   </header>
 
-  <div id="status-strip" class="status-strip" role="status" aria-live="polite">
-    <span class="dot" id="worker-dot" aria-hidden="true"></span>
-    <span id="worker-text">Comprobando el PC…</span>
-    <span class="sep" aria-hidden="true">·</span>
-    <span id="disk-text">—</span>
-    <button type="button" id="donde-estoy" class="donde-estoy" title="Pulsa para cambiar"></button>
-    <button type="button" id="logout-btn" class="link-btn">Salir</button>
-  </div>
+  
 
   <div class="main-layout">
     <div class="col-form">
@@ -75,19 +69,13 @@
           <a class="btn-sm fuente-ir" id="fuente-ir" href="https://www.youtube.com" target="_blank" rel="noopener">Ir a YouTube ↗</a>
         </div>
 
-        <!-- Buscador dentro de la app: solo tiene sentido con YouTube (yt-dlp busca
-             en YouTube; Instagram y TikTok no tienen busqueda por API). -->
-        <div class="yt-search" id="yt-search-box">
-          <label class="sr-only" for="yt-q">Buscar en YouTube</label>
-          <input type="search" id="yt-q" placeholder="Buscar en YouTube…" autocomplete="off" spellcheck="false">
-          <button type="button" id="yt-search" class="btn-sm">Buscar</button>
-        </div>
-        <div id="yt-results" class="yt-results" hidden></div>
+        
+        
 
         <div class="field">
           <label for="url" id="url-label">Enlace de YouTube (uno por línea si quieres varios)</label>
           <textarea id="url" rows="3" placeholder="https://www.youtube.com/watch?v=..." spellcheck="false" aria-required="true"></textarea>
-          <p class="hint" id="fuente-ayuda">Pega el enlace del vídeo o búscalo aquí arriba.</p>
+          
         </div>
 
         <div class="selectors">
@@ -140,7 +128,7 @@
         <p class="hint" id="dir-hint"></p>
         <div class="acciones-fila">
           <button type="button" id="dir-btn" class="btn-sm dir-btn">
-            <span id="dir-btn-text">ELEGIR CARPETA EN EL PC</span>
+            <span id="dir-btn-text">ELEGIR OTRA CARPETA</span>
           </button>
           <button type="button" id="add-btn" class="btn-sm add-btn">
             <span id="add-btn-text">Descargar</span>
@@ -149,8 +137,6 @@
         <p class="dir-linea">Se guardan en: <code id="dir-actual">—</code></p>
         <div id="form-error" class="form-error" role="alert" hidden></div>
       </section>
-
-
 
 
 
@@ -193,6 +179,6 @@
 </div>
 
 <script src="history-manager.js"></script>
-<script src="app.20261018h.js"></script>
+<script src="app.20261018i.js"></script>
 </body>
 </html>
