@@ -5,9 +5,10 @@
  * La app queda publica en internet: sin esto, cualquiera que encuentre la URL
  * podria encolar descargas en el PC de Antonio.
  *
- * El hash es el MISMO de la contrasena de edicion de TrickVault / video-vault /
- * json, asi que se rota a la vez con `tools/rotar-password.ps1`. El valor en
- * claro vive en `.private/password-edicion.txt` (fuera de git y de la web).
+ * CONTRASENA PROPIA (2026-10-17): ya NO comparte el hash de TrickVault /
+ * video-vault / json, asi que `tools/rotar-password.ps1` no la toca. Si se
+ * quiere cambiar, se recalcula su sha256 y se sustituye $expectedHash (abajo).
+ * El valor en claro lo guarda Antonio; no se escribe en el repositorio.
  */
 declare(strict_types=1);
 
@@ -62,7 +63,7 @@ if ($action === 'logout') {
 }
 
 $password = (string)($_POST['password'] ?? '');
-$expectedHash = '0c79272e8c147c95bedd7450abfd42cb3377947341694276c5835caeb9f435ee';
+$expectedHash = 'c97550ce8213ef5cf6ed4ba48790c137df3ef6a5da20b48961001a634b6cead2';
 
 // Freno a la fuerza bruta: 1 s por intento fallido. La contraseña son 20
 // caracteres aleatorios; con esto el ataque por fuerza bruta deja de ser barato.

@@ -5,6 +5,26 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-17 — Descargas: contraseña de entrada propia, separada de la de edición
+
+Antonio pidió cambiar **solo** el login de entrada de `apps/descargas` («Solo en descargas
+para el login de entrada»). Antes las cuatro apps compartían el mismo hash y
+`tools/rotar-password.ps1` lo escribía en los cuatro `auth.php`.
+
+- `apps/descargas/auth.php` tiene ahora su propio `$expectedHash` (ya no es el de
+  TrickVault / video-vault / json) y el comentario de cabecera lo explica.
+- `tools/rotar-password.ps1`: se quitó `apps\descargas\auth.php` de `$destinos` para que
+  una rotación futura no pise esta contraseña; la cabecera avisa de que Descargas va aparte.
+- `tools/memoria/credenciales.md`: nueva fila con dónde vive la contraseña de Descargas y
+  cómo cambiarla a mano (sha256 en el propio `auth.php`).
+- La contraseña elegida es la que pidió Antonio (no se anota aquí). Aviso dejado por
+  escrito: es de 2 caracteres y la app es pública, así que el freno real es el `sleep(1)`
+  por intento fallido del propio `auth.php`.
+- Verificado en producción tras el push: el login con la nueva contraseña devuelve
+  `success:true` y con una incorrecta, 403.
+
+---
+
 ## 2026-10-15 — TrickVault: cada tarjeta con su imagen, un sujeto por carpeta y ni una palabra en inglés
 
 **Punto de partida.** Antonio: «la imagen no cuadra con la tarjeta», «hay imágenes en las que

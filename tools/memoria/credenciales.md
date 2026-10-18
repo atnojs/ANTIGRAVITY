@@ -44,6 +44,7 @@ dependencias. Si necesitas el valor, ve al almacén.
 | Claves de Google | `.env`, `keys/`, y **los frontends que las tengan incrustadas** (ver abajo) |
 | Token de GitHub | `inicio.md` (está en `.gitignore`: **no** quitar esa línea) |
 | **Contraseña de edición** (TrickVault / video-vault / json) | `powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1` — escribe el hash en los 3 `auth.php` y guarda la nueva en `.private/`. Después, **commit + push** de los `auth.php` y esperar al despliegue |
+| **Contraseña de Descargas** (login de entrada, independiente desde 2026-10-17) | Su hash está en `apps\descargas\auth.php` (`$expectedHash`). **No** la rota `tools\rotar-password.ps1`. Para cambiarla: calcular `hash('sha256', '<nueva>')` y sustituir ese hash; después commit + push |
 
 ---
 
