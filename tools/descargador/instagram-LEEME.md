@@ -77,13 +77,18 @@ portapapeles) y se convirtieron al formato Netscape. Está todo puesto:
 - Configuración: `"instagram_cookies": "D:\\Vídeos\\ytdownloader\\cookies-instagram.txt"` en
   `.private\descargas-worker.json` (worker reiniciado para que lo lea).
 - Comprobado: yt-dlp dice `[Instagram] Found Instagram account cookies` y los reels públicos bajan
-  con la sesión puesta.
+  con la sesión puesta. También se ha comprobado lo contrario: **10 reels seguidos se bajaron sin
+  cookies** (14:35–16:07), así que el Instagram público no necesita sesión.
 
 **Cuándo hay que repetirlo:** cuando Instagram caduque la sesión (semanas o meses). El síntoma es
 que vuelve el error de «Instagram no da este contenido sin sesión». Para renovarlo: repetir el
 Export en Cookie-Editor (Instagram abierto y con sesión) y volver a convertir el JSON a Netscape en
 esa misma ruta.
 
-**Lo que NO se puede ni con cookies:** contenido de una cuenta privada que **no sigues**. Instagram
-responde `only available for registered users who follow this account` (sin sesión) o `HTTP 400`
-(con sesión). Hay que seguir a esa cuenta.
+**Lo que no está disponible:** los dos reels que fallaron al principio (`DemQccogGmdey…` y
+`DeS9kSUjQkF…`) **siguen fallando también con las cookies** (`HTTP 400`). No es falta de sesión:
+esos dos posts no están disponibles (borrados, restringidos o solo para seguidores). No hay manera
+de bajarlos.
+
+**Resumen:** Instagram público = sin cookies. Instagram con sesión = con cookies (ya puestas). Posts
+que no están disponibles = imposible, con o sin sesión.

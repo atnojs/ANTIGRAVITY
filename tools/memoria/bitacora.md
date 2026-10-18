@@ -872,3 +872,9 @@ leerlo con `Get-Clipboard`). Se convirtieron a formato Netscape en
 Instagram account cookies` y el reel público baja con la sesión. Los dos reels que fallaron son de
 cuentas que **no sigue**: Instagram no los da ni con cookies (sin sesión dice «only available for
 registered users who follow this account»; con sesión, HTTP 400).
+**Corrección (contrastado con el log, 16:20-17:00).** Los **10 vídeos de Instagram** que Antonio
+bajó (14:35–16:07) se descargaron **sin cookies**: las cookies se configuraron a las 16:20. O sea,
+los reels **públicos funcionan sin sesión**; él creía que eran privados, pero Instagram los sirvió
+sin login. Y los dos reels que fallaron al principio (`DemQccogGmdey…`, `DeS9kSUjQkF…`) **siguen
+fallando con cookies** (`HTTP 400`): esos posts no están disponibles, no era problema de sesión. Las
+cookies quedan puestas para lo que sí exija login.
