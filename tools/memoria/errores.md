@@ -587,3 +587,14 @@ Ampliación con datos de la entrada del 2026-10-16:
 - **Causa:** el árbol tiene `node_modules`, backups y miles de ficheros.
 - **Solución:** rutas concretas, `Get-ChildItem -Depth N` o `-Include` acotado. Para buscar
   contenido, `Select-String` sobre directorios concretos, nunca sobre la raíz entera.
+
+## 2026-10-18 — Botón gigante en móvil por `flex: 0 0 220px` en una fila que pasa a columna
+
+- **Síntoma:** el botón DESCARGAR salía con ~220 px de ALTO en el móvil (una pastilla enorme),
+  mientras en escritorio se veía bien.
+- **Causa:** `.acciones-fila #add-btn { flex: 0 0 220px; }` fija el ancho en fila, pero en el
+  `@media (max-width: 560px)` la fila pasa a `flex-direction: column` y ese `220px` se interpreta
+  como **alto** (flex-basis del eje principal, que ahora es vertical). La regla del id ganaba a la
+  regla de clase del media query.
+- **Solución:** en el media query, `.acciones-fila #add-btn { order: -1; flex: 1 1 auto; width: 100%; }`.
+- **Regla:** al pasar una fila a columna, revisar siempre los `flex-basis` con valor fijo.

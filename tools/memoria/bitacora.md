@@ -919,3 +919,11 @@ que no lo necesita. El panel queda en la app, desactivado, por si cambia de idea
   se ven 5 y la sexta queda dentro del scroll.
 - Assets actuales: `app.20261018h.*` (pendiente de desplegar al escribir esto; Hostinger iba muy
   lento, entre 5 y 10 minutos por despliegue, y a veces la CDN sirve versiones mezcladas).
+**Tanda de ajustes finos de Descargas (2026-10-18, noche; commits `ef3bf08` y `8d510d5`).**
+
+Pedidos por Antonio y hechos: fuera el buscador interno de YouTube (queda solo «Ir a YouTube»);
+botón DESCARGAR de 220 px a la derecha y «Elegir otra carpeta» a la izquierda; fuera la barra de
+estado (PC conectado · yt-dlp · servidor) y el interruptor casa/nube (el estado se sigue detectando
+solo, pero ya no hay botón manual); «Salir» arriba a la derecha del título; fuera la frase de ayuda
+bajo el campo de URLs; scroll del historial con 2 filas visibles en escritorio (4 historiales) y 1
+fila en móvil; assets `app.20261018i.*` y `app.20261018j.*`.
