@@ -1,191 +1,23 @@
 [
  {
-  "id": "reel-cmd-015",
-  "code": "/product unveil",
+  "id": "reel2-cmd-009",
+  "code": "/DARKPREMIUM",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/product unveil If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dramatic product reveal of a glass bottle of artisanal olive oil uncovered from beneath a flowing black silk cloth on a dark stone pedestal, single warm spotlight, deep shadows, luxury advertising still life, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/DARKPREMIUM If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dark premium product photograph of a glass bottle of artisanal olive oil: the product resting on a black stone surface against a pure black background, single dramatic warm spotlight from above, deep rich shadows, glossy reflections, luxury advertising still life, crisp detail, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "reel-cmd-016",
-  "code": "/product unbox",
+  "id": "reel2-cmd-010",
+  "code": "/SPLASHHERO",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/product unbox If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Luxurious unboxing scene of a glass bottle of artisanal olive oil resting inside an open velvet-lined presentation box, plush red lining, soft cinematic light from above, premium gift set presentation, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/SPLASHHERO If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Splash hero product photograph of a glass bottle of artisanal olive oil: the product surrounded by high-speed frozen water splashes and flying droplets, deep red dramatic background, strong rim light, crisp liquid detail, commercial advertising photography, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "reel-cmd-017",
-  "code": "/product showcase",
+  "id": "reel2-cmd-011",
+  "code": "/AESTHETICLUXURY",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/product showcase If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Premium outdoor showcase of a glass bottle of artisanal olive oil standing on a sunlit Mediterranean stone ledge, warm coastal light, terracotta architecture softly blurred behind, elegant lifestyle catalogue look, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-018",
-  "code": "/product reaction",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product reaction If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Authentic lifestyle reaction shot of a glass bottle of artisanal olive oil being held up by a genuinely surprised person outdoors, crisp daylight, documentary advertising style, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-019",
-  "code": "/product energy",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product energy If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Explosive energy scene of a glass bottle of artisanal olive oil surrounded by a burst of glowing droplets and sparks, dark background, high-speed splash photography, vivid colour, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-021",
-  "code": "/product adventure",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product adventure If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Adventure scene of a glass bottle of artisanal olive oil resting on a rock in front of a snowy mountain range, a hiker sitting beside it, crisp alpine air, epic travel advertising composition, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-022",
-  "code": "/product supermarket",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product supermarket If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Realistic supermarket shelf scene of a glass bottle of artisanal olive oil among rows of identical products, a hand reaching for one in the foreground, cool fluorescent store lighting, shallow depth of field, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-023",
-  "code": "/product installation",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product installation If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Monumental art installation of a glass bottle of artisanal olive oil in a city plaza at dusk, pedestrians walking around it, wet pavement reflections, purple and blue twilight, editorial reportage look, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-095",
-  "code": "/product crash",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product crash If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. High impact crash scene with a glass bottle of artisanal olive oil breaking through a wall of ice or glass, debris and shards flying, dramatic backlight, action advertising, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-096",
-  "code": "/product launch",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product launch If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Product launch scene of a glass bottle of artisanal olive oil rocketing upward with smoke and sparks, stage lights and confetti, epic reveal moment, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-097",
-  "code": "/product reveal",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product reveal If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cinematic reveal of a glass bottle of artisanal olive oil emerging from darkness into a pool of light, volumetric haze, slow dramatic timing, premium teaser look, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-107",
-  "code": "/product floating",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product floating If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Zero gravity floating presentation of a glass bottle of artisanal olive oil in mid-air, clean studio gradient background, subtle shadow below, weightless advertising, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-108",
-  "code": "/product levitation",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product levitation If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Levitation scene with a glass bottle of artisanal olive oil hovering above a hand or pedestal, mysteriously suspended, dramatic backlight, conceptual advertising, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-109",
-  "code": "/product gravity",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product gravity If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gravity defying scene with a glass bottle of artisanal olive oil and surrounding objects falling upward, inverted physics, dynamic composition, surreal advertising, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-122",
-  "code": "/onemainshot",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/onemainshot If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Single hero product photograph of a glass bottle of artisanal olive oil, one clean main shot with even studio lighting, seamless background, sharp catalogue quality, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-125",
-  "code": "/glasscopy",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/glasscopy If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Transparent glass version of a glass bottle of artisanal olive oil, clean refraction and caustics, dark studio background, luxury material study, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-127",
-  "code": "/clayfeel",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/clayfeel If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Soft clay modelling version of a glass bottle of artisanal olive oil, matte plasticine texture with visible fingerprints, playful stop motion look, warm studio light, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-128",
-  "code": "/paperlayer",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/paperlayer If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Layered paper craft version of a glass bottle of artisanal olive oil, cut cardstock sheets stacked to build the shape, visible paper edges, soft studio light, handmade aesthetic, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-166",
-  "code": "/purewhite",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/purewhite If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Studio photograph of a glass bottle of artisanal olive oil on a pure seamless white background, soft even lighting, delicate contact shadow, e-commerce ready, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-167",
-  "code": "/inhandreal",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/inhandreal If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Realistic in-hand photograph of a glass bottle of artisanal olive oil, natural skin detail and honest scale, simple background, natural window light, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-168",
-  "code": "/allcolors",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/allcolors If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Colour variant lineup of a glass bottle of artisanal olive oil, several versions in different finishes side by side, clean studio background, catalogue presentation, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-169",
-  "code": "/floatnoline",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/floatnoline If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Floating presentation of a glass bottle of artisanal olive oil with no visible support, seamless gradient background, soft shadow below, weightless product render, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-170",
-  "code": "/bundlepack",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/bundlepack If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Bundled multipack of a glass bottle of artisanal olive oil, several units grouped together with a wrap or band, clean studio background, retail packaging look, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-171",
-  "code": "/nextobject",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/nextobject If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Scale comparison of a glass bottle of artisanal olive oil next to a familiar everyday object, neutral background, even documentary lighting, honest proportions, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-172",
-  "code": "/liquidfreeze",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/liquidfreeze If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Frozen liquid splash around a glass bottle of artisanal olive oil, droplets suspended in mid air, high speed strobe lighting, crisp studio capture, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-173",
-  "code": "/shelfrow",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/shelfrow If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Row of a glass bottle of artisanal olive oil units lined up on a retail shelf, repetitive pattern, store lighting, realistic merchandising shot, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-174",
-  "code": "/packedtogo",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/packedtogo If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Packed and ready to go version of a glass bottle of artisanal olive oil, wrapped and labelled in its shipping packaging, counter context, natural light, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/AESTHETICLUXURY If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Luxury aesthetic still life of a glass bottle of artisanal olive oil: the product arranged on flowing red silk fabric, warm golden side light, deep elegant shadows, minimalist premium composition, magazine advertising quality, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  }
 ]

@@ -1,0 +1,9 @@
+[
+ {
+  "id": "reel2-cmd-016",
+  "code": "/MINTMUSE",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/MINTMUSE If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Mint muse beauty portrait of a young woman with curly dark hair: editorial beauty close-up with mint green and soft pink watercolour background, pink eyeshadow and blush, freckles, floral statement earrings, paint splatters and drips, high-fashion beauty editorial, soft studio light, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ }
+]

@@ -699,6 +699,27 @@ const CODE_FOLDER = {
     '/faceharmony': 'xl-texto',
     '/skinglowtips': 'xl-texto',
     '/colourfittips': 'xl-texto',
+    // ── Códigos de los cuatro reels de Instagram (2026-10-19) ──
+    //    Ojo: los de phd_inai y manuelgilcontent vienen escritos en mayúsculas
+    //    en el reel; se conservan tal cual para no falsear el comando original
+    //    (la búsqueda de la app ya ignora mayúsculas).
+    //    Del reel de manuelgilcontent, /METAAD NO entra: ya existe como /metaad.
+    '/figurine': 'xl-letras3d',
+    '/lego': 'xl-otromundo',
+    '/miniature': 'xl-efectosempaque',
+    '/couplefunselfie': 'xl-camararetrato',
+    '/romancecollage': 'xl-camararetrato',
+    '/cozyclosecouple': 'xl-camararetrato',
+    '/candidcouple': 'xl-camararetrato',
+    '/mirrorcoupleselfie': 'xl-camararetrato',
+    '/DARKPREMIUM': 'xl-fotoproducto',
+    '/SPLASHHERO': 'xl-fotoproducto',
+    '/AESTHETICLUXURY': 'xl-fotoproducto',
+    '/BUSSTOPAD': 'xl-escenaprueba',
+    '/TOMJERRYCHAOS': 'xl-otromundo',
+    '/PINKPANIC': 'xl-otromundo',
+    '/CHIPMUNKTRIO': 'xl-otromundo',
+    '/MINTMUSE': 'xl-moda',
 };;
 
 const DIFFICULTIES = [
@@ -2490,6 +2511,22 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/phantom': 'assets/xl-carteles/phantom.jpg',
     '/speedframe': 'assets/planos/speedframe.jpg',
     '/hairstylegrid': 'assets/comida-moda/hairstylegrid.jpg',
+    '/figurine': 'assets/xl-letras3d/figurine.jpg',
+    '/lego': 'assets/xl-otromundo/lego.jpg',
+    '/TOMJERRYCHAOS': 'assets/xl-otromundo/TOMJERRYCHAOS.jpg',
+    '/PINKPANIC': 'assets/xl-otromundo/PINKPANIC.jpg',
+    '/CHIPMUNKTRIO': 'assets/xl-otromundo/CHIPMUNKTRIO.jpg',
+    '/miniature': 'assets/xl-efectosempaque/miniature.jpg',
+    '/couplefunselfie': 'assets/xl-camararetrato/couplefunselfie.jpg',
+    '/romancecollage': 'assets/xl-camararetrato/romancecollage.jpg',
+    '/cozyclosecouple': 'assets/xl-camararetrato/cozyclosecouple.jpg',
+    '/candidcouple': 'assets/xl-camararetrato/candidcouple.jpg',
+    '/mirrorcoupleselfie': 'assets/xl-camararetrato/mirrorcoupleselfie.jpg',
+    '/DARKPREMIUM': 'assets/foto-producto/DARKPREMIUM.jpg',
+    '/SPLASHHERO': 'assets/foto-producto/SPLASHHERO.jpg',
+    '/AESTHETICLUXURY': 'assets/foto-producto/AESTHETICLUXURY.jpg',
+    '/BUSSTOPAD': 'assets/xl-escenaprueba/BUSSTOPAD.jpg',
+    '/MINTMUSE': 'assets/comida-moda/MINTMUSE.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -3248,6 +3285,34 @@ const REEL_COMMANDS = [
     ['/cabinview', 'cabana con grandes vistas'],
 ];
 
+// 16 códigos nuevos de cuatro reels de Instagram (2026-10-19). Cada fila:
+// [comando, significado, reel de origen]. Solo entran los que NO existían:
+//   · codigo_adria (DdgihjiHQSj) — entrega 7, «mundos pequeños»: 3 códigos.
+//   · soysusanquintero (DdFHEICTsMF) — fotos de pareja: 5 códigos.
+//   · manuelgilcontent (DcrMIItPSOa) — foto de producto: 5 códigos, pero
+//     /METAAD ya está en el catálogo como /metaad y no se repite.
+//   · phd_inai (DeVxASAolh8) — comandos virales con personajes: 4 códigos.
+// Se guardan aparte de REEL_COMMANDS para no mover sus ids posicionales
+// (reel-cmd-NNN) ni romper las herramientas del lote de imágenes de 2026-10-13.
+const REEL2_COMMANDS = [
+    ['/figurine', 'convierte a la persona o el producto en figura de colección con su caja', 'https://www.instagram.com/reels/DdgihjiHQSj/'],
+    ['/lego', 'recrea la escena como un mundo de piezas de construcción', 'https://www.instagram.com/reels/DdgihjiHQSj/'],
+    ['/miniature', 'diorama diminuto con efecto maqueta y desenfoque de juguete', 'https://www.instagram.com/reels/DdgihjiHQSj/'],
+    ['/couplefunselfie', 'selfie divertida de pareja a partir de dos fotos sueltas', 'https://www.instagram.com/reels/DdFHEICTsMF/'],
+    ['/romancecollage', 'collage romántico de la pareja con varias fotos y notas', 'https://www.instagram.com/reels/DdFHEICTsMF/'],
+    ['/cozyclosecouple', 'primer plano acogedor de la pareja, muy juntos', 'https://www.instagram.com/reels/DdFHEICTsMF/'],
+    ['/candidcouple', 'foto cándida de pareja, natural y sin posar', 'https://www.instagram.com/reels/DdFHEICTsMF/'],
+    ['/mirrorcoupleselfie', 'selfie de pareja frente al espejo', 'https://www.instagram.com/reels/DdFHEICTsMF/'],
+    ['/DARKPREMIUM', 'foto de producto premium sobre fondo oscuro con luz dramática', 'https://www.instagram.com/reels/DcrMIItPSOa/'],
+    ['/SPLASHHERO', 'el producto entre salpicaduras de agua congeladas', 'https://www.instagram.com/reels/DcrMIItPSOa/'],
+    ['/AESTHETICLUXURY', 'bodegón de lujo con telas y luz cálida', 'https://www.instagram.com/reels/DcrMIItPSOa/'],
+    ['/BUSSTOPAD', 'anuncio del producto en una marquesina de autobús', 'https://www.instagram.com/reels/DcrMIItPSOa/'],
+    ['/TOMJERRYCHAOS', 'foto realista con Tom y Jerry en plena travesura', 'https://www.instagram.com/reels/DeVxASAolh8/'],
+    ['/PINKPANIC', 'escena con la Pantera Rosa y el inspector, caos en rosa', 'https://www.instagram.com/reels/DeVxASAolh8/'],
+    ['/CHIPMUNKTRIO', 'foto con las tres ardillas de Alvin y las ardillas', 'https://www.instagram.com/reels/DeVxASAolh8/'],
+    ['/MINTMUSE', 'retrato editorial en tonos menta y rosa con salpicaduras', 'https://www.instagram.com/reels/DeVxASAolh8/'],
+];
+
 const SEED_TRICKS = [
     ...RESTORED_VARIANTS,
     { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'xl-dev', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
@@ -3333,6 +3398,21 @@ const SEED_TRICKS = [
         isFavorite: false,
         createdAt: Date.UTC(2026, 9, 13) - index,
         updatedAt: Date.UTC(2026, 9, 13),
+    })),
+    // Códigos nuevos de los cuatro reels de Instagram (2026-10-19).
+    ...REEL2_COMMANDS.map(([command, meaning, sourceUrl], index) => ({
+        id: `reel2-cmd-${String(index + 1).padStart(3, '0')}`,
+        title: `${command} — ${meaning}`,
+        description: '',
+        category: CODE_FOLDER[command] || 'xl-dev',
+        tags: ['comandos de imagen', 'imagen', 'Reels'],
+        codeSnippet: command,
+        difficulty: 'beginner',
+        sourceUrl,
+        imageUrl: SEED_COMMAND_IMAGES[command] || '',
+        isFavorite: false,
+        createdAt: Date.UTC(2026, 9, 19) - index,
+        updatedAt: Date.UTC(2026, 9, 19),
     })),
 ];
 
@@ -4801,6 +4881,26 @@ const PROMPT_TEMPLATES = {
     "/phantom": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dark cinematic movie poster of the subject as a ghostly silhouette repeated in a fading trail across a moody black and teal background, dramatic backlight, volumetric fog, film noir layout, high contrast, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/speedframe": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. High-speed action frame of the subject in motion, strong motion blur streaks, dynamic camera pan, dramatic rim lighting, cinematic action scene, explosive sense of speed, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/hairstylegrid": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean grid layout showing the same face with several different haircuts and hair colors, evenly spaced studio portrait tiles, soft neutral background, consistent lighting and framing across every cell, professional salon lookbook style, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+
+    // ── Códigos de los cuatro reels de Instagram (2026-10-19) ──
+    //    Mismo formato que el resto: el prompt se aplica a la imagen que adjunta
+    //    el usuario; [OBJETO] es el sujeto (solo para el ejemplo del catálogo).
+    "/figurine": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible figurine packaging of [OBJETO]: the subject turned into a detailed hand-painted collectible figure standing inside a printed cardboard display box with a clear plastic window, character artwork and brand panel on the box, miniature sculpt with realistic material detail, studio product photography on a clean neutral background, soft commercial lighting, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/lego": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. LEGO-built scene of [OBJETO]: the whole world rebuilt with colourful interlocking plastic bricks, stud details, brick-built subject and surroundings, small minifigures included in the scene, toy photography on a clean studio background, bright even light, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/miniature": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Miniature diorama of [OBJETO]: the subject as a tiny handcrafted model inside a small set with miniature buildings, plants and little figures around it, meticulous small-scale craftsmanship, macro tilt-shift photography with toy-like blur and warm miniature lighting, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/couplefunselfie": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Fun couple selfie of [OBJETO]: two people in love taking a playful spontaneous selfie at a night fair, warm string lights and blurred rides in the background, natural genuine smiles, casual clothes, phone selfie perspective, authentic social media look, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/romancecollage": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Romantic couple collage of [OBJETO]: scrapbook-style collage of several photos of the couple together, warm sunset tones, handwritten love notes and small hearts between the pictures, soft film grain, romantic editorial layout, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/cozyclosecouple": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cozy close couple portrait of [OBJETO]: the couple held close in a warm intimate close-up, foreheads touching, soft evening light, blurred cozy interior with warm lamps behind them, tender natural mood, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/candidcouple": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Candid couple photograph of [OBJETO]: unposed natural moment of the couple laughing together caught mid-movement, authentic documentary style, soft available light, shallow depth of field, real textures, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/mirrorcoupleselfie": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Mirror couple selfie of [OBJETO]: the couple taking a selfie in a large home mirror, phone visible in hand, casual everyday outfits, cozy room reflected behind them, natural phone-camera look, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/DARKPREMIUM": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dark premium product photograph of [OBJETO]: the product resting on a black stone surface against a pure black background, single dramatic warm spotlight from above, deep rich shadows, glossy reflections, luxury advertising still life, crisp detail, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/SPLASHHERO": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Splash hero product photograph of [OBJETO]: the product surrounded by high-speed frozen water splashes and flying droplets, deep red dramatic background, strong rim light, crisp liquid detail, commercial advertising photography, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/AESTHETICLUXURY": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Luxury aesthetic still life of [OBJETO]: the product arranged on flowing red silk fabric, warm golden side light, deep elegant shadows, minimalist premium composition, magazine advertising quality, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/BUSSTOPAD": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Bus stop advertising panel of [OBJETO]: a backlit poster inside a city bus shelter showing the product in a bold campaign layout, rainy evening street with reflections, blurred bus and pedestrians behind, realistic urban advertising mockup, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/TOMJERRYCHAOS": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cartoon chaos photograph of [OBJETO]: the subject surrounded by Tom the cat and Jerry the mouse in classic hand-drawn cartoon style, energetic chase around the person, bright saturated colours, comic motion, cartoon characters interacting with the real photographic subject, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/PINKPANIC": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Pink panic cartoon scene of [OBJETO]: the subject posing with the Pink Panther and a clumsy inspector in a trench coat and hat, hot pink set design, retro cartoon crossover in a real photograph, playful chaotic energy, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/CHIPMUNKTRIO": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Chipmunk trio photograph of [OBJETO]: the subject posing with three cartoon chipmunks around a wooden table, one in a red sweater with the letter A, one in blue and one in green, warm interior light, playful cartoon crossover with a real photo, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/MINTMUSE": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Mint muse beauty portrait of [OBJETO]: editorial beauty close-up with mint green and soft pink watercolour background, pink eyeshadow and blush, freckles, floral statement earrings, paint splatters and drips, high-fashion beauty editorial, soft studio light, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
 };;
 
 const TEXT_COMMAND_TEMPLATES = {

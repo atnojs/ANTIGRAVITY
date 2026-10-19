@@ -1,16 +1,9 @@
 [
  {
-  "id": "reel-cmd-135",
-  "code": "/nodhead",
+  "id": "reel2-cmd-001",
+  "code": "/figurine",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/nodhead If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Chibi caricature figure of a vintage film camera, oversized head and small body, big expressive eyes, smooth vinyl toy finish, plain background, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-138",
-  "code": "/plushtoy",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/plushtoy If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Soft plush toy version of a vintage film camera, fuzzy fabric with visible stitching, big friendly eyes, cute collectible plush, studio background, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/figurine If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible figurine packaging of a vintage film camera: the subject turned into a detailed hand-painted collectible figure standing inside a printed cardboard display box with a clear plastic window, character artwork and brand panel on the box, miniature sculpt with realistic material detail, studio product photography on a clean neutral background, soft commercial lighting, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  }
 ]

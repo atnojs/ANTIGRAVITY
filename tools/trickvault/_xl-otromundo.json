@@ -1,170 +1,30 @@
 [
  {
-  "id": "reel-cmd-024",
-  "code": "/product surreal",
+  "id": "reel2-cmd-002",
+  "code": "/lego",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/product surreal If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Surreal scene with a classic camper van floating in a dreamlike desert of impossible geometry, melting shapes and gravity-defying objects, warm pastel sky, surrealist advertising, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/lego If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. LEGO-built scene of a classic camper van: the whole world rebuilt with colourful interlocking plastic bricks, stud details, brick-built subject and surroundings, small minifigures included in the scene, toy photography on a clean studio background, bright even light, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "reel-cmd-025",
-  "code": "/product impossible",
+  "id": "reel2-cmd-013",
+  "code": "/TOMJERRYCHAOS",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/product impossible If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Impossible scene with a classic camper van defying gravity inside a physically absurd environment, split staircase and upside-down landscape, cinematic surreal lighting, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/TOMJERRYCHAOS If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cartoon chaos photograph of a young woman with curly dark hair: the subject surrounded by Tom the cat and Jerry the mouse in classic hand-drawn cartoon style, energetic chase around the person, bright saturated colours, comic motion, cartoon characters interacting with the real photographic subject, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "reel-cmd-026",
-  "code": "/product reverse",
+  "id": "reel2-cmd-014",
+  "code": "/PINKPANIC",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/product reverse If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Time-reversal concept with a classic camper van caught mid-action while liquid and debris fly back into place, frozen reversed moment, dark studio background, crisp high-speed detail, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/PINKPANIC If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Pink panic cartoon scene of a young woman with curly dark hair: the subject posing with the Pink Panther and a clumsy inspector in a trench coat and hat, hot pink set design, retro cartoon crossover in a real photograph, playful chaotic energy, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "reel-cmd-027",
-  "code": "/product timeloop",
+  "id": "reel2-cmd-015",
+  "code": "/CHIPMUNKTRIO",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/product timeloop If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Time loop concept with a classic camper van repeated in an endless recursive sequence, multiple copies echoing into the distance, cinematic tunnel lighting, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-028",
-  "code": "/product timetravel",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product timetravel If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Time travel scene with a classic camper van between two eras, half of the frame in an ancient setting and half in a futuristic city, dramatic split composition, cinematic colour contrast, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-029",
-  "code": "/product future",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product future If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Futuristic version of a classic camper van in a sleek science fiction environment, holographic interfaces, cool cyan lighting, glass and brushed metal surfaces, clean high-tech advertising, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-030",
-  "code": "/product past",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product past If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Vintage past-era version of a classic camper van in a retro 1970s setting, warm faded film colours, old wallpaper, analogue props, nostalgic advertising photograph, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-031",
-  "code": "/product freeze",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product freeze If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Frozen-in-time scene of a classic camper van suspended in mid-air with ice crystals and frost spreading around it, ultra slow motion look, cold blue rim light, high-speed macro detail, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-032",
-  "code": "/product dream",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product dream If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dreamlike scene of a classic camper van in a soft cloud world, pastel gradients, weightless atmosphere, gentle glow, ethereal calm advertising aesthetic, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-098",
-  "code": "/product portal",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product portal If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Science fiction portal opening behind a classic camper van, glowing energy ring, alien light spilling onto the ground, epic cinematic scale, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-099",
-  "code": "/product dimension",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product dimension If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Interdimensional scene with a classic camper van between two overlapping realities, fractured geometry, surreal light, cinematic science fiction advertising, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-100",
-  "code": "/product wormhole",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product wormhole If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Wormhole tunnel of light wrapping around a classic camper van, spiralling stars and energy streaks, deep space, epic scale, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-101",
-  "code": "/product universe",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product universe If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cosmic scene with a classic camper van floating in deep space among nebulas and stars, epic scale, cinematic astrophotography look, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-102",
-  "code": "/product planet",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product planet If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Alien planet landscape with a classic camper van on the surface, two moons in the sky, dramatic horizon light, science fiction advertising, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-103",
-  "code": "/product moon",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/product moon If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Scene of a classic camper van on the lunar surface with the Earth rising in the black sky, footprints in the dust, astronaut scale, epic cinematic, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-236",
-  "code": "/kingpose",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/kingpose If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Regal king pose of a classic camper van on an ornate throne, crown and rich robes, dramatic palace light, epic royal portrait, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-237",
-  "code": "/capepose",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/capepose If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Heroic pose of a classic camper van with a long cape flowing in the wind, dramatic low angle, epic backlight, cinematic poster, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-238",
-  "code": "/darkpose",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/darkpose If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dark villainous pose of a classic camper van, heavy shadows and rim light, ominous atmosphere, cinematic antagonist portrait, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-239",
-  "code": "/armorpose",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/armorpose If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Armoured warrior version of a classic camper van, detailed metal plates and leather straps, battle worn texture, dramatic forge light, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-240",
-  "code": "/wizardpose",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/wizardpose If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Wizard pose of a classic camper van, glowing spell light in hand, mystical robes and arcane symbols, magical atmosphere, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-241",
-  "code": "/explorerpose",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/explorerpose If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Explorer pose of a classic camper van with map and gear, wild landscape behind, golden adventure light, cinematic travel poster, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-242",
-  "code": "/divepose",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/divepose If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Diving pose of a classic camper van mid leap towards the water, splashing droplets, bright daylight, dynamic action capture, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-243",
-  "code": "/detectivepose",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/detectivepose If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Detective pose of a classic camper van in a trench coat, noir lighting on a rainy street, cigarette smoke, moody mystery portrait, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "reel-cmd-244",
-  "code": "/royalguard",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/royalguard If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Royal guard uniform version of a classic camper van, ceremonial dress with braid and buttons, formal stance, palace background, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/CHIPMUNKTRIO If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Chipmunk trio photograph of a young woman with curly dark hair: the subject posing with three cartoon chipmunks around a wooden table, one in a red sweater with the letter A, one in blue and one in green, warm interior light, playful cartoon crossover with a real photo, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  }
 ]

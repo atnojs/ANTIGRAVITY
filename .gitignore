@@ -235,6 +235,7 @@ tools/trickvault/_*
 !tools/trickvault/_escribir_*.py
 !tools/trickvault/_listar_*.py
 !tools/trickvault/_reels_*.py
+!tools/trickvault/_reel2_*.py
 !tools/trickvault/_retroedu_*.py
 !tools/trickvault/_xl-*.json
 !tools/trickvault/_ejemplos_*.json

@@ -1,100 +1,37 @@
 [
  {
-  "id": "ig-dcek-142",
-  "code": "/whiteteeth",
+  "id": "reel2-cmd-004",
+  "code": "/couplefunselfie",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/whiteteeth If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dental whitening retouch of a young woman with curly dark hair, bright natural white smile, subtle realistic teeth whitening, healthy fresh look, natural lighting, photorealistic, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/couplefunselfie If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Fun couple selfie of a young couple in love: two people in love taking a playful spontaneous selfie at a night fair, warm string lights and blurred rides in the background, natural genuine smiles, casual clothes, phone selfie perspective, authentic social media look, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "ig-dcek-143",
-  "code": "/srinkless",
+  "id": "reel2-cmd-005",
+  "code": "/romancecollage",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/srinkless If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Skin smoothing retouch of a young woman with curly dark hair, subtle wrinkle reduction and youthful glow, natural flawless complexion, soft studio portrait lighting, realistic photorealistic result, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/romancecollage If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Romantic couple collage of a young couple in love: scrapbook-style collage of several photos of the couple together, warm sunset tones, handwritten love notes and small hearts between the pictures, soft film grain, romantic editorial layout, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "ig-dcek-145",
-  "code": "/nombrafamoso",
+  "id": "reel2-cmd-006",
+  "code": "/cozyclosecouple",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/nombrafamoso If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Realistic selfie photo of a person who looks like a famous celebrity taking a friendly selfie with an excited young fan, candid phone camera look, natural indoor lighting, photorealistic, generic famous lookalike, no real celebrity identity, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/cozyclosecouple If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cozy close couple portrait of a young couple in love: the couple held close in a warm intimate close-up, foreheads touching, soft evening light, blurred cozy interior with warm lamps behind them, tender natural mood, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "ig-dcek-147",
-  "code": "/repairhd",
+  "id": "reel2-cmd-007",
+  "code": "/candidcouple",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/repairhd If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. HD restoration of old damaged photo of an old damaged sepia family photograph with cracks and a torn corner, repaired scratches and tears, restored sharpness and color, vintage photo brought back to life, high quality restoration, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/candidcouple If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Candid couple photograph of a young couple in love: unposed natural moment of the couple laughing together caught mid-movement, authentic documentary style, soft available light, shallow depth of field, real textures, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "ig-dcek-148",
-  "code": "/fullcolour",
+  "id": "reel2-cmd-008",
+  "code": "/mirrorcoupleselfie",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/fullcolour If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Colorized version of black and white photo of an old black and white family photograph, natural realistic skin tones, historically accurate colors, vibrant modern colorization, restored detail, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-150",
-  "code": "/fullbody",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/fullbody If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Full body shot of a young woman with curly dark hair, head to toe framing, natural standing pose, complete outfit visible, clean studio background, professional photography, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-184",
-  "code": "/fisheye",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/fisheye If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Fisheye lens photograph of a young woman with curly dark hair, extreme ultra-wide angle with curved barrel distortion, 180 degree field of view, playful rounded perspective, vivid colors, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-200",
-  "code": "/filmgrain",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/filmgrain If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Analog film photograph of a young woman with curly dark hair with visible film grain texture, vintage 35mm camera aesthetic, subtle color shift and light leaks, nostalgic mood, all visible text, book titles and handwritten notes must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-258",
-  "code": "/newbg",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/newbg If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Photo of a young woman with curly dark hair with completely new background, face and subject perfectly preserved, seamless background replacement, natural integration with new environment lighting, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-270",
-  "code": "/blackandwhite",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/blackandwhite If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Classic black and white photograph of a young woman with curly dark hair, timeless monochrome tones, rich contrast, fine art photography aesthetic, dramatic light and shadow, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-272",
-  "code": "/petphoto",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/petphoto If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Adorable pet portrait of a golden retriever puppy, cute animal expression, soft studio lighting, shallow depth of field, heartwarming professional pet photography, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-274",
-  "code": "/coupleshot",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/coupleshot If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Romantic couple photo of a young couple in love, two people in love, natural candid interaction, golden light, warm emotional atmosphere, professional portrait, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-275",
-  "code": "/babyphoto",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/babyphoto If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Adorable baby photo of a smiling baby lying on a soft blanket, soft natural light, gentle pastel tones, tiny hands and feet details, heartwarming newborn photography, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-295",
-  "code": "/doubleexposure",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/doubleexposure If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Double exposure image of a young woman with curly dark hair, two scenes blended in one composition, surreal overlay effect, artistic layered photography, dreamlike fusion, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/mirrorcoupleselfie If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Mirror couple selfie of a young couple in love: the couple taking a selfie in a large home mirror, phone visible in hand, casual everyday outfits, cozy room reflected behind them, natural phone-camera look, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  }
 ]

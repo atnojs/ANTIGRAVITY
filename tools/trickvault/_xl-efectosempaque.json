@@ -1,86 +1,9 @@
 [
  {
-  "id": "ig-dcek-201",
-  "code": "/motionblur",
+  "id": "reel2-cmd-003",
+  "code": "/miniature",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/motionblur If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Motion blur photograph of a glass bottle of artisanal olive oil, dynamic movement trails, blurred action streaks, sense of speed and energy, long exposure effect, cinematic action shot, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-212",
-  "code": "/microworld",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/microworld If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Microworld miniature scene of a glass bottle of artisanal olive oil, tiny diorama inside a small container, macro photography, intricate small-scale details, whimsical tilt-shift aesthetic, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-213",
-  "code": "/reflectionhack",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/reflectionhack If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Creative reflection trick photo of a glass bottle of artisanal olive oil, subject mirrored in water puddle or glass, mind-bending reflection illusion, artistic composition, sharp mirror image, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-217",
-  "code": "/groundreflection",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/groundreflection If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Ground reflection shot of a glass bottle of artisanal olive oil, wet floor mirror reflection, glossy surface doubling the subject, symmetric composition, cinematic rainy night aesthetic, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-227",
-  "code": "/portalshot",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/portalshot If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Portal shot of a glass bottle of artisanal olive oil, glowing magical portal connecting two different worlds, one scene visible through the gateway, surreal fantasy composition, dramatic contrast, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-228",
-  "code": "/cloneeffect",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/cloneeffect If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clone effect photo of a glass bottle of artisanal olive oil, multiple identical copies of the subject in one scene interacting naturally, seamless composite, playful surreal composition, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-229",
-  "code": "/objecttransition",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/objecttransition If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Object transition effect with a glass bottle of artisanal olive oil, one object morphing into another, seamless surreal transformation, creative metamorphosis composition, artistic blend, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-230",
-  "code": "/mirrorportal",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/mirrorportal If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Mirror portal scene of a glass bottle of artisanal olive oil, reflective mirror surface revealing a different world, surreal portal illusion, mysterious gateway composition, fantasy aesthetic, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-231",
-  "code": "/skyfall",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/skyfall If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Skyfall scene of a glass bottle of artisanal olive oil, subject falling through the sky from above, dramatic clouds backdrop, sense of free fall, epic cinematic composition, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-232",
-  "code": "/realitybend",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/realitybend If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Reality bending image of a glass bottle of artisanal olive oil, distorted warped space and perspective, surreal bending reality effect, dreamlike impossible geometry, mind-bending composition, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-233",
-  "code": "/doorreveal",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/doorreveal If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Door reveal shot of a glass bottle of artisanal olive oil, dramatic door opening to reveal the subject, cinematic mystery moment, light flooding through doorway, storytelling composition, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-299",
-  "code": "/glitch",
-  "desc": "",
-  "origen": "lote low",
-  "prompt": "/glitch If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Glitch art effect of a glass bottle of artisanal olive oil, digital distortion and pixel sorting, RGB split, corrupted signal aesthetic, cyberpunk glitch style, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/miniature If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Miniature diorama of a glass bottle of artisanal olive oil: the subject as a tiny handcrafted model inside a small set with miniature buildings, plants and little figures around it, meticulous small-scale craftsmanship, macro tilt-shift photography with toy-like blur and warm miniature lighting, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  }
 ]
