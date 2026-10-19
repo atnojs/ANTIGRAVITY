@@ -5,6 +5,28 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-19] Un `<dialog>` cerrado con `display:flex` propio provoca CLS 0,481
+
+- **Síntoma:** Lighthouse de la agenda daba Performance 78 y CLS 0,481; el resto de categorías 100.
+- **Causa:** el CSS propio `.confirm-dialog { display:flex }` gana al `dialog:not([open]) { display:none }`
+  del navegador. El diálogo cerrado seguía ocupando 147 px al final del `body` y provocaba un layout
+  shift al cargar; la auditoría `layout-shifts` lo señalaba como nodo `BODY > DIALOG`.
+- **Solución:** `dialog:not([open]) { display: none !important; }` + fuente local con
+  `font-display: optional` y `preload`. Resultado: CLS 0 y 100/100/100/100.
+- **Cómo comprobarlo:** `[...document.querySelectorAll('dialog')].map(d => getComputedStyle(d).display)`.
+
+### [2026-10-19] El despliegue de Hostinger tardó 13 min y lo destrabó un segundo push
+
+- **Síntoma:** `apps/agenda` seguía 404 trece minutos después del push; los webhooks de GitHub a
+  `webhooks.hostinger.com` constaban OK. `apps/brisa` (push posterior) también 404.
+- **Causa:** despliegue atascado, como el caso documentado del 2026-10-16; no era CDN ni error de la
+  app (la comprobación se hacía contra `index.html`, una ruta nunca pedida antes).
+- **Solución:** segundo push (`a3d577a`, 18:54) → 200 a las 18:56 (~2 min). No dar un 404 por
+  definitivo antes de ~20 min; si se acerca, reempujar (la receta del commit vacío ya está en
+  `recetas.md`).
+- **Detalle:** mientras el despliegue está pendiente, la CDN no cachea el 404 de una ruta nueva de
+  forma permanente; en cuanto el origen publica, `index.html` pasa a 200.
+
 ### [2026-10-17] El explorador de carpetas "pequeño": era el diálogo antiguo
 
 - **Síntoma:** Antonio: «el explorador que se abre es muy pequeño, lo quiero mucho más grande».

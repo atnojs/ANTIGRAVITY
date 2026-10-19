@@ -5,6 +5,22 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 
 ---
 
+### [2026-10-19] Agenda (`apps/agenda`): JSON en disco y fuente autoalojada
+
+- **Decisión:** el MVP guarda el estado en `data/state.json` con `flock` y escritura atómica, en vez
+  de MySQL. Motivo: no hay credenciales de base de datos configuradas para esta app y el volumen
+  personal no necesita motor; se evita un punto de fallo y el despliegue sigue siendo un push.
+  Contrapartida: si algún día hay multiusuario o miles de registros, migrar al esquema documentado
+  en la entrega (`events`, `tasks`, `notes`, `audios`).
+- **Decisión:** Electrolize se sirve local (`apps/agenda/electrolize.ttf`) con `@font-face` y CSP
+  propia, sin Google Fonts. Motivo: elimina dependencia externa, mejora privacidad y reduce CLS.
+- **Decisión:** la clasificación del audio es un analizador de reglas en español (la IA es la
+  transcripción) y el usuario confirma siempre. Motivo: el caso es personal, una regla explicable
+  acierta lo común y no gasta API; si hace falta más, un LLM entra después del mismo contrato.
+- **Decisión:** el audio se entrega solo por `audio.php` con sesión y `realpath` validado; `data/`
+  está fuera de git y con `Require all denied`. Es la única forma de que un fichero privado no
+  quede accesible en la raíz pública de Hostinger.
+
 ### [2026-10-15] Una carpeta = un sujeto; y «Comida y moda» se parte en dos
 
 - **Decisión:** cada carpeta de TrickVault usa **un solo sujeto** en todas sus imágenes

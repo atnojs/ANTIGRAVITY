@@ -999,3 +999,41 @@ virales con personajes).
 - **Commit:** `e1ce0c1`. La memoria va en el commit siguiente.
 - **Evidencias:** `tools/evidencias/2026-10-19-trickvault-reels/` (hoja de las 16 imágenes, búsqueda,
   carpeta y móvil).
+
+## 2026-10-19 (tarde) — Agenda personal autoalojada en `apps/agenda`
+
+Creada la agenda que Antonio pidió: citas, tareas, notas y notas de voz con transcripción
+automática. Publicada en `https://atnojs.es/apps/agenda/` y verificada contra producción.
+
+- **Stack sobrio:** PHP 8 sin framework + estado JSON en `data/` con `flock` y escritura atómica
+  (single-user; sin MySQL para no depender de credenciales no configuradas), frontend vanilla sin
+  build, Electrolize local (`electrolize.ttf`), CSP propia y cero peticiones a Google Fonts.
+- **Módulo de audio (lo esencial):** MediaRecorder (opus/webm o mp4/aac) con **un solo toque**;
+  subida multipart → 202 → worker PHP en segundo plano (`ignore_user_abort` /
+  `litespeed_finish_request`) → transcripción OpenAI `gpt-4o-mini-transcribe` vía `proxy.php` con
+  la clave solo del entorno → analizador de reglas en español que sugiere nota/tarea/cita y el
+  usuario confirma. Nunca se auto-agenda ni se gasta API en clasificar si no hace falta.
+- **Verificado en producción con audio real (TTS de Windows, voz Helena):**
+  - «Mañana a las 10 reunión con Ana…» → transcrito y sugerencia **evento** 2026-10-20 10:00.
+  - «Recuérdame comprar pilas y pagar la luz antes del viernes, es urgente» → transcrito y
+    sugerencia **tarea**, fecha 2026-10-23 y prioridad alta.
+  - `audio.php` sirve el WAV grabado con sesión (200, 219.548 bytes); `GET` sin sesión da 401.
+- **Verificación de interfaz (Playwright sobre la URL desplegada):** login, Hoy / Calendario /
+  Tareas / Notas, búsqueda instantánea («pilas» → 1 tarjeta), diálogo de revisión con transcript
+  real, recarga conserva sesión y datos, tres anchos (1280, 768, 393), consola **0 errores**.
+- **Calidad:** Lighthouse local **100/100/100/100**. Partía de Performance 78 y CLS 0,481: el CSS
+  propio del `#confirmDialog` (`display:flex`) se comía el `dialog:not([open])` del navegador y el
+  diálogo cerrado se pintaba (ver `errores.md`). Fuente local + `font-display: optional` + preload
+  y `dialog:not([open]){display:none!important}` → CLS 0. Assets con nombre versionado por ruta
+  (`app.20261019b.*`; el fix de búsqueda móvil va en `app.20261019c.*`).
+- **Datos de prueba borrados:** la agenda queda vacía (0 citas, 0 tareas, 0 notas, 0 audios) y el
+  audio de prueba ya no se sirve (404).
+- **Despliegue:** el push de la app (18:41) tardó más de lo normal y seguía 404 a los 13 min; el
+  segundo push (`a3d577a`, 18:54) lo destrabó y a las 18:56 ya servía 200 (regla conocida: reempujar
+  en vez de esperar indefinidamente). Ver `errores.md`.
+- **Commits:** `b493a6e` (app), `a3d577a` (fuente local/CLS), `28a950b` (limpiar búsqueda móvil).
+- **Pendiente/mejoras:** recurrencia de citas, recordatorios push/Telegram, cola offline, export
+  JSON y cron de hPanel para `worker.php` como red de seguridad (el worker inline ya funciona).
+- **Evidencias:** `tools/evidencias/2026-10-19-agenda/` (login, Hoy, Calendario, Tareas, Notas,
+  revisión, búsqueda y vistas móvil/tablet de producción).
+- **Nota:** en la misma tarde otra sesión creó `apps/brisa/` (otra agenda paralela); no se tocó.
