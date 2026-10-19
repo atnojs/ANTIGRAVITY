@@ -378,6 +378,98 @@ h1, h2, h3, h4, .font-montserrat {
 }
 
 /* ═══════════════════════════════════════════
+   BUSCADOR POR FECHA (Búsqueda Global)
+   ═══════════════════════════════════════════ */
+.date-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin: -0.6rem 0 1.4rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius-md);
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+}
+
+.date-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.date-toggles {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.2rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border);
+}
+
+.date-toggle {
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.date-toggle:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.date-toggle.active {
+    color: #04121f;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--acc2));
+    border-color: transparent;
+}
+
+.date-input {
+    font: inherit;
+    font-size: 0.82rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    color-scheme: dark;
+    transition: var(--transition-fast);
+}
+
+.date-input:focus-visible {
+    outline: 2px solid var(--neon-cyan);
+    outline-offset: 2px;
+}
+
+.date-sep { color: var(--muted); }
+
+.date-clear {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0 0 0 0.3rem;
+}
+
+.date-clear:hover { color: var(--neon-cyan); }
+
+@media (max-width: 560px) {
+    .date-bar { gap: 0.45rem; }
+    .date-toggles { width: 100%; justify-content: space-between; }
+    .date-input { flex: 1 1 130px; min-width: 0; }
+}
+
+/* ═══════════════════════════════════════════
    CATEGORY GRID
    ═══════════════════════════════════════════ */
 .category-grid {

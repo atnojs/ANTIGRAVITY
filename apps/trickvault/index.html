@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20261007-copy-btn">
+    <link rel="stylesheet" href="app.css?v=20261019-fecha">
 </head>
 <body>
     <div id="root"></div>
@@ -6278,20 +6278,80 @@ function TrickList({ tricks, folders, categoryId, onBack, onToggleFav, onEdit, o
 /* ═══════════════════════════════════════════════
    COMPONENT: GlobalSearch
    ═══════════════════════════════════════════════ */
+/* ── Filtro por fecha de alta de la tarjeta ─────────────────────────── */
+/* createdAt es un epoch en milisegundos; se compara en fecha LOCAL. */
+function tvClaveDia(ms) {
+    if (!ms) return '';
+    const d = new Date(Number(ms));
+    if (isNaN(d.getTime())) return '';
+    const p = (n) => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+
+function tvFechaLarga(clave) {
+    const trozos = String(clave || '').split('-');
+    return trozos.length === 3 ? trozos[2] + '/' + trozos[1] + '/' + trozos[0] : String(clave || '');
+}
+
+function tvCumpleFecha(ms, modo, dia, desde, hasta) {
+    if (modo !== 'dia' && modo !== 'rango') return true;
+    const clave = tvClaveDia(ms);
+    if (!clave) return false;
+    if (modo === 'dia') return Boolean(dia) ? clave === dia : true;
+    if (desde && clave < desde) return false;
+    if (hasta && clave > hasta) return false;
+    return Boolean(desde || hasta);
+}
+
+function tvResumenFecha(modo, dia, desde, hasta) {
+    if (modo === 'dia' && dia) return tvFechaLarga(dia);
+    if (modo === 'rango') {
+        if (desde && hasta) return tvFechaLarga(desde) + ' – ' + tvFechaLarga(hasta);
+        if (desde) return 'desde el ' + tvFechaLarga(desde);
+        if (hasta) return 'hasta el ' + tvFechaLarga(hasta);
+    }
+    return '';
+}
+
 function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit }) {
     const [query, setQuery] = useState('');
+    // Buscador por fechas: fecha de alta concreta o un rango.
+    const [fechaModo, setFechaModo] = useState('todo');
+    const [fechaDia, setFechaDia] = useState('');
+    const [fechaDesde, setFechaDesde] = useState('');
+    const [fechaHasta, setFechaHasta] = useState('');
+
+    const filtrandoFecha = (fechaModo === 'dia' && Boolean(fechaDia)) ||
+        (fechaModo === 'rango' && Boolean(fechaDesde || fechaHasta));
+    const resumenFecha = tvResumenFecha(fechaModo, fechaDia, fechaDesde, fechaHasta);
 
     const results = useMemo(() => {
-        if (!query.trim()) return [];
         const q = query.trim().toLowerCase();
-        return tricks.filter(t =>
-            t.title.toLowerCase().includes(q) ||
-            (t.codeSnippet || '').toLowerCase().includes(q) ||
-            t.description.toLowerCase().includes(q) ||
-            t.tags.some(tg => tg.toLowerCase().includes(q)) ||
-            (getCat(t.category, folders)?.label || '').toLowerCase().includes(q)
-        ).sort((a, b) => b.createdAt - a.createdAt);
-    }, [tricks, query, folders]);
+        if (!q && !filtrandoFecha) return [];
+        return tricks.filter(t => {
+            if (q) {
+                const coincide = t.title.toLowerCase().includes(q) ||
+                    (t.codeSnippet || '').toLowerCase().includes(q) ||
+                    t.description.toLowerCase().includes(q) ||
+                    t.tags.some(tg => tg.toLowerCase().includes(q)) ||
+                    (getCat(t.category, folders)?.label || '').toLowerCase().includes(q);
+                if (!coincide) return false;
+            }
+            return tvCumpleFecha(t.createdAt, fechaModo, fechaDia, fechaDesde, fechaHasta);
+        }).sort((a, b) => b.createdAt - a.createdAt);
+    }, [tricks, query, folders, fechaModo, fechaDia, fechaDesde, fechaHasta, filtrandoFecha]);
+
+    function cambiarModoFecha(modo) {
+        setFechaModo(modo);
+        if (modo === 'dia' && !fechaDia) setFechaDia(tvClaveDia(Date.now()));
+    }
+
+    function limpiarFiltroFecha() {
+        setFechaModo('todo');
+        setFechaDia('');
+        setFechaDesde('');
+        setFechaHasta('');
+    }
 
     return (
         <div>
@@ -6303,16 +6363,44 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                     <span className="search-icon">🔍</span>
                     <input type="text" placeholder="Buscar códigos en todas las carpetas..." value={query} onChange={e => setQuery(e.target.value)} aria-label="Buscar códigos en todas las carpetas" />
                 </div>
-                {query && <span className="stat-chip"><span className="count">{results.length}</span> resultados</span>}
+                {(query || filtrandoFecha) && <span className="stat-chip"><span className="count">{results.length}</span> resultados</span>}
+                {filtrandoFecha && (
+                    <span className="stat-chip">
+                        📅 {resumenFecha}
+                        <button type="button" className="date-clear" onClick={limpiarFiltroFecha} aria-label="Quitar filtro de fecha" title="Quitar filtro de fecha">✕</button>
+                    </span>
+                )}
             </div>
 
-            {query && results.length === 0 ? (
+            <div className="date-bar" role="group" aria-label="Filtrar por fecha de alta">
+                <span className="date-label">Filtrar por fecha</span>
+                <div className="date-toggles">
+                    <button type="button" className={'date-toggle' + (fechaModo === 'todo' ? ' active' : '')} aria-pressed={fechaModo === 'todo'} onClick={() => cambiarModoFecha('todo')}>Todo</button>
+                    <button type="button" className={'date-toggle' + (fechaModo === 'dia' ? ' active' : '')} aria-pressed={fechaModo === 'dia'} onClick={() => cambiarModoFecha('dia')}>Un día</button>
+                    <button type="button" className={'date-toggle' + (fechaModo === 'rango' ? ' active' : '')} aria-pressed={fechaModo === 'rango'} onClick={() => cambiarModoFecha('rango')}>Rango</button>
+                </div>
+                {fechaModo === 'dia' && (
+                    <input type="date" className="date-input" value={fechaDia} onChange={e => setFechaDia(e.target.value)} aria-label="Día de alta" />
+                )}
+                {fechaModo === 'rango' && (
+                    <>
+                        <input type="date" className="date-input" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} aria-label="Desde" />
+                        <span className="date-sep" aria-hidden="true">—</span>
+                        <input type="date" className="date-input" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} aria-label="Hasta" />
+                    </>
+                )}
+                {fechaModo !== 'todo' && (
+                    <button type="button" className="btn btn-glass btn-sm" onClick={limpiarFiltroFecha}>Quitar filtro</button>
+                )}
+            </div>
+
+            {(query || filtrandoFecha) && results.length === 0 ? (
                 <div className="empty-state">
                     <div className="empty-icon">🔎</div>
                     <h3>Sin resultados</h3>
-                    <p>Prueba con otros términos</p>
+                    <p>{filtrandoFecha ? 'No hay tarjetas con esa fecha' : 'Prueba con otros términos'}</p>
                 </div>
-            ) : query && (
+            ) : (query || filtrandoFecha) && (
                 <div className="tricks-grid">
                     {results.map(t => (
                         <div key={t.id} style={{position:'relative'}}>

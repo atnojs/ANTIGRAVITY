@@ -5,6 +5,34 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-19 — TrickVault: buscador por fecha de alta (un día o un rango)
+
+Antonio lo pidió para **TrickVault** (yo lo había hecho antes en Descargas por error: se queda
+allí, funciona, pero no era lo que pedía). Va en **Búsqueda Global**: cada tarjeta tiene
+`createdAt` (epoch ms), así que el filtro va sobre la **fecha de alta**.
+
+- **`apps/trickvault/index.html`**: en `GlobalSearch`, tres modos (Todo / Un día / Rango) con
+  sus `<input type="date">`, chip con el resumen y la ✕ para quitarlo, y mensaje «No hay
+  tarjetas con esa fecha» cuando no hay coincidencias. Funciona también **sin texto**: con
+  una fecha puesta ya lista las tarjetas de ese día, ordenadas de más nueva a más antigua.
+  Añadidas las funciones puras `tvClaveDia`, `tvFechaLarga`, `tvCumpleFecha` y
+  `tvResumenFecha` (comparan en fecha **local** y aceptan rangos abiertos).
+- **`apps/trickvault/app.css`**: bloque `.date-bar` / `.date-toggle` / `.date-input` con el
+  estilo de la app, `color-scheme: dark` para el calendario nativo y ajuste a móvil. Se subió
+  el cache-buster del CSS a `app.css?v=20261019-fecha`.
+- **Susto de codificación**: al subir el `?v=` con un `-replace` de PowerShell 5.1 el fichero
+  se reescribió en ANSI y se rompieron 830 acentos (`Ã¡`…). Detectado con `git diff --stat`
+  (992 líneas cambiadas) y arreglado con `git checkout --` + rehacer el cambio con la
+  herramienta de edición. Regla para la próxima: **no** usar `Get-Content | Set-Content` para
+  tocar ficheros UTF-8; usar el editor o Node.
+- **Verificado**: 0 restos de mojibake; parseo JSX con `@babel/parser` (997.968 chars, OK);
+  prueba de las funciones de fecha sobre el propio fichero (19 comprobaciones: día, rango,
+  rangos abiertos, tarjeta sin fecha y textos del resumen), todas OK.
+- **Limitación honesta**: sin Chrome en este sandbox (Playwright falla con WinError 5): no hay
+  capturas ni comprobación visual a 360/768/1280 de esta edición.
+
+---
+
 ## 2026-10-19 — Descargas: buscador por fecha en la cola (un día o un rango)
 
 Antonio: «añadas un buscador por fechas, tanto por una fecha concreta como por un rango».
