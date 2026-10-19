@@ -80,3 +80,6 @@ comprobar el editor ¿está seguro…?» (es el aviso de Seguridad de Windows pa
 virus). Ahora en `shell:startup` hay **`Worker de Descargas.vbs`**, que lanza el .bat **oculto** con
 `WScript.Shell.Run(..., 0, False)` y comprueba antes si ya hay un `node … worker.mjs` para no
 duplicar. El .lnk antiguo se borró. El .bat sigue igual (bucle de relanzado cada 10 s).
+**Corrección (2026-10-19, misma tarde):** el VBS del Inicio ya **no lanza el .bat** (Windows también
+preguntaba por él): ahora ejecuta `node.exe worker.mjs` directamente, oculto, con bucle propio de
+relanzado cada 10 s, guarda de instancia única y corte si el código es 2.

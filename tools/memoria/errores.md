@@ -607,3 +607,15 @@ Ampliación con datos de la entrada del 2026-10-16:
   **en la misma línea** que el cierre del bloque `yt-results`, así que se fueron con él.
 - **Solución:** reponer los dos `addEventListener` de `#queue-list`; la X desapareció con el
   historial. Comprobar SIEMPRE `grep 'addEventListener'` tras quitar bloques por índices.
+## 2026-10-19 — El aviso de Windows seguía saliendo con un VBS que lanzaba el .bat
+
+- **Síntoma:** el aviso «Advertencia de seguridad de Abrir archivo — No se pudo comprobar el editor»
+  seguía apareciendo al arrancar, ahora con el diálogo colgado incluso al pulsar «Ejecutar».
+- **Causa:** el lanzador del Inicio era un VBS que hacía `WScript.Shell.Run` sobre el **.bat**; Windows
+  también aplica el filtro de adjuntos a `.bat` abiertos desde un script, y el diálogo se queda
+  huérfano dentro del proceso `wscript.exe`.
+- **Solución:** el VBS arranca **Node directamente** (`node.exe worker.mjs`) con `Run(..., 0, True)`,
+  sin pasar por el .bat; bucle de relanzado en VBS (10 s), salta si ya hay un worker y no reintenta
+  el código 2. Comprobado: sin ventanas de aviso, worker oculto, puerto 8125 y la app lo ve.
+- **Para lanzarlo a mano:** doble clic en `tools\descargador\iniciar-worker.vbs` (oculto) o en el
+  `.bat` (muestra consola y puede pedir confirmación: es normal).
