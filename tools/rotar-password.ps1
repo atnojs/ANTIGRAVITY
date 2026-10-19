@@ -1,13 +1,14 @@
-# Rota la contraseña de edición de TrickVault / video-vault / json.
+# Rota la contraseña de edición de TrickVault / video-vault / json / agenda.
 #
 # OJO: la app Descargas ya NO usa esta contraseña; tiene la suya propia en
-# apps\descargas\auth.php (no la toca este script).
+# apps\descargas\auth.php (no la toca este script). La agenda (apps/agenda)
+# sí usa la contraseña de edición, y este script actualiza su hash.
 #
 # Qué hace, en este orden:
 #   1. Coge la contraseña nueva (la que le pases, o una generada al azar).
 #   2. Calcula su sha256 — con PHP si está en el PATH (que es lo que ejecuta el
 #      servidor), y si no con .NET, que da el mismo resultado para ASCII.
-#   3. Escribe el hash en los TRES auth.php y lo LEE DE VUELTA para comprobar
+#   3. Escribe el hash en los CUATRO auth.php y lo LEE DE VUELTA para comprobar
 #      que quedó bien.
 #   4. Guarda la contraseña en claro en .private/ (no se versiona ni se sirve
 #      por web) para que no se pierda.
@@ -69,7 +70,8 @@ if ($hash -notmatch '^[0-9a-f]{64}$') { throw "El hash no tiene forma de sha256:
 $destinos = @(
     @{ Ruta = 'apps\trickvault\auth.php';  Patron = '\$expectedHash = ''[0-9a-f]{64}''';         Nuevo = "`$expectedHash = '$hash'" },
     @{ Ruta = 'apps\video-vault\auth.php'; Patron = '\$expectedHash = ''[0-9a-f]{64}''';         Nuevo = "`$expectedHash = '$hash'" },
-    @{ Ruta = 'apps\json\auth.php';        Patron = 'const AUTH_PASSWORD_HASH = ''[0-9a-f]{64}'''; Nuevo = "const AUTH_PASSWORD_HASH = '$hash'" }
+    @{ Ruta = 'apps\json\auth.php';        Patron = 'const AUTH_PASSWORD_HASH = ''[0-9a-f]{64}'''; Nuevo = "const AUTH_PASSWORD_HASH = '$hash'" },
+    @{ Ruta = 'apps\agenda\auth.php';      Patron = 'const AGENDA_PASSWORD_SHA256 = ''[0-9a-f]{64}'''; Nuevo = "const AGENDA_PASSWORD_SHA256 = '$hash'" }
 )
 
 # UTF8 SIN BOM: un BOM delante de <?php se enviaría como salida y rompería las
@@ -101,7 +103,7 @@ $privado = Join-Path $raiz '.private'
 if (-not (Test-Path -LiteralPath $privado)) { New-Item -ItemType Directory -Path $privado | Out-Null }
 $ficheroClave = Join-Path $privado 'password-edicion.txt'
 $contenido = @(
-    'Contrasena de edicion de TrickVault / video-vault / json',
+    'Contrasena de edicion de TrickVault / video-vault / json / agenda',
     "Cambiada el $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')",
     '',
     $Password,
