@@ -942,3 +942,14 @@ original `Worker de Descargas.lnk` -> `iniciar-worker.bat` (minimizado) en shell
 borrado `iniciar-worker.vbs` (Inicio y repo). NO se toco nada mas del sistema: ni registro, ni
 servicios, ni tareas programadas, ni discos. El worker de descargas sigue funcionando (node oculto,
 puerto 8125, la app lo ve). El aviso de Windows al abrir el .bat es normal y es del propio Windows.
+**Incidencias del PC resueltas (2026-10-19, tarde).** (1) Papelera de `E:` dañada (el Explorador se
+colgaba y salía el aviso «La Papelera de reciclaje en E: está dañada»): la papelera tenía 51.632
+archivos / 1,9 GB de elementos borrados en 2026 —las fechas de 2013 eran la fecha ORIGINAL de los
+ficheros, no la de borrado; la fecha real está en los `$I`—. Se rescató lo posible con un script que
+reconstruye rutas originales a `E:\_papelera_rescatada_2026-10-19\` (51.464 ficheros, 1,77 GB, con
+`_INDICE.txt`); 6 carpetas de `E:\...\Verónica´z\Talleres\Música` (168 ficheros, 122 MB) NO se
+pudieron rescatar por rutas de 247-285 caracteres y se perdieron al vaciar. La papelera se vació y se
+probó que vuelve a funcionar (borrar un fichero de prueba y verlo en la papelera). (2) **Edge** tenía
+las descargas en `H:\Descargas` (vacía); corregido su `Preferences` a `D:\Descargas` (con copia
+`.bak-2026-10-19`), y `D:\Descargas` ya era la carpeta de descargas de Windows (Chrome y apps la usan).
+(3) Explorador colgado con previsualizaciones pegadas: reiniciar `explorer.exe`.

@@ -89,3 +89,7 @@ Explorer/Inicio. Solución definitiva: el acceso directo del Inicio apunta a
 `wscript.exe "tools\descargador\iniciar-worker.vbs"`, y el VBS **arranca Node directamente** (oculto,
 bucle cada 10 s, sin duplicar, corta con código 2). El `.bat` queda solo para uso manual (si se abre a
 mano, Windows preguntará: es normal).
+**Carpetas de descarga (2026-10-19).** `D:\Descargas` es la carpeta de Descargas de Windows (Chrome y
+apps sin carpeta propia guardan ahí); **Edge corregido también a `D:\Descargas`**. La app de descargas
+tiene su carpeta EXCLUSIVA: `D:\Descargas Y, I y T` (a propósito). El disco `E:` solo guarda el
+proyecto y datos personales (no hay carpeta de descargas).
