@@ -83,3 +83,9 @@ duplicar. El .lnk antiguo se borró. El .bat sigue igual (bucle de relanzado cad
 **Corrección (2026-10-19, misma tarde):** el VBS del Inicio ya **no lanza el .bat** (Windows también
 preguntaba por él): ahora ejecuta `node.exe worker.mjs` directamente, oculto, con bucle propio de
 relanzado cada 10 s, guarda de instancia única y corte si el código es 2.
+**Aclarado (2026-10-19, tarde): el aviso de Windows lo provoca SIEMPRE el .bat.** El fichero no tiene
+marca de Internet (solo flujo `:$DATA`); es el filtro de adjuntos de Windows para `.bat` lanzados desde
+Explorer/Inicio. Solución definitiva: el acceso directo del Inicio apunta a
+`wscript.exe "tools\descargador\iniciar-worker.vbs"`, y el VBS **arranca Node directamente** (oculto,
+bucle cada 10 s, sin duplicar, corta con código 2). El `.bat` queda solo para uso manual (si se abre a
+mano, Windows preguntará: es normal).
