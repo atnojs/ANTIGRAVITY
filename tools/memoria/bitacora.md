@@ -936,3 +936,9 @@ campo»** bajo el campo de URLs; fuera el buscador de YouTube y la barra de esta
 **títulos desde el enlace** en TikTok («TikTok · @usuario») e Instagram («Instagram · Reel ID»), que
 luego se sustituyen por el título real cuando termina. Arreglado el BORRAR de la cola y la X del
 historial (los enganches se habían perdido al borrar el bloque del buscador).
+**REVERTIDO (2026-10-19, 14:45): el lanzador VBS del Inicio.** Antonio se asusto al ver avisos de
+Windows y cosas raras tras encender el PC; se le pidio revertir. Se ha restaurado el acceso directo
+original `Worker de Descargas.lnk` -> `iniciar-worker.bat` (minimizado) en shell:startup y se han
+borrado `iniciar-worker.vbs` (Inicio y repo). NO se toco nada mas del sistema: ni registro, ni
+servicios, ni tareas programadas, ni discos. El worker de descargas sigue funcionando (node oculto,
+puerto 8125, la app lo ve). El aviso de Windows al abrir el .bat es normal y es del propio Windows.
