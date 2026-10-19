@@ -5,6 +5,32 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-19 — Descargas: buscador por fecha en la cola (un día o un rango)
+
+Antonio: «añadas un buscador por fechas, tanto por una fecha concreta como por un rango».
+Va en el panel **Cola**, que es donde están las descargas con su `created_at`.
+
+- **HTML** (`apps/descargas/index.html`): bloque `.fecha-filtro` bajo el título de la cola
+  con tres modos (Todo / Un día / Rango), los `<input type="date">` que toquen, botón
+  «Quitar filtro» y una línea de resumen (`role="status"`).
+- **JS**: fichero nuevo `app.20261019a.js` (copia del `app.20261018k.js` que se servía, más
+  los cambios). Añade `claveDia()`, `fechaLarga()`, `jobsFiltrados()`, `filtrandoPorFecha()`,
+  `pintarResumenFecha()`, `aplicarModoFecha()` y `bindFecha()`; `renderQueue()` pinta solo las
+  descargas filtradas y el contador dice cuántas se ven.
+- **CSS**: `app.20261019a.css` (copia del `k` + estilos del filtro, con `color-scheme: dark`
+  para que el calendario del navegador no salga blanco, foco visible y ajuste a móvil).
+- El filtro compara por **fecha local** (`YYYY-MM-DD`), acepta rangos abiertos (solo desde o
+  solo hasta) y no rompe si una descarga no tiene fecha.
+- **Verificado**: `node --check` del JS; prueba de la lógica con los 5 casos de filtro
+  (`tools/_test_filtro_fecha.js`, todo OK); y prueba de DOM real con jsdom sobre el
+  `index.html` y el JS de verdad (`tools/_test_fecha_dom.js`, 17 comprobaciones OK: modos,
+  visibilidad de campos, contador, resumen, mensaje de «sin resultados» y «Quitar filtro»).
+- **Limitación honesta**: en este sandbox no arranca Chrome (Playwright falla con WinError 5),
+  así que no hay capturas ni auditoría Lighthouse de esta edición. Queda pendiente abrirlo en
+  Chrome y mirarlo a 360/768/1280 antes de darlo por cerrado al 100 %.
+
+---
+
 ## 2026-10-17 — Descargas: contraseña de entrada propia, separada de la de edición
 
 Antonio pidió cambiar **solo** el login de entrada de `apps/descargas` («Solo en descargas
