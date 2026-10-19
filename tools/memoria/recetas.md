@@ -291,3 +291,37 @@ Después: revisar las imágenes generadas en una hoja de contacto (que coincidan
 código), commit + push, esperar el despliegue y verificar en producción con
 `verificacion-playwright`: buscar el código, comprobar que aparece su carpeta y que la imagen
 carga (`naturalWidth > 0`), consola y red.
+
+## Leer los códigos de un reel de Instagram — verificado 2026-10-19
+
+Los reels de «comandos de ChatGPT» suelen llevar los códigos en la **descripción** o **en pantalla**.
+Se descargan con `yt-dlp` y las cookies de Instagram exportadas (viven fuera del repo, en
+`D:\Vídeos\ytdownloader\cookies-instagram.txt`; renovarlas cuando caduquen):
+
+```powershell
+$dir='tools\_reel_new'          # material de trabajo: /tools/_* está en .gitignore
+& yt-dlp --no-warnings --cookies 'D:\Vídeos\ytdownloader\cookies-instagram.txt' `
+  --skip-download --print "FULLTITLE: %(fulltitle)s`nDATE: %(upload_date)s`nDESCRIPTION:`n%(description)s" `
+  'https://www.instagram.com/reels/<ID>/'
+& yt-dlp --no-warnings --cookies 'D:\Vídeos\ytdownloader\cookies-instagram.txt' `
+  -f "bestvideo[height<=1080]+bestaudio/best" --merge-output-format mp4 -o "$dir\<ID>.%(ext)s" `
+  'https://www.instagram.com/reels/<ID>/'
+```
+
+Si la descripción no trae la lista (pasó con `DcrMIItPSOa`), se leen los códigos de los fotogramas:
+
+```powershell
+& ffmpeg -hide_banner -loglevel error -i "$dir\<ID>.mp4" -vf fps=2 -q:v 2 "$dir\frames_<ID>\f%03d.jpg"
+# OCR nativo de Windows sobre los fotogramas completos:
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\trickvault\_ocr.ps1 (Get-ChildItem "$dir\frames_<ID>" -Filter *.jpg | % FullName)
+```
+
+- Si el OCR no acierta (texto pequeño del rótulo), **recortar la banda del rótulo** y ampliarla 3x:
+  en los reels de producto el comando va sobre `y=640..790` de 1280 px (`tools/_reel_new/_bandas.py`).
+- **Leer las hojas de contactos con la vista** (`_hoja.py`, 4-6 fotogramas por fila con etiqueta de
+  tiempo) suele ser más rápido y fiable que el OCR para confirmar la grafía exacta y el significado.
+- Ojo con la **caja**: el mockup de ChatGPT anima el texto y a veces solo se ve el principio
+  (`/PINKPA`); la descripción del reel es la que confirma el código completo.
+- Antes de añadir nada, comprobar duplicados **sin distinguir mayúsculas**: `/METAAD` del reel es
+  `/metaad` del catálogo y no entra. Un script rápido: recorrer con regex todos los literales
+  `'/xxx'` del `index.html` y comparar en minúsculas.

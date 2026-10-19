@@ -18,7 +18,7 @@ sin desplegar"**, no para certificar que cada app funciona.
 
 | Fecha del index | Apps |
 |---|---|
-| 2026-10-15 | `trickvault` |
+| 2026-10-19 | `trickvault` (16 tarjetas nuevas de reels de Instagram; 1258 trucos) |
 | 2026-10-13 | `json`, `neonshot`, `video-vault` |
 | 2026-10-10 | 27 apps (angulos_de_camara, aura-edit, banco_de_imagenes, clonador, color, creador_memes, crear_historias, decorar_habitacion, dibujo_lineas, dibujo_lineas_copia, editar_generar, editar_generar_1, editar_imagen, escenario_modelo, estilizador_prompt, estudio_creativo, estudio_imagenes, ficha_producto, fotos_antonio, galletas_infografias, generador_ia, generador_ia_flux, generar, generar_ai_studio, generar_imagene_personalizadas, illusion_diffusion, infografia-referencia, outfit, prompts_predeterminados, protocolo_gemini_web, publicidad_producto, transferir_estilo, vestir_modelo) |
 | 2026-10-03 | `transferir_estilo` |

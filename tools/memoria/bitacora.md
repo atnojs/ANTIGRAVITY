@@ -953,3 +953,49 @@ probó que vuelve a funcionar (borrar un fichero de prueba y verlo en la papeler
 las descargas en `H:\Descargas` (vacía); corregido su `Preferences` a `D:\Descargas` (con copia
 `.bak-2026-10-19`), y `D:\Descargas` ya era la carpeta de descargas de Windows (Chrome y apps la usan).
 (3) Explorador colgado con previsualizaciones pegadas: reiniciar `explorer.exe`.
+## 2026-10-19 (tarde) — TrickVault: 16 tarjetas nuevas de cuatro reels de Instagram
+
+Antonio: «examina estas urls y añade a trickvault las tarjetas que no tengamos» con cuatro reels:
+`DdgihjiHQSj` (codigo_adria, entrega 7 «mundos pequeños»), `DdFHEICTsMF` (soysusanquintero, fotos de
+pareja), `DcrMIItPSOa` (manuelgilcontent, foto de producto) y `DeVxASAolh8` (phd_inai, comandos
+virales con personajes).
+
+- **Cómo se leyeron:** metadatos de `yt-dlp` con cookies de Instagram; los códigos de los tres
+  primeros venían en la descripción; el de producto solo en pantalla y se leyó de fotogramas
+  (2 fps + OCR de la banda del rótulo) y de las hojas de contactos. Receta en `recetas.md`
+  («Leer los códigos de un reel de Instagram»).
+- **Qué entró:** 16 códigos nuevos, cada uno con las 4 piezas del catálogo: `CODE_FOLDER`, array
+  `REEL2_COMMANDS` (`reel2-cmd-NNN`, con la URL del reel como origen), prompt en
+  `PROMPT_TEMPLATES` y ejemplo generado con `openai-image-2-low` (1:1) en `assets/` registrado en
+  `SEED_COMMAND_IMAGES`:
+  `/figurine`, `/lego`, `/miniature`; `/couplefunselfie`, `/romancecollage`, `/cozyclosecouple`,
+  `/candidcouple`, `/mirrorcoupleselfie`; `/DARKPREMIUM`, `/SPLASHHERO`, `/AESTHETICLUXURY`,
+  `/BUSSTOPAD`; `/TOMJERRYCHAOS`, `/PINKPANIC`, `/CHIPMUNKTRIO`, `/MINTMUSE`.
+- **Duplicado detectado:** `/METAAD` (reel de manuelgilcontent) **no entra**: ya está en el catálogo
+  como `/metaad`; la búsqueda de la app ignora mayúsculas. Los códigos de `phd_inai` y
+  `manuelgilcontent` se conservan tal y como los escribe el reel.
+- **Sujetos:** se respeta el sujeto único por carpeta (cámara de película, camper van, botella de
+  aceite, mochila…). Excepciones documentadas en `_excepciones_*.json`: los 5 de pareja usan «a
+  young couple in love» y los 3 de personajes una mujer joven, porque el código pide expresamente
+  dos personas o una persona.
+- **Por qué array nuevo:** añadir a `REEL_COMMANDS` habría movido sus 267 ids posicionales y roto
+  `_reels_lote.py` (que los cuenta y los usa para el lote de imágenes).
+- **Herramientas:** `tools/trickvault/_reel2_lote.py` (monkey-patch de `_carpeta_lote` para leer
+  `REEL2_COMMANDS`) y `_reel2_sujetos.py`; se versionan con la negación
+  `!tools/trickvault/_reel2_*.py` del `.gitignore`.
+- **Verificado en local (Playwright, banco con `http.server`):** 1258 trucos (1242 + 16), las 16
+  tarjetas tienen su `assets/….jpg` y cargan (`naturalWidth > 0`), búsqueda por `/figurine` y por
+  `/MINTMUSE` (mayúsculas) devuelve 1 resultado con imagen, «Copiar prompt completo» da el prompt
+  entero (empieza por el código y acaba en «never in English»), la carpeta «Cámara y retrato» pasa
+  de 58 a 63 trucos. Consola: solo el aviso/error de Babel y los 404 de `image_store.php` del banco
+  sin PHP (preexistentes).
+- **Verificación en producción (18:41, tras el despliegue):** `https://atnojs.es/apps/trickvault/`
+  sirve el `index.html` nuevo (9.874.404 bytes; contiene `REEL2_COMMANDS` y
+  `assets/xl-letras3d/figurine.jpg`); **1258 trucos**, las **16 tarjetas** están en localStorage con
+  su imagen y las 16 cargan **1024×1024**; la carpeta «Cámara y retrato» marca **63 trucos** y sus 5
+  tarjetas nuevas se ven con imagen; consola solo con el aviso/error ya conocido de Babel; red
+  `image_store.php`, `catalogo.json` y `fav_list` → **200**; capturas en
+  `tools/evidencias/2026-10-19-trickvault-reels/` (producción escritorio y móvil).
+- **Commit:** `e1ce0c1`. La memoria va en el commit siguiente.
+- **Evidencias:** `tools/evidencias/2026-10-19-trickvault-reels/` (hoja de las 16 imágenes, búsqueda,
+  carpeta y móvil).
