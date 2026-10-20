@@ -136,7 +136,14 @@
       "sortOrder": 0
     }
   ],
-  "borradas": ["ig-dcek-473"],
+  "borradas": [
+    "ig-dcek-473",
+    "ig-dcek-047",
+    "ig-dcek-172",
+    "cap-cmd-009",
+    "cap-cmd-113",
+    "xl-cmd-131"
+  ],
   "orden": {
     "xl-letras3d": [
       "ig-dcek-280",

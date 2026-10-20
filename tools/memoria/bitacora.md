@@ -5,6 +5,34 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-19 — TrickVault: limpieza de «Cámara y retrato», botón de duplicados y «Últimas» por lote
+
+Cuatro cosas que pidió Antonio de una vez:
+
+1. **Fuera 5 tarjetas** (se quedan sus parejas): `/newbackground` (queda `/newbg`),
+   `/repairhd` y `/restore` (ya hay carpeta de restaurar imágenes), `/petphoto` (queda
+   `/pet`) y `/sameface` (queda `/samecharacter`). Ids apuntados en `REMOVED_IMAGE_IDS`
+   (`ig-dcek-047`, `ig-dcek-172`, `cap-cmd-009`, `cap-cmd-113`, `xl-cmd-131`) y en
+   `borradas` de `catalogo.json` para que desaparezcan también de los navegadores que ya
+   las tuvieran.
+   - El constructor de las tarjetas de Excel usaba `map` y no miraba la lista de retiradas:
+     ahora es `flatMap` con el mismo filtro que las de capturas y las de Instagram.
+2. **Botón «Buscar duplicados», solo en modo edición** (`canEdit`): agrupa las tarjetas cuyo
+   prompt es el mismo tras quitarles el código delante y normalizar espacios
+   (`tvGruposDuplicados`), enseña solo esas y debajo de cada una dice con qué otros códigos
+   coincide. Si no hay ninguno, «Sin duplicados».
+3. **«Últimas» ya no son las 24 más nuevas**: ahora enseña solo las tarjetas del **último
+   lote** (`updatedAt`/`createdAt` más reciente de todo el catálogo) y el chip dice la fecha
+   de esa actualización. Constantes `TV_RECIENTES`/`tvRecientes` eliminadas.
+4. CSS nuevo para el botón encendido y el aviso de duplicado; cache-buster a
+   `app.css?v=20261019-dup`.
+
+**Verificado**: JSX OK (1.003.662 chars), 10 comprobaciones de `tvUltimaMarca`, `tvMarca`,
+`tvPromptComparable` y `tvGruposDuplicados` (incluye falsos positivos y prompts vacíos), y
+`catalogo.json` válido con los 6 ids en `borradas`. Sin Chrome en el sandbox: sin capturas.
+
+---
+
 ## 2026-10-19 — TrickVault: botón «Últimas» en el filtro de fechas
 
 Antonio: en el buscador por fechas, un botón para ver las últimas tarjetas subidas.

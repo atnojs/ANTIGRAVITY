@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20261019-fecha">
+    <link rel="stylesheet" href="app.css?v=20261019-dup">
 </head>
 <body>
     <div id="root"></div>
@@ -1377,7 +1377,14 @@ const REMOVED_IMAGE_IDS = new Set([
     'cap-cmd-119', 'cap-cmd-120', 'cap-cmd-121', 'cap-cmd-122',
     // 2026-10-19: /legoify duplicaba a /lego en «Otro mundo» (las dos hacían un
     // mundo de piezas). Se apaga esta y se queda /lego.
-    'ig-dcek-473'
+    'ig-dcek-473',
+    // 2026-10-19, limpieza de «Cámara y retrato» (Antonio, tarjeta a tarjeta):
+    //   /newbackground -> se queda /newbg        (/newbg hace lo mismo y más claro)
+    //   /repairhd      -> se queda la carpeta de restaurar imágenes
+    //   /restore       -> ídem
+    //   /petphoto      -> se queda /pet
+    //   /sameface      -> se queda /samecharacter
+    'ig-dcek-047', 'ig-dcek-172', 'cap-cmd-009', 'cap-cmd-113', 'xl-cmd-131'
 ]);
 
 
@@ -3351,20 +3358,26 @@ const SEED_TRICKS = [
         }];
     }),
     // Entradas de las 18 carpetas nuevas (Excel «500 comandos secretos de ChatGPT»).
-    ...EXCEL_COMMANDS.map(([command, meaning], index) => ({
-        id: `xl-cmd-${String(index + 1).padStart(3, '0')}`,
-        title: `${command} — ${meaning}`,
-        description: '',
-        category: CODE_FOLDER[command] || 'xl-dev',
-        tags: ['comandos de imagen', 'imagen', 'Excel'],
-        codeSnippet: command,
-        difficulty: 'beginner',
-        sourceUrl: '',
-        imageUrl: SEED_COMMAND_IMAGES[command] || '',
-        isFavorite: false,
-        createdAt: Date.UTC(2026, 9, 1) - index,
-        updatedAt: Date.UTC(2026, 9, 1),
-    })),
+    ...EXCEL_COMMANDS.flatMap(([command, meaning], index) => {
+        const id = `xl-cmd-${String(index + 1).padStart(3, '0')}`;
+        // Tarjetas retiradas: no vuelven a entrar (su id se apaga también en los
+        // navegadores que ya la tuvieran guardada).
+        if (REMOVED_IMAGE_IDS.has(id)) return [];
+        return [{
+            id,
+            title: `${command} — ${meaning}`,
+            description: '',
+            category: CODE_FOLDER[command] || 'xl-dev',
+            tags: ['comandos de imagen', 'imagen', 'Excel'],
+            codeSnippet: command,
+            difficulty: 'beginner',
+            sourceUrl: '',
+            imageUrl: SEED_COMMAND_IMAGES[command] || '',
+            isFavorite: false,
+            createdAt: Date.UTC(2026, 9, 1) - index,
+            updatedAt: Date.UTC(2026, 9, 1),
+        }];
+    }),
     // Entradas de los 108 códigos nuevos de las capturas (2026-10-06).
     ...CAPTURE_COMMANDS.flatMap(([command, meaning], index) => {
         const id = `cap-cmd-${String(index + 1).padStart(3, '0')}`;
@@ -6314,32 +6327,89 @@ function tvResumenFecha(modo, dia, desde, hasta) {
     return '';
 }
 
-/* Cuántas tarjetas enseña el atajo «Últimas» (las más recientes por fecha de alta). */
-const TV_RECIENTES = 24;
+/* Marca temporal de la ÚLTIMA actualización del catálogo: la fecha más reciente
+   entre updatedAt/createdAt. El atajo «Últimas» enseña solo ese lote. */
+function tvUltimaMarca(lista) {
+    let max = 0;
+    for (const t of lista || []) {
+        const s = Number(t && t.updatedAt) || Number(t && t.createdAt) || 0;
+        if (s > max) max = s;
+    }
+    return max;
+}
 
-function tvRecientes(lista, cuantas) {
-    return [...lista]
-        .sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0))
-        .slice(0, cuantas);
+function tvMarca(t) {
+    return Number(t && t.updatedAt) || Number(t && t.createdAt) || 0;
+}
+
+/** El prompt de una tarjeta sin su código delante, en minúsculas y sin espacios de más.
+ *  Es lo que se compara para detectar duplicados: mismo prompt, códigos distintos. */
+function tvPromptComparable(trick) {
+    let texto = String(getTrickCopyText(trick) || '');
+    const codigo = String((trick && trick.codeSnippet) || '').trim();
+    if (codigo && texto.startsWith(codigo)) texto = texto.slice(codigo.length);
+    return texto.replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+/** Agrupa las tarjetas cuyo prompt se repite. Devuelve { clave: [tarjetas] } con >1. */
+function tvGruposDuplicados(lista) {
+    const mapa = new Map();
+    for (const t of lista || []) {
+        const clave = tvPromptComparable(t);
+        if (!clave) continue;
+        if (!mapa.has(clave)) mapa.set(clave, []);
+        mapa.get(clave).push(t);
+    }
+    const salida = new Map();
+    for (const [clave, grupo] of mapa) {
+        const codigos = new Set(grupo.map(t => String(t.codeSnippet || '').trim()));
+        if (codigos.size > 1) salida.set(clave, grupo);
+    }
+    return salida;
 }
 
 function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit }) {
     const [query, setQuery] = useState('');
-    // Buscador por fechas: fecha de alta concreta, un rango o las últimas subidas.
+    // Buscador por fechas: fecha de alta concreta, un rango o la última actualización.
     const [fechaModo, setFechaModo] = useState('todo');
     const [fechaDia, setFechaDia] = useState('');
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
+    // Buscador de duplicados (solo en modo edición).
+    const [verDuplicados, setVerDuplicados] = useState(false);
 
-    const filtrandoFecha = fechaModo === 'recientes' ||
+    const gruposDuplicados = useMemo(() => tvGruposDuplicados(tricks), [tricks]);
+    const totalDuplicadas = useMemo(
+        () => { let n = 0; for (const g of gruposDuplicados.values()) n += g.length; return n; },
+        [gruposDuplicados]
+    );
+    const ultimaMarca = useMemo(() => tvUltimaMarca(tricks), [tricks]);
+
+    const filtrandoFecha = !verDuplicados && (fechaModo === 'recientes' ||
         (fechaModo === 'dia' && Boolean(fechaDia)) ||
-        (fechaModo === 'rango' && Boolean(fechaDesde || fechaHasta));
+        (fechaModo === 'rango' && Boolean(fechaDesde || fechaHasta)));
     const resumenFecha = fechaModo === 'recientes'
-        ? 'últimas ' + TV_RECIENTES + ' subidas'
+        ? 'última actualización (' + (ultimaMarca ? tvFechaLarga(tvClaveDia(ultimaMarca)) : 'sin fecha') + ')'
         : tvResumenFecha(fechaModo, fechaDia, fechaDesde, fechaHasta);
 
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
+        if (verDuplicados) {
+            const dentro = [];
+            for (const grupo of gruposDuplicados.values()) {
+                for (const t of grupo) {
+                    if (q) {
+                        const coincide = t.title.toLowerCase().includes(q) ||
+                            (t.codeSnippet || '').toLowerCase().includes(q) ||
+                            t.description.toLowerCase().includes(q) ||
+                            t.tags.some(tg => tg.toLowerCase().includes(q));
+                        if (!coincide) continue;
+                    }
+                    dentro.push(t);
+                }
+            }
+            return dentro.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+        }
         if (!q && !filtrandoFecha) return [];
         const filtradas = tricks.filter(t => {
             if (q) {
@@ -6350,11 +6420,21 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                     (getCat(t.category, folders)?.label || '').toLowerCase().includes(q);
                 if (!coincide) return false;
             }
-            if (fechaModo === 'recientes') return true;
+            if (fechaModo === 'recientes') return ultimaMarca > 0 && tvMarca(t) === ultimaMarca;
             return tvCumpleFecha(t.createdAt, fechaModo, fechaDia, fechaDesde, fechaHasta);
         }).sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
-        return fechaModo === 'recientes' ? filtradas.slice(0, TV_RECIENTES) : filtradas;
-    }, [tricks, query, folders, fechaModo, fechaDia, fechaDesde, fechaHasta, filtrandoFecha]);
+        return filtradas;
+    }, [tricks, query, folders, fechaModo, fechaDia, fechaDesde, fechaHasta, filtrandoFecha,
+        verDuplicados, gruposDuplicados, ultimaMarca]);
+
+    /** Códigos de las otras tarjetas que comparten el prompt de esta. */
+    function hermanasDe(trick) {
+        const grupo = gruposDuplicados.get(tvPromptComparable(trick)) || [];
+        return grupo
+            .filter(t => String(t.id) !== String(trick.id))
+            .map(t => String(t.codeSnippet || '').trim())
+            .filter(Boolean);
+    }
 
     function cambiarModoFecha(modo) {
         setFechaModo(modo);
@@ -6378,11 +6458,16 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                     <span className="search-icon">🔍</span>
                     <input type="text" placeholder="Buscar códigos en todas las carpetas..." value={query} onChange={e => setQuery(e.target.value)} aria-label="Buscar códigos en todas las carpetas" />
                 </div>
-                {(query || filtrandoFecha) && <span className="stat-chip"><span className="count">{results.length}</span> resultados</span>}
+                {(query || filtrandoFecha || verDuplicados) && <span className="stat-chip"><span className="count">{results.length}</span> resultados</span>}
                 {filtrandoFecha && (
                     <span className="stat-chip">
                         {fechaModo === 'recientes' ? '🆕' : '📅'} {resumenFecha}
                         <button type="button" className="date-clear" onClick={limpiarFiltroFecha} aria-label="Quitar filtro de fecha" title="Quitar filtro de fecha">✕</button>
+                    </span>
+                )}
+                {verDuplicados && (
+                    <span className="stat-chip">
+                        🧩 {gruposDuplicados.size} {gruposDuplicados.size === 1 ? 'grupo' : 'grupos'} · {totalDuplicadas} tarjetas
                     </span>
                 )}
             </div>
@@ -6393,7 +6478,7 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                     <button type="button" className={'date-toggle' + (fechaModo === 'todo' ? ' active' : '')} aria-pressed={fechaModo === 'todo'} onClick={() => cambiarModoFecha('todo')}>Todo</button>
                     <button type="button" className={'date-toggle' + (fechaModo === 'dia' ? ' active' : '')} aria-pressed={fechaModo === 'dia'} onClick={() => cambiarModoFecha('dia')}>Un día</button>
                     <button type="button" className={'date-toggle' + (fechaModo === 'rango' ? ' active' : '')} aria-pressed={fechaModo === 'rango'} onClick={() => cambiarModoFecha('rango')}>Rango</button>
-                    <button type="button" className={'date-toggle' + (fechaModo === 'recientes' ? ' active' : '')} aria-pressed={fechaModo === 'recientes'} title={'Ver las ' + TV_RECIENTES + ' tarjetas más recientes'} onClick={() => cambiarModoFecha('recientes')}>Últimas</button>
+                    <button type="button" className={'date-toggle' + (fechaModo === 'recientes' ? ' active' : '')} aria-pressed={fechaModo === 'recientes'} title="Ver solo las tarjetas de la última actualización" onClick={() => cambiarModoFecha('recientes')}>Últimas</button>
                 </div>
                 {fechaModo === 'dia' && (
                     <input type="date" className="date-input" value={fechaDia} onChange={e => setFechaDia(e.target.value)} aria-label="Día de alta" />
@@ -6408,15 +6493,27 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                 {fechaModo !== 'todo' && (
                     <button type="button" className="btn btn-glass btn-sm" onClick={limpiarFiltroFecha}>Quitar filtro</button>
                 )}
+                {canEdit && (
+                    <button type="button"
+                        className={'btn btn-glass btn-sm dup-btn' + (verDuplicados ? ' is-on' : '')}
+                        aria-pressed={verDuplicados}
+                        title="Enseñar las tarjetas cuyo prompt se repite con otro código"
+                        onClick={() => setVerDuplicados(v => !v)}>
+                        🧩 {verDuplicados ? 'Ocultar duplicados' : 'Buscar duplicados'}
+                    </button>
+                )}
+                {verDuplicados && (
+                    <button type="button" className="btn btn-glass btn-sm" onClick={() => setVerDuplicados(false)}>Quitar filtro</button>
+                )}
             </div>
 
-            {(query || filtrandoFecha) && results.length === 0 ? (
+            {(query || filtrandoFecha || verDuplicados) && results.length === 0 ? (
                 <div className="empty-state">
-                    <div className="empty-icon">🔎</div>
-                    <h3>Sin resultados</h3>
-                    <p>{fechaModo === 'recientes' ? 'Todavía no hay tarjetas' : filtrandoFecha ? 'No hay tarjetas con esa fecha' : 'Prueba con otros términos'}</p>
+                    <div className="empty-icon">{verDuplicados ? '✅' : '🔎'}</div>
+                    <h3>{verDuplicados ? 'Sin duplicados' : 'Sin resultados'}</h3>
+                    <p>{verDuplicados ? 'Ninguna tarjeta repite el prompt de otra' : fechaModo === 'recientes' ? 'Todavía no hay tarjetas' : filtrandoFecha ? 'No hay tarjetas con esa fecha' : 'Prueba con otros términos'}</p>
                 </div>
-            ) : (query || filtrandoFecha) && (
+            ) : (query || filtrandoFecha || verDuplicados) && (
                 <div className="tricks-grid">
                     {results.map(t => (
                         <div key={t.id} style={{position:'relative'}}>
@@ -6424,6 +6521,9 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                             <button className="btn btn-glass btn-sm" style={{position:'absolute',top:'0.5rem',right:'4rem',zIndex:2}} onClick={() => onSelectCategory(t.category)} title="Ir a la categoría">
                                 📂 {getCat(t.category, folders)?.label}
                             </button>
+                            {verDuplicados && hermanasDe(t).length > 0 && (
+                                <p className="dup-note">🧩 mismo prompt que <b>{hermanasDe(t).join(', ')}</b></p>
+                            )}
                         </div>
                     ))}
                 </div>

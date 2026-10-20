@@ -463,6 +463,27 @@ h1, h2, h3, h4, .font-montserrat {
 
 .date-clear:hover { color: var(--neon-cyan); }
 
+/* Botón y aviso de duplicados (solo en modo edición) */
+.dup-btn.is-on {
+    color: #04121f;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--acc2));
+    border-color: transparent;
+}
+
+.dup-note {
+    margin: 0.45rem 0 0;
+    font-size: 0.76rem;
+    line-height: 1.35;
+    color: var(--color-amber);
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    border-radius: var(--radius-sm);
+    padding: 0.3rem 0.5rem;
+    word-break: break-word;
+}
+
+.dup-note b { color: var(--text); }
+
 @media (max-width: 560px) {
     .date-bar { gap: 0.45rem; }
     .date-toggles { width: 100%; justify-content: space-between; }
