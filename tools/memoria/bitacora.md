@@ -5,6 +5,21 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-19 — TrickVault: botón «Últimas» en el filtro de fechas
+
+Antonio: en el buscador por fechas, un botón para ver las últimas tarjetas subidas.
+
+- Cuarto modo del filtro: **Últimas** (junto a Todo / Un día / Rango). Enseña las
+  **24 más recientes** por `createdAt`, de más nueva a más vieja, y funciona también con
+  texto escrito (filtra por texto y luego recorta).
+- Resumen en el chip: «🆕 últimas 24 subidas»; la ✕ y «Quitar filtro» lo deshacen.
+- Constante `TV_RECIENTES` para cambiar el número en un sitio; función pura `tvRecientes()`
+  (no muta la lista, respeta tarjetas sin `createdAt` mandándolas al final).
+- Verificado: JSX OK (`@babel/parser`), 6 comprobaciones de `tvRecientes` (orden, recorte,
+  sin fecha, no muta, lista vacía) y 0 restos de codificación rota.
+
+---
+
 ## 2026-10-19 — TrickVault: fuera /legoify (duplicaba a /lego)
 
 Antonio: en «Otro mundo» había dos tarjetas de LEGO; se queda `/lego` y se elimina `/legoify`.

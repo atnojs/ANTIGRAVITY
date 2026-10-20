@@ -6314,22 +6314,34 @@ function tvResumenFecha(modo, dia, desde, hasta) {
     return '';
 }
 
+/* Cuántas tarjetas enseña el atajo «Últimas» (las más recientes por fecha de alta). */
+const TV_RECIENTES = 24;
+
+function tvRecientes(lista, cuantas) {
+    return [...lista]
+        .sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0))
+        .slice(0, cuantas);
+}
+
 function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit }) {
     const [query, setQuery] = useState('');
-    // Buscador por fechas: fecha de alta concreta o un rango.
+    // Buscador por fechas: fecha de alta concreta, un rango o las últimas subidas.
     const [fechaModo, setFechaModo] = useState('todo');
     const [fechaDia, setFechaDia] = useState('');
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
 
-    const filtrandoFecha = (fechaModo === 'dia' && Boolean(fechaDia)) ||
+    const filtrandoFecha = fechaModo === 'recientes' ||
+        (fechaModo === 'dia' && Boolean(fechaDia)) ||
         (fechaModo === 'rango' && Boolean(fechaDesde || fechaHasta));
-    const resumenFecha = tvResumenFecha(fechaModo, fechaDia, fechaDesde, fechaHasta);
+    const resumenFecha = fechaModo === 'recientes'
+        ? 'últimas ' + TV_RECIENTES + ' subidas'
+        : tvResumenFecha(fechaModo, fechaDia, fechaDesde, fechaHasta);
 
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!q && !filtrandoFecha) return [];
-        return tricks.filter(t => {
+        const filtradas = tricks.filter(t => {
             if (q) {
                 const coincide = t.title.toLowerCase().includes(q) ||
                     (t.codeSnippet || '').toLowerCase().includes(q) ||
@@ -6338,8 +6350,10 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                     (getCat(t.category, folders)?.label || '').toLowerCase().includes(q);
                 if (!coincide) return false;
             }
+            if (fechaModo === 'recientes') return true;
             return tvCumpleFecha(t.createdAt, fechaModo, fechaDia, fechaDesde, fechaHasta);
-        }).sort((a, b) => b.createdAt - a.createdAt);
+        }).sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+        return fechaModo === 'recientes' ? filtradas.slice(0, TV_RECIENTES) : filtradas;
     }, [tricks, query, folders, fechaModo, fechaDia, fechaDesde, fechaHasta, filtrandoFecha]);
 
     function cambiarModoFecha(modo) {
@@ -6367,7 +6381,7 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                 {(query || filtrandoFecha) && <span className="stat-chip"><span className="count">{results.length}</span> resultados</span>}
                 {filtrandoFecha && (
                     <span className="stat-chip">
-                        📅 {resumenFecha}
+                        {fechaModo === 'recientes' ? '🆕' : '📅'} {resumenFecha}
                         <button type="button" className="date-clear" onClick={limpiarFiltroFecha} aria-label="Quitar filtro de fecha" title="Quitar filtro de fecha">✕</button>
                     </span>
                 )}
@@ -6379,6 +6393,7 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                     <button type="button" className={'date-toggle' + (fechaModo === 'todo' ? ' active' : '')} aria-pressed={fechaModo === 'todo'} onClick={() => cambiarModoFecha('todo')}>Todo</button>
                     <button type="button" className={'date-toggle' + (fechaModo === 'dia' ? ' active' : '')} aria-pressed={fechaModo === 'dia'} onClick={() => cambiarModoFecha('dia')}>Un día</button>
                     <button type="button" className={'date-toggle' + (fechaModo === 'rango' ? ' active' : '')} aria-pressed={fechaModo === 'rango'} onClick={() => cambiarModoFecha('rango')}>Rango</button>
+                    <button type="button" className={'date-toggle' + (fechaModo === 'recientes' ? ' active' : '')} aria-pressed={fechaModo === 'recientes'} title={'Ver las ' + TV_RECIENTES + ' tarjetas más recientes'} onClick={() => cambiarModoFecha('recientes')}>Últimas</button>
                 </div>
                 {fechaModo === 'dia' && (
                     <input type="date" className="date-input" value={fechaDia} onChange={e => setFechaDia(e.target.value)} aria-label="Día de alta" />
@@ -6399,7 +6414,7 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                 <div className="empty-state">
                     <div className="empty-icon">🔎</div>
                     <h3>Sin resultados</h3>
-                    <p>{filtrandoFecha ? 'No hay tarjetas con esa fecha' : 'Prueba con otros términos'}</p>
+                    <p>{fechaModo === 'recientes' ? 'Todavía no hay tarjetas' : filtrandoFecha ? 'No hay tarjetas con esa fecha' : 'Prueba con otros términos'}</p>
                 </div>
             ) : (query || filtrandoFecha) && (
                 <div className="tricks-grid">
