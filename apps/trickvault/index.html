@@ -1374,7 +1374,10 @@ const REMOVED_IMAGE_IDS = new Set([
     // el mismo día, para que no haya que elegir entre códigos. Los 9 ids se
     // apagan aquí y se borran de los navegadores que ya los tuvieran guardados.
     'cap-cmd-114', 'cap-cmd-115', 'cap-cmd-116', 'cap-cmd-117', 'cap-cmd-118',
-    'cap-cmd-119', 'cap-cmd-120', 'cap-cmd-121', 'cap-cmd-122'
+    'cap-cmd-119', 'cap-cmd-120', 'cap-cmd-121', 'cap-cmd-122',
+    // 2026-10-19: /legoify duplicaba a /lego en «Otro mundo» (las dos hacían un
+    // mundo de piezas). Se apaga esta y se queda /lego.
+    'ig-dcek-473'
 ]);
 
 
@@ -2014,7 +2017,6 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/quizcard': 'assets/infografias/quizcard.jpg',
     '/boardgame': 'assets/infografias/boardgame.jpg',
     '/cardgame': 'assets/infografias/cardgame.jpg',
-    '/legoify': 'assets/xl-otromundo/legoify.jpg',
     '/futureversion': 'assets/xl-otromundo/futureversion.jpg',
     '/postapocalypse': 'assets/xl-otromundo/postapocalypse.jpg',
     '/iceversion': 'assets/xl-otromundo/iceversion.jpg',
@@ -4072,7 +4074,6 @@ const PROMPT_TEMPLATES = {
     "/bw": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Black and white photograph of [OBJETO], rich monochrome tonal range, deep blacks and bright whites, timeless fine-art contrast, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/pet": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Realistic pet photograph of [OBJETO], expressive animal portrait, soft natural light, sharp fur detail, heartwarming composition, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/instantphoto": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Instant photo aesthetic of [OBJETO], soft dreamy focus, washed vintage colors, white instant-film border, nostalgic snapshot feel, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-    "/legoify": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Recreate [OBJETO] as a detailed LEGO-built world, plastic brick textures, stud details, toy photography, playful miniature diorama, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/futureversion": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Upgrade [OBJETO] into a cinematic vision of the future, futuristic architecture and technology, dramatic sci-fi atmosphere, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/postapocalypse": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Turn [OBJETO] into a cinematic post-apocalyptic world, abandoned ruins, overgrown decay, dramatic desolation, movie-grade atmosphere, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/iceversion": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Freeze [OBJETO] into a world of ice and snow, frozen surfaces, frost textures, cold blue light, sparkling winter wonderland, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",

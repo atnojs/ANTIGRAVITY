@@ -5,6 +5,22 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-19 — TrickVault: fuera /legoify (duplicaba a /lego)
+
+Antonio: en «Otro mundo» había dos tarjetas de LEGO; se queda `/lego` y se elimina `/legoify`.
+
+- Su id de serie es **`ig-dcek-473`** (índice 472 de `ALL_IMAGE_COMMANDS`), apuntado en
+  `REMOVED_IMAGE_IDS` (así desaparece de los navegadores que ya lo tuvieran y no vuelve).
+- Añadido también a `borradas` de `catalogo.json` para que la capa publicada lo oculte en
+  cualquier navegador.
+- Quitadas del `index.html` sus dos líneas propias (imagen `assets/xl-otromundo/legoify.jpg`
+  y su prompt) y borrado el jpg (225 KB).
+- **No** se tocó la entrada de `ADDITIONAL_IMAGE_COMMANDS`: quitar esa línea renumeraría todos
+  los ids `ig-dcek` siguientes y rompería las tarjetas guardadas.
+- Verificado: JSX OK, `catalogo.json` válido, cero referencias al jpg.
+
+---
+
 ## 2026-10-19 — TrickVault: buscador por fecha de alta (un día o un rango)
 
 Antonio lo pidió para **TrickVault** (yo lo había hecho antes en Descargas por error: se queda
