@@ -5,6 +5,33 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-19 — TrickVault: imágenes de ejemplo de las 29 tarjetas nuevas
+
+Antonio: «genera las imágenes» teniendo en cuenta que **cada carpeta tiene su sujeto
+central. Se generan las 29** de las tres infografías del día (21 de «Viral ChatGPT» + 8 de las
+30 transformaciones) con `openai-image-2-low`, 1:1.
+
+- Sujeto por carpeta, el mayoritario de su `_sujetos_<carpeta>.json`: barco de pesca
+  (xl-estilos), chica de pelo rizado (xl-luzcamara y xl-camararetrato), villa mediterránea
+  (xl-casaviajes), robot retro (xl-ilustracion), jarra de girasoles (xl-pintura), mochila de
+  cuero (xl-escenaprueba), zorro rojo (xl-carteles), furgo clásica (xl-otromundo), cámara
+  antigua (xl-letras3d) y botella de aceite (xl-efectosempaque).
+- Generadas en `tools/trickvault/_nuevas_gen/` (3 hilos, 251 s, 0 fallos), pasadas a JPG
+  1024×1024 calidad 85 en `apps/trickvault/assets/<carpeta>/<codigo>.jpg` (la carpeta que
+  marca el prefijo de su `GENERATED_IMAGE_RELEASES`: xl-pintura va a `pintura-dibujo` y
+  xl-luzcamara a `luz-camara-personas`).
+- Registradas las 29 en el `Object.assign(SEED_COMMAND_IMAGES, {…})` y subida la versión de
+  las 11 categorías a `20261019-infografias`, que es lo que hace que una tarjeta **ya
+  guardada** en un navegador recupere el ejemplo.
+- **Verificado**: 29 JPG existen, son JPEG y miden 1024×1024; JSX OK con `@babel/parser`;
+  0 restos de codificación rota.
+- **Limitación honesta**: la verificación con Chrome headless que pide la skill (vaciar el
+  `imageUrl` de las tarjetas guardadas y recargar) no se puede hacer en este sandbox
+  (Playwright falla con WinError 5). Queda comprobado el registro y los ficheros, no el
+  relleno en un navegador real.
+
+---
+
 ## 2026-10-19 — TrickVault: 8 códigos de la infografía de 30 transformaciones
 
 Tercera tanda de imágenes del día (30 transformaciones: /tinyhumans, /giantmode, /pixelart…).
