@@ -3498,6 +3498,7 @@ const SEED_TRICKS = [
             isFavorite: false,
             createdAt: Date.UTC(2026, 7, 25) - index,
             updatedAt: (index <= 248 ? Date.UTC(2026, 7, 25) : index <= 351 ? Date.UTC(2026, 8, 20) : index <= 464 ? Date.UTC(2026, 8, 25) : Date.UTC(2026, 8, 26)),
+            lote: '2026-08-25',
         }];
     }),
     // Entradas de las 18 carpetas nuevas (Excel «500 comandos secretos de ChatGPT»).
@@ -3519,6 +3520,7 @@ const SEED_TRICKS = [
             isFavorite: false,
             createdAt: Date.UTC(2026, 9, 1) - index,
             updatedAt: Date.UTC(2026, 9, 1),
+            lote: '2026-10-01',
         }];
     }),
     // Entradas de los 108 códigos nuevos de las capturas (2026-10-06).
@@ -3540,6 +3542,7 @@ const SEED_TRICKS = [
             isFavorite: false,
             createdAt: Date.UTC(2026, 9, 6) - index,
             updatedAt: Date.UTC(2026, 9, 6),
+            lote: '2026-10-06',
         }];
     }),
     // Códigos nuevos de los reels y los carruseles de Instagram (2026-10-13).
@@ -3556,6 +3559,7 @@ const SEED_TRICKS = [
         isFavorite: false,
         createdAt: Date.UTC(2026, 9, 13) - index,
         updatedAt: Date.UTC(2026, 9, 13),
+        lote: '2026-10-13',
     })),
     // Códigos nuevos de los cuatro reels de Instagram (2026-10-19).
     ...REEL2_COMMANDS.map(([command, meaning, sourceUrl], index) => ({
@@ -3571,6 +3575,7 @@ const SEED_TRICKS = [
         isFavorite: false,
         createdAt: Date.UTC(2026, 9, 19) - index,
         updatedAt: Date.UTC(2026, 9, 19),
+        lote: '2026-10-19',
     })),
     // Códigos de texto de la infografía «50 secret codes of ChatGPT» (2026-10-19).
     ...CHATGPT_CODES.map(([command, meaning], index) => ({
@@ -3586,6 +3591,7 @@ const SEED_TRICKS = [
         isFavorite: false,
         createdAt: Date.UTC(2026, 9, 19) - index,
         updatedAt: Date.UTC(2026, 9, 19),
+        lote: '2026-10-21',
     })),
     // Códigos de imagen de «Viral ChatGPT AI Image Commands» (2026-10-19).
     ...VIRAL_CODES.map(([command, meaning], index) => ({
@@ -3601,6 +3607,7 @@ const SEED_TRICKS = [
         isFavorite: false,
         createdAt: Date.UTC(2026, 9, 19) - index,
         updatedAt: Date.UTC(2026, 9, 19),
+        lote: '2026-10-21',
     })),
     // Códigos de la infografía de 30 transformaciones (2026-10-19).
     ...TURN_CODES.map(([command, meaning], index) => ({
@@ -3616,6 +3623,7 @@ const SEED_TRICKS = [
         isFavorite: false,
         createdAt: Date.UTC(2026, 9, 19) - index,
         updatedAt: Date.UTC(2026, 9, 19),
+        lote: '2026-10-21',
     })),
 ];
 
@@ -3682,6 +3690,56 @@ function seedUpdatedAt(id) {
 function seedAssetImage(command) {
     const image = SEED_COMMAND_IMAGES[command];
     return typeof image === 'string' && image.startsWith('assets/') ? image : '';
+}
+
+/* ── «Últimas»: el último push, y solo eso ──────────────────────────────────
+   Cada tanda de tarjetas que se sube al catálogo lleva su fecha de push en
+   `lote` (en la semilla, o en la tarjeta si nació en la app). El atajo
+   «Últimas» enseña SOLO las tarjetas del lote más reciente: las del último
+   push, ni una más. Tampoco entran las editadas (eso es `updatedAt`) ni los
+   ejemplos de la casa (s1…s11): no son subidas.
+   Al subir una tanda nueva: ponle su fecha como `lote` ('AAAA-MM-DD', así
+   ordena como texto) y la app la coge sola sin tocar nada más. */
+const SEED_LOTE_POR_ID = new Map(
+    SEED_TRICKS.filter(t => t && t.lote).map(t => [String(t.id), String(t.lote)])
+);
+// Posición de cada tarjeta de serie: da el orden en que se subieron.
+const SEED_ORDEN_POR_ID = new Map(SEED_TRICKS.map((t, i) => [String(t.id), i]));
+
+/** Fecha de push de una tarjeta ('' si no la tiene). */
+function tvLoteDe(trick) {
+    return String((trick && trick.lote) || SEED_LOTE_POR_ID.get(String(trick && trick.id)) || '');
+}
+
+/**
+ * El último push de la lista: { lote, ids, orden }.
+ * - lote: fecha del push más reciente ('' si no hay ninguno).
+ * - ids: SOLO las tarjetas de ese push.
+ * - orden: id -> posición, para enseñarlas en el orden en que se subieron.
+ */
+function tvUltimoPush(lista) {
+    let lote = '';
+    const lotePorId = new Map();
+    for (const trick of lista || []) {
+        const suyo = tvLoteDe(trick);
+        if (!suyo) continue;
+        lotePorId.set(String(trick.id), suyo);
+        if (suyo > lote) lote = suyo;
+    }
+    const ids = new Set();
+    const orden = new Map();
+    if (!lote) return { lote, ids, orden };
+    for (const trick of lista || []) {
+        const id = String(trick.id);
+        if (lotePorId.get(id) !== lote) continue;
+        ids.add(id);
+        // De serie: su posición en el catálogo. Las que nacieron en la app no
+        // están en la semilla: van detrás, ordenadas por fecha de alta.
+        orden.set(id, SEED_ORDEN_POR_ID.has(id)
+            ? SEED_ORDEN_POR_ID.get(id)
+            : 1e9 + (Number(trick.createdAt) || 0));
+    }
+    return { lote, ids, orden };
 }
 
 /* ═══════════════════════════════════════════════
@@ -6546,21 +6604,6 @@ function tvResumenFecha(modo, dia, desde, hasta) {
     return '';
 }
 
-/* Marca temporal de la ÚLTIMA actualización del catálogo: la fecha más reciente
-   entre updatedAt/createdAt. El atajo «Últimas» enseña solo ese lote. */
-function tvUltimaMarca(lista) {
-    let max = 0;
-    for (const t of lista || []) {
-        const s = Number(t && t.updatedAt) || Number(t && t.createdAt) || 0;
-        if (s > max) max = s;
-    }
-    return max;
-}
-
-function tvMarca(t) {
-    return Number(t && t.updatedAt) || Number(t && t.createdAt) || 0;
-}
-
 /** El prompt de una tarjeta sin su código delante, en minúsculas y sin espacios de más.
  *  Es lo que se compara para detectar duplicados: mismo prompt, códigos distintos. */
 function tvPromptComparable(trick) {
@@ -6589,7 +6632,7 @@ function tvGruposDuplicados(lista) {
 
 function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit }) {
     const [query, setQuery] = useState('');
-    // Buscador por fechas: fecha de alta concreta, un rango o la última actualización.
+    // Buscador por fechas: fecha de alta concreta, un rango o el último push.
     const [fechaModo, setFechaModo] = useState('todo');
     const [fechaDia, setFechaDia] = useState('');
     const [fechaDesde, setFechaDesde] = useState('');
@@ -6602,13 +6645,13 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
         () => { let n = 0; for (const g of gruposDuplicados.values()) n += g.length; return n; },
         [gruposDuplicados]
     );
-    const ultimaMarca = useMemo(() => tvUltimaMarca(tricks), [tricks]);
+    const ultimoPush = useMemo(() => tvUltimoPush(tricks), [tricks]);
 
     const filtrandoFecha = !verDuplicados && (fechaModo === 'recientes' ||
         (fechaModo === 'dia' && Boolean(fechaDia)) ||
         (fechaModo === 'rango' && Boolean(fechaDesde || fechaHasta)));
     const resumenFecha = fechaModo === 'recientes'
-        ? 'última actualización (' + (ultimaMarca ? tvFechaLarga(tvClaveDia(ultimaMarca)) : 'sin fecha') + ')'
+        ? 'último push' + (ultimoPush.lote ? ' · ' + tvFechaLarga(ultimoPush.lote) : ' · sin fecha')
         : tvResumenFecha(fechaModo, fechaDia, fechaDesde, fechaHasta);
 
     const results = useMemo(() => {
@@ -6639,12 +6682,18 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                     (getCat(t.category, folders)?.label || '').toLowerCase().includes(q);
                 if (!coincide) return false;
             }
-            if (fechaModo === 'recientes') return ultimaMarca > 0 && tvMarca(t) === ultimaMarca;
+            if (fechaModo === 'recientes') return ultimoPush.ids.has(String(t.id));
             return tvCumpleFecha(t.createdAt, fechaModo, fechaDia, fechaDesde, fechaHasta);
-        }).sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+        }).sort((a, b) => {
+            if (fechaModo !== 'recientes') return (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
+            // Último push: en el orden en que se subieron las tarjetas.
+            const posA = ultimoPush.orden.get(String(a.id));
+            const posB = ultimoPush.orden.get(String(b.id));
+            return (posA === undefined ? Infinity : posA) - (posB === undefined ? Infinity : posB);
+        });
         return filtradas;
     }, [tricks, query, folders, fechaModo, fechaDia, fechaDesde, fechaHasta, filtrandoFecha,
-        verDuplicados, gruposDuplicados, ultimaMarca]);
+        verDuplicados, gruposDuplicados, ultimoPush]);
 
     /** Códigos de las otras tarjetas que comparten el prompt de esta. */
     function hermanasDe(trick) {
@@ -6697,7 +6746,7 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                     <button type="button" className={'date-toggle' + (fechaModo === 'todo' ? ' active' : '')} aria-pressed={fechaModo === 'todo'} onClick={() => cambiarModoFecha('todo')}>Todo</button>
                     <button type="button" className={'date-toggle' + (fechaModo === 'dia' ? ' active' : '')} aria-pressed={fechaModo === 'dia'} onClick={() => cambiarModoFecha('dia')}>Un día</button>
                     <button type="button" className={'date-toggle' + (fechaModo === 'rango' ? ' active' : '')} aria-pressed={fechaModo === 'rango'} onClick={() => cambiarModoFecha('rango')}>Rango</button>
-                    <button type="button" className={'date-toggle' + (fechaModo === 'recientes' ? ' active' : '')} aria-pressed={fechaModo === 'recientes'} title="Ver solo las tarjetas de la última actualización" onClick={() => cambiarModoFecha('recientes')}>Últimas</button>
+                    <button type="button" className={'date-toggle' + (fechaModo === 'recientes' ? ' active' : '')} aria-pressed={fechaModo === 'recientes'} title={'Ver SOLO las tarjetas del último push (' + ultimoPush.ids.size + ')'} onClick={() => cambiarModoFecha('recientes')}>Últimas</button>
                 </div>
                 {fechaModo === 'dia' && (
                     <input type="date" className="date-input" value={fechaDia} onChange={e => setFechaDia(e.target.value)} aria-label="Día de alta" />
@@ -6730,7 +6779,7 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                 <div className="empty-state">
                     <div className="empty-icon">{verDuplicados ? '✅' : '🔎'}</div>
                     <h3>{verDuplicados ? 'Sin duplicados' : 'Sin resultados'}</h3>
-                    <p>{verDuplicados ? 'Ninguna tarjeta repite el prompt de otra' : fechaModo === 'recientes' ? 'Todavía no hay tarjetas' : filtrandoFecha ? 'No hay tarjetas con esa fecha' : 'Prueba con otros términos'}</p>
+                    <p>{verDuplicados ? 'Ninguna tarjeta repite el prompt de otra' : fechaModo === 'recientes' ? 'Todavía no hay tarjetas del último push' : filtrandoFecha ? 'No hay tarjetas con esa fecha' : 'Prueba con otros términos'}</p>
                 </div>
             ) : (query || filtrandoFecha || verDuplicados) && (
                 <div className="tricks-grid">
@@ -7082,7 +7131,7 @@ function App() {
                     const maxOrder = prev
                         .filter(trick => trick.category === normalized.category)
                         .reduce((max, trick) => hasSortOrder(trick) ? Math.max(max, Number(trick.sortOrder)) : max, -1);
-                    const newTrick = { ...normalized, id: targetId, createdAt: Date.now(), updatedAt: Date.now(), sortOrder: maxOrder + 1 };
+                    const newTrick = { ...normalized, id: targetId, lote: tvClaveDia(Date.now()), createdAt: Date.now(), updatedAt: Date.now(), sortOrder: maxOrder + 1 };
                     return [newTrick, ...prev];
                 });
                 addToast('✨ Truco creado');
