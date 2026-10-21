@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 if(PHP_SAPI!=='cli'){http_response_code(404);exit;}
-require_once __DIR__.'/lib/core.php';
+require_once dirname(__DIR__, 2) . '/apps/brisa/lib/core.php';
 if(query('SELECT COUNT(*) FROM events')->fetchColumn() || query('SELECT COUNT(*) FROM tasks')->fetchColumn() || query('SELECT COUNT(*) FROM notes')->fetchColumn()){echo "La agenda ya tiene contenido. No se añaden ejemplos.\n";exit;}
 $today=(new DateTimeImmutable('now',new DateTimeZone(timezone_name())))->format('Y-m-d');
 $tomorrow=(new DateTimeImmutable($today))->modify('+1 day')->format('Y-m-d');

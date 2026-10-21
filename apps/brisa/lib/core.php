@@ -18,10 +18,26 @@ function storage_dir(): string {
     static $path;
     if ($path) return $path;
     $candidate = env_value('BRISA_STORAGE');
+    if (!$candidate) {
+        // Despliegue sin panel de entorno (Hostinger compartido): se deduce una
+        // carpeta privada fuera de la raíz web. Nunca se usa una ruta pública.
+        $docroot = realpath($_SERVER['DOCUMENT_ROOT'] ?? '');
+        $home = getenv('HOME') ?: '';
+        $tries = [];
+        if ($docroot) $tries[] = dirname($docroot) . DIRECTORY_SEPARATOR . 'brisa-private';
+        if ($home) $tries[] = rtrim($home, '/\\') . DIRECTORY_SEPARATOR . 'brisa-private';
+        foreach ($tries as $try) {
+            if (!is_dir($try) && !@mkdir($try, 0700, true) && !is_dir($try)) continue;
+            $resolvedTry = realpath($try);
+            if ($resolvedTry !== false) { $candidate = $resolvedTry; break; }
+        }
+    }
     if (!$candidate) throw new RuntimeException('Configura BRISA_STORAGE con una carpeta privada fuera de la raíz web.');
     if (!is_dir($candidate) && !mkdir($candidate, 0700, true) && !is_dir($candidate)) throw new RuntimeException('No se pudo preparar el almacenamiento.');
     $resolved = realpath($candidate);
-    $root = realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: realpath(dirname(__DIR__));
+    $docroot = (string)($_SERVER['DOCUMENT_ROOT'] ?? '');
+    $root = $docroot !== '' ? (realpath($docroot) ?: false) : false;
+    if ($root === false) $root = realpath(dirname(__DIR__)) ?: '';
     if ($root && str_starts_with(strtolower(str_replace('\\', '/', $resolved)) . '/', strtolower(str_replace('\\', '/', $root)) . '/')) {
         throw new RuntimeException('El almacenamiento debe estar fuera de la raíz web.');
     }
@@ -195,5 +211,5 @@ function used_bytes(): int {
 function state_data(): array {
     $audios = query('SELECT id,note_id,mime,duration_ms,status,error,attempts,created_at,deleted_at,file_key FROM audios ORDER BY created_at DESC')->fetchAll();
     foreach ($audios as &$a) { $a['available'] = (bool)$a['file_key']; unset($a['file_key']); }
-    return ['events'=>query('SELECT * FROM events ORDER BY start_at')->fetchAll(), 'tasks'=>query('SELECT * FROM tasks ORDER BY priority,created_at DESC')->fetchAll(), 'notes'=>query('SELECT * FROM notes ORDER BY created_at DESC')->fetchAll(), 'audios'=>$audios, 'config'=>['timezone'=>timezone_name(),'transcription_ready'=>(bool)transcriber_key() && function_exists('curl_init'),'local'=>local_preview(),'storage_used'=>used_bytes(),'storage_quota'=>quota_bytes(),'retention_days'=>(int)env_value('BRISA_RETENTION_DAYS','30'),'model'=>env_value('BRISA_TRANSCRIPTION_MODEL','gpt-transcribe')]];
+    return ['events'=>query('SELECT * FROM events ORDER BY start_at')->fetchAll(), 'tasks'=>query('SELECT * FROM tasks ORDER BY priority,created_at DESC')->fetchAll(), 'notes'=>query('SELECT * FROM notes ORDER BY created_at DESC')->fetchAll(), 'audios'=>$audios, 'config'=>['timezone'=>timezone_name(),'transcription_ready'=>(bool)transcriber_key() && function_exists('curl_init'),'local'=>local_preview(),'storage_used'=>used_bytes(),'storage_quota'=>quota_bytes(),'retention_days'=>(int)env_value('BRISA_RETENTION_DAYS','30'),'model'=>env_value('BRISA_TRANSCRIPTION_MODEL','gpt-4o-mini-transcribe')]];
 }

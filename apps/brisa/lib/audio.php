@@ -51,7 +51,7 @@ function process_audio(?string $id = null, ?callable $transport = null): array {
         else {
             $ch=curl_init('https://api.openai.com/v1/audio/transcriptions');
             if (PHP_OS_FAMILY === 'Windows' && defined('CURLSSLOPT_NATIVE_CA')) curl_setopt($ch, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
-            curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>15,CURLOPT_TIMEOUT=>110,CURLOPT_HTTPHEADER=>['Authorization: Bearer '.transcriber_key()],CURLOPT_POSTFIELDS=>['file'=>new CURLFile($path,$audio['mime'],basename($path)),'model'=>env_value('BRISA_TRANSCRIPTION_MODEL','gpt-transcribe')]]);
+            curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>15,CURLOPT_TIMEOUT=>110,CURLOPT_HTTPHEADER=>['Authorization: Bearer '.transcriber_key()],CURLOPT_POSTFIELDS=>['file'=>new CURLFile($path,$audio['mime'],basename($path)),'model'=>env_value('BRISA_TRANSCRIPTION_MODEL','gpt-4o-mini-transcribe')]]);
             $raw=curl_exec($ch); $status=curl_getinfo($ch,CURLINFO_HTTP_CODE); $failed=curl_errno($ch); curl_close($ch);
             if ($failed) throw new RuntimeException('No se pudo conectar con el servicio. Se reintentará automáticamente.');
             if ($status<200 || $status>=300) throw new RuntimeException(match($status) { 401,403=>'Revisa la clave de transcripción del servidor.', 429=>'El servicio ha alcanzado su cuota o límite. Revisa la cuenta.', default=>'El servicio de transcripción no está disponible ('.$status.').' });
@@ -59,7 +59,7 @@ function process_audio(?string $id = null, ?callable $transport = null): array {
         }
         if (!$text) throw new RuntimeException('No se detectó voz. Puedes conservar el audio o escribir la nota.');
         db()->beginTransaction();
-        $q=query("UPDATE audios SET status='transcribed',transcript=?,transcribed_at=?,model=?,error=NULL,lease_until=NULL,lease_token=NULL WHERE id=? AND lease_token=?",[$text,now_utc(),env_value('BRISA_TRANSCRIPTION_MODEL','gpt-transcribe'),$audio['id'],$token]);
+        $q=query("UPDATE audios SET status='transcribed',transcript=?,transcribed_at=?,model=?,error=NULL,lease_until=NULL,lease_token=NULL WHERE id=? AND lease_token=?",[$text,now_utc(),env_value('BRISA_TRANSCRIPTION_MODEL','gpt-4o-mini-transcribe'),$audio['id'],$token]);
         if ($q->rowCount()) {
             // Preserve edits made while the provider was processing the recording.
             query("UPDATE notes SET content=?,suggestion=?,updated_at=?,version=version+1 WHERE id=? AND version=? AND content=''",[$text,json_encode(suggest($text,$note['captured_at'],$note['timezone']),JSON_UNESCAPED_UNICODE),now_utc(),$note['id'],$note['version']]);

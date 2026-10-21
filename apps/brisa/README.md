@@ -4,17 +4,41 @@ Aplicación autoalojada en PHP 8.2+ y JavaScript nativo. No necesita Node, compi
 
 ## Probar en Windows
 
-Desde PowerShell, con PHP instalado:
+Desde PowerShell, en la raíz del repositorio:
 
 ```powershell
-./start-local.ps1 -Demo
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\brisa\start-local.ps1 -Demo
 ```
 
-Abrir `http://127.0.0.1:8787/`. El script habilita las extensiones disponibles, crea ejemplos solo si la agenda está vacía y usa `.private/brisa-local` en la raíz del repositorio. Los datos no se versionan. Sin `-Demo`, no añade ejemplos. Ctrl+C detiene el servidor. La vista local permite acceso sin contraseña solo cuando concurren `BRISA_PREVIEW=1`, el servidor de desarrollo PHP y una conexión loopback. No utilizar este servidor de desarrollo para producción.
+Abrir `http://127.0.0.1:8787/`. El script habilita las extensiones disponibles, sirve
+`apps/brisa`, crea ejemplos solo si la agenda está vacía y usa `.private/brisa-local` en la raíz
+del repositorio. Los datos no se versionan. Sin `-Demo`, no añade ejemplos. Ctrl+C detiene el
+servidor. La vista local permite acceso sin contraseña solo cuando concurren `BRISA_PREVIEW=1`,
+el servidor de desarrollo PHP y una conexión loopback. No utilizar este servidor de desarrollo
+para producción.
 
-Los ejemplos son editables y no incluyen grabaciones ficticias. Los audios reales se pueden grabar y reproducir sin clave; su transcripción permanece pendiente hasta configurar el proveedor.
+Los ejemplos son editables y no incluyen grabaciones ficticias. Los audios reales se pueden
+grabar y reproducir sin clave; su transcripción permanece pendiente hasta configurar el
+proveedor.
 
-## Instalar en Hostinger
+## Despliegue actual (Hostinger compartido)
+
+- **URL:** `https://atnojs.es/apps/brisa/`. `https://atnojs.es/apps/agenda/` redirige aquí
+  (Brisa es la agenda publicada).
+- **Sin panel de entorno:** `lib/core.php` deduce una carpeta privada **fuera de la raíz web**
+  (`brisa-private` junto a `public_html`, o en `$HOME`) y guarda ahí SQLite, audios y el control
+  de intentos. Solo si esa carpeta no se puede crear hace falta definir `BRISA_STORAGE`.
+- **Contraseña:** si no hay `BRISA_PASSWORD_HASH`, se usa la contraseña de edición compartida del
+  proyecto (en el repo solo vive su sha256, igual que en las demás apps). Con `BRISA_PASSWORD_HASH`
+  configurada (bcrypt) tiene prioridad.
+- **Transcripción:** se activa sola si el entorno trae `OPENAI_API_KEY` (o el alias `R`). En este
+  hosting la clave está en el `.htaccess` raíz y se hereda. Modelo por defecto:
+  `gpt-4o-mini-transcribe`.
+- **Extensiones PHP necesarias:** `pdo_sqlite` (o `pdo_mysql`), `fileinfo` y `curl`. El cron es
+  opcional: el navegador dispara el trabajador tras subir el audio; sin cron, si se cierra la
+  pestaña antes, el trabajo queda pendiente y se reintenta al volver a abrir la agenda.
+
+## Instalar en otro Hostinger (referencia)
 
 1. Subir esta carpeta a `public_html/apps/brisa`. Acceder mediante HTTPS.
 2. Crear un directorio privado **fuera de `public_html`**, por ejemplo `/home/USUARIO/brisa-private`, escribible únicamente por el usuario del hosting. Definir `BRISA_STORAGE` con su ruta absoluta. No se permite usar una carpeta dentro de la raíz web.
@@ -25,8 +49,8 @@ Los ejemplos son editables y no incluyen grabaciones ficticias. Los audios reale
 
 | Variable | Uso |
 | --- | --- |
-| `BRISA_STORAGE` | Obligatoria. Ruta privada absoluta para audios, SQLite y control de intentos de acceso. |
-| `BRISA_PASSWORD_HASH` | Obligatoria en producción. Hash generado con `password_hash` de PHP; nunca la contraseña en claro. Sin él la agenda queda bloqueada. |
+| `BRISA_STORAGE` | Opcional en este despliegue (se deduce fuera de la raíz web). Ruta privada absoluta para audios, SQLite y control de intentos de acceso. |
+| `BRISA_PASSWORD_HASH` | Opcional: bcrypt generado con `password_hash` de PHP. Si falta, se usa la contraseña de edición del proyecto. |
 | `BRISA_DSN` | MySQL: `mysql:host=localhost;dbname=TU_BD;charset=utf8mb4`. Si se omite, usa SQLite en el directorio privado. |
 | `BRISA_DB_USER`, `BRISA_DB_PASSWORD` | Credenciales MySQL, solo en el servidor. |
 | `OPENAI_API_KEY` | Activa la transcripción. Compatible también con el alias de entorno `R` usado por el resto del repositorio. |

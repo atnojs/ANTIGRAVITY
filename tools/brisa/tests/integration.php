@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 if(PHP_SAPI!=='cli'){http_response_code(404);exit;}
-require_once dirname(__DIR__).'/lib/audio.php';
+require_once dirname(__DIR__, 3).'/apps/brisa/lib/audio.php';
 if(!str_contains(env_value('BRISA_STORAGE'),'brisa-test-'))throw new RuntimeException('Usa un directorio de pruebas nuevo cuyo nombre contenga brisa-test-.');
 if(is_file(storage_dir().'/brisa.sqlite'))throw new RuntimeException('El directorio de prueba debe estar vacío.');
 $checks=0;
