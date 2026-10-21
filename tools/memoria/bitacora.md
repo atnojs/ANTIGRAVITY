@@ -5,6 +5,34 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-21 (segunda parte) — TrickVault: el botón de carpeta, al pie de la tarjeta
+
+Antonio (con captura): en los resultados de «Últimas» el botón de la carpeta («📂 Estilos y
+acabado», «📂 Luz, cámara y personas») iba `position:absolute` arriba a la derecha y **tapaba
+el título/descripción** de la tarjeta. Pidió moverlo al pie, donde marcó con un rectángulo.
+
+- `TrickCard` acepta ahora `footerAction`: un nodo que se pinta dentro de `.card-footer`, que
+  pasa a `flex-wrap: wrap` solo cuando lo lleva. `GlobalSearch` le pasa ahí el botón de
+  carpeta en vez de dibujarlo absoluto encima; en la vista de carpeta no cambia nada (sin
+  `footerAction` el pie sigue en una fila).
+- El botón ocupa su propia fila al ancho de la tarjeta, alineado a la izquierda, con el
+  nombre completo de la carpeta (elipsis solo si no cupiera; a 5 columnas no se trunca
+  ninguna de las 52). Lleva `title` «Ir a la carpeta «…»».
+- **Sin CSS nuevo en `app.css`**: todo con estilos en línea, así no hay que renovar el
+  cache-buster del CSS (`app.css?v=…`, que la CDN de Hostinger cachea una semana).
+- **Verificado en Chrome (local y producción):** antes el rectángulo del botón y el del
+  título se solapaban (`solapa: true`); después **0 solapes** con título/descripción/imagen/
+  código a 1440, 768 y 393, **0 etiquetas truncadas**, sin desbordes horizontales, 52
+  tarjetas. El clic en el botón navega a la carpeta; la vista de carpeta conserva el pie de
+  una fila (26 px, sin botón). Consola: solo el aviso preexistente de Babel.
+- **Producción sirve exactamente el HEAD**: sha256 `ee98c676…` del `index.html` servido =
+  `git cat-file HEAD:apps/trickvault/index.html`.
+- Evidencias: `09-antes-carpeta-solapa.png`, `12-produccion-footer-1440/768/393.png` y
+  comparativa `tools/comparativa_carpeta_tarjeta_trickvault.png`.
+- **Commit:** `9d84761`.
+
+---
+
 ## 2026-10-21 — TrickVault: «Últimas» = SOLO las tarjetas del último push (52)
 
 Antonio: «el botón de "ultimas" quiero que muestre las últimas tarjetas subidas. El último
