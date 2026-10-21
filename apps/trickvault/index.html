@@ -6608,6 +6608,18 @@ function tvResumenFecha(modo, dia, desde, hasta) {
     return '';
 }
 
+/* Carpetas que NO cuentan en «Últimas» ni en la búsqueda por fechas: las tarjetas
+   de «Comandos de texto» (xl-texto, sin imagen) se quedan fuera de esas vistas y
+   tampoco cuentan para decidir cuál es el último push. El resto de búsquedas
+   (texto libre, «Todo») sí las sigue enseñando. */
+const TV_CARPETAS_FUERA_FECHA = new Set(['xl-texto']);
+const TV_NOTA_FUERA_FECHA = ' · sin «Comandos de texto»';
+
+/** ¿Esta tarjeta cuenta en los filtros de fecha? */
+function tvCuentaEnFecha(trick) {
+    return !TV_CARPETAS_FUERA_FECHA.has(String(trick && trick.category));
+}
+
 /** El prompt de una tarjeta sin su código delante, en minúsculas y sin espacios de más.
  *  Es lo que se compara para detectar duplicados: mismo prompt, códigos distintos. */
 function tvPromptComparable(trick) {
@@ -6649,14 +6661,15 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
         () => { let n = 0; for (const g of gruposDuplicados.values()) n += g.length; return n; },
         [gruposDuplicados]
     );
-    const ultimoPush = useMemo(() => tvUltimoPush(tricks), [tricks]);
+    const ultimoPush = useMemo(() => tvUltimoPush(tricks.filter(tvCuentaEnFecha)), [tricks]);
 
     const filtrandoFecha = !verDuplicados && (fechaModo === 'recientes' ||
         (fechaModo === 'dia' && Boolean(fechaDia)) ||
         (fechaModo === 'rango' && Boolean(fechaDesde || fechaHasta)));
-    const resumenFecha = fechaModo === 'recientes'
+    const resumenFecha = (fechaModo === 'recientes'
         ? 'último push' + (ultimoPush.lote ? ' · ' + tvFechaLarga(ultimoPush.lote) : ' · sin fecha')
-        : tvResumenFecha(fechaModo, fechaDia, fechaDesde, fechaHasta);
+        : tvResumenFecha(fechaModo, fechaDia, fechaDesde, fechaHasta)) +
+        (filtrandoFecha ? TV_NOTA_FUERA_FECHA : '');
 
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -6678,6 +6691,8 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
         }
         if (!q && !filtrandoFecha) return [];
         const filtradas = tricks.filter(t => {
+            // «Comandos de texto» no cuenta en «Últimas» ni en la búsqueda por fechas.
+            if (filtrandoFecha && !tvCuentaEnFecha(t)) return false;
             if (q) {
                 const coincide = t.title.toLowerCase().includes(q) ||
                     (t.codeSnippet || '').toLowerCase().includes(q) ||
