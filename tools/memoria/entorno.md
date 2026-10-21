@@ -54,6 +54,21 @@ Ficha de la máquina y del entorno del agente. Si algo de aquí cambia, se actua
 | 20128 | OmniRoute (panel + API) | `0.0.0.0` (toda la red local) |
 | 19387 | GUI web de DSH | `127.0.0.1` (solo este PC) |
 
+## Red doméstica
+
+| Dato | Valor |
+|---|---|
+| Router | Huawei **EG8147X6** (fibra) · `192.168.18.1` · MAC `f8:28:c9:05:ba:38` |
+| Este PC (PRINCIPAL) | `192.168.18.205` **estática** · Ethernet Intel I225-V · DNS 8.8.8.8 / 1.1.1.1 |
+| Segundo PC (ANTONIO) | `192.168.18.10` · ASUS · Windows · comparte C, D, E, F, Users |
+| Extensor TP-Link | `192.168.18.2` (web + SSH) · en modo puente, no parte la red |
+| Perfil Windows | **Red 3 = Privada** (desde 2026-10-21; ver `errores.md`) |
+| Compartición | Cuenta **Invitado** activa y carpetas en «Todos»; invitado SMB permitido y firma SMB no obligatoria |
+
+**Cuidado:** al cambiar de router/roseta Windows crea un perfil de red nuevo y lo deja en **Pública**,
+lo que apaga el descubrimiento (`FDResPub`) y rompe el acceso a los otros PCs. Poner el perfil en
+Privada y arrancar `FDResPub` (detalle en `errores.md`, entrada 2026-10-21).
+
 ## Limitaciones conocidas del entorno del agente
 
 - **CIM/WMI puede denegarse** (`Get-CimInstance Win32_Process`, `Win32_OperatingSystem`).

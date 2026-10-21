@@ -5,6 +5,34 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-21] Mover los PCs de habitación: Windows pone la red en Pública y deja de compartir
+
+- **Síntoma:** dos PCs en la misma red doméstica (`PRINCIPAL` 192.168.18.205 y `ANTONIO`
+  192.168.18.10). Después de cambiarlos de habitación, `ANTONIO` no ve a `PRINCIPAL` en «Red» y al
+  abrir `\\ANTONIO` desde `PRINCIPAL` sale «Windows no puede obtener acceso» / «acceso denegado».
+  Internet funcionaba en ambos y los dos se respondían a `ping` (misma subred).
+- **Causa:** al mover los equipos cambió la puerta de enlace (antes un TP-Link, ahora el router
+  Huawei `EG8147X6` de fibra) y Windows creó un perfil de red nuevo, **«Red 3»**, que clasifica como
+  **Pública** (19/10 a las 12:49, 14:33, 14:40 y 15:09; antes era «Red», Privada, hasta el 16/10).
+  En Pública Windows apaga descubrimiento y compartición y deja **parado `FDResPub`** (publicación
+  de recursos), así que el otro PC no ve a este. Además Windows 11 actual exige **firma SMB** por
+  defecto, y la firma es incompatible con el **acceso de invitado** que usa esta red (cuenta
+  Invitado activa y carpetas compartidas a «Todos»): de ahí el «acceso denegado» al abrir el otro
+  equipo.
+- **Solución (PowerShell elevado, en cada PC):**
+  `Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private`;
+  `Set-Service FDResPub -StartupType Automatic; Start-Service FDResPub; Start-Service upnphost`;
+  habilitar las reglas del perfil **Privado** de «Detección de redes» (20) y «Compartir archivos e
+  impresoras» (17) con `Enable-NetFirewallRule`;
+  `Set-SmbClientConfiguration -EnableInsecureGuestLogons $true -Force`;
+  `Set-SmbClientConfiguration -RequireSecuritySignature $false -Force`;
+  `Set-SmbServerConfiguration -RequireSecuritySignature $false -Force`.
+  En el segundo PC se dejó `D:\arreglo-red\arreglar-antonio.bat` (autoeleva el mismo arreglo).
+- **Verificación:** `Get-NetConnectionProfile` → «Red 3 / Private»; `Get-Service FDResPub` →
+  Running; `dir \\ANTONIO\Users` lista sin contraseña y `dir \\192.168.18.205\D` responde como
+  invitado. En `ANTONIO` solo `Users` está abierto a invitado; C/D/E/F piden usuario y contraseña.
+- **Commit:** el de esta entrada en `tools/memoria/` (2026-10-21).
+
 ### [2026-10-21] Pegar el bloque de contraseñas con vallas de Markdown rompe el `.htaccess`
 
 - **Síntoma:** `/auth/validar.php` devolvía `configurado:false` aunque el `.htaccess` «ya estaba».

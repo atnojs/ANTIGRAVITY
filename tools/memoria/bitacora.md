@@ -1520,3 +1520,21 @@ corre, así que se portó la app a estático + PHP conservando diseño y funcion
   navegador/CDN). Ver `errores.md`.
 - **Evidencias:** `tools/evidencias/2026-10-21-agenda/`.
 - **Receta reutilizable:** «portar una app AI Studio React a Hostinger» en `recetas.md`.
+
+## 2026-10-21 — Red de casa: los dos PCs dejan de verse tras mudarse de habitación
+
+Antonio cambió de habitación dos PCs (PRINCIPAL, este, y ANTONIO) que estaban en la misma red y
+dejaron de verse/entrar. Diagnóstico: la red pasó de «Red» (Privada) a «Red 3» (Pública) el 19/10;
+el cambio de puerta de enlace (TP-Link → router Huawei EG8147X6) hizo que Windows creara un perfil
+nuevo en Pública, con lo que se apagó el descubrimiento (`FDResPub` parado); además la firma SMB
+obligatoria de Windows 11 rompía el acceso de invitado que usa la red (Invitado activo, carpetas
+«Todos»).
+
+- Arreglado en PRINCIPAL con PowerShell elevado: perfil Privado, `FDResPub`/`upnphost` en marcha,
+  reglas de firewall del perfil privado, invitado SMB permitido y firma no obligatoria (cliente y
+  servidor). Verificado: `\\ANTONIO\Users` lista y `\\192.168.18.205\D` responde como invitado.
+- Para ANTONIO se dejó `D:\arreglo-red\arreglar-antonio.bat` (mismo arreglo, ejecutar como admin) y
+  `LEEME.txt` con el detalle. Pendiente de que Antonio lo ejecute y confirme que ve PRINCIPAL.
+- El TP-Link (extensor, `192.168.18.2`) no parte la red: ambos PCs están en `192.168.18.0/24` y se
+  alcanzan; solo cambió la identidad de red a ojos de Windows.
+- Detalle y verificación: `errores.md` (entrada 2026-10-21) y `entorno.md` («Red doméstica»).
