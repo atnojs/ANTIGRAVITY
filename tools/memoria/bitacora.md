@@ -5,6 +5,54 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-21 (tercera parte) — TrickVault: /80s como foto y filtros de fecha sin «Comandos de texto»
+
+Dos encargos seguidos de Antonio (con una sesión en paralelo editando el mismo `index.html`).
+
+1. **El ejemplo de `/80s` no parecía de los 80** (mandó captura). Era un cartel retrowave
+   moderno (tipografía gigante, marco VHS, etiquetas) en vez de una imagen de la época, y
+   desentonaba con `/90s`, `/kodak` o `/chrome`, que son fotografías. Se generó de nuevo con
+   `openai-image-2-low` (1:1) una **foto nocturna del puerto** con neones, sol synthwave y grano
+   (`tools/evidencias/2026-10-21-ultimas/candidatas-80s/final-80s-foto.jpg`) y se guardó como
+   `apps/trickvault/assets/xl-estilos/80s-20261021.jpg`: **nombre nuevo a propósito**, porque la
+   CDN de Hostinger cachea los `.jpg` 7 días por ruta y reescribir `80s.jpg` no se vería. Se
+   borra el viejo y `_nuevas_registro.json` apunta al nuevo.
+   - `SEED_COMMAND_IMAGES['/80s']` → ruta nueva; `GENERATED_IMAGE_RELEASES` de `xl-estilos`
+     sube a `20261021-80s-foto` para que las tarjetas ya guardadas cambien (probado simulando
+     `localStorage` viejo: la tarjeta pasa a la ruta nueva).
+   - **Prompt del comando a lenguaje fotográfico**: `VIRAL_CODES` de `/80s` pasa de «neon grids,
+     chrome, synthwave sun, VHS grain» a «1980s film photograph… 35mm colour film, neon signs,
+     film grain, VHS tape texture, no poster, no graphic typography». El ejemplo se generó con
+     ese mismo texto para que tarjeta e imagen vayan a la par.
+   - Commit `10c9856`. **Verificado en producción**: la tarjeta carga `80s-20261021.jpg`
+     (`naturalWidth` 1024) y el `index.html` servido trae el prompt nuevo.
+2. **«Últimas» y búsqueda por fechas sin «Comandos de texto»** (petición de Antonio). Las
+   tarjetas de `xl-texto` (sin imagen) ya no se listan en «Últimas», «Un día» ni «Rango», y
+   **tampoco cuentan para decidir el último push** (`tvUltimoPush(tricks.filter(tvCuentaEnFecha))`),
+   así que una tanda solo de texto no cambia «Últimas». El chip avisa: «sin «Comandos de
+   texto»». La búsqueda libre y «Todo» las siguen enseñando.
+   - Constantes/funciones nuevas: `TV_CARPETAS_FUERA_FECHA` (Set de ids), `tvCuentaEnFecha()` y
+     `TV_NOTA_FUERA_FECHA`.
+   - Resultado con el push del 21/10: **29** tarjetas (21 Viral + 8 Transformaciones) en vez de
+     52. Verificado en local a 1440: Últimas 29 sin ninguna carpeta de texto; «Un día 19/10»
+     46 (45 del lote sin texto + `s4`); «Todo» + `/formalize` sí la encuentra.
+   - Commit `eae9018`, **pendiente de despliegue** al escribir esto: ~20 min después y con dos
+     re-disparos, el `index.html` servido seguía siendo el de `10c9856` (comprobado por
+     marcadores y sha256). Si no llega solo: *Sitios web → Avanzado → GIT → Redistribuir* y
+     comprobar que «Comprometerse» apunta a `main`.
+3. **Coordinación de escrituras (importante).** Mientras trabajaba, **otra sesión** añadió los
+   35 códigos `GPT100_CODES` a `index.html` (suyo es el commit `df9b07d`, más adelante en la
+   rama). No se pisó su trabajo: se separaron los hunks con un patch propio y
+   `git apply --cached` para commitear **solo** el filtro (no `git add` del fichero entero).
+   Si dos sesiones tocan `index.html`, comprobar `git diff` antes de commitear y no arrastrar
+   cambios ajenos a medias.
+
+- Evidencias: `tools/evidencias/2026-10-21-ultimas/` (`14-local-80s-nueva.png`,
+  `15-local-ultimas-sin-texto.png`, `16-produccion-80s-nueva.png`) y comparativas
+  `tools/comparativa_estilo_80s_trickvault.png` y `tools/comparativa_ejemplo_80s_trickvault.png`.
+
+---
+
 ## 2026-10-21 (segunda parte) — TrickVault: el botón de carpeta, al pie de la tarjeta
 
 Antonio (con captura): en los resultados de «Últimas» el botón de la carpeta («📂 Estilos y
