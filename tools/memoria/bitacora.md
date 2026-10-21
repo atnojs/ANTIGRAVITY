@@ -5,6 +5,58 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-21 (en paralelo) — TrickVault: 35 códigos de texto de la infografía «100 ChatGPT secret prompt codes»
+
+Antonio pasó cinco imágenes y pidió: «examina las siguientes imágenes y añade los códigos que no
+tengamos en trickvault; asegúrate de que los prompts coinciden con el código y la descripción».
+Mientras se hacía, otra sesión trabajaba en el mismo `index.html` (ver entrada siguiente).
+
+**Qué traía cada imagen y qué se hizo**
+
+| Imagen | Contenido | Resultado |
+|---|---|---|
+| «Viral ChatGPT AI Image Commands» (códigos 34–44) | 11 comandos de iluminación | **Nada nuevo**: los 11 (`/softlighting`, `/dramaticlighting`, `/rimlight`, `/backlight`, `/volumetriclight`, `/godrays`, `/studio`, `/filmgrain`, `/anamorphic`, `/bokeh`, `/shallowdepth`) ya estaban en `PROMPT_TEMPLATES` y su prompt coincide con la descripción de la infografía. |
+| «50 secret codes of ChatGPT» | 50 códigos de texto | **Nada nuevo**: ya explotada el 2026-10-19 (23 entradas). Los 5 que no están (`/shorten`, `/storytelling`, `/branding`, `/competitors`, `/actionplan`) siguen **fuera a propósito** por duplicar a `/concise`, `/storyteller`, `/brand`, `/competitor` y `/action` (decisión del 2026-10-20, anotada en `CODE_FOLDER`). |
+| «100 ChatGPT secret prompt codes» | 100 recetas de prompt | **Nueva**: 65 ya estaban cubiertas por código o por prompt; se añaden **35 códigos de texto**. |
+| Collage de listas de software (fotografía, pintura, 3D, diseño) | Capturas de Pinterest de programas | **Sin códigos**: son recomendaciones de software, no comandos. Nada que añadir. |
+| Imagen generada (perro steampunk) | Ejemplo visual | **Sin códigos**: es una imagen de muestra. Nada que añadir. |
+
+**Los 35 códigos nuevos** (todos en «Comandos de texto», `xl-texto`): `/bullets`, `/summary100`,
+`/casestudy`, `/longer`, `/askme`, `/productdesc`, `/coldemail`, `/coverletter`, `/predict`,
+`/lifeadvice`, `/mealplan`, `/mentalhealth`, `/habits`, `/character`, `/plot`, `/worldbuilding`,
+`/dialogue`, `/scene`, `/gamedesign`, `/businessplan`, `/shoppinglist`, `/giftideas`, `/eventplan`,
+`/partyideas`, `/homeimprove`, `/interiordesign`, `/photoideas`, `/music`, `/movies`, `/hobbies`,
+`/funfacts`, `/riddle`, `/challenge`, `/randomfact` y `/justforfun`.
+
+- **Cómo se mapeó**: cada una de las 100 entradas se comparó contra los 1.331 códigos literales del
+  catálogo (sin distinguir mayúsculas) y contra los prompts de texto; si la función ya existía
+  (aunque el código fuera de imagen, p. ej. `/proscons`, `/analogy`), no se duplica. Queda escrito en
+  el mapa de trabajo y en el comentario de `GPT100_CODES`.
+- **Cuatro sitios de `index.html`**: `CODE_FOLDER` (→ `xl-texto`), array `GPT100_CODES`, spread en
+  `SEED_TRICKS` (ids `gpt100-cmd-001…035`, `lote: '2026-10-21'`) y un prompt nuevo en
+  `TEXT_COMMAND_TEMPLATES` por código (el que copia la tarjeta: `/codigo` + prompt). Los prompts
+  llevan su `[PLACEHOLDER]` y no repiten ninguno de los 146 prompts de texto anteriores.
+- **Verificado en Chrome local**: 1339 trucos; 35/35 tarjetas con categoría `xl-texto` y lote
+  `2026-10-21`; buscar `/justforfun` da 1 tarjeta; el portapapeles copia
+  «`/justforfun Hazme un juego o una actividad creativa sobre [TEMA]…`»; carpeta «Comandos de texto»
+  179 tarjetas; a 1366/393 sin desbordes ni errores nuevos de consola (los 404 de `image_store.php`
+  son del servidor local de pruebas).
+- **Verificado en producción** (`https://atnojs.es/apps/trickvault/`): el `index.html` servido es
+  **byte a byte** el del HEAD (`sha256 6a0adb51…`, 1.032.520 bytes); 1339 trucos; buscar
+  `/justforfun` da 1 resultado y «Comandos de texto» lista **179**; misma copia de prompt; a
+  1440/768/393 sin scroll horizontal. Consola: solo el aviso preexistente de Babel. «Últimas» da 29
+  (no incluye texto, por el cambio de la otra sesión; el lote de texto no altera ese filtro).
+- **El despliegue llegó tarde**: el push fue a las 15:45 y producción no sirvió el cambio hasta las
+  16:14 (~29 min), pasando por dos commits de re-disparo de la otra sesión; el servidor desplegó la
+  cola commit a commit (primero `10c9856`, luego `eae9018`, luego el mío). Comprobado comparando
+  tamaño + sha256 del HTML servido con `git cat-file`.
+- Evidencias: `tools/evidencias/2026-10-21-trickvault-100codigos/` (`00-produccion-antes.png`,
+  `01-produccion-despues.png`, `03/04/05-produccion-comandos-texto-{1440,768,393}.png` y
+  `comparativa-antes-despues.png`).
+- **Commit:** `df9b07d`.
+
+---
+
 ## 2026-10-21 (tercera parte) — TrickVault: /80s como foto y filtros de fecha sin «Comandos de texto»
 
 Dos encargos seguidos de Antonio (con una sesión en paralelo editando el mismo `index.html`).

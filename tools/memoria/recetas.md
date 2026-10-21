@@ -330,3 +330,28 @@ Si la descripción no trae la lista (pasó con `DcrMIItPSOa`), se leen los códi
 - Antes de añadir nada, comprobar duplicados **sin distinguir mayúsculas**: `/METAAD` del reel es
   `/metaad` del catálogo y no entra. Un script rápido: recorrer con regex todos los literales
   `'/xxx'` del `index.html` y comparar en minúsculas.
+
+## Incrustar una infografía de códigos de texto (50/100 códigos) — verificado 2026-10-21
+
+Las infografías tipo «50 secret codes of ChatGPT» / «100 ChatGPT secret prompt codes» **no traen
+código con barra**: traen un nombre y una descripción por fila. Se traducen a códigos de texto de
+`xl-texto` con esta regla, la misma del 2026-10-19:
+
+1. **Extraer** la lista de la imagen con recortes ampliados (2x) por columnas y OCR nativo
+   (`tools\trickvault\_ocr.ps1`). El OCR acierta el texto; la vista confirma grafías raras.
+2. **Comparar cada fila** contra los códigos del catálogo y contra `TEXT_COMMAND_TEMPLATES`:
+   - Si el código ya existe (aunque sea de imagen), **no entra** (`/proscons`, `/analogy`…).
+   - Si la función ya la cubre un prompt de texto, **tampoco** (`Make it Shorter` → `/concise`,
+     `Different Perspectives` → `/contrarian`, `Video Ideas` → `/youtube`).
+   - Se añaden solo las funciones nuevas, con un código corto en inglés y su descripción en español.
+   - Los códigos con errata de la infografía se respetan tal cual (`/uussnce`).
+3. **Cuatro sitios en `index.html`**: `CODE_FOLDER` → `xl-texto`; un array por tanda
+   (p. ej. `GPT100_CODES`) con `[código, descripción]`; spread en `SEED_TRICKS` con ids propios
+   (`gpt100-cmd-001…`), `lote` = fecha del push y `createdAt`/`updatedAt` de esa fecha; y
+   `TEXT_COMMAND_TEMPLATES` con un prompt por código que empiece por verbo, lleve `[PLACEHOLDER]`
+   y no repita ninguno de los prompts existentes.
+4. **Validar antes de publicar** con `@babel/parser` (sintaxis JSX) y comprobando que los códigos
+   nuevos no aparecen en `PROMPT_TEMPLATES` (eso los convertiría en tarjetas de imagen). El texto
+   que copia la tarjeta es `'/codigo ' + prompt` (`getTrickCopyText`).
+5. Recordar que **«Últimas» no enseña tarjetas de texto** (decisión 2026-10-21): una tanda solo de
+   texto no aparece ahí; se comprueba en «Comandos de texto» y con la búsqueda.
