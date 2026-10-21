@@ -5,6 +5,19 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-21] `git commit -- <carpeta>` falla si la carpeta es nueva y no está en el índice
+
+- **Síntoma:** `git commit -m "…" -- auth apps webs …` abortó con
+  `error: pathspec 'auth' did not match any file(s) known to git`, y el commit no se hizo.
+- **Causa:** el modo pathspec de `git commit` solo resuelve rutas **conocidas** por git; `auth/`
+  era una carpeta nueva sin trackear. Además el índice es compartido entre sesiones, así que no
+  conviene un `git add -A` genérico.
+- **Solución:** `git add -A -- auth` (solo la ruta nueva) y después
+  `git commit -m "…" -- auth apps webs Paginas validar_password.php guardar_cambios.php`; se
+  comprueba con `git show --name-only --pretty=format: HEAD`.
+- **Verificación:** el commit lista exactamente los 118 ficheros del encargo y
+  `git status` sigue sin incluir `skills/SKILL_VIDEOVAULT_VIDEOS.md` (modificado por otra sesión).
+
 ### [2026-10-21] `git commit` con el índice compartido se llevó 3 renames de otra sesión
 
 - **Síntoma:** al commitear **solo** `apps/trickvault/index.html` (con `git add` de esa ruta), el

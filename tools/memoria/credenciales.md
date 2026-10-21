@@ -3,7 +3,7 @@
 **Regla absoluta: aquí no se escribe ningún valor.** Solo rutas, nombres de clave y
 dependencias. Si necesitas el valor, ve al almacén.
 
-Última revisión: 2026-10-16
+Última revisión: 2026-10-21
 
 ---
 
@@ -19,7 +19,7 @@ dependencias. Si necesitas el valor, ve al almacén.
 | Token GitHub | `E:\ANTIGRAVITY\inicio.md` | Token de GitHub | Flujos git manuales |
 | MCP | `E:\hermes-data\mcp-tokens\` | Tokens de servidores MCP | Hermes |
 | Carpeta `keys/` | `E:\ANTIGRAVITY\keys\` (**gitignored**) | Cuenta de servicio Google (`nano-banana-*.json`) y varios | Apps de imagen |
-| Carpeta `.private/` | `E:\ANTIGRAVITY\.private\` (**gitignored** desde el 2026-10-16, antes solo se ignoraba `config.json`) | `config.json`, `.htaccess` y `password-edicion.txt` | Apps privadas |
+| Carpeta `.private/` | `E:\ANTIGRAVITY\.private\` (**gitignored**) | `config.json`, `.htaccess` y `password-edicion.txt` (**obsoleto** desde el 2026-10-21: las contraseñas van al `.htaccess` raíz) | Apps privadas |
 
 ### Claves del `.env` de Hermes (nombres, nunca valores)
 
@@ -44,43 +44,78 @@ dependencias. Si necesitas el valor, ve al almacén.
 | `OPENAI_API_KEY` / `O` | `.htaccess` raíz de Hostinger. La usan los proxies de IA del proyecto y la **transcripción de `apps/agenda`**. Si se rota o falta, la agenda sigue guardando audios pero no transcribe (permite escribir el texto a mano). |
 | Claves de Google | `.env`, `keys/`, y **los frontends que las tengan incrustadas** (ver abajo) |
 | Token de GitHub | `inicio.md` (está en `.gitignore`: **no** quitar esa línea) |
-| **Contraseña de edición** (TrickVault / video-vault / json / agenda) | `powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1` — escribe el hash en los 4 `auth.php` y guarda la nueva en `.private/`. Después, **commit + push** de los `auth.php` y esperar al despliegue |
-| **Contraseña de Descargas** (login de entrada, independiente desde 2026-10-17) | Su hash está en `apps\descargas\auth.php` (`$expectedHash`). **No** la rota `tools\rotar-password.ps1`. Para cambiarla: calcular `hash('sha256', '<nueva>')` y sustituir ese hash; después commit + push |
+| **Contraseñas del proyecto** (edición y acceso) | **Un solo sitio desde el 2026-10-21:** el `.htaccess` raíz de Hostinger (`SetEnv PW_EDIT` y `SetEnv PW_ACCESS`), igual que las claves de API. **No** hay que tocar ninguna app ni desplegar. Ver la sección «Contraseñas centralizadas» abajo |
 
 ---
 
-## ✅ Contraseña de edición: incidente cerrado el 2026-10-16
+## 🔑 Contraseñas centralizadas (2026-10-21)
+
+**Un único sitio para las dos contraseñas: el `.htaccess` raíz del servidor.**
+
+```apache
+SetEnv PW_EDIT "…"      # editar: candado / modo edición de cualquier app
+SetEnv PW_ACCESS "…"    # acceder: login de Descargas, agenda (Brisa) y publicar en GitHub
+```
+
+- Las lee **`auth/lib.php`** (versionado; no contiene ningún valor) con la misma cascada
+  que los proxies: `getenv` → `REDIRECT_` → `$_SERVER` → `$_ENV`.
+- **Ninguna app guarda ya contraseñas**: los `auth.php`, `validar_password.php`,
+  `guardar_cambios.php`, `save.php`, `admin.php`… de `apps/`, `webs/` y `Paginas/` llaman a
+  `au_comprobar()` / `au_autorizado()` / `au_endpoint()`.
+- Endpoint común para apps nuevas: **`/auth/validar.php`**
+  - `GET` → `{"configurado":{"edicion":bool,"acceso":bool},"sesion":{…}}` (no revela valores)
+  - `POST password=…&tipo=edicion|acceso` → 200 + cookie de sesión (`antigravity_auth`,
+    `path=/`), o 403. La sesión vale en **todas** las apps del dominio durante 12 h.
+- `api/estado` de publicación → **`PW_ACCESS`**: TrickVault pide la contraseña de acceso
+  aparte al publicar en GitHub (`apps/trickvault/publicar.php`). Decisión: la de edición es
+  débil a propósito; el token de GitHub no se protege con ella.
+- **Cambiarla:** `powershell -NoProfile -ExecutionPolicy Bypass -File tools/rotar-password.ps1`
+  imprime el bloque para pegar en hPanel → Administrador de archivos →
+  `public_html/.htaccess`. Al guardar es inmediato: **sin commit y sin despliegue**.
+  Con `-Hash` imprime solo los sha256 (`PW_EDIT_SHA256` / `PW_ACCESS_SHA256`), que también
+  se aceptan.
+- **Comprobar:** `GET https://atnojs.es/auth/validar.php` debe decir
+  `"configurado":{"edicion":true,"acceso":true}`; después entrar en Descargas o desbloquear
+  el candado de TrickVault.
+- **Excepción:** `apps/boveda_privada` cifra en el navegador; su contraseña **es la llave de
+  descifrado** y no se centraliza. Si se pierde, no hay recuperación posible.
+- **Restos obsoletos en el servidor:** `apps/codigos_imagen/config.php` (gitignored) ya no se
+  usa; se puede borrar por hPanel. El bloque de compatibilidad `AU_PERMITIR_ANTIGUAS` de
+  `auth/lib.php` es temporal y debe retirarse tras verificar producción.
+
+---
+
+## 📜 Historial: contraseña de edición, incidente del 2026-10-16 (sistema anterior)
 
 **Qué pasó.** La contraseña de edición de TrickVault / video-vault / json era **un solo dígito**.
 Su sha256 estaba escrito en `apps/video-vault/auth.php`, que **está versionado**, y el repo es
 **público**: el hash llevaba en el historial de git desde `6d7ef50`, `7037dc1` y `577652e`.
 Diez intentos bastaban para entrar; el hash publicado solo lo confirmaba.
 
-**Qué se hizo.**
+**Qué se hizo entonces (sistema antiguo, ya sustituido).**
 
-1. Contraseña nueva de **20 caracteres aleatorios**, generada con
-   `tools/rotar-password.ps1`. El valor en claro vive en
+1. Contraseña nueva de **20 caracteres aleatorios**, generada con el antiguo
+   `tools/rotar-password.ps1`. El valor en claro quedó en
    `E:\ANTIGRAVITY\.private\password-edicion.txt` (gitignored, `.htaccess` con `Deny from all`).
+   **Ese fichero ya no manda nada**: desde el 2026-10-21 las contraseñas viven en el
+   `.htaccess` raíz del servidor (`PW_EDIT` / `PW_ACCESS`).
 2. Hash nuevo en los tres `auth.php`. **`apps/trickvault/auth.php` se trajo a git**: vivía
    *solo en el servidor*, sin versionar y sin copia local, y por eso no se podía rotar desde el
-   repositorio ni verlo. Ahora el despliegue lo mantiene.
+   repositorio ni verlo.
 3. **Verificado en producción** con Chrome real: `POST` a `apps/trickvault/auth.php` → `200`, y el
    modo edición se desbloquea en la app. Evidencia:
    `tools/evidencias/2026-10-16_trickvault-modo-edicion-desbloqueado.png`.
 
-**Lo que no se puede deshacer.** El hash viejo seguirá en el historial de git para siempre. Da
-igual: corresponde a una contraseña que ya no existe.
+**Lección que sigue valiendo.** Un hash sha256 de una contraseña corta se revienta en segundos y
+el repositorio es público. Por eso la contraseña de edición (`PW_EDIT`, hoy `0`) **no protege la
+publicación en GitHub**: publicar pide `PW_ACCESS`.
 
-**Si algún día se cambia otra vez:**
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1
-# opciones: -Password "la-que-sea"   -Longitud 32
-```
-y después commit + push de los `auth.php`.
+**Lo que no se puede deshacer.** Los hashes viejos seguirán en el historial de git para siempre.
+Da igual: corresponden a contraseñas que ya no existen.
 
-**Resto que queda suelto.** `apps/json/auth.php` da **404 en producción** (no está desplegado) y
-esa carpeta no tiene `publicar.php`: es código muerto, pero se le ha puesto el hash nuevo para que
-no confunda. Se puede borrar cuando se quiera.
+**Código muerto que quedó.** `apps/json/auth.php` no tenía `publicar.php` desplegado; hoy ese
+`auth.php` valida `PW_ACCESS` por si el fichero aparece en el servidor. `apps/codigos_imagen/config.php`
+(gitignored, con `ADMIN_PASSWORD`) ya no se lee: se puede borrar en hPanel.
 
 ---
 

@@ -1,130 +1,77 @@
-# Rota la contraseña de edición de TrickVault / video-vault / json / agenda.
+# Contraseñas del proyecto — ahora viven en el .htaccess raíz del servidor.
 #
-# OJO: la app Descargas ya NO usa esta contraseña; tiene la suya propia en
-# apps\descargas\auth.php (no la toca este script). La agenda (apps/agenda)
-# sí usa la contraseña de edición, y este script actualiza su hash.
+# Desde el 2026-10-21 las contraseñas de edición y de acceso NO están en el
+# repositorio ni en ningún auth.php: se declaran UNA vez en el `.htaccess` raíz
+# de Hostinger, igual que las claves de API, y todas las apps las leen con
+# `auth/lib.php`.
 #
-# Qué hace, en este orden:
-#   1. Coge la contraseña nueva (la que le pases, o una generada al azar).
-#   2. Calcula su sha256 — con PHP si está en el PATH (que es lo que ejecuta el
-#      servidor), y si no con .NET, que da el mismo resultado para ASCII.
-#   3. Escribe el hash en los CUATRO auth.php y lo LEE DE VUELTA para comprobar
-#      que quedó bien.
-#   4. Guarda la contraseña en claro en .private/ (no se versiona ni se sirve
-#      por web) para que no se pierda.
+# Esto ya NO rota nada solo: no hay acceso al servidor desde el agente. Genera
+# el bloque exacto y pégalo en hPanel → Administrador de archivos →
+# `public_html/.htaccess` (al lado de los `SetEnv` que ya hay), y guarda. El
+# cambio es inmediato: no hay commit ni despliegue.
 #
-# Uso (en este equipo NO hay `pwsh`, es Windows PowerShell 5.1):
+# Uso:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1
-#   powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1 -Password "la-que-yo-quiera"
-#   powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1 -Longitud 32
+#       (pregunta las dos contraseñas y enseña el bloque para pegar)
 #
-# OJO: después hay que hacer commit + push y esperar al despliegue. El script
-# NO hace push a propósito: publicar es una decisión, no un efecto secundario.
+#   powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1 -Edit "0" -Acceso "[ELIMINADO]"
+#   powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1 -Edit "0" -Acceso "..." -Hash
+#       (con -Hash imprime solo los sha256, para no dejar el valor en claro)
+#
+# OJO: este script NUNCA escribe contraseñas en el repositorio (es público).
 param(
-    [string]$Password = '',
-    [int]$Longitud = 20
+    [string]$Edit = '',
+    [string]$Acceso = '',
+    [switch]$Hash
 )
 
 $ErrorActionPreference = 'Stop'
 
-$raiz = 'E:\ANTIGRAVITY'
-if (-not (Test-Path -LiteralPath (Join-Path $raiz 'apps\trickvault'))) {
-    $raiz = Split-Path -Parent $PSScriptRoot
+function Leer-Oculta([string]$mensaje) {
+    $seguro = Read-Host -Prompt $mensaje -AsSecureString
+    $puntero = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($seguro)
+    try { return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($puntero) }
+    finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($puntero) }
 }
 
-# Sin caracteres ambiguos (nada de I, l, O, 0, 1): se copia o se teclea igual.
-$alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'
-
-if ([string]::IsNullOrWhiteSpace($Password)) {
-    $bytes = [byte[]]::new($Longitud)
-    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-    $rng.GetBytes($bytes)
-    $rng.Dispose()
-    $sb = [System.Text.StringBuilder]::new()
-    foreach ($b in $bytes) { [void]$sb.Append($alfabeto[$b % $alfabeto.Length]) }
-    $Password = $sb.ToString()
-    $generada = $true
-} else {
-    $generada = $false
-}
-
-# ── sha256, igual que el servidor ───────────────────────────────────────────
-# La contraseña va por variable de entorno para no tener que escaparla dentro
-# del código PHP (comillas, $, barras… romperían el -r).
-$php = Get-Command php -ErrorAction SilentlyContinue
-if ($php) {
-    $env:ROTAR_PW = $Password
-    try   { $hash = (& $php.Source -r "echo hash('sha256', (string) getenv('ROTAR_PW'));").Trim() }
-    finally { Remove-Item Env:ROTAR_PW -ErrorAction SilentlyContinue }
-} else {
+function Sha256([string]$texto) {
+    $php = Get-Command php -ErrorAction SilentlyContinue
+    if ($php) {
+        $env:ROTAR_PW = $texto
+        try { return (& $php.Source -r "echo hash('sha256', (string) getenv('ROTAR_PW'));").Trim() }
+        finally { Remove-Item Env:ROTAR_PW -ErrorAction SilentlyContinue }
+    }
     $sha = [System.Security.Cryptography.SHA256]::Create()
-    $hash = ($sha.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Password)) | ForEach-Object { $_.ToString('x2') }) -join ''
-    $sha.Dispose()
+    try { return ($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($texto)) | ForEach-Object { $_.ToString('x2') }) -join '' }
+    finally { $sha.Dispose() }
 }
 
-if ($hash -notmatch '^[0-9a-f]{64}$') { throw "El hash no tiene forma de sha256: '$hash'" }
+if ([string]::IsNullOrWhiteSpace($Edit)) { $Edit = Leer-Oculta 'Contraseña de EDICIÓN (la del candado / modo edición)' }
+if ([string]::IsNullOrWhiteSpace($Acceso)) { $Acceso = Leer-Oculta 'Contraseña de ACCESO (login de Descargas, agenda y publicar en GitHub)' }
 
-# ── Ficheros que guardan el hash, y cómo reconocerlo en cada uno ────────────
-# Los patrones van entre comillas SIMPLES y con el $ escapado para regex (\$),
-# que si no el $ sería «fin de línea» y no encontraría nada.
-$destinos = @(
-    @{ Ruta = 'apps\trickvault\auth.php';  Patron = '\$expectedHash = ''[0-9a-f]{64}''';         Nuevo = "`$expectedHash = '$hash'" },
-    @{ Ruta = 'apps\video-vault\auth.php'; Patron = '\$expectedHash = ''[0-9a-f]{64}''';         Nuevo = "`$expectedHash = '$hash'" },
-    @{ Ruta = 'apps\json\auth.php';        Patron = 'const AUTH_PASSWORD_HASH = ''[0-9a-f]{64}'''; Nuevo = "const AUTH_PASSWORD_HASH = '$hash'" },
-    @{ Ruta = 'apps\agenda\auth.php';      Patron = 'const AGENDA_PASSWORD_SHA256 = ''[0-9a-f]{64}'''; Nuevo = "const AGENDA_PASSWORD_SHA256 = '$hash'" }
-)
+if ($Edit -eq $Acceso) { throw 'La de edición y la de acceso deben ser distintas.' }
+if ($Edit.Length -eq 0 -or $Acceso.Length -eq 0) { throw 'Las dos contraseñas son obligatorias.' }
 
-# UTF8 SIN BOM: un BOM delante de <?php se enviaría como salida y rompería las
-# cabeceras. (Ya nos pasó una vez con un fichero de secreto.)
-$utf8SinBom = New-Object System.Text.UTF8Encoding($false)
-$tocados = @()
-
-foreach ($d in $destinos) {
-    $ruta = Join-Path $raiz $d.Ruta
-    if (-not (Test-Path -LiteralPath $ruta)) { Write-Output "  AVISO: no existe $($d.Ruta); lo salto"; continue }
-
-    $texto = [System.IO.File]::ReadAllText($ruta)
-    $m = [regex]::Match($texto, $d.Patron)
-    if (-not $m.Success) { Write-Output "  AVISO: no encontre el hash en $($d.Ruta); lo salto"; continue }
-
-    # Se sustituye por posicion, sin motor de reemplazo: asi el $ del codigo PHP
-    # no se interpreta como grupo de captura.
-    $nuevo = $texto.Remove($m.Index, $m.Length).Insert($m.Index, $d.Nuevo)
-    [System.IO.File]::WriteAllText($ruta, $nuevo, $utf8SinBom)
-
-    # Leer de vuelta: mejor enterarse aqui que en produccion.
-    $releido = [System.IO.File]::ReadAllText($ruta)
-    if ($releido -notmatch [regex]::Escape($hash)) { throw "El hash no quedo escrito en $($d.Ruta)" }
-    $tocados += $d.Ruta
+if ($Hash) {
+    Write-Output ''
+    Write-Output '=== BLOQUE PARA EL .htaccess RAÍZ (solo hashes) ==='
+    Write-Output ('SetEnv PW_EDIT_SHA256 "' + (Sha256 $Edit) + '"')
+    Write-Output ('SetEnv PW_ACCESS_SHA256 "' + (Sha256 $Acceso) + '"')
+} else {
+    Write-Output ''
+    Write-Output '=== BLOQUE PARA EL .htaccess RAÍZ ==='
+    Write-Output ('SetEnv PW_EDIT "' + $Edit + '"')
+    Write-Output ('SetEnv PW_ACCESS "' + $Acceso + '"')
 }
-
-# ── La contraseña en claro, fuera de git y fuera de la web ─────────────────
-$privado = Join-Path $raiz '.private'
-if (-not (Test-Path -LiteralPath $privado)) { New-Item -ItemType Directory -Path $privado | Out-Null }
-$ficheroClave = Join-Path $privado 'password-edicion.txt'
-$contenido = @(
-    'Contrasena de edicion de TrickVault / video-vault / json / agenda',
-    "Cambiada el $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')",
-    '',
-    $Password,
-    '',
-    "sha256: $hash",
-    '',
-    'Vive en .private/ (ignorada por git y con .htaccess que deniega la web).',
-    'Para cambiarla: pwsh -File tools/rotar-password.ps1',
-    'Despues hay que hacer commit + push de los auth.php.'
-)
-[System.IO.File]::WriteAllText($ficheroClave, ($contenido -join "`r`n"), $utf8SinBom)
-
-# ── Resumen ────────────────────────────────────────────────────────────────
 Write-Output ''
-Write-Output '=== CONTRASENA ROTADA ==='
-Write-Output "  origen     : $(if ($generada) { 'generada al azar' } else { 'la que has pasado' }) ($($Password.Length) caracteres)"
-Write-Output "  sha256     : $hash"
-Write-Output "  guardada en: .private\password-edicion.txt"
-Write-Output "  ficheros   : $($tocados.Count)"
-foreach ($t in $tocados) { Write-Output "      - $t" }
+Write-Output 'Dónde: hPanel → Administrador de archivos → public_html/.htaccess'
+Write-Output '       (junto a los SetEnv de las claves de API; no borres ninguno).'
 Write-Output ''
-Write-Output "  CONTRASENA NUEVA: $Password"
+Write-Output 'Cómo comprobarlo SIN tocar una app:  GET /auth/validar.php  debe devolver'
+Write-Output '       "configurado":{"edicion":true,"acceso":true}.'
+Write-Output 'Y en la app: candado con la de edición, login con la de acceso.'
 Write-Output ''
-Write-Output '  Siguiente paso: commit + push, y esperar al despliegue de Hostinger.'
+if (-not $Hash) {
+    Write-Output 'AVISO: al pegarlo, las contraseñas quedan en el .htaccess del servidor.'
+    Write-Output 'No las escribas en el repositorio ni en la memoria del proyecto.'
+}

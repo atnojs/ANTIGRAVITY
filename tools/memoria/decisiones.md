@@ -5,6 +5,25 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 
 ---
 
+### [2026-10-21] Las contraseñas del proyecto viven en el `.htaccess` raíz, no en el código
+
+- **Contexto:** había ~50 ficheros con una contraseña cada uno (`auth.php` con un hash de 20
+  caracteres, `validar_password.php` con `0`, `01`, `1`, `0503` en claro en un repo público, JS con
+  `ADMIN_PASSWORD`…). Cambiarla obligaba a tocar varios ficheros por app y desplegar.
+- **Decisión:** dos contraseñas únicas —`PW_EDIT` (editar) y `PW_ACCESS` (acceder)— declaradas con
+  `SetEnv` en el `.htaccess` raíz de Hostinger, **fuera de git**, igual que las claves de API.
+  Todas las apps las leen con `auth/lib.php`; un endpoint común `/auth/validar.php` sirve a las
+  apps nuevas. Cambiarla es editar una línea del `.htaccess` (sin commit ni despliegue).
+- **Por qué:** Antonio lo pidió así y es el patrón del proyecto: un secreto, un sitio, nada de
+  valores en el repositorio. Además elimina 107 ficheros con contraseñas escritas.
+- **Contrapartida aceptada:** `PW_EDIT` vale `0` a propósito — no protege. Por eso **publicar en
+  GitHub no usa `PW_EDIT`**: pide `PW_ACCESS` (decisión de Antonio), porque `publicar.php` mueve el
+  token de GitHub. Si algún día se quiere más seguridad, solo hay que cambiar `PW_ACCESS`.
+- **Excepción:** `apps/boveda_privada` no se centraliza: su contraseña es la llave de cifrado de los
+  datos (zero-knowledge). Cambiarla obligaría a re-cifrar y no hay forma de hacerlo sin la actual.
+- **Verificación:** `GET /auth/validar.php` → `"configurado":{"edicion":true,"acceso":true}`;
+  candado de TrickVault con la de edición, login de Descargas con la de acceso.
+
 ### [2026-10-21] Agenda (`apps/agenda`): la app del modelo se porta a PHP + estático
 
 - **Decisión:** la app que generó un modelo (React 19 + Express + SQLite + Gemini, descargada de AI

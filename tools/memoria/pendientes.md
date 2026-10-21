@@ -5,6 +5,26 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
+## 🔐 Contraseñas centralizadas: cierre de la migración (2026-10-21)
+
+- **Estado:** código desplegado (commit `3396a40`); `.htaccess` raíz ya tiene `PW_EDIT` y
+  `PW_ACCESS`. Queda la verificación final en producción y dos limpiezas.
+- **Siguiente paso 1 (obligatorio):** cuando la verificación esté hecha, poner
+  `AU_PERMITIR_ANTIGUAS` en `false` (o borrar el bloque de compatibilidad) en `auth/lib.php`,
+  commit + push, y comprobar que la contraseña antigua de 20 caracteres **ya no entra**.
+- **Siguiente paso 2:** borrar por hPanel el `apps/codigos_imagen/config.php` del servidor: ya no
+  se lee y solo guarda un `ADMIN_PASSWORD`.
+- **Siguiente paso 3:** revisar los front-ends legacy que mandaban `password: '0'` fijo al guardar
+  (funcionan por la sesión común o porque `PW_EDIT` vale `0`). Si algún día se cambia `PW_EDIT`,
+  esos avisos dejan de guardar: hay que hacer que manden la contraseña escrita por el usuario.
+- **Verificación:** `GET /auth/validar.php` (configurado), candado de TrickVault, login de
+  Descargas, login de la agenda (Brisa) y modal de publicación de TrickVault.
+- **Bóveda privada:** los datos viejos se perdieron del servidor (no hay copia restaurada);
+  Antonio creó una bóveda nueva. Si algún día aparecen copias de seguridad de Hostinger con
+  `vault_data/vault.json`, se puede recuperar; sin él los blobs no se descifran.
+
+---
+
 ## 🧪 5 herramientas del vídeo «…no parezca de 2006» — Fase 1 hecha (2026-10-17)
 
 - **Estado:** Fases 1-3 hechas (commits `124556e` y `a4d27a5`): Playwright CLI integrado y probado; Web Interface Guidelines fijadas y enganchadas al auditor; skill `recrear-desde-referencia` creada. Solo queda lo opcional: Taste Skill/Awesome Design como referencia puntual si Antonio quiere un look fuera de la marca.

@@ -5,6 +5,32 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-21 (quinta parte) — Contraseñas centralizadas en el `.htaccess` raíz
+
+Antonio: «la contraseña para editar cualquier app/web → `0`; para acceder → `[ELIMINADO]`; que las
+contraseñas estén en un solo sitio, como las claves de API, y que todas las apps vayan a buscarlas».
+
+- **Módulo nuevo** `auth/lib.php` + endpoint `/auth/validar.php`. Lee `PW_EDIT` / `PW_ACCESS` del
+  `.htaccess` raíz con la misma cascada que los proxies (`getenv` → `REDIRECT_` → `$_SERVER` →
+  `$_ENV`), acepta valor en claro o `PW_*_SHA256`, y comparte sesión de dominio (cookie
+  `antigravity_auth`, `path=/`, 12 h). Ninguna app contiene ya una contraseña.
+- **118 ficheros migrados** (commit `3396a40`): `auth.php` de TrickVault / video-vault / json /
+  Descargas / Brisa, y todos los `validar_password.php`, `guardar_cambios.php`, `save.php`,
+  `admin.php`… de `apps/`, `apps/paginas/`, `webs/` y `Paginas/`. Los 107 legacy se migraron con
+  script, con `php -l` por fichero y copia de originales fuera del repo.
+- **Tipos:** `edicion` = candado/modo edición; `acceso` = login de Descargas y agenda, enlaces
+  privados y **publicar en GitHub**.
+- **TrickVault:** publicar pide ahora la contraseña de acceso en un modal aparte, validada contra
+  `/auth/validar.php`; `publicar.php` comprueba `au_comprobar('acceso', …)` en local (sin HTTP).
+- **`.htaccess` raíz** (lo pegó Antonio): `SetEnv PW_EDIT "0"` y `SetEnv PW_ACCESS "[ELIMINADO]"`.
+- **Bóveda privada:** producción había perdido `vault_data/vault.json` (pedía «crear bóveda»);
+  Antonio creó una nueva. Añadido `storage.php?action=diagnostico` (booleanos y tamaños, sin
+  datos), escritura atómica del meta y negativa a sobrescribir un `vault.json` dañado.
+- **Pendiente inmediato:** retirar `AU_PERMITIR_ANTIGUAS` de `auth/lib.php` cuando la verificación
+  en producción esté hecha (acepta las contraseñas antiguas solo para la transición).
+
+---
+
 ## 2026-10-21 (cuarta parte) — TrickVault: aviso en «Últimas» con enlace a los códigos de texto nuevos
 
 Antonio: «no veo las tarjetas nuevas» — ni refrescando ni en incógnito, con el contador ya en
