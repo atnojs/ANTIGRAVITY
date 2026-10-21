@@ -272,6 +272,11 @@ Un código de **imagen** necesita 4 sitios en `apps/trickvault/index.html`; uno 
 3. `PROMPT_TEMPLATES` (imagen) o `TEXT_COMMAND_TEMPLATES` (texto).
 4. Solo imagen: el ejemplo. Pista en `tools/trickvault/_ejemplos_<carpeta>.json` con la clave del id
    (`ig-dcek-NNN`) y **el sujeto único de esa carpeta**.
+5. **La tanda lleva su fecha de push en `lote`** (`'AAAA-MM-DD'`) en el constructor de sus tarjetas
+   dentro de `SEED_TRICKS` (junto a `createdAt`/`updatedAt`). El botón **«Últimas»** enseña SOLO
+   las tarjetas del `lote` más reciente (`tvUltimoPush`): si la tanda no lleva `lote`, «Últimas»
+   seguirá enseñando la tanda anterior. Si una tanda se amplía días después, lo añadido lleva la
+   fecha del push nuevo (lote nuevo) para que «Últimas» lo vea.
 
 **Cuidado con las comas:** la última entrada de cada bloque no lleva coma; si se inserta después
 sin añadirla, el JSX rompe (pasó y lo cazó `validar`). Los ids son posicionales: añadir al final

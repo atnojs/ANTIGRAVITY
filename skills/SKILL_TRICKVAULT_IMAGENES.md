@@ -109,6 +109,21 @@ mismo sujeto, para que el ejemplo no sea un cartel inventado.
 6. **Verificar** (obligatorio, ver abajo) y **commit + push**. Solo después,
    siguiente carpeta.
 
+## Lote del push (botón «Últimas»)
+
+El botón **«Últimas»** del buscador enseña **solo las tarjetas del último push**
+(el lote más reciente), no las editadas ni las de tandas anteriores. El lote se
+declara en la app con un campo `lote` (`'AAAA-MM-DD'`, fecha del push) en el
+constructor de las tarjetas de esa tanda, dentro de `SEED_TRICKS`
+(`CHATGPT_CODES`, `VIRAL_CODES`, `TURN_CODES`…). Al añadir una tanda nueva:
+
+- ponle su fecha de push como `lote`; sin eso «Últimas» seguirá enseñando la
+  tanda anterior (las tarjetas viejas sin `lote` quedan fuera a propósito);
+- si una tanda se amplía en otro push, lo nuevo lleva el lote nuevo (fecha
+  nueva), aunque esté en el mismo array;
+- las tarjetas creadas desde la app reciben el lote solas (`saveTrick`), así que
+  una tarjeta nueva hecha en la app se convierte en el «último push» ese día.
+
 ## Verificación obligatoria antes del commit
 
 Hay que reproducir el caso de una tarjeta **ya guardada**, no solo el de un

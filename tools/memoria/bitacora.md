@@ -5,6 +5,35 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-21 — TrickVault: «Últimas» = SOLO las tarjetas del último push (52)
+
+Antonio: «el botón de "ultimas" quiero que muestre las últimas tarjetas subidas. El último
+push, solo eso.» La versión anterior («por lote») comparaba `updatedAt`/`createdAt` con el
+máximo de TODO el catálogo y enseñaba **1 tarjeta**: la de ejemplo «Docker prune» (su
+`createdAt` es `Date.now() - 1 día`, así que siempre era la más nueva). No eran las subidas.
+
+- **Mecanismo nuevo:** cada tanda de tarjetas lleva su **fecha de push** en un campo `lote`
+  (`'AAAA-MM-DD'`, ordena como texto). Las creadas desde la app lo reciben al nacer
+  (`saveTrick` → `tvClaveDia(Date.now())`); las de la semilla lo llevan en su constructor.
+  `tvUltimoPush(lista)` saca el lote más reciente y devuelve SOLO esos ids; «Últimas» filtra
+  por ahí, en el orden en que se subieron. No entra nada editado, ni los ejemplos de la casa
+  (s1–s11), ni lotes anteriores.
+- Lotes tal como quedan: `2026-08-25` (ig-dcek), `2026-10-01` (xl-cmd), `2026-10-06`
+  (cap-cmd), `2026-10-13` (reel-cmd), `2026-10-19` (reel2-cmd) y **`2026-10-21`**
+  (gpt-cmd + viral-cmd + turn-cmd = las **52** del último push).
+- Chip: «🆕 último push · 21/10/2026» y el botón avisa «Ver SOLO las tarjetas del último
+  push (52)». Funciones nuevas: `tvLoteDe` y `tvUltimoPush`; mapas `SEED_LOTE_POR_ID` y
+  `SEED_ORDEN_POR_ID`. Se retiraron `tvUltimaMarca` y `tvMarca`.
+- **Verificado en Chrome:** antes enseñaba 1 («Docker prune», `00-antes-ultimas.png`);
+  después 52 exactas y en orden de subida (`01/02/03-despues-…`), búsqueda por texto dentro
+  del push (`/glass` → 1), tres anchos, y **con `localStorage` sin `lote`** (simulando el
+  navegador que ya tenía las tarjetas guardadas) sigue dando 52. Sin errores nuevos de
+  consola: los 404 de `image_store.php` son del servidor local de pruebas.
+- Evidencias: `tools/evidencias/2026-10-21-ultimas/`.
+- **Commit:** `1bfbfbd` (al día con `origin/main`).
+
+---
+
 ## 2026-10-19 — TrickVault: imágenes de ejemplo de las 29 tarjetas nuevas
 
 Antonio: «genera las imágenes» teniendo en cuenta que **cada carpeta tiene su sujeto
