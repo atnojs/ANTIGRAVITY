@@ -6278,7 +6278,7 @@ function TrickForm({ trick, folders, onSave, onClose, onDelete }) {
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickCard
    ═══════════════════════════════════════════════ */
-function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit = false, canDrag = false, isDragging = false, isDragOver = false, onDragStart, onDragOver, onDrop, onDragEnd }) {
+function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit = false, canDrag = false, isDragging = false, isDragOver = false, onDragStart, onDragOver, onDrop, onDragEnd, footerAction = null }) {
     function handleDragStart(event) {
         if (!canDrag || event.target.closest('button, input, a, img')) {
             event.preventDefault();
@@ -6332,11 +6332,15 @@ function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId,
                 </div>
             )}
 
-            <div className="card-footer">
+            <div
+                className="card-footer"
+                style={footerAction ? { flexWrap: 'wrap', rowGap: '0.4rem' } : undefined}
+            >
                 <span className="date">{formatDate(trick.createdAt)}</span>
                 {trick.updatedAt && trick.updatedAt !== trick.createdAt && (
                     <span className="date-updated">Actualizado {formatDate(trick.updatedAt)}</span>
                 )}
+                {footerAction}
             </div>
         </div>
     );
@@ -6783,17 +6787,36 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                 </div>
             ) : (query || filtrandoFecha || verDuplicados) && (
                 <div className="tricks-grid">
-                    {results.map(t => (
-                        <div key={t.id} style={{position:'relative'}}>
-                            <TrickCard trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} canEdit={canEdit} />
-                            <button className="btn btn-glass btn-sm" style={{position:'absolute',top:'0.5rem',right:'4rem',zIndex:2}} onClick={() => onSelectCategory(t.category)} title="Ir a la categoría">
-                                📂 {getCat(t.category, folders)?.label}
-                            </button>
-                            {verDuplicados && hermanasDe(t).length > 0 && (
-                                <p className="dup-note">🧩 mismo prompt que <b>{hermanasDe(t).join(', ')}</b></p>
-                            )}
-                        </div>
-                    ))}
+                    {results.map(t => {
+                        const carpeta = getCat(t.category, folders)?.label || String(t.category || '');
+                        return (
+                            <div key={t.id}>
+                                <TrickCard
+                                    trick={t}
+                                    onToggleFav={onToggleFav}
+                                    onEdit={onEdit}
+                                    onImageClick={onImageClick}
+                                    onCopy={onCopy}
+                                    copiedId={copiedId}
+                                    canEdit={canEdit}
+                                    footerAction={(
+                                        <button
+                                            type="button"
+                                            className="btn btn-glass btn-sm"
+                                            onClick={() => onSelectCategory(t.category)}
+                                            title={'Ir a la carpeta «' + carpeta + '»'}
+                                            style={{ flexBasis: '100%', justifyContent: 'flex-start', minWidth: 0, padding: '0.3rem 0.6rem', fontSize: '0.72rem', borderRadius: '999px' }}
+                                        >
+                                            <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>📂 {carpeta}</span>
+                                        </button>
+                                    )}
+                                />
+                                {verDuplicados && hermanasDe(t).length > 0 && (
+                                    <p className="dup-note">🧩 mismo prompt que <b>{hermanasDe(t).join(', ')}</b></p>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
