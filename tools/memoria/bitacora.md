@@ -5,6 +5,31 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-19 — TrickVault: 21 códigos de imagen de «Viral ChatGPT AI Image Commands»
+
+Después de la infografía de texto, Antonio mandó dos de códigos de **imagen** (tandas 89-99 y
+66-100). Comprobado contra el catálogo: de 46 códigos, 25 ya estaban y **entran 21**:
+
+`/chrome`, `/mirror`, `/moody`, `/octanerender`, `/unrealengine`, `/travelphoto`, `/blender`,
+`/environmentart`, `/dieselpunk`, `/crosshatching`, `/kodak`, `/solarpunk`, `/depthoffield`,
+`/digitalpainting`, `/80s`, `/minimalinterior`, `/backlit`, `/photorealistic`, `/90s`,
+`/posterdesign`, `/midjourneystyle`.
+
+- Array propio `VIRAL_CODES` (`[código, qué hace, prompt en inglés]`) con ids
+  `viral-cmd-001…021` **al final** de `SEED_TRICKS`: no renumera nada.
+- Los prompts NO se escriben dos veces: un bucle justo después de `PROMPT_TEMPLATES` los
+  inyecta con `IMAGE_STYLE_PREFIX_TEXT` + la coletilla de «texto en español». Se ejecuta antes
+  de que se construya `IMAGE_COMMAND_PROMPTS`, así que el mapa los ve.
+- Carpeta de cada uno según el tema (Estilos la mayoría, Luz/cámara los de luz y espejo,
+  Pintura los de técnica, etc.).
+- `/imageprompt` de la tanda 66-100 NO se duplica: ya entró como comando de texto.
+- `/chrome` y `/mirror` (de la tanda anterior, 89-99) entran aquí: se lo había preguntado y
+  siguió con otra imagen, así que los doy por aceptados; si no los quiere, se quitan.
+- **Verificado**: JSX OK (1.014.975 chars) y script que revisa los 21 (carpeta, prompt largo y
+  sin códigos repetidos) más que ninguno estaba ya en `PROMPT_TEMPLATES`. Todo OK.
+
+---
+
 ## 2026-10-19 — TrickVault: 23 códigos de texto de «50 secret codes of ChatGPT»
 
 Antonio pasó la infografía de los 50 códigos de ChatGPT: «agrega los que no tengamos, mira

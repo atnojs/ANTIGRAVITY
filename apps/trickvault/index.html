@@ -734,6 +734,29 @@ const CODE_FOLDER = {
     '/concept-map': 'xl-texto', '/tree': 'xl-texto', '/flashcards': 'xl-texto',
     '/faq': 'xl-texto', '/meeting': 'xl-texto', '/prompt': 'xl-texto',
     '/imageprompt': 'xl-texto', '/questions': 'xl-texto',
+    // ── Infografías «Viral ChatGPT AI Image Commands» (2026-10-19) ──
+    //    De las tandas 89-99 y 66-100. Solo los que no existían ya.
+    '/chrome': 'xl-estilos',
+    '/mirror': 'xl-luzcamara',
+    '/moody': 'xl-estilos',
+    '/octanerender': 'xl-estilos',
+    '/unrealengine': 'xl-estilos',
+    '/travelphoto': 'xl-casaviajes',
+    '/blender': 'xl-estilos',
+    '/environmentart': 'xl-ilustracion',
+    '/dieselpunk': 'xl-estilos',
+    '/crosshatching': 'xl-pintura',
+    '/kodak': 'xl-estilos',
+    '/solarpunk': 'xl-ilustracion',
+    '/depthoffield': 'xl-camararetrato',
+    '/digitalpainting': 'xl-pintura',
+    '/80s': 'xl-estilos',
+    '/minimalinterior': 'xl-escenaprueba',
+    '/backlit': 'xl-luzcamara',
+    '/photorealistic': 'xl-estilos',
+    '/90s': 'xl-estilos',
+    '/posterdesign': 'xl-carteles',
+    '/midjourneystyle': 'xl-estilos',
 };;
 
 const DIFFICULTIES = [
@@ -3364,6 +3387,32 @@ const CHATGPT_CODES = [
     ['/questions', 'preguntas relevantes'],
 ];
 
+// 21 códigos de imagen de las infografías «Viral ChatGPT AI Image Commands»
+// (tandas 89-99 y 66-100, 2026-10-19). [código, qué hace, prompt en inglés].
+const VIRAL_CODES = [
+    ['/chrome', 'acabado cromado reflectante', 'Reflective metallic chrome finish on [OBJETO], mirror-like polished surfaces, sharp specular highlights, studio reflections, high-contrast metallic look.'],
+    ['/mirror', 'composición con espejos', 'Creative mirror-based composition of [OBJETO], mirrored surfaces fracturing the scene, multiple reflections, surreal symmetry.'],
+    ['/moody', 'ambiente cinematográfico oscuro', 'Dark cinematic mood of [OBJETO], low-key lighting, deep shadows, muted colors, film-noir atmosphere.'],
+    ['/octanerender', 'render estilo Octane', 'Octane-style 3D render of [OBJETO], glossy materials, physically accurate lighting, subtle bloom, hyper-clean render.'],
+    ['/unrealengine', 'aspecto de Unreal Engine', 'Unreal Engine 5 cinematic look of [OBJETO], Lumen lighting, nanite detail, volumetric fog, game-cinematic realism.'],
+    ['/travelphoto', 'fotografía de viaje', 'Travel photography of [OBJETO], golden natural light, wide scenic framing, vivid destination colors.'],
+    ['/blender', 'visualización 3D en Blender', 'Blender 3D visualization of [OBJETO], clean studio render, soft area lights, subtle ambient occlusion.'],
+    ['/environmentart', 'concept art de entorno', 'Environment concept art of [OBJETO], epic scale, painterly detail, dramatic sky, game concept-art style.'],
+    ['/dieselpunk', 'estética diésel-punk', 'Dieselpunk aesthetic of [OBJETO], 1940s industrial machinery, rivets and brass, oily smoke, gritty retro-future.'],
+    ['/crosshatching', 'técnica de rayado cruzado', 'Cross-hatching illustration of [OBJETO], dense ink lines, engraving texture, black and white linework.'],
+    ['/kodak', 'aspecto de película Kodak', 'Kodak film aesthetic of [OBJETO], warm halation, fine grain, vintage color rendition.'],
+    ['/solarpunk', 'futuro solarpunk', 'Solarpunk future scene of [OBJETO], greenery over architecture, solar panels, bright optimistic light.'],
+    ['/depthoffield', 'profundidad de campo corta', 'Shallow depth of field photo of [OBJETO], creamy bokeh background, sharp subject, 85mm lens look.'],
+    ['/digitalpainting', 'pintura digital', 'Digital painting of [OBJETO], painterly brush strokes, rich color, concept-art finish.'],
+    ['/80s', 'estética de los 80', '1980s aesthetic of [OBJETO], neon grids, chrome, synthwave sun, VHS grain.'],
+    ['/minimalinterior', 'interior minimalista', 'Minimal interior concept of [OBJETO], clean lines, neutral palette, soft daylight, architectural photography.'],
+    ['/backlit', 'sujeto a contraluz', 'Backlit subject [OBJETO], rim light glow, sun behind, lens flare, silhouette edges.'],
+    ['/photorealistic', 'ultrarrealista', 'Ultra-photorealistic image of [OBJETO], true-to-life skin and materials, natural lighting, 8k detail.'],
+    ['/90s', 'estética de los 90', '1990s aesthetic of [OBJETO], film camera look, muted colors, subtle grain, nostalgic styling.'],
+    ['/posterdesign', 'concepto de cartel', 'Poster design concept for [OBJETO], bold typography layout, strong graphic hierarchy, print-ready composition.'],
+    ['/midjourneystyle', 'estética estilo Midjourney', 'Midjourney-style artwork of [OBJETO], cinematic lighting, intricate detail, dreamlike color grading.'],
+];
+
 const SEED_TRICKS = [
     ...RESTORED_VARIANTS,
     { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'xl-dev', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
@@ -3478,6 +3527,21 @@ const SEED_TRICKS = [
         description: '',
         category: CODE_FOLDER[command] || 'xl-texto',
         tags: ['comandos de texto', 'texto', 'ChatGPT'],
+        codeSnippet: command,
+        difficulty: 'beginner',
+        sourceUrl: '',
+        imageUrl: '',
+        isFavorite: false,
+        createdAt: Date.UTC(2026, 9, 19) - index,
+        updatedAt: Date.UTC(2026, 9, 19),
+    })),
+    // Códigos de imagen de «Viral ChatGPT AI Image Commands» (2026-10-19).
+    ...VIRAL_CODES.map(([command, meaning], index) => ({
+        id: `viral-cmd-${String(index + 1).padStart(3, '0')}`,
+        title: `${command} — ${meaning}`,
+        description: '',
+        category: CODE_FOLDER[command] || 'xl-estilos',
+        tags: ['comandos de imagen', 'imagen', 'Viral'],
         codeSnippet: command,
         difficulty: 'beginner',
         sourceUrl: '',
@@ -4973,6 +5037,12 @@ const PROMPT_TEMPLATES = {
     "/CHIPMUNKTRIO": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Chipmunk trio photograph of [OBJETO]: the subject posing with three cartoon chipmunks around a wooden table, one in a red sweater with the letter A, one in blue and one in green, warm interior light, playful cartoon crossover with a real photo, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/MINTMUSE": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Mint muse beauty portrait of [OBJETO]: editorial beauty close-up with mint green and soft pink watercolour background, pink eyeshadow and blush, freckles, floral statement earrings, paint splatters and drips, high-fashion beauty editorial, soft studio light, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
 };;
+
+// Prompts de los 21 códigos de «Viral ChatGPT AI Image Commands»: se construyen
+// desde VIRAL_CODES para no tener el mismo texto escrito dos veces.
+for (const [codigo, , estilo] of VIRAL_CODES) {
+    PROMPT_TEMPLATES[codigo] = `${IMAGE_STYLE_PREFIX_TEXT} ${estilo} 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English`;
+}
 
 const TEXT_COMMAND_TEMPLATES = {
     '/ideas': 'Dame 10 ideas originales sobre [TEMA], cada una con una frase explicando por qué funcionaría.',
