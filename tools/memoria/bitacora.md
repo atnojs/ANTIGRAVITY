@@ -5,6 +5,32 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-19 — TrickVault: 23 códigos de texto de «50 secret codes of ChatGPT»
+
+Antonio pasó la infografía de los 50 códigos de ChatGPT: «agrega los que no tengamos, mira
+los prompts». Comprobado contra los 121 códigos de texto que ya había:
+
+- **Entran 23** (carpeta «Comandos de texto»): `/formalize`, `/cta`, `/carousel`,
+  `/newsletter`, `/blog`, `/keywords`, `/hashtags`, `/uussnce`, `/positioning`, `/pitch`,
+  `/negotiation`, `/objections`, `/swot`, `/mind-map`, `/stick-notes`, `/concept-map`,
+  `/tree`, `/flashcards`, `/faq`, `/meeting`, `/prompt`, `/imageprompt`, `/questions`.
+- **No entran 27**: 21 existían ya por código (`/rewrite`, `/proofread`, `/casual`, `/hook`,
+  `/caption`, `/headline`, `/script`, `/reels`, `/audience`, `/offer`, `/sales`,
+  `/flowchart`, `/roadmap`, `/checklist`, `/timeline`, `/prioritize`, `/proscons`,
+  `/examples`, `/analogy`, `/stepbystep`, `/studyplan`) y 6 eran el mismo prompt con otro
+  nombre: `/shorten` (= `/concise`), `/storytelling` (= `/storyteller`), `/branding`
+  (≈ `/brand`), `/competitors` (= `/competitor`), `/actionplan` (≈ `/action`), `/puiz`
+  (= `/quiz`, y viene mal escrito en la infografía).
+- Se añaden como array propio `CHATGPT_CODES` con ids `gpt-cmd-001…023` **al final** de
+  `SEED_TRICKS`: así no se renumera ninguna tarjeta existente (el lío histórico de los ids
+  por posición). Cada uno con su entrada en `CODE_FOLDER` (xl-texto) y su prompt en
+  `TEXT_COMMAND_TEMPLATES`, en español y con huecos `[ASÍ]`.
+- `/uussnce` se respeta tal cual viene en la infografía (parece errata); se avisó a Antonio.
+- **Verificado**: JSX OK (1.009.588 chars) y script que comprueba los 23: carpeta, prompt y
+  que no haya códigos repetidos — todo OK.
+
+---
+
 ## 2026-10-19 — TrickVault: limpieza de «Cámara y retrato», botón de duplicados y «Últimas» por lote
 
 Cuatro cosas que pidió Antonio de una vez:

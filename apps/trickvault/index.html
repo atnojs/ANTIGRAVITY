@@ -720,6 +720,20 @@ const CODE_FOLDER = {
     '/PINKPANIC': 'xl-otromundo',
     '/CHIPMUNKTRIO': 'xl-otromundo',
     '/MINTMUSE': 'xl-moda',
+    // ── 50 códigos secretos de ChatGPT (infografía 2026-10-19) ──
+    //    Solo entran los que NO existían ya por código NI por prompt. Se quedan
+    //    fuera, por repetidos: /shorten (= /concise, /brief), /storytelling
+    //    (= /storyteller), /branding (≈ /brand), /competitors (= /competitor),
+    //    /actionplan (≈ /action) y /puiz (ya está /quiz; viene mal escrito en la
+    //    infografía). /uussnce también viene mal escrito ahí y se respeta tal cual.
+    '/formalize': 'xl-texto', '/cta': 'xl-texto', '/carousel': 'xl-texto',
+    '/newsletter': 'xl-texto', '/blog': 'xl-texto', '/keywords': 'xl-texto',
+    '/hashtags': 'xl-texto', '/uussnce': 'xl-texto', '/positioning': 'xl-texto',
+    '/pitch': 'xl-texto', '/negotiation': 'xl-texto', '/objections': 'xl-texto',
+    '/swot': 'xl-texto', '/mind-map': 'xl-texto', '/stick-notes': 'xl-texto',
+    '/concept-map': 'xl-texto', '/tree': 'xl-texto', '/flashcards': 'xl-texto',
+    '/faq': 'xl-texto', '/meeting': 'xl-texto', '/prompt': 'xl-texto',
+    '/imageprompt': 'xl-texto', '/questions': 'xl-texto',
 };;
 
 const DIFFICULTIES = [
@@ -3322,6 +3336,34 @@ const REEL2_COMMANDS = [
     ['/MINTMUSE', 'retrato editorial en tonos menta y rosa con salpicaduras', 'https://www.instagram.com/reels/DeVxASAolh8/'],
 ];
 
+// 23 códigos de texto de la infografía «50 secret codes of ChatGPT» (2026-10-19).
+// Los otros 27 ya existían en la app (por código o por prompt); ver CODE_FOLDER.
+const CHATGPT_CODES = [
+    ['/formalize', 'texto más formal'],
+    ['/cta', 'llamadas a la acción'],
+    ['/carousel', 'estructura de un carrusel'],
+    ['/newsletter', 'convierte en newsletter'],
+    ['/blog', 'escribe un post de blog'],
+    ['/keywords', 'palabras clave relevantes'],
+    ['/hashtags', 'hashtags relevantes'],
+    ['/uussnce', 'crea una persona (buyer persona)'],
+    ['/positioning', 'posicionamiento de marca'],
+    ['/pitch', 'pitch convincente'],
+    ['/negotiation', 'argumentos de negociación'],
+    ['/objections', 'objeciones y respuestas'],
+    ['/swot', 'análisis DAFO'],
+    ['/mind-map', 'mapa mental'],
+    ['/stick-notes', 'ideas en post-its'],
+    ['/concept-map', 'mapa de conceptos'],
+    ['/tree', 'estructura jerárquica'],
+    ['/flashcards', 'fichas de estudio'],
+    ['/faq', 'preguntas frecuentes'],
+    ['/meeting', 'orden del día de una reunión'],
+    ['/prompt', 'idea convertida en prompt'],
+    ['/imageprompt', 'idea convertida en prompt de imagen'],
+    ['/questions', 'preguntas relevantes'],
+];
+
 const SEED_TRICKS = [
     ...RESTORED_VARIANTS,
     { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'xl-dev', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
@@ -3425,6 +3467,21 @@ const SEED_TRICKS = [
         difficulty: 'beginner',
         sourceUrl,
         imageUrl: SEED_COMMAND_IMAGES[command] || '',
+        isFavorite: false,
+        createdAt: Date.UTC(2026, 9, 19) - index,
+        updatedAt: Date.UTC(2026, 9, 19),
+    })),
+    // Códigos de texto de la infografía «50 secret codes of ChatGPT» (2026-10-19).
+    ...CHATGPT_CODES.map(([command, meaning], index) => ({
+        id: `gpt-cmd-${String(index + 1).padStart(3, '0')}`,
+        title: `${command} — ${meaning}`,
+        description: '',
+        category: CODE_FOLDER[command] || 'xl-texto',
+        tags: ['comandos de texto', 'texto', 'ChatGPT'],
+        codeSnippet: command,
+        difficulty: 'beginner',
+        sourceUrl: '',
+        imageUrl: '',
         isFavorite: false,
         createdAt: Date.UTC(2026, 9, 19) - index,
         updatedAt: Date.UTC(2026, 9, 19),
@@ -5041,6 +5098,30 @@ const TEXT_COMMAND_TEMPLATES = {
     '/faceharmony': 'Analiza mi cara en la foto adjunta y explica qué rasgos están más equilibrados: proporciones, simetría y una valoración clara y respetuosa, con un consejo práctico para cada punto.',
     '/skinglowtips': 'Dame una rutina de cuidado de la piel de día y de noche para mi tipo de piel [TIPO DE PIEL], con pasos, productos, frecuencia y errores que debo evitar.',
     '/colourfittips': 'Analiza mi colorimetría y dime qué colores de ropa me favorecen y cuáles evitar, con una paleta de ejemplo y una recomendación para [OCASIÓN].',
+    // 23 códigos de texto de la infografía «50 secret codes of ChatGPT» (2026-10-19).
+    '/formalize': 'Reescribe [TEXTO] en un registro formal y profesional, manteniendo el significado y sin que suene rígido.',
+    '/cta': 'Escribe 10 llamadas a la acción para [OFERTA/TEMA], cada una con una razón clara para actuar ahora.',
+    '/carousel': 'Estructura un carrusel de [N] diapositivas sobre [TEMA]: gancho inicial, desarrollo y cierre con llamada a la acción.',
+    '/newsletter': 'Convierte [CONTENIDO] en una newsletter: asunto, introducción breve, tres bloques y cierre con enlace.',
+    '/blog': 'Escribe un post de blog sobre [TEMA] con título, introducción, cuatro secciones con subtítulos y conclusión.',
+    '/keywords': 'Propón 20 palabras clave y long-tail para posicionar [TEMA], agrupadas por intención de búsqueda.',
+    '/hashtags': 'Genera 30 hashtags para [TEMA]: mezcla de nicho, medios y amplios, sin repetir ninguno.',
+    '/uussnce': 'Crea una persona (buyer persona) para [PRODUCTO]: perfil, objetivos, dolores, objeciones y cómo le habla la marca.',
+    '/positioning': 'Define el posicionamiento de [MARCA] frente a [COMPETENCIA]: categoría, promesa, razones para creer y frase de posicionamiento.',
+    '/pitch': 'Escribe un pitch de 60 segundos para [PROYECTO]: problema, solución, por qué tú y qué pides.',
+    '/negotiation': 'Dame argumentos y contraargumentos para negociar [TEMA] con [OTRA PARTE], ordenados de más a menos eficaz.',
+    '/objections': 'Lista las 10 objeciones más probables al comprar [PRODUCTO] y una respuesta breve y convincente para cada una.',
+    '/swot': 'Haz un DAFO de [NEGOCIO/TEMA]: fortalezas, debilidades, oportunidades y amenazas, con tres puntos en cada apartado.',
+    '/mind-map': 'Crea un mapa mental de [TEMA]: rama central, cinco ramas principales y tres subramas en cada una.',
+    '/stick-notes': 'Organiza [IDEAS] en post-its agrupados por tema, con un título corto en cada uno.',
+    '/concept-map': 'Crea un mapa de conceptos de [TEMA]: conceptos clave y las relaciones entre ellos, en lista con flechas.',
+    '/tree': 'Representa [TEMA] como un árbol jerárquico de tres niveles, del concepto general a los casos concretos.',
+    '/flashcards': 'Crea 15 tarjetas de estudio (pregunta / respuesta) sobre [TEMA], de lo básico a lo avanzado.',
+    '/faq': 'Escribe una FAQ de 12 preguntas y respuestas sobre [TEMA], empezando por las dudas más habituales.',
+    '/meeting': 'Prepara el orden del día de una reunión sobre [TEMA]: objetivo, puntos con tiempos, quién decide y próximos pasos.',
+    '/prompt': 'Convierte [IDEA] en un prompt claro y reutilizable: rol, tarea, contexto, formato de salida y restricciones.',
+    '/imageprompt': 'Convierte [IDEA] en un prompt de imagen en inglés: sujeto, estilo, luz, cámara, composición y formato.',
+    '/questions': 'Genera 15 preguntas relevantes sobre [TEMA]: básicas, de seguimiento y las incómodas que nadie hace.',
 };
 
 function isTextCommandTrick(trick) { return TEXT_COMMAND_PROMPTS.has(getImageCommandKey(trick)); }
