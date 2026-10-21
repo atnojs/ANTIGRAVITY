@@ -17,3 +17,13 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* Contraste AA: los grises más claros del diseño no llegan a 4.5:1 sobre
+   blanco/fondos claros. Se oscurecen un paso sin cambiar la jerarquía. */
+.text-slate-400 {
+  color: #64748b;
+}
+
+.text-slate-500 {
+  color: #5b6b80;
+}

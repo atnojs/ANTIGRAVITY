@@ -186,6 +186,7 @@ export const TaskBoardView: React.FC<TaskBoardViewProps> = ({ tasks, onRefresh, 
           />
 
           <select
+            aria-label="Prioridad"
             value={newPriority}
             onChange={(e) => setNewPriority(e.target.value as PriorityLevel)}
             className="text-xs p-2 bg-white border border-slate-300 rounded-lg text-slate-700"

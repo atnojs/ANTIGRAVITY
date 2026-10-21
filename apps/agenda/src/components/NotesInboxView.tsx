@@ -158,6 +158,7 @@ export const NotesInboxView: React.FC<NotesInboxViewProps> = ({ notes, onRefresh
           <div className="flex items-center gap-2">
             <span className="text-[11px] text-slate-500">Categoría:</span>
             <select
+              aria-label="Categoría"
               value={quickCategory}
               onChange={(e) => setQuickCategory(e.target.value)}
               className="text-xs py-1 px-2 bg-white border border-slate-300 rounded-md text-slate-700"

@@ -185,6 +185,7 @@ export const AudioReviewModal: React.FC<AudioReviewModalProps> = ({ data, onClos
               onChange={(e) => setTranscription(e.target.value)}
               rows={2}
               className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 leading-relaxed font-sans"
+              aria-label="Transcripción de la nota"
               placeholder="Transcripción de la nota..."
             />
           </div>
@@ -246,6 +247,7 @@ export const AudioReviewModal: React.FC<AudioReviewModalProps> = ({ data, onClos
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Título del registro"
               placeholder="Ej: Reunión con cliente, Comprar repuesto..."
             />
           </div>
@@ -261,6 +263,7 @@ export const AudioReviewModal: React.FC<AudioReviewModalProps> = ({ data, onClos
                   </label>
                   <input
                     type="datetime-local"
+                    aria-label="Fecha y hora de inicio"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
                     className="w-full text-xs p-2 bg-white border border-slate-300 rounded-md font-mono"
@@ -273,6 +276,7 @@ export const AudioReviewModal: React.FC<AudioReviewModalProps> = ({ data, onClos
                   </label>
                   <input
                     type="datetime-local"
+                    aria-label="Fecha y hora de fin"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
                     className="w-full text-xs p-2 bg-white border border-slate-300 rounded-md font-mono"
@@ -289,6 +293,7 @@ export const AudioReviewModal: React.FC<AudioReviewModalProps> = ({ data, onClos
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  aria-label="Ubicación"
                   placeholder="Ej: Sala 3B, Zoom, Google Meet..."
                   className="w-full text-xs p-2 bg-white border border-slate-300 rounded-md"
                 />
@@ -318,6 +323,7 @@ export const AudioReviewModal: React.FC<AudioReviewModalProps> = ({ data, onClos
                   </label>
                   <input
                     type="date"
+                    aria-label="Fecha límite"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
                     className="w-full text-xs p-2 bg-white border border-slate-300 rounded-md font-mono"
@@ -329,6 +335,7 @@ export const AudioReviewModal: React.FC<AudioReviewModalProps> = ({ data, onClos
                   </label>
                   <input
                     type="time"
+                    aria-label="Hora límite"
                     value={dueTime}
                     onChange={(e) => setDueTime(e.target.value)}
                     className="w-full text-xs p-2 bg-white border border-slate-300 rounded-md font-mono"
@@ -377,6 +384,7 @@ export const AudioReviewModal: React.FC<AudioReviewModalProps> = ({ data, onClos
                     Categoría
                   </label>
                   <select
+                    aria-label="Categoría"
                     value={noteCategory}
                     onChange={(e) => setNoteCategory(e.target.value)}
                     className="w-full text-xs p-2 bg-white border border-slate-300 rounded-md"
@@ -397,6 +405,7 @@ export const AudioReviewModal: React.FC<AudioReviewModalProps> = ({ data, onClos
                     type="text"
                     value={tagsInput}
                     onChange={(e) => setTagsInput(e.target.value)}
+                    aria-label="Etiquetas"
                     placeholder="audio, ideas, casa"
                     className="w-full text-xs p-2 bg-white border border-slate-300 rounded-md"
                   />

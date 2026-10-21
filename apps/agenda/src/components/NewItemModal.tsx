@@ -177,6 +177,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                   required
                   value={eventTitle}
                   onChange={(e) => setEventTitle(e.target.value)}
+                  aria-label="Título de la cita"
                   placeholder="Ej: Reunión técnica, Médico..."
                   className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
@@ -187,6 +188,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                   <label className="text-[11px] font-semibold text-slate-700 block mb-1">Fecha y hora inicio</label>
                   <input
                     type="datetime-local"
+                    aria-label="Fecha y hora de inicio"
                     value={eventStart}
                     onChange={(e) => setEventStart(e.target.value)}
                     className="w-full text-xs p-2 border border-slate-300 rounded-md font-mono"
@@ -196,6 +198,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                   <label className="text-[11px] font-semibold text-slate-700 block mb-1">Fecha y hora fin</label>
                   <input
                     type="datetime-local"
+                    aria-label="Fecha y hora de fin"
                     value={eventEnd}
                     onChange={(e) => setEventEnd(e.target.value)}
                     className="w-full text-xs p-2 border border-slate-300 rounded-md font-mono"
@@ -209,6 +212,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                   type="text"
                   value={eventLocation}
                   onChange={(e) => setEventLocation(e.target.value)}
+                  aria-label="Ubicación"
                   placeholder="Lugar o sala virtual..."
                   className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:outline-none"
                 />
@@ -220,6 +224,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                   value={eventDesc}
                   onChange={(e) => setEventDesc(e.target.value)}
                   rows={2}
+                  aria-label="Descripción"
                   placeholder="Detalles adicionales..."
                   className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:outline-none"
                 />
@@ -237,6 +242,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                   required
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
+                  aria-label="Título de la tarea"
                   placeholder="Ej: Renovar SSL, Enviar presupuesto..."
                   className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
@@ -247,6 +253,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                   <label className="text-[11px] font-semibold text-slate-700 block mb-1">Fecha límite</label>
                   <input
                     type="date"
+                    aria-label="Fecha límite"
                     value={taskDueDate}
                     onChange={(e) => setTaskDueDate(e.target.value)}
                     className="w-full text-xs p-2 border border-slate-300 rounded-md font-mono"
@@ -255,6 +262,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                 <div>
                   <label className="text-[11px] font-semibold text-slate-700 block mb-1">Prioridad</label>
                   <select
+                    aria-label="Prioridad"
                     value={taskPriority}
                     onChange={(e) => setTaskPriority(e.target.value as PriorityLevel)}
                     className="w-full text-xs p-2 border border-slate-300 rounded-md bg-white text-slate-700"
@@ -273,6 +281,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                   value={taskNotes}
                   onChange={(e) => setTaskNotes(e.target.value)}
                   rows={2}
+                  aria-label="Notas de la tarea"
                   placeholder="Pasos para realizarla..."
                   className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:outline-none"
                 />
@@ -290,6 +299,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                   value={noteContent}
                   onChange={(e) => setNoteContent(e.target.value)}
                   rows={4}
+                  aria-label="Contenido de la nota"
                   placeholder="Escribe tus notas, ideas o comandos..."
                   className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none leading-relaxed"
                 />
@@ -299,6 +309,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                 <div>
                   <label className="text-[11px] font-semibold text-slate-700 block mb-1">Categoría</label>
                   <select
+                    aria-label="Categoría"
                     value={noteCategory}
                     onChange={(e) => setNoteCategory(e.target.value)}
                     className="w-full text-xs p-2 border border-slate-300 rounded-md bg-white text-slate-700"
@@ -316,6 +327,7 @@ export const NewItemModal: React.FC<NewItemModalProps> = ({
                     type="text"
                     value={noteTags}
                     onChange={(e) => setNoteTags(e.target.value)}
+                    aria-label="Etiquetas"
                     placeholder="casa, compras, ideas"
                     className="w-full text-xs p-2 border border-slate-300 rounded-md"
                   />

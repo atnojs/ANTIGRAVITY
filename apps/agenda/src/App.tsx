@@ -204,6 +204,8 @@ export default function App() {
             <button
               type="button"
               onClick={() => setShowNewModal(true)}
+              aria-label="Nuevo Registro"
+              title="Nuevo Registro"
               className="px-3 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-2xs transition-colors whitespace-nowrap shrink-0 flex items-center gap-1"
             >
               <Plus className="w-3.5 h-3.5" />
