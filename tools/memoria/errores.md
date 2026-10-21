@@ -5,6 +5,20 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-21] Pegar el bloque de contraseñas con vallas de Markdown rompe el `.htaccess`
+
+- **Síntoma:** `/auth/validar.php` devolvía `configurado:false` aunque el `.htaccess` «ya estaba».
+  La captura del editor mostraba `apache SetEnv PW_EDIT "0" SetEnv PW_ACCESS "[ELIMINADO]"` todo en
+  una línea, con backticks (` ``` `) y repetido dos veces.
+- **Causa:** al copiar el bloque de código del chat se pegaron las **vallas de Markdown** y se
+  perdieron los saltos de línea. Apache no encuentra ninguna directiva `SetEnv` válida; peor aún,
+  una línea que empiece por `apache …` puede tumbar el sitio entero (HTTP 500).
+- **Solución:** borrar esas líneas y escribir **a mano** las dos directivas, una por línea, sin
+  backticks ni prefijos: `SetEnv PW_EDIT "0"` y `SetEnv PW_ACCESS "…"`. Guardar y **recargar el
+  archivo** para comprobar que quedaron separadas.
+- **Verificación:** `GET https://atnojs.es/auth/validar.php` → `"configurado":{"edicion":true,"acceso":true}`
+  y el sitio en HTTP 200.
+
 ### [2026-10-21] `git commit -- <carpeta>` falla si la carpeta es nueva y no está en el índice
 
 - **Síntoma:** `git commit -m "…" -- auth apps webs …` abortó con

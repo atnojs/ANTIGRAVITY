@@ -80,8 +80,9 @@ SetEnv PW_ACCESS "…"    # acceder: login de Descargas, agenda (Brisa) y public
 - **Excepción:** `apps/boveda_privada` cifra en el navegador; su contraseña **es la llave de
   descifrado** y no se centraliza. Si se pierde, no hay recuperación posible.
 - **Restos obsoletos en el servidor:** `apps/codigos_imagen/config.php` (gitignored) ya no se
-  usa; se puede borrar por hPanel. El bloque de compatibilidad `AU_PERMITIR_ANTIGUAS` de
-  `auth/lib.php` es temporal y debe retirarse tras verificar producción.
+  usa; se puede borrar por hPanel. La compatibilidad temporal `AU_PERMITIR_ANTIGUAS` se retiró el
+  mismo día (commit `9fb2175`): las contraseñas antiguas (la de 20 caracteres y `050309`) ya
+  **no** entran.
 
 ---
 

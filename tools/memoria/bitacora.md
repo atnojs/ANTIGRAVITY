@@ -28,6 +28,17 @@ contraseñas estén en un solo sitio, como las claves de API, y que todas las ap
   datos), escritura atómica del meta y negativa a sobrescribir un `vault.json` dañado.
 - **Pendiente inmediato:** retirar `AU_PERMITIR_ANTIGUAS` de `auth/lib.php` cuando la verificación
   en producción esté hecha (acepta las contraseñas antiguas solo para la transición).
+- **Verificado en producción (2026-10-21, tarde):** `GET /auth/validar.php` →
+  `"configurado":{"edicion":true,"acceso":true}`; en Chrome real: portada entra en edición con
+  `0`, TrickVault y video-vault desbloquean edición con `0`, publicar con `0` se rechaza y con
+  `[ELIMINADO]` pide confirmación, Descargas y agenda entran con `[ELIMINADO]`, bóveda vuelve a mostrar
+  «Bóveda protegida». Retirada la compatibilidad (commit `9fb2175`) y comprobado que la contraseña
+  vieja de 20 caracteres y `050309` dan 403. Evidencias:
+  `tools/evidencias/2026-10-21-passwords/produccion/` (`comparativa_boveda.png`,
+  `comparativa_contrasenas_produccion.png`).
+- **Nota de CDN:** tras desplegar, `apps/descargas/index.html` seguía sirviendo la copia vieja
+  (hcdn cachea por ruta e ignora la query, como ya sabíamos). El texto nuevo —«contraseña de
+  acceso»— aparecerá al purgar caché en hPanel o al caducar el TTL; no afecta a la lógica.
 
 ---
 

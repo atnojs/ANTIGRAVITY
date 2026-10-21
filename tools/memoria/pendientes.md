@@ -7,11 +7,11 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ## 🔐 Contraseñas centralizadas: cierre de la migración (2026-10-21)
 
-- **Estado:** código desplegado (commit `3396a40`); `.htaccess` raíz ya tiene `PW_EDIT` y
-  `PW_ACCESS`. Queda la verificación final en producción y dos limpiezas.
-- **Siguiente paso 1 (obligatorio):** cuando la verificación esté hecha, poner
-  `AU_PERMITIR_ANTIGUAS` en `false` (o borrar el bloque de compatibilidad) en `auth/lib.php`,
-  commit + push, y comprobar que la contraseña antigua de 20 caracteres **ya no entra**.
+- **Estado:** ✅ **verificado en producción y cerrado** (commit `3396a40` + retirada de la
+  compatibilidad en `9fb2175`). El `.htaccess` raíz tiene `PW_EDIT` y `PW_ACCESS`; entran `0` y
+  `[ELIMINADO]` y las antiguas dan 403.
+- **Siguiente paso 1 (hecho):** `AU_PERMITIR_ANTIGUAS` retirado de `auth/lib.php`; comprobado que
+  la contraseña antigua de 20 caracteres y `050309` ya no entran.
 - **Siguiente paso 2:** borrar por hPanel el `apps/codigos_imagen/config.php` del servidor: ya no
   se lee y solo guarda un `ADMIN_PASSWORD`.
 - **Siguiente paso 3:** revisar los front-ends legacy que mandaban `password: '0'` fijo al guardar
