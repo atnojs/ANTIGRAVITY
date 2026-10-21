@@ -41,6 +41,7 @@ dependencias. Si necesitas el valor, ve al almacén.
 |---|---|
 | `OMNIROUTE_DASH_PW` | El panel de OmniRoute + `panel.secret` + `monitor-omniroute-diario.py` |
 | `DEEPSEEK_API_KEY` | `.env` (el daemon la re-registra sola cada hora) |
+| `OPENAI_API_KEY` / `O` | `.htaccess` raíz de Hostinger. La usan los proxies de IA del proyecto y la **transcripción de `apps/agenda`**. Si se rota o falta, la agenda sigue guardando audios pero no transcribe (permite escribir el texto a mano). |
 | Claves de Google | `.env`, `keys/`, y **los frontends que las tengan incrustadas** (ver abajo) |
 | Token de GitHub | `inicio.md` (está en `.gitignore`: **no** quitar esa línea) |
 | **Contraseña de edición** (TrickVault / video-vault / json / agenda) | `powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1` — escribe el hash en los 4 `auth.php` y guarda la nueva en `.private/`. Después, **commit + push** de los `auth.php` y esperar al despliegue |

@@ -73,6 +73,12 @@ Ficha de la máquina y del entorno del agente. Si algo de aquí cambia, se actua
   `--channel chrome`; `--device` exige `-b chromium`. Además, `@playwright/cli` **0.1.22** está
   instalado global (`E:\npm\playwright-cli.ps1`, en PATH): es el que usa la skill
   `verificacion-playwright`.
+- **Compilar apps React en DSH:** con `workspace-write`, `npm install` (lifecycle scripts) y
+  `vite build` fallan con `spawn EPERM`; además el cache de npm por defecto
+  (`%LOCALAPPDATA%\npm-cache`) no es escribible. Solución verificada el 2026-10-21: instalar con
+  `npm install --ignore-scripts --cache E:\ANTIGRAVITY\.tmp-build\npm-cache` y compilar con permiso
+  ampliado (`danger-full-access`). Después `node scripts/publish.js` (solo copia ficheros) funciona
+  en modo normal.
 
 **Arranque del worker de descargas (cambiado el 2026-10-19).** El acceso directo del Inicio apuntaba
 a `tools\descargador\iniciar-worker.bat` y Windows mostraba en cada arranque el aviso «No se pudo

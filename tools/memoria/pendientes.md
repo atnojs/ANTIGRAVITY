@@ -299,3 +299,22 @@ propósito, para que no se pierda de vista.
 - **Siguiente paso:** solo queda lo de «d» (decidir esas cuatro cosas) y lo de «e» (rescatar
   `apps/dev/null`). Lo demás, hecho y publicado.
 - **Verificación:** `git status --porcelain` debe devolver **una sola línea**: `?? apps/dev/`.
+
+---
+
+## 🗓️ Agenda (`apps/agenda`): publicada el 2026-10-21, con mejoras abiertas
+
+- **Estado:** la app del modelo está portada a PHP + React, publicada en `/apps/agenda/` y
+  verificada en producción (login, CRUD, audio con transcripción real, 401, 3 anchos, consola 0).
+  La agenda queda **vacía** de datos de prueba.
+- **Lo que preguntó Antonio:** «¿qué API necesito?». Respuesta corta: **ninguna para lo básico**;
+  la voz usa la clave **OpenAI** que ya está en el `.htaccess` raíz (`OPENAI_API_KEY`/`O`). Si se
+  rota o se quita, la app sigue funcionando: guarda el audio y permite escribir la transcripción a
+  mano (aviso en el modal).
+- **Siguiente paso (si quiere más):** probar la grabación real desde su móvil y decidir si añade
+  clasificación con LLM (mismo contrato `appointment|task|note` del modal) o Gemini opcional.
+- **Mejoras pendientes:** recurrencia de citas, recordatorios (Telegram/push), export/import JSON,
+  copia de seguridad de `data/` (cron hPanel) y borrado de audios huérfanos antiguos.
+- **Verificación:** `GET https://atnojs.es/apps/agenda/api/health` → `{"status":"ok",
+  "version":"2.0.0","openai_configured":true}`; evidencias en
+  `tools/evidencias/2026-10-21-agenda/`.

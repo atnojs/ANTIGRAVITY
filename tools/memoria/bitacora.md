@@ -1401,3 +1401,37 @@ automática. Publicada en `https://atnojs.es/apps/agenda/` y verificada contra p
 - **Evidencias:** `tools/evidencias/2026-10-19-agenda/` (login, Hoy, Calendario, Tareas, Notas,
   revisión, búsqueda y vistas móvil/tablet de producción).
 - **Nota:** en la misma tarde otra sesión creó `apps/brisa/` (otra agenda paralela); no se tocó.
+
+## 2026-10-21 — La agenda del modelo, recreada en `/apps/agenda/` (PHP + React + OpenAI)
+
+Antonio descargó de AI Studio la agenda que le hizo un modelo (`agenda-digital-con-audio-e-ia`:
+React + Express + SQLite + Gemini), la copió a `E:\ANTIGRAVITY\agenda` (solo 9 de los 19 ficheros)
+y pidió subirla y decirle qué API hace falta. El export completo estaba en
+`D:\Descargas\agenda-digital-con-audio-e-ia`. El hosting es compartido (LiteSpeed + PHP): Node no
+corre, así que se portó la app a estático + PHP conservando diseño y funciones.
+
+- **URL:** `https://atnojs.es/apps/agenda/` (la versión PHP anterior se sustituyó; sus datos se
+  perdieron al borrar la carpeta en el servidor — ver `errores.md`).
+- **Arquitectura:** React 19 + Vite + Tailwind 4 compilado a estático (`src/` + `index.dev.html` →
+  `npm run publish` → `index.html` + `assets/` con hash). API PHP REST (`api.php`), sesión
+  (`auth.php`), audios privados con Range (`audio.php`), núcleo (`lib.php`). Estado en
+  `data/state.json` con `flock`, audios en `data/audio/`, ambos fuera de Git y denegados por web.
+- **IA (lo que preguntó):** la app base no necesita ninguna API; solo la voz. Transcripción
+  **OpenAI** `gpt-4o-mini-transcribe` (fallback `whisper-1`) con la clave que ya vive en el
+  `.htaccess` raíz (`OPENAI_API_KEY`/`O`), y clasificación cita/tarea/nota con **reglas en
+  español** (sin coste extra). Gemini no se usa: Antonio aclaró que la app es «de ChatGPT» y eligió
+  esta opción.
+- **Acceso y seguridad:** contraseña de edición del proyecto (mismo hash que video-vault), sesión
+  HttpOnly + SameSite=Strict, token CSRF en escrituras; sin sesión la API da 401 y `audio.php` no
+  sirve nada. Los audios no son ficheros estáticos.
+- **Verificación (local y producción, con Chrome/Playwright):** login (y error de contraseña),
+  crear/editar/borrar cita, tarea rápida (completar y borrar), nota rápida (fijar y borrar), captura
+  por texto (cita detectada), subida de **WAV real con voz TTS** → transcripción OpenAI correcta
+  («Mañana a las 10 reunión con Ana…»), reproductor y descarga con sesión (200), 401 sin sesión,
+  logout, tres anchos (1280/768/393), consola **0 errores**. Datos de prueba borrados (stats a 0).
+- **Lighthouse producción (móvil, con sesión):** 95 / 86 / 96 / 100 tras corregir nombres
+  accesibles y contraste AA (`aria-label` en botones/selects de los modales y overrides de
+  `text-slate-400/500`); antes 72 de accesibilidad.
+- **Commits:** `58b4c48` (app), `d468281` (accesibilidad + build). Memoria en el commit siguiente.
+- **Evidencias:** `tools/evidencias/2026-10-21-agenda/`.
+- **Receta reutilizable:** «portar una app AI Studio React a Hostinger» en `recetas.md`.

@@ -5,6 +5,42 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-21] Borrar una carpeta a mano en el servidor NO la elimina: el despliegue la repone
+
+- **Síntoma:** Antonio borró `apps/agenda` en el servidor; la ruta seguía sirviendo la app **vieja**
+  (title antiguo, `auth.php` con `"version":"1.0.0"`, `api/health` 404) y la versión nueva tardó
+  >10 min en aparecer. La `Last-Modified` del `index.html` era posterior al push.
+- **Causa:** el webhook iba atrasado y desplegó un commit **anterior** (que aún tenía la agenda
+  vieja). Cualquier despliegue posterior restaura las carpetas versionadas, así que borrar a mano
+  no sirve de nada. Lo único que sustituye una carpeta es **cambiarla en Git**.
+- **Solución:** no borrar en hPanel; hacer commit+push del cambio y esperar (o reempujar). Para
+  comprobar qué versión sirve el origen, `GET /apps/agenda/auth.php` devuelve `"version":"2.0.0"` y
+  `GET /apps/agenda/api/health` existe solo en la nueva.
+- **Verificación:** `curl`/Node contra `auth.php` y `api/health`; el `index.html` debe citar el
+  asset con hash nuevo.
+
+### [2026-10-21] En DSH, `npm install` y `vite build` fallan con `spawn EPERM`
+
+- **Síntoma:** el `preinstall` de una dependencia y `vite build` morían con `spawn EPERM`; en
+  cambio, Node sí podía hacer HTTPS (fallaba solo `curl.exe` con `schannel`).
+- **Causa:** el sandbox `workspace-write` bloquea lanzar procesos hijos/lifecycle scripts. Basta
+  con `danger-full-access` para compilar; instalar sin scripts también evita el `preinstall`.
+- **Solución:** `npm install --ignore-scripts --cache <ruta-dentro-del-workspace>` (el cache por
+  defecto en `%LOCALAPPDATA%` también da EPERM) y compilar/verificar con permiso ampliado.
+- **Verificación:** `npm run build` genera `dist/` y `node scripts/publish.js` copia `index.html` y
+  `assets/` a la raíz de la app.
+
+### [2026-10-21] `Set-Content -Encoding UTF8` de PowerShell 5.1 escribe BOM y rompe PHP
+
+- **Síntoma:** al router local de pruebas (`php -S`) le precedía un BOM: `Warning: Cannot modify
+  header information… output started at router-local.php:1` y el navegador no cargaba el JS
+  (servía `text/html` donde esperaba un módulo).
+- **Causa:** PowerShell 5.1 añade BOM con `-Encoding UTF8`; cualquier byte antes de `<?php` se
+  emite como salida.
+- **Solución:** crear los PHP con el editor del agente (UTF-8 sin BOM) o
+  `[IO.File]::WriteAllText(ruta, texto, New-Object Text.UTF8Encoding($false))`.
+- **Verificación:** `node -e` o un editor que muestre que los primeros bytes son `<?php`.
+
 ### [2026-10-19] Un `<dialog>` cerrado con `display:flex` propio provoca CLS 0,481
 
 - **Síntoma:** Lighthouse de la agenda daba Performance 78 y CLS 0,481; el resto de categorías 100.

@@ -355,3 +355,41 @@ código con barra**: traen un nombre y una descripción por fila. Se traducen a 
    que copia la tarjeta es `'/codigo ' + prompt` (`getTrickCopyText`).
 5. Recordar que **«Últimas» no enseña tarjetas de texto** (decisión 2026-10-21): una tanda solo de
    texto no aparece ahí; se comprueba en «Comandos de texto» y con la búsqueda.
+
+## Portar una app de AI Studio (React + Node) a Hostinger — verificado 2026-10-21
+
+El hosting es compartido (LiteSpeed + PHP): **Node no corre**. Patrón aplicado en `apps/agenda`
+(la app del modelo venía con Express + SQLite + Gemini; se quedó el frontend React y se rehízo el
+backend en PHP). Pasos:
+
+1. **Copia el export completo.** Comprobar que están `src/`, `server/`, `index.html`,
+   `vite.config.ts`… En el caso de la agenda, `E:\ANTIGRAVITY\agenda` solo tenía 9 de 19 ficheros;
+   el zip completo estaba en `D:\Descargas\agenda-digital-con-audio-e-ia.zip`.
+2. **Build estático:** `index.dev.html` como plantilla; `vite.config.ts` con `base: './'` y
+   `build.rollupOptions.input` apuntando a `index.dev.html`; `scripts/publish.js` copia
+   `dist/index.dev.html` → `index.html` y `dist/assets` → `assets/`. Scripts:
+   `"build": "vite build"`, `"publish": "vite build && node scripts/publish.js"`.
+3. **Rutas relativas en el frontend:** un helper `src/lib/api.ts` con
+   `const API_BASE = new URL('api/', document.baseURI).toString()` y `audioUrl()`. **No** dejar
+   `fetch('/api/...')` absoluto: en `/apps/<app>/` apunta a la raíz del dominio.
+4. **Backend PHP:** `api.php` (router REST que lee `$_GET['path']`), `auth.php` (sesión + CSRF),
+   `audio.php` (sirve audios con sesión y `Range`), `lib.php` (estado JSON con `flock`, reglas y
+   STT). `.htaccess` de la app:
+   `RewriteRule ^api/(.*)$ api.php?path=/$1 [L,QSA]` y
+   `RewriteRule ^uploads/audio/([A-Za-z0-9._-]+)$ audio.php?file=$1 [L,QSA]`.
+5. **Datos privados:** `data/` con `.htaccess` (`Require all denied`) y `.gitignore` (`*` +
+   `!.gitignore`/`!.htaccess`). Añadir excepciones en el `.gitignore` raíz para los `.htaccess` de
+   la app (el `.gitignore` global ignora `.htaccess` en cualquier ruta).
+6. **Pruebas locales sin gastar API:** router `php -S 127.0.0.1:8091 -t apps/<app> router-local.php`
+   (UTF-8 **sin BOM**), con `AGENDA_MOCK_STT=1` y `AGENDA_PASSWORD_HASH` =
+   `sha256('prueba-local')`. El router emula los rewrites y fija `SCRIPT_NAME` a rutas raíz para
+   que la cookie de sesión valga en local.
+7. **Verificación:** Playwright (venv de Hermes, Chrome 155, `channel="chrome"`) contra local y
+   contra producción: login, CRUD por UI, audio (texto y WAV real), 401 sin sesión, códigos de red,
+   consola y 3 anchos. Borrar los datos de prueba al terminar (`stats` debe quedar a 0). Capturas
+   en `tools/evidencias/<fecha>-<app>/`.
+
+**Trampas vistas:** `npm install`/`vite build` en `workspace-write` dan `spawn EPERM` (usar
+`--ignore-scripts` + permiso ampliado y `--cache` dentro del workspace); el BOM de PowerShell rompe
+los PHP; y el despliegue de Hostinger puede tardar >10 min o servir un commit anterior (ver
+`errores.md`: reempujar; y **borrar una carpeta a mano no la borra**).

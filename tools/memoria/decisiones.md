@@ -5,6 +5,27 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 
 ---
 
+### [2026-10-21] Agenda (`apps/agenda`): la app del modelo se porta a PHP + estático
+
+- **Decisión:** la app que generó un modelo (React 19 + Express + SQLite + Gemini, descargada de AI
+  Studio) se publica como **build estático de React + backend PHP**, no como app Node.
+  **Motivo:** el hosting de atnojs.es es compartido (LiteSpeed + PHP) y no ejecuta Node; además el
+  repo ya tiene una convención probada (estado JSON con `flock`, proxy con claves del entorno,
+  sesión con contraseña). **Contrapartida:** se descarta el backend Node original (no se versiona);
+  el fuente React sí queda en `apps/agenda/src/` y el build se regenera con `npm run publish`.
+- **Decisión:** transcripción con **OpenAI** (`gpt-4o-mini-transcribe`, fallback `whisper-1`) en vez
+  de Gemini, y clasificación cita/tarea/nota con **reglas en español**. **Motivo:** la clave de
+  OpenAI ya está configurada en el `.htaccess` raíz y funciona (probado); Antonio pidió «la opción 1»
+  y aclaró que la app es «de ChatGPT». **Contrapartida:** la clasificación es explicable pero menos
+  semántica que un LLM; el contrato del modal permite añadir un clasificador LLM después sin tocar
+  la UI.
+- **Decisión:** misma URL `/apps/agenda/` y misma contraseña de edición; datos en `data/` fuera de
+  Git y audios servidos solo por `audio.php` con sesión. **Motivo:** privacidad y no romper el
+  acceso que Antonio ya conoce.
+- **Decisión:** el `.htaccess` de la app (rewrites de `api/` y `uploads/audio/`) sí se versiona,
+  con excepción explícita en el `.gitignore` raíz. **Motivo:** sin él no hay API REST en Hostinger;
+  no contiene claves (la de OpenAI sigue solo en el `.htaccess` raíz).
+
 ### [2026-10-19] Agenda (`apps/agenda`): JSON en disco y fuente autoalojada
 
 - **Decisión:** el MVP guarda el estado en `data/state.json` con `flock` y escritura atómica, en vez
