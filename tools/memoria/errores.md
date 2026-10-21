@@ -5,6 +5,21 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-21] `git commit` con el índice compartido se llevó 3 renames de otra sesión
+
+- **Síntoma:** al commitear **solo** `apps/trickvault/index.html` (con `git add` de esa ruta), el
+  commit `d856caa` incluyó además tres renames `{apps => tools}/brisa/...` que otra sesión tenía
+  **staged** en el mismo repositorio.
+- **Causa:** el índice (`.git/index`) es del repositorio, no del proceso. `git add <mi ruta>` no
+  aísla lo que otro ya había escenificado: un `git commit -m "..."` sin pathspec commitea **todo**
+  lo que está en el índice.
+- **Solución:** commitear por **pathspec en el propio commit**:
+  `git commit apps/trickvault/index.html -m "..."` (equivale a add+commit solo de esas rutas e
+  ignora el resto del índice). Con dos sesiones en el mismo árbol, revisar antes
+  `git diff --cached --name-only` si el encargo es pequeño.
+- **Verificación:** `git show --name-only --pretty=format: HEAD` debe listar únicamente los
+  ficheros del encargo.
+
 ### [2026-10-21] Borrar una carpeta a mano en el servidor NO la elimina: el despliegue la repone
 
 - **Síntoma:** Antonio borró `apps/agenda` en el servidor; la ruta seguía sirviendo la app **vieja**

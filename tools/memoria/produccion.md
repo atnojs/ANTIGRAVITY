@@ -19,7 +19,7 @@ sin desplegar"**, no para certificar que cada app funciona.
 | Fecha del index | Apps |
 |---|---|
 | 2026-10-21 | `agenda` (**recreada**: app React del modelo portada a PHP + OpenAI en `/apps/agenda/`) |
-| 2026-10-21 | `trickvault` (35 códigos de texto de la infografía de 100 códigos de ChatGPT; 1339 trucos) |
+| 2026-10-21 | `trickvault` (35 códigos de texto de la infografía de 100 códigos de ChatGPT; aviso en «Últimas» con enlace a la tanda de texto; 1339 trucos) |
 | 2026-10-19 | `agenda` (nueva: citas, tareas, notas y transcripción de audio) |
 | 2026-10-19 | `trickvault` (16 tarjetas nuevas de reels de Instagram; 1258 trucos) |
 | 2026-10-13 | `json`, `neonshot`, `video-vault` |

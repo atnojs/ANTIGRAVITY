@@ -5,6 +5,47 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-21 (cuarta parte) — TrickVault: aviso en «Últimas» con enlace a los códigos de texto nuevos
+
+Antonio: «no veo las tarjetas nuevas» — ni refrescando ni en incógnito, con el contador ya en
+**1339 trucos**. Comprobado contra producción en Chrome limpio: el contador 1339 es correcto y las
+35 tarjetas están servidas y visibles en la carpeta «Comandos de texto» (179, las nuevas primero);
+el problema era **dónde miraba**: «Últimas», que por el cambio de la mañana excluye «Comandos de
+texto» (y una tanda 100 % de texto no aparece ahí).
+
+Antonio eligió: **«Últimas» sigue solo con imágenes + aviso con enlace** a la tanda de texto.
+
+- `GlobalSearch` calcula ahora `ultimoPushTexto = tvUltimoPush(tricks.filter(t => !tvCuentaEnFecha(t)))`
+  y muestra `avisarTextoNuevo` (solo en «Últimas», fuera del buscador de duplicados) cuando ese
+  lote es igual o más reciente que el de las imágenes.
+- El aviso es una fila con estilos en línea (sin tocar `app.css`, que la CDN cachea una semana):
+  «🆕 +N códigos de texto nuevos · fecha» + botón «📂 Ver en «Comandos de texto»» que llama a
+  `onSelectCategory('xl-texto')`. Lleva `role="note"` y `data-aviso-texto="1"` (gancho de prueba).
+- El número es el de **todo el último push de texto**: ahora **+58** (los 35 de esta tanda + los 23
+  de la infografía de 50 que comparten `lote: '2026-10-21'`), no solo 35; al entrar, las 35 nuevas
+  aparecen las primeras. Si Antonio prefiere que diga solo la última tanda, se ajusta el conteo.
+- **Verificado en local (http.server + Chrome):** aviso visible en «Últimas» (29 imágenes + aviso),
+  **ausente** en «Todo»; el botón abre «Comandos de texto» (179 visibles, `/bullets` primero); a
+  393 px el aviso pasa a dos líneas sin desbordes (`scrollWidth` = `innerWidth`); consola sin
+  errores nuevos (solo los 404 de `image_store.php` del servidor local). JSX OK con `@babel/parser`.
+- **Verificación en producción** (17:05, tras desplegar): `index.html` servido **byte a byte** igual
+  al HEAD (`sha256 ca89f2c3…`, 1.034.209 bytes); al pulsar «Últimas» sale el aviso
+  «🆕 +58 códigos de texto nuevos · 21/10/2026» y el botón abre «Comandos de texto» (179, `/bullets`
+  primero); a 393 px sin desbordes; consola solo con el aviso preexistente de Babel.
+- **El despliegue estaba atascado:** hPanel mostraba último despliegue `d2e8621` (16:56) y ni
+  `d856caa` ni `c023b32` salían. Se re-disparó con `git commit --allow-empty` + push (`c7f8c40`):
+  desplegó a las 17:05 (unos 5 min). Comprobado comparando tamaño + sha256 del HTML servido con
+  `git cat-file`.
+- Evidencias: `tools/evidencias/2026-10-21-trickvault-100codigos/30-local-aviso-ultimas.png`,
+  `31-local-carpeta-desde-aviso.png`, `32-local-aviso-393.png`,
+  `40-produccion-aviso-ultimas.png`, `41-produccion-carpeta-desde-aviso.png`,
+  `42-produccion-aviso-393.png`.
+- **Commit:** `d856caa`. ⚠️ Ese commit se llevó además 3 renames `{apps => tools}/brisa/*` que
+  otra sesión tenía **staged** en el índice compartido: lección en `errores.md` (commit por
+  pathspec en el propio `git commit`).
+
+---
+
 ## 2026-10-21 (en paralelo) — TrickVault: 35 códigos de texto de la infografía «100 ChatGPT secret prompt codes»
 
 Antonio pasó cinco imágenes y pidió: «examina las siguientes imágenes y añade los códigos que no
