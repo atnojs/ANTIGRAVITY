@@ -766,6 +766,21 @@ const CODE_FOLDER = {
     '/weatherchange': 'xl-escenaprueba',
     '/timetravel': 'xl-otromundo',
     '/aging': 'xl-camararetrato',
+    // ── 35 códigos de texto de la infografía «100 ChatGPT secret prompt codes»
+    //    (2026-10-21). De las 100 entradas, 65 ya estaban cubiertas por código
+    //    o por prompt; aquí van solo las que no tenían equivalente.
+    '/bullets': 'xl-texto', '/summary100': 'xl-texto', '/casestudy': 'xl-texto',
+    '/longer': 'xl-texto', '/askme': 'xl-texto', '/productdesc': 'xl-texto',
+    '/coldemail': 'xl-texto', '/coverletter': 'xl-texto', '/predict': 'xl-texto',
+    '/lifeadvice': 'xl-texto', '/mealplan': 'xl-texto', '/mentalhealth': 'xl-texto',
+    '/habits': 'xl-texto', '/character': 'xl-texto', '/plot': 'xl-texto',
+    '/worldbuilding': 'xl-texto', '/dialogue': 'xl-texto', '/scene': 'xl-texto',
+    '/gamedesign': 'xl-texto', '/businessplan': 'xl-texto', '/shoppinglist': 'xl-texto',
+    '/giftideas': 'xl-texto', '/eventplan': 'xl-texto', '/partyideas': 'xl-texto',
+    '/homeimprove': 'xl-texto', '/interiordesign': 'xl-texto', '/photoideas': 'xl-texto',
+    '/music': 'xl-texto', '/movies': 'xl-texto', '/hobbies': 'xl-texto',
+    '/funfacts': 'xl-texto', '/riddle': 'xl-texto', '/challenge': 'xl-texto',
+    '/randomfact': 'xl-texto', '/justforfun': 'xl-texto',
 };;
 
 const DIFFICULTIES = [
@@ -3426,6 +3441,47 @@ const CHATGPT_CODES = [
     ['/questions', 'preguntas relevantes'],
 ];
 
+// 35 códigos de texto de la infografía «100 ChatGPT secret prompt codes»
+// (2026-10-21). De las 100 entradas, 65 ya estaban cubiertas por código o por
+// prompt (p. ej. /expert, /elis, /summarize, /compare); aquí van solo las que no.
+const GPT100_CODES = [
+    ['/bullets', 'listas concisas en viñetas'],
+    ['/summary100', 'resumen en 100 palabras'],
+    ['/casestudy', 'caso práctico detallado'],
+    ['/longer', 'alarga el texto con detalle'],
+    ['/askme', 'preguntas para aclarar la petición'],
+    ['/productdesc', 'descripción de producto que vende'],
+    ['/coldemail', 'correo en frío de captación'],
+    ['/coverletter', 'carta de presentación de empleo'],
+    ['/predict', 'predicción de tendencias'],
+    ['/lifeadvice', 'consejo práctico para la vida'],
+    ['/mealplan', 'plan de comidas semanal'],
+    ['/mentalhealth', 'apoyo y pautas emocionales'],
+    ['/habits', 'seguimiento de hábitos'],
+    ['/character', 'creación de personajes'],
+    ['/plot', 'ideas de tramas'],
+    ['/worldbuilding', 'construcción de mundos de ficción'],
+    ['/dialogue', 'diálogos realistas'],
+    ['/scene', 'descripción de escenas'],
+    ['/gamedesign', 'concepto de juego'],
+    ['/businessplan', 'plan de negocio'],
+    ['/shoppinglist', 'lista de la compra'],
+    ['/giftideas', 'ideas de regalos'],
+    ['/eventplan', 'planificación de eventos'],
+    ['/partyideas', 'ideas para una fiesta'],
+    ['/homeimprove', 'mejoras del hogar'],
+    ['/interiordesign', 'diseño de interiores'],
+    ['/photoideas', 'ideas para fotos'],
+    ['/music', 'recomendaciones musicales'],
+    ['/movies', 'películas y series recomendadas'],
+    ['/hobbies', 'ideas de aficiones'],
+    ['/funfacts', 'datos curiosos'],
+    ['/riddle', 'acertijo'],
+    ['/challenge', 'reto creativo'],
+    ['/randomfact', 'dato curioso aleatorio'],
+    ['/justforfun', 'juego libre sin reglas'],
+];
+
 // 21 códigos de imagen de las infografías «Viral ChatGPT AI Image Commands»
 // (tandas 89-99 y 66-100, 2026-10-19). [código, qué hace, prompt en inglés].
 const VIRAL_CODES = [
@@ -3591,6 +3647,22 @@ const SEED_TRICKS = [
         isFavorite: false,
         createdAt: Date.UTC(2026, 9, 19) - index,
         updatedAt: Date.UTC(2026, 9, 19),
+        lote: '2026-10-21',
+    })),
+    // Códigos de texto de la infografía «100 ChatGPT secret prompt codes» (2026-10-21).
+    ...GPT100_CODES.map(([command, meaning], index) => ({
+        id: `gpt100-cmd-${String(index + 1).padStart(3, '0')}`,
+        title: `${command} — ${meaning}`,
+        description: '',
+        category: CODE_FOLDER[command] || 'xl-texto',
+        tags: ['comandos de texto', 'texto', 'ChatGPT'],
+        codeSnippet: command,
+        difficulty: 'beginner',
+        sourceUrl: '',
+        imageUrl: '',
+        isFavorite: false,
+        createdAt: Date.UTC(2026, 9, 21) - index,
+        updatedAt: Date.UTC(2026, 9, 21),
         lote: '2026-10-21',
     })),
     // Códigos de imagen de «Viral ChatGPT AI Image Commands» (2026-10-19).
@@ -5318,6 +5390,42 @@ const TEXT_COMMAND_TEMPLATES = {
     '/prompt': 'Convierte [IDEA] en un prompt claro y reutilizable: rol, tarea, contexto, formato de salida y restricciones.',
     '/imageprompt': 'Convierte [IDEA] en un prompt de imagen en inglés: sujeto, estilo, luz, cámara, composición y formato.',
     '/questions': 'Genera 15 preguntas relevantes sobre [TEMA]: básicas, de seguimiento y las incómodas que nadie hace.',
+    // 35 códigos de texto de la infografía «100 ChatGPT secret prompt codes» (2026-10-21).
+    '/bullets': 'Convierte [TEXTO] en una lista de viñetas concisas: agrupa las ideas clave, elimina el relleno y deja cada punto en una sola línea.',
+    '/summary100': 'Resume [TEXTO] en exactamente 100 palabras, recogiendo la idea principal, los puntos clave y la conclusión.',
+    '/casestudy': 'Escribe un caso práctico sobre [TEMA]: contexto, problema, decisiones tomadas, resultados y las tres lecciones que se pueden aplicar.',
+    '/longer': 'Amplía [TEXTO] hasta duplicar su extensión: desarrolla cada idea con ejemplos, matices y consecuencias, sin inventar datos que no puedas justificar.',
+    '/askme': 'Antes de responder a [PETICIÓN], hazme todas las preguntas necesarias para aclararla; espera mis respuestas y luego propón el plan de acción.',
+    '/productdesc': 'Escribe la descripción de [PRODUCTO] para una ficha de venta: beneficio principal, características en lenguaje claro, público al que va y una llamada a la acción.',
+    '/coldemail': 'Escribe un correo en frío para contactar con [PROSPECTO] sobre [SERVICIO/PRODUCTO]: asunto corto, primera frase personalizada, propuesta en una sola línea y cierre con una pregunta sencilla.',
+    '/coverletter': 'Escribe una carta de presentación para optar a [PUESTO] en [EMPRESA]: conecta mi experiencia [EXPERIENCIA] con lo que piden, muestra cómo aportaría valor y cierra pidiendo una entrevista.',
+    '/predict': 'Predice la evolución de [TEMA] a 1, 3 y 5 años: tendencias probables, señales que las confirmarían, riesgos y cómo prepararse para cada escenario.',
+    '/lifeadvice': 'Dame consejo práctico sobre [SITUACIÓN PERSONAL]: qué hacer esta semana, qué evitar y cómo medir si estoy mejorando, sin discursos motivacionales vacíos.',
+    '/mealplan': 'Crea un plan de comidas de 7 días para [OBJETIVO/GUSTOS], con desayuno, comida y cena, ingredientes sencillos y una lista de la compra semanal.',
+    '/mentalhealth': 'Acompaña sobre [SITUACIÓN EMOCIONAL] con pautas de apoyo y afrontamiento basadas en evidencia: qué puedo hacer hoy, qué señales deben llevarme a pedir ayuda profesional y sin diagnosticar.',
+    '/habits': 'Diseña un registro de hábitos para [OBJETIVO]: hábito mínimo diario, disparador, recompensa, forma de medirlo y plan de 30 días con revisión semanal.',
+    '/character': 'Crea un personaje para [HISTORIA/GÉNERO]: nombre, pasado, deseo, miedo, contradicción, forma de hablar y arco de transformación.',
+    '/plot': 'Genera 10 ideas de trama para una historia de [GÉNERO] sobre [TEMA], cada una con un conflicto central, un giro y un final posible.',
+    '/worldbuilding': 'Construye el mundo de [HISTORIA]: geografía, historia, tecnología o magia, política, cultura y las tres reglas que lo hacen único, coherentes entre sí.',
+    '/dialogue': 'Escribe un diálogo realista entre [PERSONAJE A] y [PERSONAJE B] sobre [TEMA]: voces diferenciadas, subtexto y una tensión que avance la escena.',
+    '/scene': 'Describe la escena de [SITUACIÓN/LUGAR] en un párrafo sensorial: qué se ve, se oye, se huele y se siente, con detalles concretos y sin adjetivos genéricos.',
+    '/gamedesign': 'Diseña el concepto de un juego sobre [TEMA]: bucle de juego, objetivo, mecánicas, progresión, tono y el gancho que lo hace adictivo.',
+    '/businessplan': 'Redacta un plan de negocio para [IDEA]: problema, solución, mercado, modelo de ingresos, competencia, equipo, números clave y próximos hitos.',
+    '/shoppinglist': 'Crea la lista de la compra para [OCASIÓN/SEMANA] con [TIPO DE DIETA]: agrupada por secciones del supermercado, con cantidades para [N] personas y una estimación de coste.',
+    '/giftideas': 'Dame 15 ideas de regalo para [PERSONA/OCASIÓN] según sus intereses [INTERESES]: mezcla detalles, experiencias y algo hecho a mano, con rango de precio y por qué encajaría.',
+    '/eventplan': 'Planifica [EVENTO] para [N] invitados y [PRESUPUESTO]: objetivos, cronograma, espacio, lista de tareas, proveedores y plan ante imprevistos.',
+    '/partyideas': 'Genera ideas para una fiesta de [TEMÁTICA/EDAD]: concepto, decoración, música, actividades, comida y detalles para que sea memorable.',
+    '/homeimprove': 'Propón mejoras para [ESPACIO/CASA] con presupuesto [PRESUPUESTO]: qué cambios dan más valor, orden de ejecución, materiales y qué puedo hacer yo mismo.',
+    '/interiordesign': 'Diseña el interior de [HABITACIÓN] con estilo [ESTILO]: paleta de colores, distribución, iluminación, materiales y lista de muebles y piezas decorativas.',
+    '/photoideas': 'Dame 15 ideas de fotos para [TEMA/PRODUCTO] con detalles de encuadre, luz, fondo y utilería, pensadas para [RED/OBJETIVO].',
+    '/music': 'Recomiéndame música para [ESTADO DE ÁNIMO/MOMENTO]: cinco canciones con artista y por qué encajan, más una playlist de 20 temas con nombres y artistas.',
+    '/movies': 'Recomiéndame 10 películas o series parecidas a [TÍTULO] para [PLATAFORMA/DURACIÓN]: título completo, año, por qué encaja y qué esperar sin spoilers.',
+    '/hobbies': 'Sugiéreme 10 aficiones nuevas para [PERFIL/RECURSOS]: qué necesito para empezar, tiempo semanal, coste y cuál encaja mejor conmigo y por qué.',
+    '/funfacts': 'Dame 15 datos curiosos y verificables sobre [TEMA], cada uno con una frase de contexto y una fuente que pueda comprobar.',
+    '/riddle': 'Crea un acertijo original sobre [TEMA] con dificultad [NIVEL]: incluye la solución razonada y una pista adicional que solo aparezca si se pide.',
+    '/challenge': 'Propón un reto creativo de [DURACIÓN] sobre [TEMA]: reglas, resultado esperado, ejemplos y una forma de puntuarlo o superarlo.',
+    '/randomfact': 'Dime un dato curioso aleatorio sobre [TEMA] que probablemente no conozca, explícalo en dos frases y dame una pregunta de seguimiento para profundizar.',
+    '/justforfun': 'Hazme un juego o una actividad creativa sobre [TEMA]: dame las reglas, un ejemplo y permite cualquier respuesta; el objetivo es divertirse, sin evaluación.',
 };
 
 function isTextCommandTrick(trick) { return TEXT_COMMAND_PROMPTS.has(getImageCommandKey(trick)); }
