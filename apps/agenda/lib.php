@@ -2,35 +2,55 @@
 declare(strict_types=1);
 
 /**
- * Agenda personal — núcleo compartido.
+ * Agenda Personal — núcleo compartido (PHP 8).
  *
- * Diseño "sobrio": un único usuario, estado persistente en data/state.json
- * (escritura atómica y bloqueo con flock), audios en data/audio/ fuera de git
- * y denegados por web. Sin base de datos ni dependencias externas.
+ * La agenda es de un único usuario. El estado vive en data/state.json con
+ * escritura atómica y bloqueo (flock); los audios en data/audio/, fuera de Git
+ * y denegados por web. No hay base de datos ni Node: el hosting es compartido.
  *
- * La contraseña (hash) NO se escribe aquí: vive en .private/password-edicion.txt
- * y se puede sobreescribir con la variable de entorno AGENDA_PASSWORD_HASH
- * (sha256 en minúsculas) en el .htaccess raíz de Hostinger.
+ * La transcripción usa la API de OpenAI con la clave que vive SOLO en el
+ * entorno del servidor (.htaccess raíz de Hostinger: OPENAI_API_KEY o alias O).
+ * La clasificación se hace con reglas en español, sin gastar más API.
+ *
+ * La contraseña (hash) tampoco se escribe aquí: se puede sobreescribir con la
+ * variable de entorno AGENDA_PASSWORD_HASH; si no, se usa el hash de edición
+ * compartido del proyecto.
  */
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 date_default_timezone_set('Atlantic/Canary');
 
-const AGENDA_APP            = 'agenda';
-const AGENDA_VERSION        = '1.0.0';
-const AGENDA_TZ             = 'Atlantic/Canary';
-const AGENDA_DATA_DIR       = __DIR__ . '/data';
-const AGENDA_STATE_FILE     = AGENDA_DATA_DIR . '/state.json';
-const AGENDA_LOCK_FILE      = AGENDA_DATA_DIR . '/state.lock';
-const AGENDA_AUDIO_DIR      = AGENDA_DATA_DIR . '/audio';
-const AGENDA_MAX_AUDIO_BYTES = 8 * 1024 * 1024;   // 8 MB
-const AGENDA_MAX_AUDIO_MS    = 300000;            // 5 minutos
-const AGENDA_RETENTION_DAYS  = 30;
-const AGENDA_MAX_ATTEMPTS    = 3;
+const AGENDA_APP              = 'agenda';
+const AGENDA_VERSION          = '2.0.0';
+const AGENDA_TZ               = 'Atlantic/Canary';
+const AGENDA_DATA_DIR         = __DIR__ . '/data';
+const AGENDA_STATE_FILE       = AGENDA_DATA_DIR . '/state.json';
+const AGENDA_LOCK_FILE        = AGENDA_DATA_DIR . '/state.lock';
+const AGENDA_AUDIO_DIR        = AGENDA_DATA_DIR . '/audio';
+const AGENDA_MAX_AUDIO_BYTES  = 8 * 1024 * 1024;   // 8 MB
 
 /** Contraseña de edición compartida del proyecto (mismo mecanismo que descargas). */
 const AGENDA_PASSWORD_SHA256 = '0c79272e8c147c95bedd7450abfd42cb3377947341694276c5835caeb9f435ee';
+
+/** MIME admitidos para las notas de voz -> extensión en disco. */
+const AGENDA_AUDIO_EXTENSIONS = [
+    'audio/webm'              => 'webm',
+    'audio/webm;codecs=opus'  => 'webm',
+    'audio/ogg'               => 'ogg',
+    'audio/opus'              => 'opus',
+    'audio/mp4'               => 'm4a',
+    'audio/m4a'               => 'm4a',
+    'audio/aac'               => 'aac',
+    'audio/mpeg'              => 'mp3',
+    'audio/mp3'               => 'mp3',
+    'audio/wav'               => 'wav',
+    'audio/x-wav'             => 'wav',
+    'audio/wave'              => 'wav',
+];
+
+const AGENDA_PRIORITIES = ['urgent', 'high', 'medium', 'low'];
+const AGENDA_TASK_STATUSES = ['pending', 'in_progress', 'completed', 'cancelled'];
 
 class AgendaUserError extends RuntimeException {}
 
@@ -56,8 +76,7 @@ function agenda_send_json(int $status, array $payload, bool $exit = true): void
 function agenda_default_state(): array
 {
     return [
-        'version' => 1,
-        'seq'     => ['event' => 0, 'task' => 0, 'note' => 0, 'audio' => 0],
+        'version' => 2,
         'events'  => [],
         'tasks'   => [],
         'notes'   => [],
@@ -101,7 +120,7 @@ function agenda_state_read(): array
     if (!is_array($data)) {
         return $state;
     }
-    foreach (['seq', 'events', 'tasks', 'notes', 'audios'] as $key) {
+    foreach (['events', 'tasks', 'notes', 'audios'] as $key) {
         if (isset($data[$key]) && is_array($data[$key])) {
             $state[$key] = $data[$key];
         }
@@ -111,7 +130,7 @@ function agenda_state_read(): array
 
 function agenda_state_write(array $state): void
 {
-    $json = json_encode($state, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+    $json = json_encode($state, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     if ($json === false) {
         throw new RuntimeException('No se pudo serializar el estado.');
     }
@@ -155,50 +174,6 @@ function agenda_state_update(callable $mutator)
     }
 }
 
-function agenda_next_id(array &$state, string $entity): int
-{
-    $state['seq'][$entity] = (int)($state['seq'][$entity] ?? 0) + 1;
-    return $state['seq'][$entity];
-}
-
-function agenda_find_index(array $list, int $id): int
-{
-    foreach ($list as $index => $item) {
-        if (is_array($item) && (int)($item['id'] ?? 0) === $id) {
-            return (int)$index;
-        }
-    }
-    return -1;
-}
-
-/** Estado apto para el cliente: sin rutas internas ni hashes de fichero. */
-function agenda_public_state(array $state): array
-{
-    $audios = [];
-    foreach ($state['audios'] as $audio) {
-        unset($audio['file'], $audio['sha256']);
-        $audios[] = $audio;
-    }
-    return [
-        'events' => array_values($state['events']),
-        'tasks'  => array_values($state['tasks']),
-        'notes'  => array_values($state['notes']),
-        'audios' => $audios,
-    ];
-}
-
-function agenda_meta(): array
-{
-    return [
-        'today' => date('Y-m-d'),
-        'now'   => date('H:i'),
-        'tz'    => AGENDA_TZ,
-        'version' => AGENDA_VERSION,
-        'stt_configured' => function_exists('agenda_stt_configured') ? agenda_stt_configured() : false,
-        'stt_mock' => function_exists('agenda_stt_mock_enabled') ? agenda_stt_mock_enabled() : false,
-    ];
-}
-
 /* ------------------------------------------------------------------ */
 /* Sesión, autenticación y CSRF                                       */
 /* ------------------------------------------------------------------ */
@@ -212,6 +187,9 @@ function agenda_session_start(): void
         || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
     $script = (string)($_SERVER['SCRIPT_NAME'] ?? '/apps/agenda/index.php');
     $dir = rtrim(str_replace('\\', '/', dirname($script)), '/') . '/';
+    if ($dir === '//') {
+        $dir = '/';
+    }
     session_name('agenda_session');
     session_set_cookie_params([
         'lifetime' => 2592000, // 30 días
@@ -267,7 +245,7 @@ function agenda_password_hash(): string
 
 function agenda_now(): string
 {
-    return date('c');
+    return (new DateTimeImmutable('now', new DateTimeZone(AGENDA_TZ)))->format('c');
 }
 
 function agenda_request_method(): string
@@ -287,25 +265,11 @@ function agenda_request_payload(): array
     return $_POST;
 }
 
-function agenda_header(string $name): string
-{
-    $key = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
-    return (string)($_SERVER[$key] ?? '');
-}
-
-function agenda_today(): string
-{
-    return date('Y-m-d');
-}
-
 function agenda_clean_string($value, int $maxLength): string
 {
     $value = is_string($value) ? $value : '';
     $value = trim(preg_replace('/\s+/u', ' ', $value) ?? $value);
-    if (function_exists('mb_substr')) {
-        return mb_substr($value, 0, $maxLength, 'UTF-8');
-    }
-    return substr($value, 0, $maxLength);
+    return agenda_substr($value, 0, $maxLength);
 }
 
 function agenda_multiline_string($value, int $maxLength): string
@@ -313,10 +277,15 @@ function agenda_multiline_string($value, int $maxLength): string
     $value = is_string($value) ? $value : '';
     $value = str_replace(["\r\n", "\r"], "\n", $value);
     $value = trim($value);
+    return agenda_substr($value, 0, $maxLength);
+}
+
+function agenda_substr(string $value, int $start, ?int $length = null): string
+{
     if (function_exists('mb_substr')) {
-        return mb_substr($value, 0, $maxLength, 'UTF-8');
+        return mb_substr($value, $start, $length, 'UTF-8');
     }
-    return substr($value, 0, $maxLength);
+    return $length === null ? substr($value, $start) : substr($value, $start, $length);
 }
 
 function agenda_valid_date($value): ?string
@@ -333,6 +302,20 @@ function agenda_valid_time($value): ?string
         return null;
     }
     return $value;
+}
+
+/** ISO 8601 -> ISO 8601 UTC normalizado (o null si no es válido). */
+function agenda_iso_utc($value): ?string
+{
+    if (!is_string($value) || trim($value) === '') {
+        return null;
+    }
+    try {
+        $date = new DateTimeImmutable(trim($value));
+    } catch (Exception $error) {
+        return null;
+    }
+    return $date->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
 }
 
 function agenda_add_minutes(string $time, int $minutes): string
@@ -391,64 +374,403 @@ function agenda_finish_request(): void
     @flush();
 }
 
+function agenda_env_value(array $names): string
+{
+    foreach ($names as $name) {
+        $candidates = [
+            getenv($name),
+            getenv('REDIRECT_' . $name),
+            $_SERVER[$name] ?? '',
+            $_SERVER['REDIRECT_' . $name] ?? '',
+            $_ENV[$name] ?? '',
+            $_ENV['REDIRECT_' . $name] ?? '',
+        ];
+        foreach ($candidates as $value) {
+            if (is_string($value) && trim($value) !== '') {
+                return trim($value);
+            }
+        }
+    }
+    return '';
+}
+
 /* ------------------------------------------------------------------ */
-/* Validación de entidades                                            */
+/* Identificadores y utilidades de entidades                          */
 /* ------------------------------------------------------------------ */
 
-function agenda_event_from_input(array $input): array
+function agenda_new_id(string $prefix): string
 {
-    $title = agenda_clean_string($input['title'] ?? '', 160);
-    if ($title === '') {
-        throw new AgendaUserError('El título de la cita es obligatorio.');
+    return $prefix . '-' . (string)round(microtime(true) * 1000) . '-' . bin2hex(random_bytes(2));
+}
+
+function agenda_find_index(array $list, string $id): int
+{
+    foreach ($list as $index => $item) {
+        if (is_array($item) && (string)($item['id'] ?? '') === $id) {
+            return (int)$index;
+        }
     }
-    $date = agenda_valid_date($input['date'] ?? '');
-    if ($date === null) {
-        throw new AgendaUserError('La fecha de la cita no es válida.');
+    return -1;
+}
+
+/** Índice de audios por id para decorar entidades con audio_file/duración/transcripción. */
+function agenda_audio_map(array $state): array
+{
+    $map = [];
+    foreach ($state['audios'] as $audio) {
+        if (is_array($audio) && isset($audio['id'])) {
+            $map[(string)$audio['id']] = $audio;
+        }
     }
-    $allDay = !empty($input['all_day']);
-    $start = $allDay ? '' : (agenda_valid_time($input['start'] ?? '') ?? '');
-    if (!$allDay && $start === '') {
-        throw new AgendaUserError('Indica la hora de inicio de la cita.');
+    return $map;
+}
+
+function agenda_public_audio(?array $audio): array
+{
+    if (!is_array($audio)) {
+        return ['audio_file' => null, 'audio_duration' => null, 'audio_transcription' => null];
     }
-    $end = $allDay ? '' : (agenda_valid_time($input['end'] ?? '') ?? '');
-    if (!$allDay && $end === '') {
-        $end = agenda_add_minutes($start === '' ? '00:00' : $start, 60);
-    }
-    if (!$allDay && $end !== '' && $end <= $start) {
-        throw new AgendaUserError('La hora de fin debe ser posterior a la de inicio.');
-    }
-    $color = (int)($input['color'] ?? 0);
     return [
-        'title'       => $title,
-        'description' => agenda_multiline_string($input['description'] ?? '', 2000),
-        'date'        => $date,
-        'start'       => $start,
-        'end'         => $end,
-        'all_day'     => $allDay,
-        'color'       => max(0, min(4, $color)),
+        'audio_file'          => $audio['file'] ?? null,
+        'audio_duration'      => isset($audio['duration']) ? (float)$audio['duration'] : null,
+        'audio_transcription' => $audio['transcription'] ?? null,
     ];
 }
 
-function agenda_task_from_input(array $input): array
+/** Añade los datos del audio enlazado a una cita/tarea/nota. */
+function agenda_decorate(array $entity, array $audioMap): array
 {
-    $title = agenda_clean_string($input['title'] ?? '', 200);
+    $audioId = isset($entity['audio_id']) ? (string)$entity['audio_id'] : '';
+    $audio = $audioId !== '' && isset($audioMap[$audioId]) ? $audioMap[$audioId] : null;
+    return array_merge($entity, agenda_public_audio($audio));
+}
+
+/* ------------------------------------------------------------------ */
+/* Validación de entidades (payloads del frontend React)              */
+/* ------------------------------------------------------------------ */
+
+function agenda_event_from_input(array $input, array $current = []): array
+{
+    $title = agenda_clean_string($input['title'] ?? ($current['title'] ?? ''), 200);
+    if ($title === '') {
+        throw new AgendaUserError('El título de la cita es obligatorio.');
+    }
+    $start = agenda_iso_utc($input['start_time'] ?? ($current['start_time'] ?? ''));
+    if ($start === null) {
+        throw new AgendaUserError('La fecha y hora de inicio de la cita no son válidas.');
+    }
+    $end = agenda_iso_utc($input['end_time'] ?? ($current['end_time'] ?? ''));
+    if ($end === null || strcmp($end, $start) <= 0) {
+        $end = (new DateTimeImmutable($start))->modify('+1 hour')->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+    }
+    $audioId = $input['audio_id'] ?? ($current['audio_id'] ?? null);
+    return [
+        'title'       => $title,
+        'description' => agenda_multiline_string($input['description'] ?? ($current['description'] ?? ''), 4000),
+        'start_time'  => $start,
+        'end_time'    => $end,
+        'location'    => agenda_clean_string($input['location'] ?? ($current['location'] ?? ''), 300),
+        'is_all_day'  => (bool)($input['is_all_day'] ?? ($current['is_all_day'] ?? false)),
+        'audio_id'    => is_string($audioId) && $audioId !== '' ? $audioId : null,
+    ];
+}
+
+function agenda_task_from_input(array $input, array $current = []): array
+{
+    $title = agenda_clean_string($input['title'] ?? ($current['title'] ?? ''), 200);
     if ($title === '') {
         throw new AgendaUserError('El título de la tarea es obligatorio.');
     }
-    $due = $input['due_date'] ?? '';
-    $dueDate = ($due === '' || $due === null) ? null : agenda_valid_date($due);
-    if ($due !== '' && $due !== null && $dueDate === null) {
-        throw new AgendaUserError('La fecha de la tarea no es válida.');
+    $dueDateRaw = array_key_exists('due_date', $input) ? $input['due_date'] : ($current['due_date'] ?? null);
+    $dueDate = null;
+    if (is_string($dueDateRaw) && trim($dueDateRaw) !== '') {
+        $dueDate = agenda_valid_date(trim($dueDateRaw));
+        if ($dueDate === null) {
+            throw new AgendaUserError('La fecha de la tarea no es válida.');
+        }
     }
-    $priority = (int)($input['priority'] ?? 2);
-    if (!in_array($priority, [1, 2, 3], true)) {
-        $priority = 2;
+    $dueTimeRaw = array_key_exists('due_time', $input) ? $input['due_time'] : ($current['due_time'] ?? null);
+    $dueTime = null;
+    if (is_string($dueTimeRaw) && trim($dueTimeRaw) !== '') {
+        $dueTime = agenda_valid_time(trim($dueTimeRaw));
+        if ($dueTime === null) {
+            throw new AgendaUserError('La hora de la tarea no es válida.');
+        }
     }
+    $priority = (string)($input['priority'] ?? ($current['priority'] ?? 'medium'));
+    if (!in_array($priority, AGENDA_PRIORITIES, true)) {
+        $priority = 'medium';
+    }
+    $status = (string)($input['status'] ?? ($current['status'] ?? 'pending'));
+    if (!in_array($status, AGENDA_TASK_STATUSES, true)) {
+        $status = 'pending';
+    }
+    $audioId = $input['audio_id'] ?? ($current['audio_id'] ?? null);
     return [
         'title'    => $title,
-        'notes'    => agenda_multiline_string($input['notes'] ?? '', 2000),
+        'notes'    => agenda_multiline_string($input['notes'] ?? ($current['notes'] ?? ''), 4000),
         'due_date' => $dueDate,
+        'due_time' => $dueTime,
         'priority' => $priority,
+        'status'   => $status,
+        'audio_id' => is_string($audioId) && $audioId !== '' ? $audioId : null,
+    ];
+}
+
+function agenda_note_from_input(array $input, array $current = []): array
+{
+    $content = agenda_multiline_string($input['content'] ?? ($current['content'] ?? ''), 8000);
+    if ($content === '') {
+        throw new AgendaUserError('El contenido de la nota es obligatorio.');
+    }
+    $category = agenda_clean_string($input['category'] ?? ($current['category'] ?? 'general'), 40);
+    if ($category === '') {
+        $category = 'general';
+    }
+    $tags = [];
+    if (array_key_exists('tags', $input)) {
+        $rawTags = $input['tags'];
+        if (is_string($rawTags)) {
+            $rawTags = preg_split('/[,;]+/', $rawTags) ?: [];
+        }
+        if (is_array($rawTags)) {
+            foreach ($rawTags as $tag) {
+                $clean = agenda_lower(agenda_clean_string($tag, 40));
+                if ($clean !== '' && !in_array($clean, $tags, true)) {
+                    $tags[] = $clean;
+                }
+                if (count($tags) >= 10) {
+                    break;
+                }
+            }
+        }
+    } elseif (isset($current['tags']) && is_array($current['tags'])) {
+        $tags = $current['tags'];
+    }
+    $audioId = $input['audio_id'] ?? ($current['audio_id'] ?? null);
+    return [
+        'content'     => $content,
+        'category'    => $category,
+        'tags'        => $tags,
+        'is_pinned'   => (bool)($input['is_pinned'] ?? ($current['is_pinned'] ?? false)),
+        'is_archived' => (bool)($input['is_archived'] ?? ($current['is_archived'] ?? false)),
+        'audio_id'    => is_string($audioId) && $audioId !== '' ? $audioId : null,
+    ];
+}
+
+/* ------------------------------------------------------------------ */
+/* Ordenación y estadísticas                                          */
+/* ------------------------------------------------------------------ */
+
+function agenda_sort_events(array &$events): void
+{
+    usort($events, static function (array $a, array $b): int {
+        return strcmp((string)($a['start_time'] ?? ''), (string)($b['start_time'] ?? ''));
+    });
+}
+
+function agenda_sort_tasks(array &$tasks): void
+{
+    $statusRank = ['pending' => 1, 'in_progress' => 2, 'completed' => 3, 'cancelled' => 4];
+    $priorityRank = ['urgent' => 1, 'high' => 2, 'medium' => 3, 'low' => 4];
+    usort($tasks, static function (array $a, array $b) use ($statusRank, $priorityRank): int {
+        $statusA = $statusRank[(string)($a['status'] ?? 'pending')] ?? 9;
+        $statusB = $statusRank[(string)($b['status'] ?? 'pending')] ?? 9;
+        if ($statusA !== $statusB) {
+            return $statusA <=> $statusB;
+        }
+        $priorityA = $priorityRank[(string)($a['priority'] ?? 'medium')] ?? 9;
+        $priorityB = $priorityRank[(string)($b['priority'] ?? 'medium')] ?? 9;
+        if ($priorityA !== $priorityB) {
+            return $priorityA <=> $priorityB;
+        }
+        return strcmp((string)($a['due_date'] ?? '9999-12-31'), (string)($b['due_date'] ?? '9999-12-31'));
+    });
+}
+
+function agenda_sort_notes(array &$notes): void
+{
+    usort($notes, static function (array $a, array $b): int {
+        $pinnedA = !empty($a['is_pinned']) ? 1 : 0;
+        $pinnedB = !empty($b['is_pinned']) ? 1 : 0;
+        if ($pinnedA !== $pinnedB) {
+            return $pinnedB <=> $pinnedA;
+        }
+        return strcmp((string)($b['updated_at'] ?? ''), (string)($a['updated_at'] ?? ''));
+    });
+}
+
+function agenda_system_stats(array $state): array
+{
+    $pending = 0;
+    $completed = 0;
+    foreach ($state['tasks'] as $task) {
+        if (($task['status'] ?? '') === 'completed') {
+            $completed++;
+        } else {
+            $pending++;
+        }
+    }
+    $audioBytes = 0;
+    foreach ($state['audios'] as $audio) {
+        $audioBytes += (int)($audio['size'] ?? 0);
+    }
+    return [
+        'eventsCount'         => count($state['events']),
+        'pendingTasksCount'   => $pending,
+        'completedTasksCount' => $completed,
+        'notesCount'          => count($state['notes']),
+        'audiosCount'         => count($state['audios']),
+        'totalAudioDiskBytes' => $audioBytes,
+    ];
+}
+
+/* ------------------------------------------------------------------ */
+/* Datos de ejemplo (botón «Restablecer datos de prueba»)             */
+/* ------------------------------------------------------------------ */
+
+function agenda_seed_state(array &$state): void
+{
+    $tz = new DateTimeZone(AGENDA_TZ);
+    $now = new DateTimeImmutable('now', $tz);
+    $today = $now->format('Y-m-d');
+    $tomorrow = $now->modify('+1 day')->format('Y-m-d');
+    $iso = static function (string $date, string $time) use ($tz): string {
+        return (new DateTimeImmutable($date . ' ' . $time, $tz))
+            ->setTimezone(new DateTimeZone('UTC'))
+            ->format('Y-m-d\TH:i:s\Z');
+    };
+    $stamp = $now->format('c');
+
+    $state['audios'] = [];
+    $state['events'] = [
+        [
+            'id'          => 'evt-demo-1',
+            'title'       => 'Reunión de coordinación',
+            'description' => 'Revisión del estado del proyecto y de los próximos entregables.',
+            'start_time'  => $iso($today, '10:00'),
+            'end_time'    => $iso($today, '11:30'),
+            'location'    => 'Google Meet / Online',
+            'is_all_day'  => false,
+            'audio_id'    => null,
+            'created_at'  => $stamp,
+            'updated_at'  => $stamp,
+        ],
+        [
+            'id'          => 'evt-demo-2',
+            'title'       => 'Revisión médica anual',
+            'description' => 'Consulta preventiva y análisis rutinario.',
+            'start_time'  => $iso($today, '16:00'),
+            'end_time'    => $iso($today, '17:00'),
+            'location'    => 'Centro médico',
+            'is_all_day'  => false,
+            'audio_id'    => null,
+            'created_at'  => $stamp,
+            'updated_at'  => $stamp,
+        ],
+        [
+            'id'          => 'evt-demo-3',
+            'title'       => 'Planificación de la semana',
+            'description' => 'Alinear prioridades y reservar tiempo para lo importante.',
+            'start_time'  => $iso($tomorrow, '12:00'),
+            'end_time'    => $iso($tomorrow, '13:00'),
+            'location'    => 'Oficina',
+            'is_all_day'  => false,
+            'audio_id'    => null,
+            'created_at'  => $stamp,
+            'updated_at'  => $stamp,
+        ],
+    ];
+
+    $state['tasks'] = [
+        [
+            'id'          => 'tsk-demo-1',
+            'title'       => 'Hacer copia de seguridad de la agenda',
+            'notes'       => 'Descargar la carpeta data/ desde el hPanel del hosting.',
+            'due_date'    => $today,
+            'due_time'    => '18:00',
+            'priority'    => 'urgent',
+            'status'      => 'pending',
+            'completed_at'=> null,
+            'audio_id'    => null,
+            'created_at'  => $stamp,
+            'updated_at'  => $stamp,
+        ],
+        [
+            'id'          => 'tsk-demo-2',
+            'title'       => 'Revisar el correo pendiente',
+            'notes'       => '',
+            'due_date'    => $tomorrow,
+            'due_time'    => '14:00',
+            'priority'    => 'high',
+            'status'      => 'pending',
+            'completed_at'=> null,
+            'audio_id'    => null,
+            'created_at'  => $stamp,
+            'updated_at'  => $stamp,
+        ],
+        [
+            'id'          => 'tsk-demo-3',
+            'title'       => 'Preparar el resumen de la semana',
+            'notes'       => '',
+            'due_date'    => $tomorrow,
+            'due_time'    => '19:00',
+            'priority'    => 'medium',
+            'status'      => 'in_progress',
+            'completed_at'=> null,
+            'audio_id'    => null,
+            'created_at'  => $stamp,
+            'updated_at'  => $stamp,
+        ],
+        [
+            'id'          => 'tsk-demo-4',
+            'title'       => 'Actualizar la contraseña de edición',
+            'notes'       => 'Hecho con tools/rotar-password.ps1.',
+            'due_date'    => $today,
+            'due_time'    => '09:00',
+            'priority'    => 'low',
+            'status'      => 'completed',
+            'completed_at'=> $stamp,
+            'audio_id'    => null,
+            'created_at'  => $stamp,
+            'updated_at'  => $stamp,
+        ],
+    ];
+
+    $state['notes'] = [
+        [
+            'id'          => 'not-demo-1',
+            'content'     => "Ideas para la agenda:\n- Recordatorios de citas por Telegram.\n- Exportar todo a JSON desde el servidor.",
+            'category'    => 'ideas',
+            'tags'        => ['agenda', 'ideas'],
+            'is_pinned'   => true,
+            'is_archived' => false,
+            'audio_id'    => null,
+            'created_at'  => $stamp,
+            'updated_at'  => $stamp,
+        ],
+        [
+            'id'          => 'not-demo-2',
+            'content'     => 'Los datos se guardan en data/state.json y los audios en data/audio. Nada de eso va a GitHub.',
+            'category'    => 'servidor',
+            'tags'        => ['hostinger', 'backup'],
+            'is_pinned'   => true,
+            'is_archived' => false,
+            'audio_id'    => null,
+            'created_at'  => $stamp,
+            'updated_at'  => $stamp,
+        ],
+        [
+            'id'          => 'not-demo-3',
+            'content'     => 'Idea rápida: probar la captura de voz desde el móvil cuando esté en la calle.',
+            'category'    => 'personal',
+            'tags'        => ['voz'],
+            'is_pinned'   => false,
+            'is_archived' => false,
+            'audio_id'    => null,
+            'created_at'  => $stamp,
+            'updated_at'  => $stamp,
+        ],
     ];
 }
 
@@ -551,9 +873,9 @@ function agenda_extract_date(string $folded, DateTimeImmutable $today): ?array
     if (strpos($folded, 'pasado manana') !== false) {
         return ['date' => $today->modify('+2 days')->format('Y-m-d'), 'label' => 'pasado mañana'];
     }
-    $mañanaPos = strpos($folded, 'manana');
-    if ($mañanaPos !== false) {
-        $before = substr($folded, max(0, $mañanaPos - 8), min(8, $mañanaPos));
+    $mananaPos = strpos($folded, 'manana');
+    if ($mananaPos !== false) {
+        $before = substr($folded, max(0, $mananaPos - 8), min(8, $mananaPos));
         if (!preg_match('/(de la|por la)\s*$/', $before)) {
             return ['date' => $today->modify('+1 day')->format('Y-m-d'), 'label' => 'mañana'];
         }
@@ -703,10 +1025,289 @@ function agenda_build_title(string $source, string $type, ?array $meeting): stri
         $title = preg_replace('/\s+(es urgente|urgente|cuanto antes|importante|sin falta)\.?$/iu', '', $title) ?? $title;
     }
     $title = trim((string)$title, " \t\n\r\0\x0B,.;:-");
-    if (function_exists('mb_substr')) {
-        $title = mb_substr($title, 0, 90, 'UTF-8');
-    } else {
-        $title = substr($title, 0, 90);
-    }
+    $title = agenda_substr($title, 0, 90);
     return agenda_upper_first($title);
+}
+
+/* ------------------------------------------------------------------ */
+/* Clasificación lista para la respuesta del frontend                 */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Convierte una transcripción en el objeto que espera el modal de revisión:
+ * appointment | task | note + detalles ya precargados.
+ */
+function agenda_classify_payload(string $text, bool $hasAudio): array
+{
+    $analysis = agenda_classify($text);
+    $folded = agenda_fold($text);
+    $timeInfo = agenda_extract_time($folded);
+    $tz = new DateTimeZone(AGENDA_TZ);
+
+    $entityType = 'note';
+    if ($analysis['type'] === 'event') {
+        $entityType = 'appointment';
+    } elseif ($analysis['type'] === 'task') {
+        $entityType = 'task';
+    }
+
+    $appointment = [
+        'start_time' => null,
+        'end_time'   => null,
+        'location'   => '',
+        'is_all_day' => false,
+    ];
+    if ($entityType === 'appointment') {
+        $date = (string)($analysis['date'] ?? date('Y-m-d'));
+        $start = (string)($analysis['start'] ?? '09:00');
+        $end = (string)($analysis['end'] ?? agenda_add_minutes($start, 60));
+        $startIso = (new DateTimeImmutable($date . ' ' . $start, $tz))
+            ->setTimezone(new DateTimeZone('UTC'))
+            ->format('Y-m-d\TH:i:s\Z');
+        $endIso = (new DateTimeImmutable($date . ' ' . $end, $tz))
+            ->setTimezone(new DateTimeZone('UTC'))
+            ->format('Y-m-d\TH:i:s\Z');
+        $appointment = [
+            'start_time' => $startIso,
+            'end_time'   => $endIso,
+            'location'   => agenda_detect_location($folded),
+            'is_all_day' => false,
+        ];
+    }
+
+    $priority = 'medium';
+    if (preg_match('/\b(urgente|urgentisimo|cuanto antes|sin falta|no se me olvide)\b/', $folded) === 1) {
+        $priority = 'urgent';
+    } elseif (preg_match('/\b(importante|prioritario|prioridad alta)\b/', $folded) === 1
+        || (int)($analysis['priority'] ?? 2) === 3) {
+        $priority = 'high';
+    } elseif (preg_match('/\b(cuando pueda|sin prisa|baja prioridad|algun dia)\b/', $folded) === 1) {
+        $priority = 'low';
+    }
+
+    $task = [
+        'due_date' => $entityType === 'task' && !empty($analysis['due_date']) ? $analysis['due_date'] : null,
+        'due_time' => $entityType === 'task' && $timeInfo !== null ? $timeInfo['time'] : null,
+        'priority' => $priority,
+    ];
+
+    $note = [
+        'category' => agenda_detect_category($folded),
+        'tags'     => agenda_detect_tags($folded),
+    ];
+
+    $summaries = [
+        'appointment' => 'Cita con fecha y hora detectada en la transcripción.',
+        'task'        => 'Tarea o pendiente detectado en la transcripción.',
+        'note'        => 'Nota rápida: no se ha detectado una cita ni una acción concreta.',
+    ];
+
+    return [
+        'transcription'       => $text,
+        'entity_type'         => $entityType,
+        'confidence'          => (float)($analysis['confidence'] ?? 0.5),
+        'title'               => (string)($analysis['title'] ?? ($hasAudio ? 'Nota de voz' : 'Nota rápida')),
+        'summary'             => $summaries[$entityType],
+        'appointment_details' => $appointment,
+        'task_details'        => $task,
+        'note_details'        => $note,
+    ];
+}
+
+function agenda_detect_location(string $folded): string
+{
+    if (preg_match('/\bzoom\b/', $folded) === 1) {
+        return 'Zoom';
+    }
+    if (preg_match('/\b(google meet|meet)\b/', $folded) === 1) {
+        return 'Google Meet';
+    }
+    if (preg_match('/\b(teams)\b/', $folded) === 1) {
+        return 'Microsoft Teams';
+    }
+    if (preg_match('/\b(oficina|despacho)\b/', $folded) === 1) {
+        return 'Oficina';
+    }
+    if (preg_match('/\b(hospital|clinica|consulta|centro medico|centro de salud)\b/', $folded) === 1) {
+        return 'Centro médico';
+    }
+    if (preg_match('/\b(casa|domicilio)\b/', $folded) === 1) {
+        return 'Casa';
+    }
+    return '';
+}
+
+function agenda_detect_category(string $folded): string
+{
+    if (preg_match('/\b(idea|ideas|ocurrencia|proyecto|inventar)\b/', $folded) === 1) {
+        return 'ideas';
+    }
+    if (preg_match('/\b(servidor|hostinger|dominio|web|backup|copia de seguridad|codigo|php|ssh|ftp)\b/', $folded) === 1) {
+        return 'servidor';
+    }
+    if (preg_match('/\b(trabajo|reunion|cliente|equipo|proyecto|informe|presupuesto|entrega)\b/', $folded) === 1) {
+        return 'trabajo';
+    }
+    if (preg_match('/\b(casa|familia|personal|medico|salud|comprar|supermercado|coche)\b/', $folded) === 1) {
+        return 'personal';
+    }
+    return 'general';
+}
+
+function agenda_detect_tags(string $folded): array
+{
+    $catalog = [
+        'casa'     => ['casa', 'hogar'],
+        'compras'  => ['comprar', 'compra', 'supermercado'],
+        'salud'    => ['medico', 'medica', 'salud', 'hospital', 'dentista'],
+        'trabajo'  => ['trabajo', 'reunion', 'cliente', 'informe', 'presupuesto'],
+        'servidor' => ['servidor', 'hostinger', 'backup', 'dominio', 'web'],
+        'ideas'    => ['idea', 'ideas', 'proyecto'],
+        'llamadas' => ['llamar', 'llamada', 'telefono'],
+        'pagos'    => ['pagar', 'pago', 'factura', 'luz', 'banco'],
+    ];
+    $tags = [];
+    foreach ($catalog as $tag => $words) {
+        foreach ($words as $word) {
+            if (preg_match('/\b' . $word . '\b/', $folded) === 1) {
+                $tags[] = $tag;
+                break;
+            }
+        }
+        if (count($tags) >= 3) {
+            break;
+        }
+    }
+    return $tags;
+}
+
+/* ------------------------------------------------------------------ */
+/* Transcripción con OpenAI (clave SOLO del entorno del servidor)     */
+/* ------------------------------------------------------------------ */
+
+function agenda_openai_key(): string
+{
+    return agenda_env_value(['OPENAI_API_KEY', 'O']);
+}
+
+function agenda_stt_configured(): bool
+{
+    return agenda_openai_key() !== '';
+}
+
+function agenda_stt_mock_enabled(): bool
+{
+    $value = trim((string)getenv('AGENDA_MOCK_STT'));
+    return $value !== '' && $value !== '0';
+}
+
+/**
+ * Transcribe un audio con OpenAI. Si AGENDA_MOCK_STT está activo (solo
+ * desarrollo/pruebas locales) devuelve una transcripción de ejemplo.
+ *
+ * @return array{ok:bool,text:string,error:string,model:string}
+ */
+function agenda_transcribe_audio(string $path, string $mime, int $seed = 0): array
+{
+    if (!is_file($path)) {
+        return ['ok' => false, 'text' => '', 'error' => 'El archivo de audio ya no está en el servidor.', 'model' => ''];
+    }
+    if (agenda_stt_mock_enabled()) {
+        $samples = [
+            'Mañana a las diez reunión con Ana para revisar el presupuesto del proyecto.',
+            'Recuérdame comprar pilas y pagar la luz antes del viernes. Es urgente.',
+            'Idea para la web: usar una portada más limpia, con menos texto en la cabecera principal.',
+        ];
+        return ['ok' => true, 'text' => $samples[$seed % count($samples)], 'error' => '', 'model' => 'mock-local'];
+    }
+    $key = agenda_openai_key();
+    if ($key === '') {
+        return [
+            'ok'    => false,
+            'text'  => '',
+            'error' => 'La transcripción automática no está configurada en el servidor. Puedes escribir el texto a mano.',
+            'model' => '',
+        ];
+    }
+    if (!class_exists('CURLFile')) {
+        return ['ok' => false, 'text' => '', 'error' => 'El servidor no tiene cURL habilitado.', 'model' => ''];
+    }
+    if (filesize($path) > 25 * 1024 * 1024) {
+        return ['ok' => false, 'text' => '', 'error' => 'El audio supera el máximo de la API de transcripción.', 'model' => ''];
+    }
+
+    $models = ['gpt-4o-mini-transcribe', 'whisper-1'];
+    $lastError = 'No se pudo transcribir el audio.';
+    foreach ($models as $model) {
+        $fields = [
+            'file'     => new CURLFile($path, $mime, basename($path)),
+            'model'    => $model,
+            'language' => 'es',
+            'prompt'   => 'Nota de voz personal en español: citas, tareas y recordatorios. Nombres propios y fechas.',
+        ];
+        if ($model === 'whisper-1') {
+            $fields['response_format'] = 'json';
+        }
+        $ch = curl_init('https://api.openai.com/v1/audio/transcriptions');
+        if ($ch === false) {
+            return ['ok' => false, 'text' => '', 'error' => 'No se pudo iniciar la conexión con el servicio de transcripción.', 'model' => $model];
+        }
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $fields,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $key],
+            CURLOPT_CONNECTTIMEOUT => 15,
+            CURLOPT_TIMEOUT        => 120,
+            CURLOPT_FOLLOWLOCATION => false,
+        ]);
+        $raw = curl_exec($ch);
+        $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($raw === false) {
+            $lastError = 'No se pudo conectar con el servicio de transcripción.';
+            error_log('[agenda] STT curl: ' . $curlError);
+            break;
+        }
+        $json = json_decode((string)$raw, true);
+        if ($status === 200 && is_array($json) && isset($json['text']) && is_string($json['text'])) {
+            return ['ok' => true, 'text' => trim($json['text']), 'error' => '', 'model' => $model];
+        }
+        $message = is_array($json) && isset($json['error']['message'])
+            ? (string)$json['error']['message']
+            : 'El servicio de transcripción respondió con un error (' . $status . ').';
+        $lastError = 'No se pudo transcribir el audio: ' . $message;
+        error_log('[agenda] STT HTTP ' . $status . ' (' . $model . '): ' . $message);
+        if (!in_array($status, [400, 403, 404, 422], true)) {
+            break;
+        }
+    }
+    return ['ok' => false, 'text' => '', 'error' => $lastError, 'model' => ''];
+}
+
+/* ------------------------------------------------------------------ */
+/* Salud del sistema (diagnóstico sin gastar API)                     */
+/* ------------------------------------------------------------------ */
+
+function agenda_health(): array
+{
+    $storageOk = false;
+    try {
+        agenda_ensure_storage();
+        $storageOk = is_writable(AGENDA_DATA_DIR) && is_writable(AGENDA_AUDIO_DIR);
+    } catch (Throwable $error) {
+        $storageOk = false;
+    }
+    return [
+        'status'            => 'ok',
+        'app'               => AGENDA_APP,
+        'version'           => AGENDA_VERSION,
+        'time'              => agenda_now(),
+        'timezone'          => AGENDA_TZ,
+        'openai_configured' => agenda_stt_configured(),
+        'stt_mock'          => agenda_stt_mock_enabled(),
+        'storage'           => $storageOk,
+    ];
 }

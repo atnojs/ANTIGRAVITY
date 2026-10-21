@@ -2,11 +2,14 @@
 declare(strict_types=1);
 
 /**
- * auth.php — sesión de un único usuario.
+ * auth.php — sesión privada de la agenda (un único usuario).
  *
- * La contraseña es la de edición del proyecto: en el repositorio solo se guarda
- * su sha256 (mismo patrón que apps/descargas/auth.php). Se puede sobreescribir
- * con AGENDA_PASSWORD_HASH en el .htaccess raíz de Hostinger.
+ * Comparte el hash de la contraseña de edición del proyecto (el mismo de
+ * TrickVault / video-vault / descargas). Se puede sobreescribir con
+ * AGENDA_PASSWORD_HASH en el .htaccess raíz de Hostinger.
+ *
+ * GET  -> { ok, auth, csrf }
+ * POST -> action=login {password} | action=logout
  */
 
 require_once __DIR__ . '/lib.php';
@@ -61,7 +64,7 @@ if ($password === '') {
 $attempts = (int)($_SESSION['agenda_attempts'] ?? 0);
 if (!hash_equals(agenda_password_hash(), hash('sha256', $password))) {
     $_SESSION['agenda_attempts'] = $attempts + 1;
-    // Freno a la fuerza bruta (mismo criterio que descargas).
+    // Freno a la fuerza bruta.
     sleep(1);
     agenda_send_json(403, ['ok' => false, 'error' => 'Contraseña incorrecta.']);
 }

@@ -280,3 +280,8 @@ tools/veronicaz/*.xlsx
 # evidencias). No se versionan: las capturas .png ya están ignoradas arriba.
 .playwright-cli/
 
+
+# Agenda: .htaccess propios de la app (reescritura de la API y proteccion de
+# data/). No contienen claves: las claves siguen en el .htaccess raiz.
+!apps/agenda/.htaccess
+!apps/agenda/data/.htaccess
