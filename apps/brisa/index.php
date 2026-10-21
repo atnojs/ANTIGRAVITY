@@ -10,8 +10,8 @@ header('Permissions-Policy: microphone=(self), camera=()');
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f7f8f2"><meta name="description" content="Brisa. Tu tiempo, tus ideas y un poco de calma. Agenda personal con notas de voz.">
   <title>Brisa · Tu agenda personal</title>
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/app.css?v=2">
-  <script type="module" src="assets/app.js?v=1"></script>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/app.css?v=3">
+  <script type="module" src="assets/app.js?v=2"></script>
 </head>
 <body>
   <div id="app" aria-busy="true"><div class="boot"><span class="brand">brisa<span>✳</span></span><p>Preparando tu espacio…</p></div></div>
