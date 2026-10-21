@@ -42,17 +42,6 @@ if (defined('AU_LIB')) {
 }
 define('AU_LIB', true);
 
-/**
- * Compatibilidad temporal: mientras las variables no estén en el `.htaccess`
- * se siguen aceptando las contraseñas que había antes, para que ninguna app se
- * quede sin acceso entre el despliegue del código y el pegado de las líneas.
- *
- * ⚠️ Poner en false (o borrar el bloque `au_comprobar_antigua`) en cuanto la
- * verificación en producción esté hecha: si no, la contraseña vieja sigue
- * valiendo para siempre.
- */
-const AU_PERMITIR_ANTIGUAS = true;
-
 /* ──────────────────────────────────────────────────────────────────────────
    Valores
    ────────────────────────────────────────────────────────────────────────── */
@@ -99,27 +88,6 @@ function au_configurada(string $tipo): bool
    Comprobación
    ────────────────────────────────────────────────────────────────────────── */
 
-/**
- * Contraseñas que había antes del sistema central, SOLO para la transición.
- * Edición: la aleatoria de 20 caracteres de TrickVault / video-vault / json /
- * agenda. Acceso: la agenda usaba esa misma y Descargas la suya propia.
- */
-function au_comprobar_antigua(string $tipo, string $password): bool
-{
-    if ($password === '') {
-        return false;
-    }
-    $hash = hash('sha256', $password);
-    if (hash_equals('0c79272e8c147c95bedd7450abfd42cb3377947341694276c5835caeb9f435ee', $hash)) {
-        return true;
-    }
-    if ($tipo === 'acceso'
-        && hash_equals('ae4cd6ac3271e966a3eed8adc9401329e994a4588bf99b6510d851ffb58ff5d6', $hash)) {
-        return true;
-    }
-    return false;
-}
-
 /** ¿La contraseña es la correcta para ese tipo? */
 function au_comprobar(string $tipo, string $password): bool
 {
@@ -137,8 +105,9 @@ function au_comprobar(string $tipo, string $password): bool
         return hash_equals($valor, $password);
     }
 
-    // Sin configurar en el entorno: modo transición o rechazo (fail closed).
-    return AU_PERMITIR_ANTIGUAS && au_comprobar_antigua($tipo, $password);
+    // Sin PW_EDIT / PW_ACCESS en el entorno: falla cerrado. No hay contraseñas
+    // de reserva en el código (la transición con las antiguas ya se retiró).
+    return false;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
