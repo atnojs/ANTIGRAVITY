@@ -6770,6 +6770,11 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
         [gruposDuplicados]
     );
     const ultimoPush = useMemo(() => tvUltimoPush(tricks.filter(tvCuentaEnFecha)), [tricks]);
+    // El último push de «Comandos de texto»: por diseño no entra en «Últimas», pero se
+    // avisa con un enlace para que una tanda solo de texto no pase desapercibida.
+    const ultimoPushTexto = useMemo(() => tvUltimoPush(tricks.filter(t => !tvCuentaEnFecha(t))), [tricks]);
+    const avisarTextoNuevo = !verDuplicados && fechaModo === 'recientes' &&
+        ultimoPushTexto.ids.size > 0 && ultimoPushTexto.lote >= ultimoPush.lote;
 
     const filtrandoFecha = !verDuplicados && (fechaModo === 'recientes' ||
         (fechaModo === 'dia' && Boolean(fechaDia)) ||
@@ -6901,6 +6906,27 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
                     <button type="button" className="btn btn-glass btn-sm" onClick={() => setVerDuplicados(false)}>Quitar filtro</button>
                 )}
             </div>
+
+            {avisarTextoNuevo && (
+                <div role="note" data-aviso-texto="1" style={{
+                    display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.6rem',
+                    margin: '0.7rem 0 0.2rem', padding: '0.55rem 0.85rem',
+                    borderRadius: '14px', background: 'rgba(38,198,38,0.10)',
+                    border: '1px solid rgba(38,198,38,0.38)',
+                    boxShadow: '0 0 18px rgba(38,198,38,0.10)'
+                }}>
+                    <span aria-hidden="true" style={{ fontSize: '1rem' }}>🆕</span>
+                    <span style={{ color: 'var(--text, #e5e7eb)', fontSize: '0.86rem', fontWeight: 600 }}>
+                        +{ultimoPushTexto.ids.size} códigos de texto nuevos
+                        {ultimoPushTexto.lote ? ' · ' + tvFechaLarga(ultimoPushTexto.lote) : ''}
+                    </span>
+                    <button type="button" className="btn btn-glass btn-sm"
+                        onClick={() => onSelectCategory('xl-texto')}
+                        title="Ver los códigos de texto nuevos en «Comandos de texto»">
+                        📂 Ver en «Comandos de texto»
+                    </button>
+                </div>
+            )}
 
             {(query || filtrandoFecha || verDuplicados) && results.length === 0 ? (
                 <div className="empty-state">
