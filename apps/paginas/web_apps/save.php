@@ -1,8 +1,9 @@
 <?php
+require_once dirname(__DIR__, 3) . '/auth/lib.php';
+
 header('Content-Type: application/json');
 
 // IMPORTANTE: Cambia esta contraseña por una segura
-$correctPassword = '0';
 $dataFile = 'apps_data.json';
 
 $data = json_decode(file_get_contents('php://input'), true);
@@ -14,7 +15,7 @@ if (!$data) {
 }
 
 // Validación de la contraseña
-if (!isset($data['password']) || $data['password'] !== $correctPassword) {
+if (!au_autorizado('edicion', (string) ($data['password'] ?? ''))) {
     http_response_code(403);
     echo json_encode(['success' => false, 'error' => 'Authentication failed.']);
     exit;

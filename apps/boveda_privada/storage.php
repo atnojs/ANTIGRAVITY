@@ -58,8 +58,22 @@ function loadMeta(): ?array {
     return is_array($d) ? $d : null;
 }
 
+/**
+ * Guarda los metadatos de forma atómica (fichero temporal + rename): si el
+ * proceso se corta a mitad, `vault.json` no puede quedar truncado.
+ */
 function saveMeta(array $m): void {
-    file_put_contents(metaFile(), json_encode($m, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
+    $destino = metaFile();
+    $temporal = $destino . '.tmp-' . bin2hex(random_bytes(4));
+    $json = json_encode($m, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($json === false || file_put_contents($temporal, $json, LOCK_EX) === false) {
+        @unlink($temporal);
+        throw new RuntimeException('No se pudieron guardar los datos de la bóveda.');
+    }
+    if (!@rename($temporal, $destino)) {
+        @unlink($temporal);
+        throw new RuntimeException('No se pudieron guardar los datos de la bóveda.');
+    }
 }
 
 function sanitizeId(string $id): string {
@@ -110,6 +124,37 @@ if ($method === 'POST') {
     }
 }
 
+/* ---------- GET: diagnóstico de solo lectura (útil para saber por qué la
+   bóveda aparece como «no existe»). No devuelve ningún dato descifrado ni la
+   clave: solo booleanos, tamaños y fechas. ---------- */
+if ($action === 'diagnostico') {
+    $dir = __DIR__ . '/vault_data';
+    $metaFichero = $dir . '/vault.json';
+    $blobDir = $dir . '/blobs';
+    $info = [
+        'dir_existe' => is_dir($dir),
+        'dir_leible' => is_dir($dir) && is_readable($dir),
+        'dir_escribible' => is_dir($dir) && is_writable($dir),
+        'meta_existe' => file_exists($metaFichero),
+        'meta_bytes' => file_exists($metaFichero) ? (int) @filesize($metaFichero) : 0,
+        'meta_fecha' => file_exists($metaFichero) ? date('c', (int) @filemtime($metaFichero)) : null,
+        'meta_json_valido' => false,
+        'blobs' => 0,
+        'blobs_bytes' => 0,
+    ];
+    if ($info['meta_existe']) {
+        $contenido = @file_get_contents($metaFichero);
+        $json = is_string($contenido) ? json_decode($contenido, true) : null;
+        $info['meta_json_valido'] = is_array($json) && !empty($json['dekHash']);
+    }
+    if (is_dir($blobDir)) {
+        $ficheros = glob($blobDir . '/*.bin') ?: [];
+        $info['blobs'] = count($ficheros);
+        foreach ($ficheros as $f) { $info['blobs_bytes'] += (int) @filesize($f); }
+    }
+    json_out(['success' => true, 'diagnostico' => $info]);
+}
+
 /* ---------- GET: metadatos de la bóveda + límites ---------- */
 if ($method === 'GET' && $action === 'meta') {
     $meta = loadMeta();
@@ -137,6 +182,15 @@ if ($method === 'GET' && $action === 'blob') {
 /* ---------- POST setup: crear la bóveda por primera vez ---------- */
 if ($method === 'POST' && $action === 'setup') {
     if (loadMeta() !== null) { json_out(['success' => false, 'error' => 'La bóveda ya existe.'], 409); }
+    // Si hay fichero pero está dañado, NO se sobrescribe: eso destruiría la
+    // única copia de las claves envueltas. Mejor restaurar una copia de
+    // seguridad del servidor (hPanel → Copias de seguridad).
+    if (is_file(metaFile())) {
+        json_out([
+            'success' => false,
+            'error' => 'Hay datos de bóveda en el servidor pero están dañados (vault.json). No se sobrescriben: restaura una copia de seguridad o revisa ?action=diagnostico.',
+        ], 409);
+    }
     $meta = $body['meta'] ?? null;
     if (!is_array($meta) || empty($meta['dekHash'])) { json_out(['success' => false, 'error' => 'Datos de bóveda inválidos.'], 400); }
     blobDir(); // crea carpeta + .htaccess

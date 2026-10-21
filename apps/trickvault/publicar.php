@@ -5,9 +5,8 @@
  * Acciones (POST, multipart/form-data):
  *
  *   action=estado    Diagnóstico de solo lectura: si hay token, si la API de
- *                    GitHub responde, si el catálogo publicado existe en el
- *                    repositorio y si la contraseña de edición es válida (se
- *                    comprueba contra el auth.php de al lado, sin conocer su hash).
+ *                    GitHub responde y si el catálogo publicado existe en el
+ *                    repositorio.
  *
  *   action=publicar  Manda a GitHub, en UN commit, la capa de cambios que envía
  *                    la app (apps/trickvault/catalogo.json) y las imágenes
@@ -18,9 +17,10 @@
  * despliegue automático de Hostinger trae luego esos ficheros al servidor, así
  * que el checkout se queda limpio y el pull del despliegue nunca choca.
  *
- * La contraseña NO se guarda aquí: se delega en auth.php. El token de GitHub
- * vive únicamente en el entorno del servidor (SetEnv del .htaccess raíz) y
- * nunca se imprime ni se devuelve al navegador.
+ * La contraseña de publicación es la de ACCESO, centralizada en `auth/lib.php`
+ * (`.htaccess` raíz: PW_ACCESS / PW_ACCESS_SHA256). El token de GitHub vive
+ * únicamente en el entorno del servidor (SetEnv del .htaccess raíz) y nunca se
+ * imprime ni se devuelve al navegador.
  *
  * Variables de entorno reconocidas:
  *   PUBLICAR_TOKEN      token de GitHub con permiso de escritura (obligatorio)
@@ -28,8 +28,9 @@
  *   PUBLICAR_RAMA       rama destino, por defecto main
  *   PUBLICAR_RUTA       ruta del catálogo en el repo, por defecto
  *                       apps/trickvault/catalogo.json
- *   PUBLICAR_AUTH_URL   (solo pruebas) URL del auth.php a consultar
  */
+
+require_once dirname(__DIR__, 2) . '/auth/lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
 ini_set('display_errors', 0);
@@ -180,67 +181,14 @@ function github($metodo, $ruta, $cuerpo = null) {
     return [$codigo, $datos, null];
 }
 
-/** Petición HTTP con cURL si está, y si no con file_get_contents. */
-function peticion_http($url, $cuerpo, $frontera) {
-    if (function_exists('curl_init')) {
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $cuerpo,
-            CURLOPT_HTTPHEADER => ["Content-Type: multipart/form-data; boundary=$frontera"],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 15,
-        ]);
-        $respuesta = curl_exec($ch);
-        $error = curl_error($ch);
-        curl_close($ch);
-        if ($respuesta === false) return [false, 'cURL: ' . $error];
-        return [true, $respuesta];
-    }
-    if (ini_get('allow_url_fopen')) {
-        $contexto = stream_context_create(['http' => [
-            'method' => 'POST',
-            'header' => "Content-Type: multipart/form-data; boundary=$frontera\r\n",
-            'content' => $cuerpo,
-            'timeout' => 15,
-            'ignore_errors' => true,
-        ]]);
-        $respuesta = @file_get_contents($url, false, $contexto);
-        if ($respuesta === false) {
-            $fallo = error_get_last();
-            return [false, 'file_get_contents: ' . ($fallo['message'] ?? 'error desconocido')];
-        }
-        return [true, $respuesta];
-    }
-    return [false, 'El hosting no permite peticiones HTTP salientes.'];
-}
-
-/** URL del auth.php que valida la contraseña de edición. */
-function url_auth() {
-    $fija = entorno('PUBLICAR_AUTH_URL');
-    if ($fija !== '') return $fija;
-    $esquema = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $dir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
-    return "$esquema://$host$dir/auth.php";
-}
-
-/** Valida la contraseña de edición contra el auth.php de al lado. */
+/**
+ * Valida la contraseña de PUBLICACIÓN: es la de acceso del proyecto, que vive
+ * en el `.htaccess` raíz del servidor. No se consulta ningún endpoint por HTTP.
+ */
 function password_valida($password) {
     if (!is_string($password) || $password === '') return [false, 'Falta la contraseña.'];
-    if (!is_file(__DIR__ . '/auth.php') && entorno('PUBLICAR_AUTH_URL') === '') {
-        return [false, 'No encuentro auth.php para validar la contraseña.'];
-    }
-    $frontera = '----TrickVault' . bin2hex(random_bytes(8));
-    $cuerpo = "--$frontera\r\n"
-        . "Content-Disposition: form-data; name=\"password\"\r\n\r\n"
-        . $password . "\r\n--$frontera--\r\n";
-    [$ok, $respuesta] = peticion_http(url_auth(), $cuerpo, $frontera);
-    if (!$ok) return [false, 'No pude consultar auth.php: ' . $respuesta];
-    $json = json_decode($respuesta, true);
-    if (!is_array($json)) return [false, 'auth.php no devolvió JSON: ' . substr($respuesta, 0, 120)];
-    if (!empty($json['success'])) return [true, ''];
-    return [false, $json['error'] ?? 'Contraseña incorrecta.'];
+    if (!au_comprobar('acceso', $password)) return [false, 'Contraseña incorrecta.'];
+    return [true, ''];
 }
 
 /* ── Diagnóstico ────────────────────────────────────────────────────────── */

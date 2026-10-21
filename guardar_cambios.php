@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth/lib.php';
+
 /**
  * Guarda el estado del portal (estado_sitio.json).
  *
@@ -26,7 +28,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 // Verificar contraseña
-if (!isset($data['password']) || $data['password'] !== '0') {
+if (!au_autorizado('edicion', (string) ($data['password'] ?? ''))) {
     die(json_encode(['success' => false, 'error' => 'Contraseña incorrecta o faltante']));
 }
 

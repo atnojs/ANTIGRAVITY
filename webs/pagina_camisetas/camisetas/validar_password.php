@@ -1,31 +1,12 @@
 <?php
-header('Content-Type: application/json');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Pragma: no-cache');
-header('Expires: 0');
+/**
+ * Verificación de la contraseña de EDICIÓN (centralizada).
+ *
+ * El valor NO está escrito aquí: vive en el `.htaccess` raíz del servidor
+ * (PW_EDIT / PW_EDIT_SHA256), igual que las claves de API. Ver auth/lib.php.
+ */
+declare(strict_types=1);
 
-// --- IMPORTANTE: Cambia esta contraseña ---
-$correctPassword = '0';
-// -----------------------------------------
+require_once dirname(__DIR__, 3) . '/auth/lib.php';
 
-$inputPassword = '';
-
-// Comprobar si la contraseña viene de un POST de formulario URL-encoded
-if (isset($_POST['password'])) {
-    $inputPassword = $_POST['password'];
-}
-// Comprobar si viene como JSON raw (menos común para una simple validación, pero posible)
-else {
-    $data = json_decode(file_get_contents('php://input'), true);
-    if (isset($data['password'])) {
-        $inputPassword = $data['password'];
-    }
-}
-
-$isValid = ($inputPassword === $correctPassword);
-
-// Devolver siempre una respuesta JSON
-echo json_encode(['success' => $isValid]);
-
-exit;
-?>
+au_endpoint('edicion');

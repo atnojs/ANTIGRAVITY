@@ -16,15 +16,18 @@
  * El hash es el mismo que usa video-vault, así que una sola contraseña vale
  * para las dos apps.
  *
+ * CENTRALIZADO (2026-10-21): la contraseña ya NO vive en este fichero. Se
+ * comprueba con `auth/lib.php`, que lee los valores del `.htaccess` raíz del
+ * servidor (PW_EDIT / PW_EDIT_SHA256), igual que las claves de API. Cambiarla
+ * es editar una línea del `.htaccess`, sin tocar ninguna app ni desplegar.
+ *
  * HISTORIA (2026-10-16): este fichero vivía SOLO en el servidor, sin estar en
  * git: no se podía rotar desde el repositorio y no había forma de verlo. Se
- * trajo aquí para que el despliegue lo mantenga y rotarlo sea un push.
- *
- * Para cambiar la contraseña: `tools/rotar-password.ps1` (calcula el sha256,
- * lo escribe en los ficheros y guarda la contraseña en `.private/`, que no se
- * versiona ni se sirve por web).
+ * trajo aquí para que el despliegue lo mantenga.
  */
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/auth/lib.php';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -56,8 +59,7 @@ if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') {
 }
 
 $password = (string)($_POST['password'] ?? '');
-$expectedHash = '0c79272e8c147c95bedd7450abfd42cb3377947341694276c5835caeb9f435ee';
-if (!hash_equals($expectedHash, hash('sha256', $password))) {
+if (!au_comprobar('edicion', $password)) {
     usleep(250000);
     respond(403, ['success' => false, 'error' => 'Contraseña incorrecta.']);
 }

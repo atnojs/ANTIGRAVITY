@@ -1,5 +1,14 @@
 <?php
+/**
+ * video-vault — contraseña de EDICIÓN (centralizada).
+ *
+ * La contraseña ya NO vive aquí: se comprueba contra `auth/lib.php`, que lee
+ * los valores del `.htaccess` raíz del servidor (PW_EDIT / PW_EDIT_SHA256),
+ * igual que las claves de API. Cambiarla es editar una línea del `.htaccess`.
+ */
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/auth/lib.php';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -31,8 +40,7 @@ if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') {
 }
 
 $password = (string)($_POST['password'] ?? '');
-$expectedHash = '0c79272e8c147c95bedd7450abfd42cb3377947341694276c5835caeb9f435ee';
-if (!hash_equals($expectedHash, hash('sha256', $password))) {
+if (!au_comprobar('edicion', $password)) {
     usleep(250000);
     respond(403, ['success' => false, 'error' => 'Contraseña incorrecta.']);
 }

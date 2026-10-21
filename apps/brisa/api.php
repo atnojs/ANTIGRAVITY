@@ -1,19 +1,13 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/lib/audio.php';
+require_once dirname(__DIR__, 2).'/auth/lib.php';
 ini_set('display_errors','0');
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: same-origin');
 function respond(array $data, int $code=200): never { http_response_code($code); echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE); exit; }
-
-/**
- * Contraseña de edición compartida del proyecto (mismo mecanismo que el resto
- * de apps: solo se guarda su sha256). Se usa cuando el hosting no permite
- * definir BRISA_PASSWORD_HASH en el panel de entorno.
- */
-const BRISA_EDIT_PASSWORD_SHA256 = '0c79272e8c147c95bedd7450abfd42cb3377947341694276c5835caeb9f435ee';
 
 try {
     $secure=(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!=='off');
@@ -39,17 +33,14 @@ try {
         if (!is_array($data)) respond(['error'=>'Datos no válidos.'],422);
     }
     if ($action==='login') {
-        // BRISA_PASSWORD_HASH (bcrypt) si está configurada; si no, la contraseña
-        // de edición compartida del proyecto (sha256, solo su hash).
-        $hash=env_value('BRISA_PASSWORD_HASH');
+        // Contraseña de ACCESO centralizada: vive en el `.htaccess` raíz del
+        // servidor (PW_ACCESS / PW_ACCESS_SHA256), igual que las claves de API.
         $handle=fopen(storage_dir().'/login-'.hash('sha256',$_SERVER['REMOTE_ADDR'] ?? 'unknown').'.json','c+');
         if (!$handle || !flock($handle,LOCK_EX)) throw new RuntimeException('No se pudo verificar el acceso.');
         $attempts=json_decode(stream_get_contents($handle),true) ?: ['since'=>time(),'count'=>0];
         if ($attempts['since']<time()-900) $attempts=['since'=>time(),'count'=>0];
         $password=(string)($data['password'] ?? '');
-        $valid=$attempts['count']<10 && ($hash
-            ? password_verify($password,$hash)
-            : hash_equals(BRISA_EDIT_PASSWORD_SHA256, hash('sha256', $password)));
+        $valid=$attempts['count']<10 && au_comprobar('acceso',$password);
         $attempts['count']=$valid?0:$attempts['count']+1;
         rewind($handle); ftruncate($handle,0); fwrite($handle,json_encode($attempts)); flock($handle,LOCK_UN); fclose($handle);
         if (!$valid) respond(['error'=>$attempts['count']>=10?'Demasiados intentos. Espera 15 minutos.':'La contraseña no es correcta.'],401);

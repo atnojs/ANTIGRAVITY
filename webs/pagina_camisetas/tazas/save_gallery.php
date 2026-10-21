@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__DIR__, 3) . '/auth/lib.php';
+
 // Habilitar reporte detallado de errores (útil durante el desarrollo)
 // Considera desactivarlo en producción por seguridad
 ini_set('display_errors', 1);
@@ -7,7 +9,6 @@ error_reporting(E_ALL);
 header('Content-Type: application/json');
 
 // --- IMPORTANTE: Cambia esta contraseña (debe ser la misma que en validar_password.php) ---
-$correctPassword = '1';
 // ---------------------------------------------------------------------------------------
 
 $ruta_archivo = __DIR__ . '/contenido_tazas.json';
@@ -29,7 +30,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 // Verificar contraseña (¡IMPORTANTE HACERLO AQUÍ TAMBIÉN!)
-// if (!isset($data['password']) || $data['password'] !== $correctPassword) {
+// if (!au_autorizado('edicion', (string) ($data['password'] ?? ''))) {
    // http_response_code(403); // Forbidden
     //echo json_encode(['success' => false, 'error' => 'Contraseña incorrecta']);
     //exit;

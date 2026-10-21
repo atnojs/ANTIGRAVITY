@@ -1,4 +1,9 @@
 <?php
+/** Códigos de imagen — guarda el estado; la contraseña de edición es central. */
+declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/auth/lib.php';
+
 header('Content-Type: application/json; charset=utf-8');
 
 $input = file_get_contents('php://input');
@@ -10,7 +15,7 @@ if (!$data || !isset($data['state']['models']) || !is_array($data['state']['mode
 }
 
 $password = isset($data['password']) ? (string) $data['password'] : '';
-if ($password !== '0') {
+if (!au_autorizado('edicion', $password)) {
     echo json_encode(['success' => false, 'error' => 'Contraseña incorrecta.']);
     exit;
 }

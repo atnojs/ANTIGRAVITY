@@ -1,8 +1,9 @@
 <?php
+require_once dirname(__DIR__, 3) . '/auth/lib.php';
+
 header('Content-Type: application/json');
 
 // --- IMPORTANTE: Cambia esta contraseña (debe ser la misma que en validar_password.php) ---
-$correctPassword = '1';
 // ---------------------------------------------------------------------------------------
 
 // Directorio donde se guardarán los JSON de los carruseles
@@ -26,7 +27,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 
 // Verificar contraseña (¡IMPORTANTE HACERLO AQUÍ TAMBIÉN!)
 // Se espera que el frontend envíe la contraseña en la estructura JSON
-// if (!isset($data['password']) || $data['password'] !== $correctPassword) {
+// if (!au_autorizado('edicion', (string) ($data['password'] ?? ''))) {
 //     http_response_code(403); // Forbidden
 //     echo json_encode(['success' => false, 'error' => 'Contraseña incorrecta']);
 //     exit;

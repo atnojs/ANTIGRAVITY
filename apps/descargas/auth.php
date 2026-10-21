@@ -1,16 +1,17 @@
 <?php
 /**
- * Login de la app Descargas.
+ * Login de la app Descargas — contraseña de ACCESO (centralizada).
  *
- * La app queda publica en internet: sin esto, cualquiera que encuentre la URL
- * podria encolar descargas en el PC de Antonio.
+ * La app queda pública en internet: sin esto, cualquiera que encuentre la URL
+ * podría encolar descargas en el PC de Antonio.
  *
- * CONTRASENA PROPIA (2026-10-17): ya NO comparte el hash de TrickVault /
- * video-vault / json, asi que `tools/rotar-password.ps1` no la toca. Si se
- * quiere cambiar, se recalcula su sha256 y se sustituye $expectedHash (abajo).
- * El valor en claro lo guarda Antonio; no se escribe en el repositorio.
+ * La contraseña ya NO vive aquí: se comprueba con `auth/lib.php`, que lee los
+ * valores del `.htaccess` raíz del servidor (PW_ACCESS / PW_ACCESS_SHA256),
+ * igual que las claves de API. Cambiarla es editar una línea del `.htaccess`.
  */
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/auth/lib.php';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -63,11 +64,9 @@ if ($action === 'logout') {
 }
 
 $password = (string)($_POST['password'] ?? '');
-$expectedHash = 'ae4cd6ac3271e966a3eed8adc9401329e994a4588bf99b6510d851ffb58ff5d6';
 
-// Freno a la fuerza bruta: 1 s por intento fallido. La contraseña no es larga,
-// así que este segundo por fallo es el único freno real.
-if (!hash_equals($expectedHash, hash('sha256', $password))) {
+// Freno a la fuerza bruta: 1 s por intento fallido.
+if (!au_comprobar('acceso', $password)) {
     sleep(1);
     respond(403, ['success' => false, 'error' => 'Contraseña incorrecta.']);
 }

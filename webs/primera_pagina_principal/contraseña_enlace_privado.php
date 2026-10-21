@@ -1,20 +1,20 @@
 <?php
-// Evitar problemas de CORS
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
+/**
+ * Contraseña de ACCESO para abrir un enlace privado (centralizada).
+ *
+ * El valor NO está escrito aquí: vive en el `.htaccess` raíz del servidor
+ * (PW_ACCESS / PW_ACCESS_SHA256). Ver auth/lib.php.
+ */
+declare(strict_types=1);
 
-// Recibir datos
-$data = json_decode(file_get_contents('php://input'), true);
+require_once dirname(__DIR__, 2) . '/auth/lib.php';
 
-// Contraseña para enlaces privados - CÁMBIALA POR TU CONTRASEÑA DESEADA
-$correctPassword = "00";
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type');
 
-// Verificar contraseña
-$result = array(
-    'success' => $data['password'] === $correctPassword
-);
-
-// Devolver resultado
-echo json_encode($result);
-?>
+$password = au_password_recibida();
+$ok = au_comprobar('acceso', $password);
+if ($ok) {
+    au_marcar('acceso');
+}
+au_json(200, ['success' => $ok]);

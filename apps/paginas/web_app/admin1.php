@@ -1,16 +1,17 @@
 <?php
+require_once dirname(__DIR__, 3) . '/auth/lib.php';
+
 session_start();
 
 // ========================================
 // 🔐 CONFIGURACIÓN DE ADMINISTRADOR
 // ========================================
 $ADMIN_USER = 'a@a';  // ← CAMBIA TU USUARIO AQUÍ
-$ADMIN_PASSWORD = '0';  // ← CAMBIA TU CONTRASEÑA AQUÍ
 // ========================================
 
 // Verificar login
 if (isset($_POST['login'])) {
-    if ($_POST['username'] === $ADMIN_USER && $_POST['password'] === $ADMIN_PASSWORD) {
+    if ($_POST['username'] === $ADMIN_USER && au_autorizado('acceso', (string) ($_POST['password'] ?? ''))) {
         $_SESSION['admin_logged'] = true;
     } else {
         $error = 'Usuario o contraseña incorrectos';

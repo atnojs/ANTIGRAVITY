@@ -6151,9 +6151,16 @@ function Lightbox({ src, onClose }) {
 }
 
 /* ═══════════════════════════════════════════════
-   COMPONENT: PasswordModal (Edit access)
+   COMPONENT: PasswordModal (edit access / publish)
    ═══════════════════════════════════════════════ */
-function PasswordModal({ onSubmit, onClose }) {
+function PasswordModal({
+    onSubmit,
+    onClose,
+    titulo = '🔒 Edición protegida',
+    descripcion = 'Introduce la contraseña para añadir, editar o eliminar trucos.',
+    etiquetaBoton = '🔓 Continuar',
+    ariaLabel = 'Contraseña de edición',
+}) {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -6182,14 +6189,14 @@ function PasswordModal({ onSubmit, onClose }) {
 
     return (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-            <div className="modal" role="dialog" aria-modal="true" aria-label="Contraseña de edición">
+            <div className="modal" role="dialog" aria-modal="true" aria-label={ariaLabel}>
                 <div className="modal-header">
-                    <h2>🔒 Edición protegida</h2>
+                    <h2>{titulo}</h2>
                     <button className="modal-close" onClick={onClose} aria-label="Cerrar">✕</button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body">
-                        <p style={{marginTop:0,color:'var(--muted)'}}>Introduce la contraseña para añadir, editar o eliminar trucos.</p>
+                        <p style={{marginTop:0,color:'var(--muted)'}}>{descripcion}</p>
                         <label htmlFor="edit-password">Contraseña</label>
                         <input
                             id="edit-password"
@@ -6203,7 +6210,7 @@ function PasswordModal({ onSubmit, onClose }) {
                     </div>
                     <div className="modal-footer">
                         <button type="button" className="btn btn-glass" onClick={onClose} disabled={submitting}>Cancelar</button>
-                        <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Comprobando…' : '🔓 Continuar'}</button>
+                        <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Comprobando…' : etiquetaBoton}</button>
                     </div>
                 </form>
             </div>
@@ -7106,8 +7113,12 @@ function App() {
     const [loading, setLoading] = useState(false);
     const [editUnlocked, setEditUnlocked] = useState(false);
     // La contraseña de edición se guarda SOLO en memoria mientras dura la sesión
-    // de edición: sirve para que publicar.php valide la petición contra auth.php.
+    // de edición.
     const [editPassword, setEditPassword] = useState('');
+    // Publicar en GitHub pide la contraseña de ACCESO (otra distinta). También
+    // vive solo en memoria y se pide la primera vez que se publica.
+    const [publishPassword, setPublishPassword] = useState('');
+    const [showPublishModal, setShowPublishModal] = useState(false);
     const [publicando, setPublicando] = useState(false);
     const [estadoPublicar, setEstadoPublicar] = useState('');
     // '' = todas las carpetas (solo lo cambiado); si no, el id de UNA carpeta.
@@ -7363,9 +7374,15 @@ function App() {
     }, [editPassword]);
 
     /** Publica en GitHub la diferencia con el catálogo de serie. */
-    const publicarCambios = useCallback(async () => {
+    const publicarCambios = useCallback(async (passwordExplicita) => {
         if (!editPassword) {
             addToast('Vuelve a entrar en modo edición para publicar', 'error');
+            return;
+        }
+        const passwordPublicacion = passwordExplicita || publishPassword;
+        if (!passwordPublicacion) {
+            // La contraseña de publicación se pide aparte (es la de acceso).
+            setShowPublishModal(true);
             return;
         }
         // Carpetas y su orden: datos globales, van en CUALQUIER publicación
@@ -7419,7 +7436,7 @@ function App() {
         setPublicando(true);
         setEstadoPublicar('Publicando…');
         try {
-            const r = await publishCatalogue(editPassword, catalogo, imagenes,
+            const r = await publishCatalogue(passwordPublicacion, catalogo, imagenes,
                 `publicar${nombreCarpeta ? ' ' + nombreCarpeta : ''}: ${resumen.cambiadas} tarjetas, ` +
                 `${resumen.nuevas} nuevas, ${resumen.imagenes} imágenes` +
                 (carpetasCambian ? `, ${resumen.carpetas} carpetas` : ''));
@@ -7459,7 +7476,31 @@ function App() {
         } finally {
             setPublicando(false);
         }
-    }, [editPassword, tricks, addToast, carpetaPublicar, folders]);
+    }, [editPassword, publishPassword, tricks, addToast, carpetaPublicar, folders]);
+
+    /** Valida la contraseña de publicación contra el endpoint central. */
+    const submitPublishPassword = useCallback(async (password) => {
+        try {
+            const datos = new FormData();
+            datos.append('password', password);
+            datos.append('tipo', 'acceso');
+            const respuesta = await fetch('/auth/validar.php', {
+                method: 'POST',
+                cache: 'no-store',
+                credentials: 'same-origin',
+                body: datos,
+            });
+            const json = await respuesta.json();
+            if (!json || !json.success) return false;
+            setPublishPassword(password);
+            setShowPublishModal(false);
+            publicarCambios(password);
+            return true;
+        } catch (error) {
+            console.error('[TrickVault] No se pudo validar la contraseña de publicación:', error);
+            return false;
+        }
+    }, [publicarCambios]);
 
     const selectCategory = useCallback((catId) => {
         setCurrentCategory(catId);
@@ -7493,6 +7534,8 @@ function App() {
         if (editUnlocked) {
             setEditUnlocked(false);
             setEditPassword('');
+            setPublishPassword('');
+            setShowPublishModal(false);
             setEstadoPublicar('');
             setShowForm(false);
             setEditingTrick(null);
@@ -7717,7 +7760,7 @@ function App() {
                                 ))}
                             </select>
                         </label>
-                        <button type="button" className="btn btn-primary" onClick={publicarCambios} disabled={publicando}>
+                        <button type="button" className="btn btn-primary" onClick={() => publicarCambios()} disabled={publicando}>
                             {publicando ? '⏳ Trabajando…' : '🚀 Publicar cambios'}
                         </button>
                         <button type="button" className="btn btn-glass btn-sm" onClick={comprobarPublicacion} disabled={publicando}>
@@ -7745,6 +7788,17 @@ function App() {
                 <PasswordModal
                     onSubmit={submitEditPassword}
                     onClose={() => { setShowPasswordModal(false); setPendingEditAction(null); }}
+                />
+            )}
+
+            {showPublishModal && (
+                <PasswordModal
+                    onSubmit={submitPublishPassword}
+                    onClose={() => setShowPublishModal(false)}
+                    titulo="🔐 Contraseña de publicación"
+                    descripcion="Publicar en GitHub pide la contraseña de ACCESO del proyecto (no es la de edición)."
+                    etiquetaBoton="🚀 Publicar"
+                    ariaLabel="Contraseña de publicación"
                 />
             )}
 

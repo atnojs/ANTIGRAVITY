@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__DIR__, 3) . '/auth/lib.php';
+
 header('Content-Type: application/json');
 $input = file_get_contents('php://input');
 $data = json_decode($input, true);
@@ -8,7 +10,7 @@ if (!$data) {
     exit;
 }
 
-if ($data['password'] === '0') {
+if (au_autorizado('edicion', (string) ($data['password'] ?? ''))) {
     $ruta = __DIR__ . '/estado_galeria.json';
     $resultado = file_put_contents($ruta, json_encode([
         'background' => $data['background'],

@@ -1,11 +1,12 @@
 <?php
+require_once dirname(__DIR__, 3) . '/auth/lib.php';
+
 // guardar_cambios.php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 header('Content-Type: application/json');
 
-$correctPassword = '0'; // Contraseña real (la misma que en validar_password.php)
 $baseDir = __DIR__; // Directorio actual del script PHP
 $uploadDir = $baseDir . '/uploads/'; // Directorio para UPLOADS, relativo al script PHP
 
@@ -34,7 +35,7 @@ $uploadUrlBase = rtrim($relativePathFromDocRootToUploads, '/') . '/';
 
 
 // --- Autenticación ---
-if (!isset($_POST['password']) || $_POST['password'] !== $correctPassword) {
+if (!au_autorizado('edicion', (string) ($_POST['password'] ?? ''))) {
     die(json_encode(['success' => false, 'error' => 'Autenticación fallida para guardar.']));
 }
 

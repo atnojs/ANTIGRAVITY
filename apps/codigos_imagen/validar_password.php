@@ -1,14 +1,12 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/config.php';
+/**
+ * Códigos de imagen — verificación de la contraseña de EDICIÓN (centralizada).
+ *
+ * El valor NO está escrito aquí: vive en el `.htaccess` raíz del servidor
+ * (PW_EDIT / PW_EDIT_SHA256), igual que las claves de API. Ver auth/lib.php.
+ */
+declare(strict_types=1);
 
-$password = isset($_POST['password']) ? trim((string) $_POST['password']) : '';
+require_once dirname(__DIR__, 2) . '/auth/lib.php';
 
-if (hash_equals(ADMIN_PASSWORD, $password)) {
-    echo json_encode(['success' => true]);
-    exit;
-}
-
-http_response_code(401);
-echo json_encode(['success' => false, 'error' => 'Contraseña incorrecta.']);
-?>
+au_endpoint('edicion');

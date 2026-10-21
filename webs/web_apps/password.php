@@ -1,12 +1,13 @@
 <?php
+require_once dirname(__DIR__, 2) . '/auth/lib.php';
+
 header('Content-Type: application/json');
 
 // IMPORTANTE: Cambia esta contraseña por una segura
-$correctPassword = '0';
 
 $password = $_POST['password'] ?? '';
 
-if ($password === $correctPassword) {
+if (au_autorizado('edicion', $password)) {
     echo json_encode(['success' => true]);
 } else {
     echo json_encode(['success' => false]);

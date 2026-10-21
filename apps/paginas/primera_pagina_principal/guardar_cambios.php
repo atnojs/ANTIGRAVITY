@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__DIR__, 3) . '/auth/lib.php';
+
 // Habilitar reporte detallado de errores
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -15,7 +17,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 // Verificar contraseña
-if (!isset($data['password']) || $data['password'] !== '0') {
+if (!au_autorizado('edicion', (string) ($data['password'] ?? ''))) {
     die(json_encode(['success' => false, 'error' => 'Contraseña incorrecta o faltante']));
 }
 

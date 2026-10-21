@@ -1,12 +1,12 @@
 <?php
-session_start();
-$correctPassword = '1'; // Cambia este valor por la contraseña real que desees
+/**
+ * Verificación de la contraseña de EDICIÓN (centralizada).
+ *
+ * El valor NO está escrito aquí: vive en el `.htaccess` raíz del servidor
+ * (PW_EDIT / PW_EDIT_SHA256), igual que las claves de API. Ver auth/lib.php.
+ */
+declare(strict_types=1);
 
-// Leer los datos enviados en formato JSON
-$data = json_decode(file_get_contents('php://input'), true);
-$input = isset($data['password']) ? $data['password'] : '';
+require_once dirname(__DIR__, 3) . '/auth/lib.php';
 
-header('Content-Type: application/json');
-echo json_encode(['success' => $input === $correctPassword]);
-exit;
-?>
+au_endpoint('edicion');
