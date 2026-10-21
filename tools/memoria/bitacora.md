@@ -5,6 +5,22 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-19 — TrickVault: 8 códigos de la infografía de 30 transformaciones
+
+Tercera tanda de imágenes del día (30 transformaciones: /tinyhumans, /giantmode, /pixelart…).
+De los 30, 22 ya estaban; entran **8**: `/clay`, `/toyversion`, `/dollhouse`, `/glass`,
+`/gold`, `/weatherchange`, `/timetravel` y `/aging`.
+
+- Array `TURN_CODES` con ids `turn-cmd-001…008` al final de `SEED_TRICKS`.
+- El bucle que inyecta los prompts de las infografías ahora recorre
+  `[...VIRAL_CODES, ...TURN_CODES]`, así que tampoco aquí hay texto duplicado.
+- `/legoify` **no** vuelve: sale en esa infografía, pero se retiró esta mañana por duplicar a
+  `/lego` y su id sigue en `REMOVED_IMAGE_IDS`.
+- **Verificado**: JSX OK (1.017.612 chars) y script de los 8 (carpeta, prompt largo, sin
+  repetidos) todo OK.
+
+---
+
 ## 2026-10-19 — TrickVault: 21 códigos de imagen de «Viral ChatGPT AI Image Commands»
 
 Después de la infografía de texto, Antonio mandó dos de códigos de **imagen** (tandas 89-99 y

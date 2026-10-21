@@ -757,6 +757,15 @@ const CODE_FOLDER = {
     '/90s': 'xl-estilos',
     '/posterdesign': 'xl-carteles',
     '/midjourneystyle': 'xl-estilos',
+    // ── Infografía de 30 transformaciones (2026-10-19) ──
+    '/clay': 'xl-efectosempaque',
+    '/toyversion': 'xl-letras3d',
+    '/dollhouse': 'xl-efectosempaque',
+    '/glass': 'xl-efectosempaque',
+    '/gold': 'xl-efectosempaque',
+    '/weatherchange': 'xl-escenaprueba',
+    '/timetravel': 'xl-otromundo',
+    '/aging': 'xl-camararetrato',
 };;
 
 const DIFFICULTIES = [
@@ -3413,6 +3422,19 @@ const VIRAL_CODES = [
     ['/midjourneystyle', 'estética estilo Midjourney', 'Midjourney-style artwork of [OBJETO], cinematic lighting, intricate detail, dreamlike color grading.'],
 ];
 
+// 8 códigos de la infografía de 30 transformaciones (2026-10-19): los otros 22
+// ya estaban (y /legoify se retiró a propósito por duplicar a /lego).
+const TURN_CODES = [
+    ['/clay', 'sujeto como escultura de arcilla', 'Turn the subject into a hand-sculpted clay sculpture of [OBJETO], visible fingerprints, matte terracotta tones, soft studio lighting, stop-motion character look.'],
+    ['/toyversion', 'sujeto convertido en juguete coleccionable', 'Turn the subject into a collectible vinyl toy of [OBJETO], glossy paint, chunky simplified shapes, product photography on a clean background.'],
+    ['/dollhouse', 'escena como casa de muñecas', 'Turn the scene of [OBJETO] into a detailed miniature dollhouse cutaway, tiny furniture, warm interior lights, tilt-shift look.'],
+    ['/glass', 'sujeto reconstruido en cristal', 'Rebuild the subject [OBJETO] entirely from clear glass, transparent surfaces, caustic light refractions, studio background.'],
+    ['/gold', 'versión de lujo en oro', 'Transform [OBJETO] into a luxury solid gold version, polished metal, warm reflections, dark elegant background.'],
+    ['/weatherchange', 'misma escena con otro clima', 'Show [OBJETO] under different weather in one composition, split panels of sun, rain, snow and fog.'],
+    ['/timetravel', 'escena llevada a otra época', 'Transform the scene of [OBJETO] into another era, historical setting with period details and aged textures.'],
+    ['/aging', 'sujeto envejecido por décadas', 'Show [OBJETO] ageing over decades, four-stage progression from young to old, consistent subject.'],
+];
+
 const SEED_TRICKS = [
     ...RESTORED_VARIANTS,
     { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'xl-dev', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
@@ -3542,6 +3564,21 @@ const SEED_TRICKS = [
         description: '',
         category: CODE_FOLDER[command] || 'xl-estilos',
         tags: ['comandos de imagen', 'imagen', 'Viral'],
+        codeSnippet: command,
+        difficulty: 'beginner',
+        sourceUrl: '',
+        imageUrl: '',
+        isFavorite: false,
+        createdAt: Date.UTC(2026, 9, 19) - index,
+        updatedAt: Date.UTC(2026, 9, 19),
+    })),
+    // Códigos de la infografía de 30 transformaciones (2026-10-19).
+    ...TURN_CODES.map(([command, meaning], index) => ({
+        id: `turn-cmd-${String(index + 1).padStart(3, '0')}`,
+        title: `${command} — ${meaning}`,
+        description: '',
+        category: CODE_FOLDER[command] || 'xl-efectosempaque',
+        tags: ['comandos de imagen', 'imagen', 'Transformaciones'],
         codeSnippet: command,
         difficulty: 'beginner',
         sourceUrl: '',
@@ -5038,9 +5075,10 @@ const PROMPT_TEMPLATES = {
     "/MINTMUSE": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Mint muse beauty portrait of [OBJETO]: editorial beauty close-up with mint green and soft pink watercolour background, pink eyeshadow and blush, freckles, floral statement earrings, paint splatters and drips, high-fashion beauty editorial, soft studio light, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
 };;
 
-// Prompts de los 21 códigos de «Viral ChatGPT AI Image Commands»: se construyen
-// desde VIRAL_CODES para no tener el mismo texto escrito dos veces.
-for (const [codigo, , estilo] of VIRAL_CODES) {
+// Prompts de los códigos de las infografías «Viral ChatGPT» y de las 30
+// transformaciones: se construyen desde sus arrays para no tener el mismo texto
+// escrito dos veces.
+for (const [codigo, , estilo] of [...VIRAL_CODES, ...TURN_CODES]) {
     PROMPT_TEMPLATES[codigo] = `${IMAGE_STYLE_PREFIX_TEXT} ${estilo} 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English`;
 }
 
