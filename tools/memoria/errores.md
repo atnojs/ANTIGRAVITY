@@ -12,12 +12,17 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
   >10 min en aparecer. La `Last-Modified` del `index.html` era posterior al push.
 - **Causa:** el webhook iba atrasado y desplegó un commit **anterior** (que aún tenía la agenda
   vieja). Cualquier despliegue posterior restaura las carpetas versionadas, así que borrar a mano
-  no sirve de nada. Lo único que sustituye una carpeta es **cambiarla en Git**.
+  no sirve de nada. Lo único que sustituye una carpeta es **cambiarla en Git**. Además la cola de
+  despliegue de Hostinger aplica los commits **de uno en uno y en orden**: tras un push puede
+  seguir sirviendo el árbol de un commit anterior durante 10-30 min (en esta sesión se vio una
+  app mezclada: `src/` nuevo con `index.html`/`auth.php` viejos). El estado final se reconoce por
+  `auth.php` → `"version":"2.0.0"` y `index.html` citando el asset nuevo.
 - **Solución:** no borrar en hPanel; hacer commit+push del cambio y esperar (o reempujar). Para
   comprobar qué versión sirve el origen, `GET /apps/agenda/auth.php` devuelve `"version":"2.0.0"` y
   `GET /apps/agenda/api/health` existe solo en la nueva.
 - **Verificación:** `curl`/Node contra `auth.php` y `api/health`; el `index.html` debe citar el
-  asset con hash nuevo.
+  asset con hash nuevo. Si el usuario sigue viendo la versión vieja con el origen ya correcto, es
+  caché de su navegador/CDN: `Ctrl+F5`.
 
 ### [2026-10-21] En DSH, `npm install` y `vite build` fallan con `spawn EPERM`
 

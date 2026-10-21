@@ -1429,9 +1429,16 @@ corre, así que se portó la app a estático + PHP conservando diseño y funcion
   por texto (cita detectada), subida de **WAV real con voz TTS** → transcripción OpenAI correcta
   («Mañana a las 10 reunión con Ana…»), reproductor y descarga con sesión (200), 401 sin sesión,
   logout, tres anchos (1280/768/393), consola **0 errores**. Datos de prueba borrados (stats a 0).
-- **Lighthouse producción (móvil, con sesión):** 95 / 86 / 96 / 100 tras corregir nombres
-  accesibles y contraste AA (`aria-label` en botones/selects de los modales y overrides de
-  `text-slate-400/500`); antes 72 de accesibilidad.
+- **Lighthouse:** producción (build anterior, móvil y con sesión): **95 / 72 / 96 / 100**. Tras
+  corregir nombres accesibles y contraste AA (`aria-label` en botones/selects de los modales y
+  overrides de `text-slate-400/500`), el build final mide **100 de accesibilidad** y **0 auditorías
+  binarias fallidas** en local (77/100/100/100; el rendimiento local no es comparable: el servidor
+  PHP de pruebas no tiene CDN ni compresión). Ese build entra en producción con el despliegue en
+  cola; el runtime ya está verificado.
 - **Commits:** `58b4c48` (app), `d468281` (accesibilidad + build). Memoria en el commit siguiente.
+- **Cola de despliegue:** Hostinger aplica los commits **en orden y con retraso** (en esta sesión
+  llegó a servir un commit anterior durante ~20 min y parecía «otra app»). No tocar el servidor a
+  mano: esperar y, si hace falta, reempujar. Si el usuario ve la app vieja, `Ctrl+F5` (caché de
+  navegador/CDN). Ver `errores.md`.
 - **Evidencias:** `tools/evidencias/2026-10-21-agenda/`.
 - **Receta reutilizable:** «portar una app AI Studio React a Hostinger» en `recetas.md`.
