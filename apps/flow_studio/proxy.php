@@ -94,45 +94,91 @@ function buildSystemPrompt(string $ratio): string
         . 'inventar marcas ni personas reales. Cada propuesta debe ser un prompt visual completo de '
         . '45 a 75 palabras con: sujeto y acción, escena, encuadre y objetivo, iluminación, paleta, '
         . 'textura y acabado fotográfico. Formato de imagen objetivo: ' . $ratio . '. '
-        . 'Devuelve EXCLUSIVAMENTE un array JSON válido con 4 objetos, cada uno con las claves '
-        . '"titulo" (3-6 palabras) y "prompt" (el texto). Nada de markdown, nada de explicaciones.';
+        . 'Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta forma exacta: '
+        . '{"options":[{"titulo":"...","prompt":"..."},{"titulo":"...","prompt":"..."},'
+        . '{"titulo":"...","prompt":"..."},{"titulo":"...","prompt":"..."}]}. '
+        . 'Nada de markdown, nada de explicaciones fuera del JSON.';
+}
+
+function extractPromptItem(array $item): ?array
+{
+    $prompt = (string) ($item['prompt'] ?? $item['texto'] ?? $item['text'] ?? $item['descripcion'] ?? '');
+    if (trim($prompt) === '') {
+        return null;
+    }
+    return [
+        'titulo' => textCut(trim((string) ($item['titulo'] ?? $item['title'] ?? $item['nombre'] ?? 'Propuesta')), 40),
+        'prompt' => trim($prompt),
+    ];
 }
 
 function parseOptions(string $content): array
 {
     $text = trim($content);
-    $text = preg_replace('/^```(?:json)?\s*|\s*```$/m', '', $text) ?? $text;
+    $text = preg_replace('/```(?:json|JSON)?\s*/', '', $text) ?? $text;
+    $text = str_replace('```', '', $text);
 
-    $data = json_decode($text, true);
-    if (!is_array($data) && preg_match('/\[.*\]/s', $text, $m)) {
-        $data = json_decode($m[0], true);
+    $candidates = [$text];
+    // Array JSON en cualquier parte del texto (con o sin prosa alrededor).
+    if (preg_match('/\[[\s\S]*\]/u', $text, $m)) {
+        $candidates[] = $m[0];
     }
-    if (is_array($data) && isset($data['options']) && is_array($data['options'])) {
-        $data = $data['options'];
+    // Objeto con la lista dentro.
+    if (preg_match('/\{[\s\S]*\}/u', $text, $m2)) {
+        $candidates[] = $m2[0];
     }
 
     $options = [];
-    if (is_array($data)) {
-        foreach ($data as $item) {
-            if (is_string($item)) {
-                $options[] = ['titulo' => 'Propuesta', 'prompt' => $item];
-            } elseif (is_array($item)) {
-                $prompt = (string) ($item['prompt'] ?? $item['texto'] ?? $item['text'] ?? '');
-                if ($prompt === '') {
-                    continue;
+    foreach ($candidates as $candidate) {
+        $data = json_decode($candidate, true);
+        // Si viene envuelto en un objeto con la lista dentro.
+        if (is_array($data) && !array_is_list($data)) {
+            foreach (['options', 'propuestas', 'opciones', 'items', 'result'] as $key) {
+                if (isset($data[$key]) && is_array($data[$key])) {
+                    $data = $data[$key];
+                    break;
                 }
-                $options[] = [
-                    'titulo' => textCut((string) ($item['titulo'] ?? $item['title'] ?? 'Propuesta'), 40),
-                    'prompt' => $prompt,
-                ];
             }
+        }
+        if (!is_array($data) || !array_is_list($data)) {
+            continue;
+        }
+        foreach ($data as $item) {
+            if (is_string($item) && trim($item) !== '') {
+                $options[] = ['titulo' => 'Propuesta', 'prompt' => trim($item)];
+            } elseif (is_array($item)) {
+                $normalized = extractPromptItem($item);
+                if ($normalized !== null) {
+                    $options[] = $normalized;
+                }
+            }
+            if (count($options) >= 4) {
+                break 2;
+            }
+        }
+        if ($options) {
+            break;
+        }
+    }
+
+    // Último recurso: el modelo contestó en texto con 4 propuestas numeradas.
+    if (!$options) {
+        $blocks = preg_split('/\n(?=\s*(?:\d+[\.\)\-:]|[-*•]))/u', $text) ?: [];
+        foreach ($blocks as $block) {
+            $clean = trim(preg_replace('/^\s*(?:\d+[\.\)\-:]|[-*•])\s*/u', '', $block) ?? $block);
+            $clean = trim(str_replace(['"', '“', '”'], '', $clean));
+            if (textLen($clean) < 40) {
+                continue;
+            }
+            $title = textCut(strtok($clean, ".:\n") ?: 'Propuesta', 40);
+            $options[] = ['titulo' => $title, 'prompt' => textCut($clean, 700)];
             if (count($options) >= 4) {
                 break;
             }
         }
     }
 
-    return $options;
+    return array_slice($options, 0, 4);
 }
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -230,7 +276,11 @@ if (trim($content) === '') {
 
 $options = parseOptions($content);
 if (count($options) < 1) {
-    respond(['ok' => false, 'error' => 'No se pudieron leer las propuestas. Inténtalo otra vez.'], 502);
+    respond([
+        'ok' => false,
+        'error' => 'No se pudieron leer las propuestas. Inténtalo otra vez.',
+        'preview' => textCut(trim($content), 320),
+    ], 502);
 }
 
 respond([
