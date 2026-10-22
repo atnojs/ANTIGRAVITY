@@ -448,6 +448,16 @@ const CODE_FOLDER = {
     '/dobleexposicion-cabana': 'xl-dobleexposicion',
     '/dobleexposicion-futuro': 'xl-dobleexposicion',
     '/dobleexposicion-elementos': 'xl-dobleexposicion',
+    '/dobleexposicion-luzluna': 'xl-dobleexposicion',
+    '/dobleexposicion-tormenta': 'xl-dobleexposicion',
+    '/dobleexposicion-fauna': 'xl-dobleexposicion',
+    '/dobleexposicion-espacio': 'xl-dobleexposicion',
+    '/dobleexposicion-ruinas': 'xl-dobleexposicion',
+    '/dobleexposicion-reflejo': 'xl-dobleexposicion',
+    '/dobleexposicion-floral': 'xl-dobleexposicion',
+    '/dobleexposicion-invierno': 'xl-dobleexposicion',
+    '/dobleexposicion-oceano': 'xl-dobleexposicion',
+    '/dobleexposicion-cielosueno': 'xl-dobleexposicion',
     // Códigos nuevos de los reels y los carruseles (2026-10-13).
     '/relight': 'xl-estilos',
     '/enhance': 'xl-estilos',
@@ -3122,6 +3132,17 @@ const CAPTURE_COMMANDS = [
     ['/dobleexposicion-cabana', 'retrato con cabaña en el bosque y lago'],
     ['/dobleexposicion-futuro', 'retrato con ciudad futurista y coches voladores'],
     ['/dobleexposicion-elementos', 'retrato con los cuatro elementos'],
+    // Parte 9 de la hoja (2026-10-22): 10 dobles exposiciones mas.
+    ['/dobleexposicion-luzluna', 'retrato con lago a la luz de la luna y cabaña'],
+    ['/dobleexposicion-tormenta', 'retrato con tormenta, rayos y faro'],
+    ['/dobleexposicion-fauna', 'retrato con fauna del bosque y ciervos'],
+    ['/dobleexposicion-espacio', 'retrato con galaxia, planetas y nebulosa'],
+    ['/dobleexposicion-ruinas', 'retrato con ruinas antiguas y cascadas'],
+    ['/dobleexposicion-reflejo', 'retrato con ciudad moderna reflejada en el agua'],
+    ['/dobleexposicion-floral', 'retrato con flores, mariposas y cascada'],
+    ['/dobleexposicion-invierno', 'retrato con paisaje nevado y cabaña'],
+    ['/dobleexposicion-oceano', 'retrato con fondo marino y ballena'],
+    ['/dobleexposicion-cielosueno', 'retrato con islas flotantes y cielo de ensueño'],
 ];
 
 // Variantes personales recuperadas de la copia de seguridad de Antonio.
@@ -5023,6 +5044,17 @@ const PROMPT_TEMPLATES = {
     "/dobleexposicion-cabana": "Double exposure photo of a woman's side profile with a cabin in the forest, lake reflection, pine trees, mountains, moonlight, clouds, cinematic lighting, vibrant colors, highly detailed, realistic.",
     "/dobleexposicion-futuro": "Double exposure photo of a man's side profile with a future city, flying cars, high-rise buildings, a person standing, neon lights, dramatic sky, cinematic lighting, vibrant colors, highly detailed, realistic.",
     "/dobleexposicion-elementos": "Double exposure photo of a woman's side profile with four elements, water, fire, air, mountain waves, trees, birds, dramatic sky, cinematic lighting, vibrant colors, highly detailed, realistic.",
+    // Parte 9 (2026-10-22).
+    "/dobleexposicion-luzluna": "Double exposure photo of a man's side profile with a moonlight lake, mountains, trees, a small cabin, full moon, water reflection, cinematic lighting, cool tones, highly detailed, realistic.",
+    "/dobleexposicion-tormenta": "Double exposure photo of a woman's side profile with a stormy sky, lightning clouds, lighthouse, ocean waves, rocks, dramatic lighting, cinematic, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-fauna": "Double exposure photo of a man's side profile with a forest wildlife scene, deer, trees, river, sunrise light, birds flying, cinematic lighting, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-espacio": "Double exposure photo of a woman's side profile with a galaxy, planets, stars, nebula, a person standing on a mountain, cosmic background, cinematic, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-ruinas": "Double exposure photo of a man's side profile with ancient temple ruins, waterfalls, mountains, trees, birds, sunset sky, cinematic lighting, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-reflejo": "Double exposure photo of a woman's side profile with a modern city skyline, bridge, water reflection, night lights, sunset sky, cinematic, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-floral": "Double exposure photo of a woman's side profile with flowers, trees, butterflies, river, waterfall, sunlight, nature elements, cinematic lighting, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-invierno": "Double exposure photo of a man's side profile with a snowy mountain scene, cabin, pine trees, snowfall, sunset sky, cinematic lighting, cool and warm tones, highly detailed, realistic.",
+    "/dobleexposicion-oceano": "Double exposure photo of a woman's side profile with an underwater ocean world, whale, fish, coral reefs, sunlight rays, bubbles, cinematic, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-cielosueno": "Double exposure photo of a man's side profile with floating islands, a person sitting, trees, clouds, moon, cosmic lighting, vibrant colors, highly detailed, realistic.",
     // Códigos nuevos de los reels y los carruseles (2026-10-13).
     "/relight": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Studio relighting of [OBJETO]: rebuild the existing light, balance the exposure between highlights and shadows, open the dark areas without washing them out, recover detail in the brightest highlights, add a soft directional key light with a gentle fill and a subtle rim, natural light falloff, believable contact shadows, consistent white balance, no blown highlights, no crushed blacks, no halos and no plastic look, keeping the subject, the framing and the original textures untouched, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/enhance": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. High-end detail enhancement of [OBJETO]: recover micro-detail and real texture, sharpen the subject with clean edges, remove noise, jpeg blocking and compression artifacts, restore the fine grain of skin, fabric, hair and surfaces, keep natural contrast and colour, no over-sharpening halos, no plastic smoothing and no invented information, without changing the composition, the framing or the identity of the subject, printed quality result, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
