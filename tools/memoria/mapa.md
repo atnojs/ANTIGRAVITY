@@ -65,6 +65,7 @@ estructura y dónde buscar, no la descripción de cada app.
 | Recrear una interfaz desde una captura o referencia | `recrear-desde-referencia` |
 | Plan por fases con riesgos | `planificacion-pro` |
 | Investigar una URL, un vídeo o un tema con fuentes verificadas | `investigacion` |
+| Convertir un fallo en una regla con evidencia (biblioteca de experiencia) | `mejora-continua` |
 | Opciones creativas con criterio | `brainstorming-pro` |
 | Prompts con el Método Copiloto | `metodo-copiloto` |
 | Crear o estandarizar una skill | `creador-de-skills-antigravity` · `estandarizador-skills-antigravity` |
