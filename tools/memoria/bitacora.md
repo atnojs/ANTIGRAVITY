@@ -5,6 +5,24 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-22 — Google Flow como MCP del harness (`mcp__flow__*`)
+
+- Montado un servidor MCP propio (stdio, sin dependencias externas) que envuelve la CLI de
+  `E:\herramientas\google-flow`: `mcp_flow_server.py`, con las herramientas `flow_status`,
+  `flow_image` (Nano Banana, ratios y modelos), `flow_video` (Veo) y `flow_batch`. Cada llamada
+  ejecuta `flow.py` con `FLOW_HEADLESS=true` y un lock de archivo para no solapar generaciones
+  sobre el mismo perfil de Chrome.
+- Registrado en `E:\dsh\cordis.patch.yml` (capa de usuario: `serverName: flow`, `stdio`,
+  `toolCallTimeoutMs: 1800000`). El harness vigila ese archivo y recarga en caliente: el servidor
+  arrancó solo, sin reiniciar el harness. Las herramientas aparecen como `mcp__flow__<nombre>`.
+- Verificado de punta a punta por protocolo: `initialize`, `tools/list`, `flow_status` y una
+  generación real (`outputs/mcp_test.jpg`, 1200x896), más dos pruebas por CLI (1:1 y 16:9).
+- Fallo corregido: Flow devuelve JPEG aunque el archivo se pida `.png`. `flow_provider/download.py`
+  detecta la cabecera y renombra a la extensión real; `_resolve_asset` (encadenado img→video) y
+  `flow_queue_worker.py` ya no asumen `.png`.
+- No se instaló el MCP de terceros del vídeo (srceta.club): exigía registro y era código ajeno;
+  el envoltorio local hace lo mismo sobre la sesión de Google ya validada.
+
 ## 2026-10-21 (quinta parte) — Contraseñas centralizadas en el `.htaccess` raíz
 
 Antonio: «la contraseña para editar cualquier app/web → `0`; para acceder → `[ELIMINADO]`; que las
