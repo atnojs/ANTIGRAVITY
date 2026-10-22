@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flow Studio · Imágenes gratis con Google Flow</title>
+<meta name="description" content="Genera imágenes gratis con Google Flow desde el navegador. Tu PC hace el trabajo: sin claves, sin suscripciones y con historial guardado.">
+<meta name="theme-color" content="#08090b">
+<meta property="og:title" content="Flow Studio · Imágenes gratis con Google Flow">
+<meta property="og:description" content="Describe la imagen, elige formato y modelo. Tu PC la genera con Google Flow y la descarga en segundos.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300D0D0'/%3E%3Cstop offset='1' stop-color='%2326C626'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%230a0b0d'/%3E%3Cpath d='M20 44V20h22v7H28v5h11v7H28v5z' fill='url(%23g)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <h1>FLOW <span>STUDIO</span></h1>
+        <span class="tag-free">GRATIS</span>
+    </div>
+    <div class="topbar-actions">
+        <div id="workerStatus" class="status-pill" role="status" aria-live="polite">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="txt">Comprobando PC…</span>
+        </div>
+        <button id="btnHistory" class="ghost-btn" aria-controls="historyPanel" aria-expanded="false">
+            Historial
+        </button>
+    </div>
+</header>
+
+<main class="layout">
+
+    <section class="composer" aria-labelledby="composerTitle">
+        <div class="composer-head">
+            <h2 id="composerTitle">Describe la imagen</h2>
+            <p>Se genera en tu PC con Google Flow. Sin claves y sin coste por imagen.</p>
+        </div>
+
+        <label class="sr-only" for="prompt">Prompt de la imagen</label>
+        <textarea id="prompt" maxlength="1200" spellcheck="true"
+            placeholder="Ej.: Portaaviones nuclear navegando al atardecer, cazas aparcados en cubierta, estela de espuma, fotografía militar realista"></textarea>
+        <div class="counter"><span id="charCount">0</span>/1200</div>
+
+        <fieldset class="control">
+            <legend>Modelo</legend>
+            <div class="chips" id="modelChips">
+                <button type="button" class="chip is-active" data-model="Nano Banana 2">Nano Banana 2</button>
+                <button type="button" class="chip" data-model="Nano Banana Pro">Nano Banana Pro</button>
+                <button type="button" class="chip" data-model="Nano Banana 2 Lite">2 Lite</button>
+            </div>
+        </fieldset>
+
+        <fieldset class="control">
+            <legend>Formato</legend>
+            <div class="chips" id="ratioChips">
+                <button type="button" class="chip is-active" data-ratio="1:1"><span class="ratio-ico r-1-1" aria-hidden="true"></span>1:1</button>
+                <button type="button" class="chip" data-ratio="16:9"><span class="ratio-ico r-16-9" aria-hidden="true"></span>16:9</button>
+                <button type="button" class="chip" data-ratio="9:16"><span class="ratio-ico r-9-16" aria-hidden="true"></span>9:16</button>
+                <button type="button" class="chip" data-ratio="4:3"><span class="ratio-ico r-4-3" aria-hidden="true"></span>4:3</button>
+                <button type="button" class="chip" data-ratio="3:4"><span class="ratio-ico r-3-4" aria-hidden="true"></span>3:4</button>
+            </div>
+        </fieldset>
+
+        <fieldset class="control">
+            <legend>Cantidad</legend>
+            <div class="chips" id="countChips">
+                <button type="button" class="chip is-active" data-count="1">1</button>
+                <button type="button" class="chip" data-count="2">2</button>
+                <button type="button" class="chip" data-count="3">3</button>
+                <button type="button" class="chip" data-count="4">4</button>
+            </div>
+        </fieldset>
+
+        <button id="btnGenerate" class="btn-generate" type="button">
+            <svg id="btnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3v3M12 18v3M4.2 7.5l2.6 1.5M17.2 15l2.6 1.5M4.2 16.5l2.6-1.5M17.2 9l2.6-1.5"/>
+                <circle cx="12" cy="12" r="3.4"/>
+            </svg>
+            <span id="btnLabel">GENERAR</span>
+        </button>
+
+        <p class="queue-note" id="queueNote"></p>
+    </section>
+
+    <section class="studio" aria-labelledby="studioTitle">
+        <div class="studio-head">
+            <h2 id="studioTitle">Lienzo</h2>
+            <div class="studio-tools">
+                <span class="studio-count" id="studioCount"></span>
+                <button type="button" id="btnClear" class="ghost-btn small">Limpiar</button>
+            </div>
+        </div>
+
+        <div id="grid" class="grid" aria-live="polite">
+            <div class="empty" id="emptyState">
+                <strong>Tu lienzo está vacío</strong>
+                <p>Escribe un prompt a la izquierda y pulsa Generar. La imagen se crea con tu cuenta de Flow en el PC y aparece aquí en un par de minutos.</p>
+                <div class="examples">
+                    <button type="button" class="example" data-example="Portaaviones nuclear navegando al atardecer, cazas aparcados en la cubierta, estela de espuma, fotografía militar realista">Portaaviones al atardecer</button>
+                    <button type="button" class="example" data-example="Calle de Tokio de noche bajo la lluvia, letreros de neón reflejados en el asfalto, plano cinematográfico">Tokio bajo la lluvia</button>
+                    <button type="button" class="example" data-example="Retrato de una anciana leyendo en una biblioteca, luz de ventana lateral, estilo fotográfico, alto detalle">Retrato en biblioteca</button>
+                    <button type="button" class="example" data-example="Bodegón publicitario de un frasco de perfume sobre mármol, luz suave de estudio, fondo degradado cian y verde">Bodegón de producto</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<aside id="historyPanel" class="history-panel" aria-label="Historial de imágenes" aria-hidden="true">
+    <div class="history-head">
+        <h2>Historial</h2>
+        <button type="button" id="btnHistoryClose" class="ghost-btn small">Cerrar</button>
+    </div>
+    <div class="history-list" id="historyList">
+        <p class="history-empty">Cargando historial…</p>
+    </div>
+</aside>
+
+<div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Imagen ampliada">
+    <button type="button" id="lightboxClose" class="lightbox-close" aria-label="Cerrar">×</button>
+    <img id="lightboxImg" alt="">
+    <p class="lightbox-caption" id="lightboxCaption"></p>
+</div>
+
+<div class="loading-overlay hidden" id="loadingOverlay" role="status" aria-live="polite">
+    <div class="spinner-triple" aria-hidden="true">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+    </div>
+    <p class="loading-text" id="loadingText">IA generando obra maestra…</p>
+    <p class="loading-sub" id="loadingSub">Flow está trabajando en tu PC. Puedes seguir en segundo plano.</p>
+    <button type="button" id="btnHideOverlay" class="ghost-btn small">Seguir en segundo plano</button>
+</div>
+
+<noscript>
+    <p style="padding:24px;color:#f3f6f8">Flow Studio necesita JavaScript para hablar con la cola de generación.</p>
+</noscript>
+
+<script src="history-manager.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
