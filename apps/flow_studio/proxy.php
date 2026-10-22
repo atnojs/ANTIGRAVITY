@@ -92,7 +92,7 @@ function buildSystemPrompt(string $ratio): string
     return 'Eres director de arte y fotógrafo especializado en prompts para modelos de imagen '
         . '(Nano Banana / Google Flow). Reescribes la idea del usuario en español de España, sin '
         . 'inventar marcas ni personas reales. Cada propuesta debe ser un prompt visual completo de '
-        . '45 a 75 palabras con: sujeto y acción, escena, encuadre y objetivo, iluminación, paleta, '
+        . '40 a 55 palabras con: sujeto y acción, escena, encuadre y objetivo, iluminación, paleta, '
         . 'textura y acabado fotográfico. Formato de imagen objetivo: ' . $ratio . '. '
         . 'Devuelve EXCLUSIVAMENTE un objeto JSON válido con esta forma exacta: '
         . '{"options":[{"titulo":"...","prompt":"..."},{"titulo":"...","prompt":"..."},'
@@ -233,7 +233,7 @@ $payload = [
         ['role' => 'user', 'content' => $prompt],
     ],
     'temperature' => 0.85,
-    'max_tokens' => 800,
+    'max_tokens' => 650,
 ];
 
 $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
@@ -296,3 +296,4 @@ respond([
     'original' => $prompt,
     'options' => array_slice($options, 0, 4),
 ]);
+
