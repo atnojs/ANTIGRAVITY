@@ -5,6 +5,28 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-22] Flow falla en 2 s: Chrome con el perfil abierto y lock del worker zombi
+
+- **Síntoma:** los trabajos de la cola de Flow Studio pasaban a `error` a los dos segundos y el
+  mensaje solo mostraba el final de un traceback de `asyncio` (`RuntimeError: ... base_events.py`),
+  sin decir nada útil.
+- **Causa real (dos a la vez):**
+  1. Había un Chrome abierto a mano con `--user-data-dir=E:\herramientas\google-flow\session\flowbot-profile`
+     (para capturar la UI de Flow con REA). Playwright **no puede abrir un perfil persistente que ya
+     está en uso**: `flow.py` revienta al arrancar el contexto.
+  2. Al matar un worker anterior quedó `flow_studio_worker.lock`, y el lock solo caducaba por
+     antigüedad (30 min): todo worker nuevo salía con «otro worker en marcha» sin tocar la cola.
+- **Solución:**
+  - Cerrar los Chrome que usen `flowbot-profile` antes de generar:
+    `Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | ? { $_.CommandLine -match 'flowbot-profile' } | % { Stop-Process -Id $_.ProcessId -Force }`.
+  - El worker guarda su PID en el lock y comprueba con `OpenProcess`/`GetExitCodeProcess` si sigue
+    vivo: un lock huérfano se libera al instante.
+  - El worker resume el error real (`^AlgoError:`) en vez de las últimas líneas del traceback.
+- **Regla:** no dejar Chrome abierto con el perfil de Flow mientras se genera; y todo lock propio
+  debe llevar PID, no solo marca de tiempo.
+
+---
+
 ### [2026-10-21] Mover los PCs de habitación: Windows pone la red en Pública y deja de compartir
 
 - **Síntoma:** dos PCs en la misma red doméstica (`PRINCIPAL` 192.168.18.205 y `ANTONIO`

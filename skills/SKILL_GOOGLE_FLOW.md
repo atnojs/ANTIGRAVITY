@@ -9,7 +9,12 @@ description: "SOLO para videos gratis (Veo) vía Google Flow con la CLI instalad
 
 Esta skill no define un selector de imágenes propio. Cuando una app o web incluya generación o edición de imágenes, copiar el bloque vigente de `apps/dibujo_lineas_copia`: fila superior `OPENAI 2.5` (`MEDIUM`, `HIGH`, `MAX FLARE` del modelo flare, y `XHIGH`, `MAX SUNBURST` del modelo sunburst) y fila inferior `GEMINI` (`3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`LOW` activo por defecto, `MEDIUM`, `HIGH`). Orden: de izquierda a derecha, de menor a mayor calidad dentro de cada modelo real. No reutilizar selectores, proveedores ni ejemplos anteriores.
 
-El modelo `flow` NO va por proxy: usa la cola `flow_queue.php` + worker de PC (`E:/hermes-data/scripts/flow-queue-bridge.py`, cron 5 min). El frontend hace `request` y polea `status`; el worker genera con Flow y sube con `complete`. Patrón completo en `apps/dibujo_lineas_copia/`.
+El modelo `flow` NO va por proxy: usa una cola `flow_queue.php` + worker de PC. La app de
+referencia es `apps/flow_studio/` (cola propia, historial, lightbox y descarga) con el worker
+`E:/herramientas/google-flow/flow_studio_worker.py`, lanzado por la tarea programada
+`FlowStudioWorker` cada 2 minutos. El frontend hace `request` y polea `status`; el worker reclama
+con `claim`, genera con Flow y sube con `complete` (o `fail`). Publicada en
+`https://atnojs.es/apps/flow_studio/`.
 
 ## Instrucciones de ejecución (videos)
 
@@ -28,3 +33,10 @@ El modelo `flow` NO va por proxy: usa la cola `flow_queue.php` + worker de PC (`
 - En LOTES de videos correr con `FLOW_HEADLESS=true` (sin ventana): con ventana visible Chrome puede cerrarse a mitad y se pierde todo. Para `login` sí se necesita la ventana visible. Detalles y flujo de video-vault: `SKILL_VIDEOVAULT_VIDEOS.md`.
 - Abre Chrome visible en el escritorio mientras trabaja: es normal (salvo lotes, ver punto anterior).
 - Esta herramienta es local y no sustituye el bloque canónico de modelos de `apps/dibujo_lineas_copia` en las apps web del proyecto.
+- SIN LÍMITE DE TIEMPO (2026-10-22): fuera los topes de 900 s. `flow.py` espera 30 min por imagen
+  y 60 por vídeo; el worker y el servidor MCP ya no cortan el subproceso; la cola no reencola un
+  `running` hasta las 2 h. Si una generación se cuelga de verdad, se cancela a mano.
+- ANTES DE GENERAR: ningún Chrome puede estar usando `session/flowbot-profile` (Playwright no abre
+  un perfil persistente en uso; `flow.py` muere en 2 s). Cerrar esos procesos primero.
+- Locks con PID: `flow_studio_worker.lock` guarda el PID y se libera si el proceso ya no existe
+  (un lock huérfano dejaba el worker mudo hasta 30 min).

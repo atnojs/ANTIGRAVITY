@@ -5,6 +5,24 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-22 — Flow Studio: app de imágenes gratis con Google Flow (cola + worker)
+
+- App nueva en `apps/flow_studio/`, publicada en `https://atnojs.es/apps/flow_studio/`. Interfaz
+  tipo Flow (oscura, tarjetas redondeadas; UI real capturada con REA desde `flow.google.com`):
+  prompt, modelo (Nano Banana 2 / Pro / 2 Lite), formato 1:1, 16:9, 9:16, 4:3, 3:4, cantidad 1-4,
+  rejilla de resultados, lightbox, descarga real e historial PHP.
+- Motor: `flow_queue.php` (cola JSON con lock, token para el worker, imágenes en `flow_store/`
+  protegido por `.htaccess` y servidas por `?action=img`) + worker de PC
+  `E:\herramientas\google-flow\flow_studio_worker.py`, lanzado por la tarea programada
+  `FlowStudioWorker` cada 2 minutos (`pythonw`, `--minutes 6`).
+- **Sin límite de 900 s**: `wait_for_image` 30 min, `wait_for_video` 60 min, sin `timeout` en los
+  subprocess del worker y del MCP, y la cola no reencola un `running` hasta las 2 h.
+- Fallos corregidos: Flow devuelve JPEG aunque se pida `.png` (se detecta la cabecera); Chrome
+  abierto con `flowbot-profile` rompía la generación; lock del worker huérfano (ahora con PID).
+- Verificado en producción: imagen real en 57 s, descarga de 257 KB comprobada en disco, historial
+  con el elemento guardado, consola limpia y sin desbordes a 1440/820/390 px. Commits `180c685`,
+  `2328d59` y `1141d8b`.
+
 ## 2026-10-22 — Google Flow como MCP del harness (`mcp__flow__*`)
 
 - Montado un servidor MCP propio (stdio, sin dependencias externas) que envuelve la CLI de
