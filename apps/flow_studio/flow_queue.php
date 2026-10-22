@@ -15,7 +15,7 @@ declare(strict_types=1);
 const QUEUE_TOKEN = 'fs7-Qm4xV2tP9kR6wL1z';
 const MAX_PROMPT = 1200;
 const MAX_QUEUE = 12;
-const STALE_RUNNING = 7200;     // 2 h: una generación lenta ya no se reencola
+const STALE_RUNNING = 0;        // 0 = nunca reencolar: sin límite de tiempo (2026-10-22)
 const WORKER_FRESH = 600;       // 10 min sin señales = worker desconectado
 
 header('Content-Type: application/json; charset=utf-8');
@@ -277,7 +277,7 @@ if ($reqAction === 'claim') {
         $q['worker_seen'] = time();
         $now = time();
         foreach ($q['jobs'] as &$j) {
-            if ($j['status'] === 'running' && $now - (int) $j['started'] > STALE_RUNNING) {
+            if (STALE_RUNNING > 0 && $j['status'] === 'running' && $now - (int) $j['started'] > STALE_RUNNING) {
                 $j['status'] = 'queued';
                 $j['started'] = 0;
             }

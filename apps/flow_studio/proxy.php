@@ -233,15 +233,16 @@ $payload = [
         ['role' => 'user', 'content' => $prompt],
     ],
     'temperature' => 0.85,
-    'max_tokens' => 1000,
+    'max_tokens' => 800,
 ];
 
 $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
 curl_setopt_array($ch, [
     CURLOPT_POST => true,
     CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 90,
-    CURLOPT_CONNECTTIMEOUT => 15,
+    // 50 s: por debajo del corte de nginx (60 s) para poder devolver un error claro.
+    CURLOPT_TIMEOUT => 50,
+    CURLOPT_CONNECTTIMEOUT => 10,
     CURLOPT_HTTPHEADER => [
         'Authorization: Bearer ' . $key,
         'Content-Type: application/json',
@@ -257,7 +258,13 @@ $curlError = curl_error($ch);
 curl_close($ch);
 
 if ($response === false) {
-    respond(['ok' => false, 'error' => 'No se pudo contactar con el proveedor de texto.'], 502);
+    $slow = stripos($curlError, 'timed out') !== false || stripos($curlError, 'timeout') !== false;
+    respond([
+        'ok' => false,
+        'error' => $slow
+            ? 'El modelo tardó demasiado (más de 50 s). Vuelve a intentarlo.'
+            : 'No se pudo contactar con el proveedor de texto.',
+    ], 502);
 }
 
 $decoded = json_decode((string) $response, true);
