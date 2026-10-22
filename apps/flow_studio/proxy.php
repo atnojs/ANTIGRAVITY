@@ -262,7 +262,10 @@ for ($attempt = 0; $attempt < 2 && trim($content) === ''; $attempt++) {
             ['role' => 'user', 'content' => $prompt],
         ],
         'temperature' => $attempt === 0 ? 0.85 : 0.6,
-        'max_tokens' => 700,
+        // El modelo es de razonamiento: sin margen se gasta los tokens pensando
+        // y devuelve finish_reason=length con el contenido vacío.
+        'max_tokens' => 2200,
+        'reasoning' => ['effort' => 'low'],
     ];
 
     $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
