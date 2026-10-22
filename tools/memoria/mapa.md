@@ -64,6 +64,7 @@ estructura y dónde buscar, no la descripción de cada app.
 | Verificar el flujo real en navegador (clics, formularios, descargas, consola) | `verificacion-playwright` |
 | Recrear una interfaz desde una captura o referencia | `recrear-desde-referencia` |
 | Plan por fases con riesgos | `planificacion-pro` |
+| Investigar una URL, un vídeo o un tema con fuentes verificadas | `investigacion` |
 | Opciones creativas con criterio | `brainstorming-pro` |
 | Prompts con el Método Copiloto | `metodo-copiloto` |
 | Crear o estandarizar una skill | `creador-de-skills-antigravity` · `estandarizador-skills-antigravity` |
