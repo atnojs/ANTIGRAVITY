@@ -5,6 +5,34 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-22 (tercera parte) — Skill `investigacion` con dossier verificado
+
+- Creada `skills/SKILL_investigacion.md` (puntero en `.claude/skills/investigacion/SKILL.md`):
+  convierte una pregunta, URL o vídeo en `dossier.md` + `fuentes.md`, separando hecho / inferencia /
+  opinión y marcando «sin verificar» lo que no se contrasta. Incluye reparto opcional en cuatro
+  subagentes (explorador, analista, verificador, redactor).
+- Añadido `scripts/investigacion/transcribir_youtube.py`: descarga subtítulos con yt-dlp, tolera
+  que falle un idioma si otro llegó (el 429 de YouTube es habitual), limpia el VTT y deja un `.txt`
+  legible. Probado con el vídeo de DeepSeek Harness (12.652 caracteres).
+- Añadida la fila correspondiente al índice de `mapa.md`. Commit `1c156e2`.
+
+## 2026-10-22 (segunda parte) — Flow Studio: mejorador de prompts con IA y lienzo «lo último primero»
+
+- Añadido `proxy.php`: mejorador de prompts con OpenRouter y el modelo de texto canónico
+  (`xiaomi/mimo-v2.6-pro`). Devuelve 4 propuestas con título; cada una tiene su botón «Usar esta»
+  (y «Copiar»), más un enlace para volver a la idea original. Clave `R` desde el entorno.
+- Lienzo: las tarjetas nuevas se insertan arriba y al cargar se pintan las 8 últimas del historial
+  (la más reciente primero). El prompt queda siempre visible en la tarjeta, se despliega al pulsar
+  y hay botones para reutilizarlo o copiarlo.
+- **Corte de nginx (60 s):** el modelo tardaba ~50 s y el proxy devolvía 504. Ahora la llamada a
+  OpenRouter corta a 50 s con error claro, `max_tokens` 650 y propuestas de 40-55 palabras: ~21 s
+  medidos. Regla general: en Hostinger, toda llamada a IA desde PHP debe responder antes de 50 s o
+  nginx la mata.
+- **Sin techos de tiempo:** cola sin reencolado (`STALE_RUNNING = 0`), flujo interno 30/60 min y
+  `toolCallTimeoutMs` 24 h en el MCP.
+- CDN: al cambiar `app.js`/`app.css` hay que subir la versión (`?v=`) en `index.html`; el CDN seguía
+  sirviendo el JS anterior. Commits `a261301`, `c60d694`, `6a7fb56`, `78db3e1`, `3e8231f`.
+
 ## 2026-10-22 — Flow Studio: app de imágenes gratis con Google Flow (cola + worker)
 
 - App nueva en `apps/flow_studio/`, publicada en `https://atnojs.es/apps/flow_studio/`. Interfaz
