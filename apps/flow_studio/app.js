@@ -5,8 +5,10 @@
     'use strict';
 
     const API = 'flow_queue.php';
+    const AI = 'proxy.php';
     const PENDING_KEY = 'flowStudioPending';
     const POLL_MS = 2500;
+    const HISTORY_ON_CANVAS = 8;
 
     const $ = (sel) => document.querySelector(sel);
 
@@ -37,6 +39,13 @@
         loadingText: $('#loadingText'),
         loadingSub: $('#loadingSub'),
         btnHideOverlay: $('#btnHideOverlay'),
+        btnImprove: $('#btnImprove'),
+        btnImproveLabel: $('#btnImproveLabel'),
+        improveHint: $('#improveHint'),
+        improvePanel: $('#improvePanel'),
+        improveList: $('#improveList'),
+        btnImproveClose: $('#btnImproveClose'),
+        btnRestorePrompt: $('#btnRestorePrompt'),
     };
 
     const state = {
@@ -44,6 +53,8 @@
         ratio: '1:1',
         count: 1,
         busy: false,
+        improveBusy: false,
+        originalPrompt: '',
         jobs: new Map(),   // id -> { id, prompt, ratio, model, status, url, error, el }
         pollTimer: null,
         pingTimer: null,
@@ -53,6 +64,7 @@
     const SVG = {
         download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg>',
         repeat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>',
+        copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
         expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>',
     };
 
@@ -92,9 +104,40 @@
         });
     }
 
+    function escapeHtml(text) {
+        return String(text).replace(/[&<>"']/g, (c) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+        }[c]));
+    }
+
+    async function copyText(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch {
+            const area = document.createElement('textarea');
+            area.value = text;
+            area.style.position = 'fixed';
+            area.style.opacity = '0';
+            document.body.appendChild(area);
+            area.select();
+            let ok = false;
+            try { ok = document.execCommand('copy'); } catch { ok = false; }
+            area.remove();
+            return ok;
+        }
+    }
+
+    /** Inserta tarjetas arriba conservando su orden (cards[0] queda la primera). */
+    function prependInOrder(cards) {
+        for (let i = cards.length - 1; i >= 0; i--) {
+            els.grid.prepend(cards[i]);
+        }
+    }
+
     /* ------------------------------ tarjetas ------------------------------ */
 
-    function createCard(job) {
+    function createCard(job, insert = true) {
         const card = document.createElement('article');
         card.className = 'card is-waiting';
         card.dataset.id = job.id;
@@ -113,18 +156,32 @@
         actions.hidden = true;
         actions.innerHTML = `
             <button type="button" class="icon-btn" data-act="download" aria-label="Descargar imagen">${SVG.download}</button>
-            <button type="button" class="icon-btn" data-act="repeat" aria-label="Reutilizar prompt">${SVG.repeat}</button>
+            <button type="button" class="icon-btn" data-act="repeat" aria-label="Usar este prompt otra vez">${SVG.repeat}</button>
+            <button type="button" class="icon-btn" data-act="copy" aria-label="Copiar el prompt">${SVG.copy}</button>
             <button type="button" class="icon-btn" data-act="expand" aria-label="Ampliar imagen">${SVG.expand}</button>`;
         media.appendChild(actions);
 
         const body = document.createElement('div');
         body.className = 'card-body';
+
         const p = document.createElement('p');
         p.className = 'card-prompt';
         p.textContent = job.prompt;
+        p.title = 'Pulsa para ver el prompt completo';
+        p.setAttribute('role', 'button');
+        p.setAttribute('tabindex', '0');
+        const togglePrompt = () => p.classList.toggle('is-open');
+        p.addEventListener('click', togglePrompt);
+        p.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                togglePrompt();
+            }
+        });
+
         const meta = document.createElement('div');
         meta.className = 'card-meta';
-        meta.innerHTML = `<span>${job.ratio}</span><span>${job.model}</span>`;
+        meta.innerHTML = `<span>${job.ratio}</span>${job.model ? `<span>${job.model}</span>` : ''}`;
         body.append(p, meta);
 
         card.append(media, body);
@@ -132,28 +189,33 @@
         actions.addEventListener('click', async (event) => {
             const btn = event.target.closest('[data-act]');
             if (!btn) return;
-            const record = state.jobs.get(job.id);
-            if (!record) return;
+            const record = state.jobs.get(job.id) || job;
             if (btn.dataset.act === 'download') await downloadImage(record);
             if (btn.dataset.act === 'repeat') {
                 els.prompt.value = record.prompt;
                 updateCounter();
                 els.prompt.focus();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                setNote('Prompt cargado en el editor.');
+            }
+            if (btn.dataset.act === 'copy') {
+                const ok = await copyText(record.prompt);
+                setNote(ok ? 'Prompt copiado.' : 'No se pudo copiar el prompt.', !ok);
             }
             if (btn.dataset.act === 'expand') openLightbox(record.url, record.prompt);
         });
 
-        els.grid.appendChild(card);
-        updateStudioCount();
+        if (insert) {
+            job.el = card;
+            els.grid.prepend(card);
+            updateStudioCount();
+        }
         return card;
     }
 
-    function markRunning(job, index) {
-        const card = job.el;
-        if (!card) return;
-        const label = card.querySelector('.card-wait span:last-child');
-        if (label) label.textContent = index ? `Generando (${index})…` : 'Generando…';
+    function markRunning(job) {
+        const label = job.el && job.el.querySelector('.card-wait span:last-child');
+        if (label) label.textContent = 'Generando…';
     }
 
     function markDone(job, data) {
@@ -162,13 +224,16 @@
         const media = card.querySelector('.card-media');
         const wait = card.querySelector('.card-wait');
         if (wait) wait.remove();
-        const img = document.createElement('img');
+        let img = card.querySelector('img');
+        if (!img) {
+            img = document.createElement('img');
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            media.insertBefore(img, media.firstChild);
+        }
         img.src = data.url;
         img.alt = job.prompt.slice(0, 140);
-        img.loading = 'lazy';
-        img.decoding = 'async';
         img.addEventListener('click', () => openLightbox(data.url, job.prompt));
-        media.insertBefore(img, media.firstChild);
         const actions = card.querySelector('.card-actions');
         if (actions) actions.hidden = false;
         card.classList.remove('is-waiting');
@@ -289,17 +354,41 @@
         });
     }
 
-    function escapeHtml(text) {
-        return String(text).replace(/[&<>"']/g, (c) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-        }[c]));
-    }
-
     function formatDate(iso) {
         if (!iso) return '';
         const d = new Date(iso);
         if (Number.isNaN(d.getTime())) return '';
         return d.toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    }
+
+    /** Pinta en el lienzo las últimas imágenes guardadas, la más reciente primero. */
+    function paintRecentHistory() {
+        if (!history) return;
+        const items = history.getAll().slice(0, HISTORY_ON_CANVAS);
+        const cards = [];
+        items.forEach((item) => {
+            const data = item.data || {};
+            const url = item.imageUrl ? item.imageUrl.replace(/^\.\//, '') : '';
+            if (!url) return;
+            const job = {
+                id: 'h_' + item.id,
+                prompt: data.prompt || 'Sin prompt',
+                ratio: data.ratio || '1:1',
+                model: item.model || '',
+                status: 'done',
+                url,
+                error: '',
+                fromHistory: true,
+            };
+            const card = createCard(job, false);
+            job.el = card;
+            markDone(job, { url });
+            cards.push(card);
+        });
+        if (cards.length) {
+            prependInOrder(cards);
+            updateStudioCount();
+        }
     }
 
     async function saveToHistory(job) {
@@ -360,12 +449,12 @@
     }
 
     function pendingIds() {
-        return Array.from(state.jobs.keys());
+        return Array.from(state.jobs.keys()).filter((id) => !id.startsWith('h_'));
     }
 
     function persistPending() {
         const list = Array.from(state.jobs.values())
-            .filter((j) => j.status === 'queued' || j.status === 'running')
+            .filter((j) => !j.fromHistory && (j.status === 'queued' || j.status === 'running'))
             .map((j) => ({ id: j.id, prompt: j.prompt, ratio: j.ratio, model: j.model }));
         try {
             localStorage.setItem(PENDING_KEY, JSON.stringify(list));
@@ -400,7 +489,7 @@
                 job.status = 'error';
             } else if (info.status === 'running' && job.status !== 'running') {
                 job.status = 'running';
-                markRunning(job, 0);
+                markRunning(job);
             }
             if (job.status === 'done') done++;
             else if (job.status === 'error') failed++;
@@ -469,6 +558,98 @@
         els.loadingOverlay.classList.add('hidden');
     }
 
+    /* ------------------------------ mejorador IA ------------------------------ */
+
+    function setImproveBusy(busy) {
+        state.improveBusy = busy;
+        els.btnImprove.disabled = busy;
+        els.btnImproveLabel.textContent = busy ? 'Pensando…' : 'Mejorar con IA';
+    }
+
+    function renderOptions(options, original) {
+        els.improveList.innerHTML = '';
+        options.forEach((option, index) => {
+            const item = document.createElement('article');
+            item.className = 'option';
+            const title = document.createElement('h4');
+            title.textContent = option.titulo || `Propuesta ${index + 1}`;
+            const text = document.createElement('p');
+            text.textContent = option.prompt;
+            const actions = document.createElement('div');
+            actions.className = 'option-actions';
+
+            const use = document.createElement('button');
+            use.type = 'button';
+            use.className = 'btn-use';
+            use.textContent = 'Usar esta';
+            use.addEventListener('click', () => {
+                els.prompt.value = option.prompt;
+                updateCounter();
+                els.prompt.focus();
+                els.btnRestorePrompt.classList.remove('hidden');
+                setNote('Propuesta aplicada. Puedes editarla antes de generar.');
+            });
+
+            const copy = document.createElement('button');
+            copy.type = 'button';
+            copy.className = 'btn-mini';
+            copy.textContent = 'Copiar';
+            copy.addEventListener('click', async () => {
+                const ok = await copyText(option.prompt);
+                setNote(ok ? 'Propuesta copiada.' : 'No se pudo copiar.', !ok);
+            });
+
+            actions.append(use, copy);
+            item.append(title, text, actions);
+            els.improveList.appendChild(item);
+        });
+
+        state.originalPrompt = original || '';
+        els.btnRestorePrompt.classList.toggle('hidden', !state.originalPrompt);
+        els.improveHint.textContent = `${options.length} propuestas listas`;
+    }
+
+    async function improvePrompt() {
+        const prompt = els.prompt.value.trim();
+        if (!prompt) {
+            setNote('Escribe una idea y luego pide propuestas.', true);
+            els.prompt.focus();
+            return;
+        }
+        if (state.improveBusy) return;
+
+        if (!state.originalPrompt) state.originalPrompt = prompt;
+        setImproveBusy(true);
+        els.improvePanel.classList.remove('hidden');
+        els.improveHint.textContent = 'Pensando…';
+        els.improveList.innerHTML = '<p class="improve-msg" style="color:#9aa3ad">Buscando 4 enfoques distintos…</p>';
+
+        try {
+            const resp = await fetch(AI, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'improve', prompt, ratio: state.ratio }),
+            });
+            let data;
+            try {
+                data = await resp.json();
+            } catch {
+                throw new Error('El servidor no devolvió JSON (HTTP ' + resp.status + ')');
+            }
+            if (!resp.ok || !data.ok) throw new Error(data.error || ('HTTP ' + resp.status));
+            if (!Array.isArray(data.options) || !data.options.length) {
+                throw new Error('Sin propuestas. Prueba otra vez.');
+            }
+            renderOptions(data.options, prompt);
+            setNote('Elige una propuesta: cada una tiene su botón.');
+        } catch (err) {
+            els.improveList.innerHTML = `<p class="improve-msg">${escapeHtml(err.message)}</p>`;
+            els.improveHint.textContent = 'Error';
+        } finally {
+            setImproveBusy(false);
+        }
+    }
+
     /* ------------------------------ generar ------------------------------ */
 
     async function generate() {
@@ -490,11 +671,16 @@
                 count: state.count,
             });
             const base = { prompt, ratio: state.ratio, model: state.model };
+            const cards = [];
             data.ids.forEach((id) => {
                 const job = { id, ...base, status: 'queued', url: '', error: '' };
-                job.el = createCard(job);
+                const card = createCard(job, false);
+                job.el = card;
                 state.jobs.set(id, job);
+                cards.push(card);
             });
+            prependInOrder(cards);
+            updateStudioCount();
             persistPending();
             showOverlay();
             startPolling();
@@ -514,6 +700,18 @@
     chipGroup(els.countChips, 'count', 'count', Number);
 
     els.btnGenerate.addEventListener('click', generate);
+    els.btnImprove.addEventListener('click', improvePrompt);
+
+    els.btnImproveClose.addEventListener('click', () => {
+        els.improvePanel.classList.add('hidden');
+    });
+
+    els.btnRestorePrompt.addEventListener('click', () => {
+        if (!state.originalPrompt) return;
+        els.prompt.value = state.originalPrompt;
+        updateCounter();
+        setNote('Idea original recuperada.');
+    });
 
     els.prompt.addEventListener('keydown', (event) => {
         if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
@@ -569,6 +767,7 @@
             list = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]');
         } catch { list = []; }
         if (!Array.isArray(list) || !list.length) return;
+        const cards = [];
         list.forEach((item) => {
             if (!item || !item.id) return;
             const job = {
@@ -580,10 +779,14 @@
                 url: '',
                 error: '',
             };
-            job.el = createCard(job);
+            const card = createCard(job, false);
+            job.el = card;
             state.jobs.set(job.id, job);
+            cards.push(card);
         });
-        if (state.jobs.size) {
+        if (cards.length) {
+            prependInOrder(cards);
+            updateStudioCount();
             setBusy(true);
             showOverlay();
             startPolling();
@@ -593,10 +796,11 @@
     async function boot() {
         updateCounter();
         updateStudioCount();
+        await initHistory();
+        paintRecentHistory();
         restorePending();
         pingWorker();
         state.pingTimer = setInterval(pingWorker, 30000);
-        await initHistory();
         setNote('Listo. Tus imágenes se generan gratis con Flow en este PC.');
     }
 

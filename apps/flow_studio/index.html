@@ -47,6 +47,26 @@
             placeholder="Ej.: Portaaviones nuclear navegando al atardecer, cazas aparcados en cubierta, estela de espuma, fotografía militar realista"></textarea>
         <div class="counter"><span id="charCount">0</span>/1200</div>
 
+        <div class="improve-row">
+            <button type="button" id="btnImprove" class="btn-improve">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/>
+                    <path d="M18 14.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/>
+                </svg>
+                <span id="btnImproveLabel">Mejorar con IA</span>
+            </button>
+            <span class="improve-hint" id="improveHint">4 propuestas</span>
+        </div>
+
+        <section id="improvePanel" class="improve-panel hidden" aria-labelledby="improveTitle">
+            <div class="improve-head">
+                <h3 id="improveTitle">Propuestas</h3>
+                <button type="button" id="btnImproveClose" class="ghost-btn small">Cerrar</button>
+            </div>
+            <div id="improveList" class="improve-list"></div>
+            <button type="button" id="btnRestorePrompt" class="link-btn hidden">Volver a mi idea original</button>
+        </section>
+
         <fieldset class="control">
             <legend>Modelo</legend>
             <div class="chips" id="modelChips">
