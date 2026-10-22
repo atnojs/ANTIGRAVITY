@@ -83,6 +83,8 @@ const EXTRA_FOLDERS = [
     // estilismo, belleza y joyería pasan aquí; las fotos se quedan donde están
     // (assets/comida-moda/), que ya funcionan.
     { id: 'xl-moda', label: 'Moda', icon: '👗', color: 'pink', bgIcon: '💄' },
+    // Hoja de Sadday Tech (2026-10-22): doble exposición, retrato + segunda escena.
+    { id: 'xl-dobleexposicion', label: 'Doble exposición', icon: '🌀', color: 'cyan', bgIcon: '🌄' },
 ];
 // Lista canónica de las carpetas que contienen códigos. La carpeta
 // «Transferir 1 → 2» se retiró el 2026-10-06 (ver FOLDERS_REMOVED).
@@ -101,7 +103,8 @@ const FOLDERS_SCHEMA_KEY = 'trickvault_folders_schema';
 // lista guardada en el navegador (loadFolders añade una sola vez las que falten).
 // v5 (2026-10-13): añade la carpeta «Restauración de fotos antiguas» (xl-restauracion)
 // a quien ya tuviera su lista guardada en el navegador.
-const FOLDERS_SCHEMA_VERSION = 6;
+// v7 (2026-10-22): añade la carpeta «Doble exposición» (xl-dobleexposicion).
+const FOLDERS_SCHEMA_VERSION = 7;
 // Nombres por defecto antiguos de cada carpeta: si el guardado coincide con uno
 // de estos, al subir el esquema se actualiza al nombre nuevo (ver loadFolders).
 const FOLDERS_LABELS_ANTIGUOS = { 'xl-comidamoda': ['Comida y moda'] };
@@ -435,6 +438,16 @@ const CODE_FOLDER = {
     '/restaurarboda': 'xl-restauracion',
     '/quitartinte': 'xl-restauracion',
     '/marcoregalo': 'xl-restauracion',
+    '/dobleexposicion-yoga': 'xl-dobleexposicion',
+    '/dobleexposicion-ciudad': 'xl-dobleexposicion',
+    '/dobleexposicion-libros': 'xl-dobleexposicion',
+    '/dobleexposicion-fuegohielo': 'xl-dobleexposicion',
+    '/dobleexposicion-cielonoche': 'xl-dobleexposicion',
+    '/dobleexposicion-espiritu': 'xl-dobleexposicion',
+    '/dobleexposicion-viajes': 'xl-dobleexposicion',
+    '/dobleexposicion-cabana': 'xl-dobleexposicion',
+    '/dobleexposicion-futuro': 'xl-dobleexposicion',
+    '/dobleexposicion-elementos': 'xl-dobleexposicion',
     // Códigos nuevos de los reels y los carruseles (2026-10-13).
     '/relight': 'xl-estilos',
     '/enhance': 'xl-estilos',
@@ -3097,6 +3110,18 @@ const CAPTURE_COMMANDS = [
     ['/restaurarboda', 'revive una foto de boda antigua'],
     ['/quitartinte', 'quita el tono amarillo, verde o rosa'],
     ['/marcoregalo', 'la convierte en un cuadro con marco y dedicatoria'],
+
+    // Hoja 2026-10-22 (saddaytechx): 10 retratos de doble exposición.
+    ['/dobleexposicion-yoga', 'retrato con escena de yoga y montañas al amanecer'],
+    ['/dobleexposicion-ciudad', 'retrato con ciudad lluviosa y neones'],
+    ['/dobleexposicion-libros', 'retrato con biblioteca mágica y libros flotantes'],
+    ['/dobleexposicion-fuegohielo', 'retrato con paisaje de fuego y hielo'],
+    ['/dobleexposicion-cielonoche', 'retrato con galaxia y campamento nocturno'],
+    ['/dobleexposicion-espiritu', 'retrato con lobo y bosque bajo la luna'],
+    ['/dobleexposicion-viajes', 'retrato con monumentos del mundo al atardecer'],
+    ['/dobleexposicion-cabana', 'retrato con cabaña en el bosque y lago'],
+    ['/dobleexposicion-futuro', 'retrato con ciudad futurista y coches voladores'],
+    ['/dobleexposicion-elementos', 'retrato con los cuatro elementos'],
 ];
 
 // Variantes personales recuperadas de la copia de seguridad de Antonio.
@@ -4986,6 +5011,18 @@ const PROMPT_TEMPLATES = {
     "/restaurarboda": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Restore this vintage wedding photo. Brighten the faded whites on the dress and veil, fix the contrast and repair any damage. Keep the faces, the outfits, the pose and the original framing the same. Keep it timeless, not modern. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/quitartinte": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Remove the yellow, orange, green or pink tint caused by age. Make the whites neutral and the skin tones natural. Balance the colours evenly across the whole photo without changing the mood of the original. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/marcoregalo": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Turn this restored photo into a simple framed print. Add a clean white border with a thin frame. Put a small, neat caption at the bottom that reads the names and the year. Keep the photo itself unchanged. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+
+    // Doble exposición (2026-10-22): retrato + segunda escena, 10 variantes.
+    "/dobleexposicion-yoga": "Double exposure photo of a man's side profile with a yoga and meditation scene, mountains, sunrise, lake reflection, trees, birds, peaceful atmosphere, cinematic lighting, vibrant colors, highly detailed.",
+    "/dobleexposicion-ciudad": "Double exposure photo of a woman's side profile with a rainy city scene, tall buildings, neon lights, a person with an umbrella, wet roads, reflections, dramatic sky, cinematic lighting, vibrant colors, highly detailed.",
+    "/dobleexposicion-libros": "Double exposure photo of a man's side profile with a magical library and book world, bookshelves, floating books, a walking person, glowing light, cinematic lighting, warm tones, highly detailed.",
+    "/dobleexposicion-fuegohielo": "Double exposure photo of a woman's side profile with a fire and ice landscape, mountains, dramatic sky, a person standing on a cliff, birds, cinematic lighting, vibrant colors, highly detailed.",
+    "/dobleexposicion-cielonoche": "Double exposure photo of a man's side profile with a night sky, galaxy, stars, camping tent, trees, mountains, a person sitting, fire, cinematic lighting, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-espiritu": "Double exposure photo of a woman's side profile with a wolf and forest scene, full moon, trees, mountains, birds, cinematic lighting, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-viajes": "Double exposure photo of a man's side profile with famous travel landmarks, Eiffel tower, river, bridge, airplane, sunset sky, birds, cinematic lighting, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-cabana": "Double exposure photo of a woman's side profile with a cabin in the forest, lake reflection, pine trees, mountains, moonlight, clouds, cinematic lighting, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-futuro": "Double exposure photo of a man's side profile with a future city, flying cars, high-rise buildings, a person standing, neon lights, dramatic sky, cinematic lighting, vibrant colors, highly detailed, realistic.",
+    "/dobleexposicion-elementos": "Double exposure photo of a woman's side profile with four elements, water, fire, air, mountain waves, trees, birds, dramatic sky, cinematic lighting, vibrant colors, highly detailed, realistic.",
     // Códigos nuevos de los reels y los carruseles (2026-10-13).
     "/relight": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Studio relighting of [OBJETO]: rebuild the existing light, balance the exposure between highlights and shadows, open the dark areas without washing them out, recover detail in the brightest highlights, add a soft directional key light with a gentle fill and a subtle rim, natural light falloff, believable contact shadows, consistent white balance, no blown highlights, no crushed blacks, no halos and no plastic look, keeping the subject, the framing and the original textures untouched, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/enhance": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. High-end detail enhancement of [OBJETO]: recover micro-detail and real texture, sharpen the subject with clean edges, remove noise, jpeg blocking and compression artifacts, restore the fine grain of skin, fabric, hair and surfaces, keep natural contrast and colour, no over-sharpening halos, no plastic smoothing and no invented information, without changing the composition, the framing or the identity of the subject, printed quality result, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
