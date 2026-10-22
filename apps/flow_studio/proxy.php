@@ -247,59 +247,72 @@ if ($key === '') {
     respond(['ok' => false, 'error' => 'Falta la clave del proveedor de texto (R) en el servidor.'], 503);
 }
 
-$payload = [
-    'model' => TEXT_MODEL,
-    'messages' => [
-        ['role' => 'system', 'content' => buildSystemPrompt($ratio)],
-        ['role' => 'user', 'content' => $prompt],
-    ],
-    'temperature' => 0.85,
-    'max_tokens' => 650,
-];
+$content = '';
+$finish = '';
 
-$ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
-curl_setopt_array($ch, [
-    CURLOPT_POST => true,
-    CURLOPT_RETURNTRANSFER => true,
-    // 50 s: por debajo del corte de nginx (60 s) para poder devolver un error claro.
-    CURLOPT_TIMEOUT => 50,
-    CURLOPT_CONNECTTIMEOUT => 10,
-    CURLOPT_HTTPHEADER => [
-        'Authorization: Bearer ' . $key,
-        'Content-Type: application/json',
-        'HTTP-Referer: https://atnojs.es',
-        'X-Title: Flow Studio',
-    ],
-    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
-]);
+// Hasta 2 intentos: el modelo a veces devuelve una respuesta vacía.
+for ($attempt = 0; $attempt < 2 && trim($content) === ''; $attempt++) {
+    $payload = [
+        'model' => TEXT_MODEL,
+        'messages' => $attempt === 0 ? [
+            ['role' => 'system', 'content' => buildSystemPrompt($ratio)],
+            ['role' => 'user', 'content' => $prompt],
+        ] : [
+            ['role' => 'system', 'content' => 'Devuelve 4 líneas. Cada línea: TITULO || prompt visual en español de 40 a 55 palabras para formato ' . $ratio . '. Sin JSON, sin numeración, sin comillas, sin texto extra.'],
+            ['role' => 'user', 'content' => $prompt],
+        ],
+        'temperature' => $attempt === 0 ? 0.85 : 0.6,
+        'max_tokens' => 700,
+    ];
 
-$response = curl_exec($ch);
-$status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$curlError = curl_error($ch);
-curl_close($ch);
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        // 50 s: por debajo del corte de nginx (60 s) para poder devolver un error claro.
+        CURLOPT_TIMEOUT => 50,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $key,
+            'Content-Type: application/json',
+            'HTTP-Referer: https://atnojs.es',
+            'X-Title: Flow Studio',
+        ],
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
+    ]);
 
-if ($response === false) {
-    $slow = stripos($curlError, 'timed out') !== false || stripos($curlError, 'timeout') !== false;
+    $response = curl_exec($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($response === false) {
+        $slow = stripos($curlError, 'timed out') !== false || stripos($curlError, 'timeout') !== false;
+        respond([
+            'ok' => false,
+            'error' => $slow
+                ? 'El modelo tardó demasiado (más de 50 s). Vuelve a intentarlo.'
+                : 'No se pudo contactar con el proveedor de texto.',
+        ], 502);
+    }
+
+    $decoded = json_decode((string) $response, true);
+    if ($status < 200 || $status >= 300) {
+        $message = is_array($decoded) ? (string) ($decoded['error']['message'] ?? '') : '';
+        respond(['ok' => false, 'error' => 'El proveedor respondió HTTP ' . $status . ($message !== '' ? ': ' . textCut($message, 160) : '')], 502);
+    }
+
+    if (is_array($decoded)) {
+        $content = (string) ($decoded['choices'][0]['message']['content'] ?? '');
+        $finish = (string) ($decoded['choices'][0]['finish_reason'] ?? '');
+    }
+}
+
+if (trim($content) === '') {
     respond([
         'ok' => false,
-        'error' => $slow
-            ? 'El modelo tardó demasiado (más de 50 s). Vuelve a intentarlo.'
-            : 'No se pudo contactar con el proveedor de texto.',
+        'error' => 'El modelo no devolvió texto (motivo: ' . ($finish !== '' ? $finish : 'vacío') . '). Reintenta.',
     ], 502);
-}
-
-$decoded = json_decode((string) $response, true);
-if ($status < 200 || $status >= 300) {
-    $message = is_array($decoded) ? (string) ($decoded['error']['message'] ?? '') : '';
-    respond(['ok' => false, 'error' => 'El proveedor respondió HTTP ' . $status . ($message !== '' ? ': ' . textCut($message, 160) : '')], 502);
-}
-
-$content = '';
-if (is_array($decoded)) {
-    $content = (string) ($decoded['choices'][0]['message']['content'] ?? '');
-}
-if (trim($content) === '') {
-    respond(['ok' => false, 'error' => 'El modelo no devolvió propuestas. Inténtalo otra vez.'], 502);
 }
 
 $options = parseOptions($content);
