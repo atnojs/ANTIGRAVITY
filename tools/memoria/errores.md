@@ -5,6 +5,38 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-22] Ventana de terminal cada 2 minutos: el `pythonw.exe` de un venv era el de consola
+
+- **Síntoma:** cada ~2 min aparecía sola una ventana de Windows Terminal con consola negra y título
+  `C:\Users\atnojs\AppData\Local\hermes\hermes-agent\venv\Scripts\pythonw.exe`; Antonio la cerraba y
+  volvía a salir («cada dos por tres»).
+- **Causa:** la tarea programada `FlowStudioWorker` (trigger cada 2 min, `--minutes 6`) lanzaba ese
+  `pythonw.exe`, pero el fichero del venv de Hermes era **idéntico byte a byte a `python.exe`**
+  (mismo SHA-256 `45BC142F…`) y con subsistema **CONSOLE (3)** en la cabecera PE, no GUI. Un
+  `pythonw` de consola lanzado por el Programador de tareas crea una consola nueva y visible, con la
+  ruta completa del exe como título. El venv se generó mal (el `pythonw` es una copia del de consola);
+  la tarea estaba bien configurada.
+- **Solución:**
+  1. Parar y deshabilitar la tarea para poder sustituir el exe:
+     `Disable-ScheduledTask FlowStudioWorker; Stop-ScheduledTask FlowStudioWorker`.
+  2. Guardar copia: `venv\Scripts\pythonw.exe.console-original` (45.568 B, CONSOLE).
+  3. Sustituirlo por el lanzador **GUI** correcto de la misma distribución Python 3.11:
+     `C:\Users\atnojs\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\venv\scripts\nt\pythonw.exe`
+     (249.856 B, subsistema GUI) → `venv\Scripts\pythonw.exe`.
+  4. Reactivar la tarea (`Enable-ScheduledTask`). No hay que tocar la tarea.
+  Playwright ya lanza su driver `node` con `STARTUPINFO` + `SW_HIDE`, así que con `pythonw` GUI no
+  aparecen consolas hijas al generar.
+- **Verificación:**
+  - Cabecera PE del nuevo `pythonw.exe` = **GUI (2)** y su hash ya no coincide con `python.exe`.
+  - `pythonw.exe` con redirección: `sys.prefix` = venv de Hermes y `PIL` importa desde
+    `venv\Lib\site-packages` (el venv sigue activándose; con `print` sin salida no falla).
+  - `Start-ScheduledTask FlowStudioWorker` y enumerar ventanas visibles con `EnumWindows`: **no
+    aparece ninguna ventana nueva**; el árbol es `pythonw.exe` (GUI) → `pythonw.exe` base; la tarea
+    queda `Running` y `flow_studio_worker.lock` se crea con el PID correcto.
+  - Si se recrea el venv de Hermes, repetir la comprobación: el lanzador bueno es el de
+    `Lib\venv\scripts\nt\pythonw.exe` de la distribución base (GUI), no una copia de `python.exe`.
+- **Commit:** el de esta entrada en `tools/memoria/`.
+
 ### [2026-10-22] Flow falla en 2 s: Chrome con el perfil abierto y lock del worker zombi
 
 - **Síntoma:** los trabajos de la cola de Flow Studio pasaban a `error` a los dos segundos y el
