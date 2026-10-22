@@ -15,8 +15,8 @@ declare(strict_types=1);
 const QUEUE_TOKEN = 'fs7-Qm4xV2tP9kR6wL1z';
 const MAX_PROMPT = 1200;
 const MAX_QUEUE = 12;
-const STALE_RUNNING = 900;      // 15 min: un job "running" más viejo se libera
-const WORKER_FRESH = 300;       // 5 min sin señales = worker desconectado
+const STALE_RUNNING = 7200;     // 2 h: una generación lenta ya no se reencola
+const WORKER_FRESH = 600;       // 10 min sin señales = worker desconectado
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
