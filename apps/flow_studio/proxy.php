@@ -5,7 +5,7 @@ declare(strict_types=1);
  *
  * Recibe {action:"improve", prompt, ratio?} y devuelve 4 propuestas de prompt
  * distintas para que el usuario elija. Usa OpenRouter con el modelo de texto
- * canónico del proyecto (xiaomi/mimo-v2.6-pro).
+ * canónico del proyecto (google/gemini-2.5-flash).
  *
  * La clave vive SOLO en el entorno del servidor (SetEnv R en el .htaccess raíz
  * de Hostinger). Este fichero no contiene claves y nunca las devuelve.
@@ -14,7 +14,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-const TEXT_MODEL = 'xiaomi/mimo-v2.6-pro';
+const TEXT_MODEL = 'google/gemini-2.5-flash';
 const MAX_PROMPT = 1200;
 const RATE_LIMIT = 12;          // peticiones por minuto y IP
 const STORE_DIR = 'flow_store';
@@ -265,7 +265,6 @@ for ($attempt = 0; $attempt < 2 && trim($content) === ''; $attempt++) {
         // El modelo es de razonamiento: sin margen se gasta los tokens pensando
         // y devuelve finish_reason=length con el contenido vacío.
         'max_tokens' => 2200,
-        'reasoning' => ['effort' => 'low'],
     ];
 
     $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
