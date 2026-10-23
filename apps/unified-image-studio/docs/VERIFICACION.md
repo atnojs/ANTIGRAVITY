@@ -266,3 +266,14 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 Nota: el servidor de producción sirve los `.js` como `application/x-javascript`; Chrome lo acepta.
 La página con «Comprobando…» sin fin solo puede darse si un recurso no carga o el arranque se
 interrumpe, y desde esta versión eso se muestra con un aviso explícito en pantalla.
+
+## 16. Ronda del verificador independiente (NO PASS 86,2 → correcciones)
+
+| Defecto | Severidad | Corrección | Prueba |
+|---|---|---|---|
+| Recursos no persistidos en servidor y estado «Guardado» sin aviso | Mayor | La subida se espera, se avisa del fallo, el estado pasa a «Guardado sin las imágenes» y se reintenta en cada guardado | `test-19` · estado `partial` |
+| Límite de cliente (20 MB) mayor que `post_max_size` | Medio | El servidor informa `maxImageBytes` y el cliente lo adopta; cuerpo excesivo → 413 JSON | `test-19` |
+| GIF aceptado en cliente y rechazado en servidor | Medio | Rechazo en cliente con mensaje | `test-19` |
+| Modales sin trampa de foco ni restauración | Menor | Foco atrapado y devuelto al disparador; pila sin duplicados | `test-20` (3/3) |
+| Dos guardados simultáneos → 409 falso | Medio (nuevo) | Guardados serializados | `test-19` |
+| `ai.js` viejo en caché con `app.js` nuevo | Bloqueante en producción | Imports con `?v=` y `.htaccess` con `no-cache` | producción `v1.4.0`, módulos `?v=11` |
