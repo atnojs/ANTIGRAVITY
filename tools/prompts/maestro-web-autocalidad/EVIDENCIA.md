@@ -8,7 +8,7 @@
 - **Medidas:** 1.832 líneas · 184.322 caracteres con LF normalizado (186.154 en crudo con CRLF; 182.490 sin saltos de línea) · 189.489 bytes
 - **SHA-256 del prompt:** `5be0bb94ebc55ac14680c3a95b89654aed93752bb04b340b5b72ab4e8b4f1da7`
 - **Fecha:** 2026-10-23
-- **Estado:** **APROBADO por los dos gates finales** — FG-A 96,0 y FG-B 95,0 sobre el mismo SHA-256 congelado; red-team final ACEPTABLE (0 B/M/Med/Men abiertos). Queda únicamente la consolidación documental de esta acta (T12). Cualquier cambio de bytes en el prompt invalida los PASS (P19) y exige nueva verificación.
+- **Estado:** **APROBADO por los dos gates finales** — FG-A 96,0 y FG-B 95,0 sobre el mismo SHA-256 congelado; red-team final ACEPTABLE (0 B/M/Med/Men abiertos). Publicado en `main` (commit `99aa1c6`, push verificado) y acta consolidada (T12). Cualquier cambio de bytes en el prompt invalida los PASS (P19) y exige nueva verificación.
 
 ## 2. Cadena de calidad recorrida
 
@@ -82,7 +82,7 @@ Líneas sobre el prompt v1.1. Cada garantía tiene al menos dos mecanismos indep
 | FG-B | supervisor-calidad-b | prompt v1.1 SHA `5be0bb94…` | **95,0** (95,08 truncado) | **PASS** — críticas ≥9,0; cero B/M/Med; 2 menores documentales | `supervision/scorecard-supervisor-b.md` |
 | Red-team final | auditor-red-team | prompt v1.1 SHA `5be0bb94…` | — | **ACEPTABLE** (0 B/M/Med/Men abiertos) | `auditoria/red-team-informe.md` (§24–§25) |
 
-**Regla de cierre:** este documento solo se considera cerrado cuando ambos gates FG-A y FG-B emiten PASS ≥ 90,0 sobre el mismo SHA-256. Cualquier cambio posterior invalida los PASS (P19) y exige re-verificación.
+**Publicación:** commit `99aa1c6` en `main`; `git log --oneline origin/main..HEAD` vacío tras el push. **Regla de cierre:** este documento solo se considera cerrado cuando ambos gates FG-A y FG-B emiten PASS ≥ 90,0 sobre el mismo SHA-256. Cualquier cambio posterior invalida los PASS (P19) y exige re-verificación.
 
 ## 6. Menores documentales de los gates (resueltos o justificados)
 

@@ -22,8 +22,7 @@ Una entrada por sesión de trabajo relevante.
 - **Uso:** ver `LEEME.md`; el prompt se pega completo al orquestador y se añade el brief real.
 - **Decisión asociada:** vive en `tools/` (protegido) y no se convierte en skill pública
   (ver `decisiones.md`).
-- **Commit:** se registra en el mismo commit de esta entrada; ver
-  `git log --oneline -- tools/prompts/maestro-web-autocalidad`.
+- **Commit:** `99aa1c6` en `main` (push verificado; `origin/main..HEAD` vacío).
 
 ## 2026-10-23 — TrickVault: vuelven las 3 tarjetas de restauración y se retiran las 10 del carrusel
 
