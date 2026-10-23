@@ -5,6 +5,31 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-23 — TrickVault: vuelven las 3 tarjetas de restauración y se retiran las 10 del carrusel
+
+- **Lo que vio Antonio:** en la carpeta «Restauración de fotos antiguas» ya no estaban las 3
+  tarjetas de siempre y solo veía las últimas añadidas; además había una repetida y casos sin
+  sentido como «mejorar la imagen de una boda».
+- **Causa real:** las 3 originales (`cap-cmd-123/124/125`, una por faena: restaurar, colorear,
+  imprimir) seguían en el seed, pero el 2026-10-22 se añadieron 10 tarjetas del carrusel sifuyik
+  sin `sortOrder`, así que se pintaban las primeras y empujaban las 3 al final; 6 de esas 10
+  reutilizaban el mismo ejemplo (de ahí la sensación de repetidas) y `/restaurarboda` y
+  `/marcoregalo` no eran restauración.
+- **Solución:** las 10 quedan RETIRADAS en `CAPTURE_COMMANDS` (conservan su posición para no
+  renumerar los `cap-cmd-*` posteriores) y sus ids `cap-cmd-126`…`cap-cmd-135` se añaden a
+  `REMOVED_IMAGE_IDS`, así que desaparecen también de los navegadores que ya las tuvieran
+  guardadas. Se quitaron de `CODE_FOLDER`, `SEED_COMMAND_IMAGES` y `PROMPT_TEMPLATES`. Las 3
+  originales no se tocaron.
+- **Verificación (navegador real, producción):** la carpeta sirve `(3 trucos)`; búsqueda «boda»
+  → 0; «color» → 1; copiar prompt → toast «📋 Prompt completo copiado»; recarga mantiene 3;
+  consola sin errores nuevos (solo el aviso de Babel preexistente). Prueba de migración con un
+  perfil que tenía las 13 tarjetas: al cargar la versión nueva quedan 3. Capturas en
+  `tools/evidencias/2026-10-23-trickvault-restauracion/` y comparativa
+  `tools/comparativa_trickvault_restauracion.png`.
+- **Detectado (preexistente, fuera de este encargo):** a ≤768 px el buscador de la carpeta deja
+  un hueco de ~260 px con la lupa flotando; anotado en `pendientes.md`.
+- **Commit:** `3e2228b`.
+
 ## 2026-10-22 (tercera parte) — Skill `investigacion` con dossier verificado
 
 - Creada `skills/SKILL_investigacion.md` (puntero en `.claude/skills/investigacion/SKILL.md`):

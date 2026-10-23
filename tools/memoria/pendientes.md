@@ -5,6 +5,25 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
+## 🔎 TrickVault: hueco y lupa suelta en la cabecera de carpeta a ≤768 px (2026-10-23)
+
+- **Estado:** detectado al verificar la restauración; **preexistente**, no lo provoca el cambio
+  de tarjetas. A 393 y 768 px, entre el buscador de la carpeta y la rejilla aparece un hueco de
+  ~260 px con la lupa flotando en medio (visible en
+  `tools/evidencias/2026-10-23-trickvault-restauracion/12-despues-carpeta-3-tablet.png` y
+  `13-despues-carpeta-3-movil.png`).
+- **Causa:** en `apps/trickvault/app.css`, dentro de `@media (max-width: 768px)` el
+  `.section-header` pasa a `flex-direction: column`, pero `.section-header .search-wrap { flex: 1
+  1 260px; }` conserva el `flex-basis` de 260 px, que en columna se aplica al **alto**. El icono
+  `.search-icon` va centrado en esos 260 px.
+- **Siguiente paso:** en el breakpoint, anular ese `flex-basis` (por ejemplo `.search-wrap { flex:
+  0 0 auto; }` o `flex-basis: auto; min-height: 0;`) y medir a 393/768/1280 px con captura
+  antes/después. No mezclar con otros cambios.
+- **Verificación:** a 393 px, separación entre el buscador y la primera tarjeta ≤20 px y la lupa
+  dentro del buscador.
+
+---
+
 ## 🔐 Contraseñas centralizadas: cierre de la migración (2026-10-21)
 
 - **Estado:** ✅ **verificado en producción y cerrado** (commit `3396a40` + retirada de la

@@ -5,6 +5,23 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 
 ---
 
+### [2026-10-23] Restauración de fotos antiguas: 3 tarjetas canónicas, nunca una por caso
+
+- **Decisión:** la carpeta «Restauración de fotos antiguas» contiene solo 3 tarjetas, una por
+  faena (`/restaurarfotoantigua`, `/colorizarfotoantigua`, `/prepararparaimprimir`). Cualquier
+  código nuevo de restauración se funde en una de esas tres; no se crean tarjetas por tipo de
+  foto (boda, entierro, etc.) ni variantes que repitan la misma faena.
+- **Motivo:** Antonio lo pidió expresamente el 2026-10-23: «las imágenes se restauran todas
+  igual, ya sean de una boda o de un entierro». Las 10 tarjetas del carrusel sifuyik (2026-10-22)
+  repetían las mismas faenas con los mismos ejemplos y dos no eran restauración
+  (`/restaurarboda`, `/marcoregalo`).
+- **Cómo se retira una tarjeta sin romper ids:** se deja la entrada en `CAPTURE_COMMANDS` con
+  descripción `RETIRADO: …` (los ids son posicionales: borrar la fila renumeraría todas las
+  posteriores) y se añade su `cap-cmd-NNN` a `REMOVED_IMAGE_IDS`, que la borra también de los
+  navegadores que ya la tuvieran guardada. No se le deja `CODE_FOLDER` ni prompt propio.
+- **Verificación:** producción muestra `(3 trucos)` en la carpeta y la búsqueda «boda» no
+  devuelve nada; un perfil con las 13 tarjetas guardadas queda con 3 al recargar.
+
 ### [2026-10-21] Las contraseñas del proyecto viven en el `.htaccess` raíz, no en el código
 
 - **Contexto:** había ~50 ficheros con una contraseña cada uno (`auth.php` con un hash de 20
