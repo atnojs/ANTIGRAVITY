@@ -214,7 +214,6 @@
 
 .tabpane { display: none; }
 .tabpane.is-active { display: block; animation: pane-in 180ms var(--ease); }
-.tabpane[data-pane="generate"].is-active { padding-bottom: 168px; }
 
 @keyframes pane-in {
   from { opacity: 0; transform: translateY(4px); }
@@ -324,15 +323,17 @@
 .ref-empty { font-size: 11px; color: var(--faint); }
 
 /* ── Generación: pie ── */
+/* Pie fijo del panel: fuera del área desplazable para no tapar contenido. */
 .generate-footer {
-  position: sticky;
-  bottom: -22px;
-  margin: 18px -16px -22px;
-  padding: 13px 16px 16px;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 12px 16px 14px;
   background: var(--surface);
   border-top: 1px solid var(--line);
   box-shadow: 0 -14px 18px -14px rgba(0, 0, 0, .9);
+  display: none;
 }
+body[data-left-tab="generate"] .generate-footer { display: block; }
 .estimate { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px; }
 .estimate-label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); }
 

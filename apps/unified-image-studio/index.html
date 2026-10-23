@@ -240,17 +240,6 @@
             <p class="field-note">Cada referencia admite un papel: producto, identidad, estilo, pose o composición. Se traduce al formato que admite el modelo.</p>
           </div>
 
-          <div class="generate-footer">
-            <div class="estimate">
-              <span class="estimate-label">Estimación</span>
-              <span class="mono" id="estimateValue">—</span>
-            </div>
-            <button class="btn btn-primary btn-block" id="generateBtn">
-              <svg class="ico"><use href="#i-sparkles"/></svg><span id="generateBtnText">GENERAR</span>
-            </button>
-            <p class="field-note" id="generateNote">El coste se comprueba en el servidor antes de enviar la solicitud.</p>
-          </div>
-
           <div class="result-tray hidden" id="resultTray" aria-live="polite">
             <div class="result-tray-head">
               <span>Resultado de IA</span>
@@ -444,6 +433,17 @@
           </div>
         </section>
 
+      </div>
+
+      <div class="generate-footer" id="generateFooter">
+        <div class="estimate">
+          <span class="estimate-label">Estimación</span>
+          <span class="mono" id="estimateValue">—</span>
+        </div>
+        <button class="btn btn-primary btn-block" id="generateBtn">
+          <svg class="ico"><use href="#i-sparkles"/></svg><span id="generateBtnText">GENERAR</span>
+        </button>
+        <p class="field-note" id="generateNote">El coste se comprueba en el servidor antes de enviar la solicitud.</p>
       </div>
     </aside>
 
