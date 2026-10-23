@@ -7,34 +7,34 @@ import {
   createDoc, createProject, makeImageLayer, makeTextLayer, makeShapeLayer,
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtMoney, fmtBytes, fmtDate,
-  deserializeProject, dataUrlToBlob,
-} from './core.js';
-import { renderer } from './render.js';
-import { initTools, setTool } from './tools.js';
+  deserializeProject, dataUrlToBlob, serializeProject,
+} from './core.js?v=11';
+import { renderer } from './render.js?v=11';
+import { initTools, setTool } from './tools.js?v=11';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
   showLoading, hideLoading, updateTopbar, updateSaveState, updateViewportUI, setEmptyState,
   renderLayers, renderLayerProps, renderRefs, renderVersions, renderProjects, renderAssets,
   renderRecipes, setActiveModel, switchLeftTab, switchRightTab, setToolUI, paintStorageInfo,
-} from './ui.js';
+} from './ui.js?v=11';
 import {
   server, saveNow, scheduleSave, listProjects, loadProject, deleteProject, saveVersion,
   listVersions, deleteVersion, storageInfo, clearLocalCache, uploadResource, lastProjectId, idb,
   fetchVersionDoc,
-} from './persist.js';
+} from './persist.js?v=11';
 import {
   downloadExport, copyToClipboard, downloadProject, exportImage, canvasToBlob, estimateExport,
-} from './exporter.js';
+} from './exporter.js?v=11';
 import {
   MODELS, modelById, loadCatalog, catalog, describeCost, costFor, generate, fetchBudget, saveBudget,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
-} from './ai.js';
+} from './ai.js?v=11';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v1.3.0 · 2026-10-23 · vigilante de arranque';
+const BUILD = 'v1.4.0 · 2026-10-23 · recursos verificados';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -77,13 +77,20 @@ async function boot() {
 
   const probe = await server.probe();
   paintStorageInfo(await storageInfo());
+  // El límite real lo manda el servidor: aceptar 20 MB contra un post_max_size
+  // de 8 MB hacía fallar la subida sin ningún aviso.
+  if (Number.isFinite(probe?.maxImageBytes) && probe.maxImageBytes > 0) {
+    LIMITS.maxFileBytes = Math.min(LIMITS.maxFileBytes, probe.maxImageBytes);
+  }
+  const uploadHint = document.querySelector('.empty-hint');
+  if (uploadHint) uploadHint.textContent = `Máx. ${fmtBytes(LIMITS.maxFileBytes)} · 8192 px de lado`;
   if (probe && !probe.authenticated) {
     if (probe.configured) {
       toast('Introduce la contraseña para trabajar con el servidor privado. Mientras tanto la app funciona en local.', 'info', { duration: 8000 });
       openModal('loginModal');
       $('loginPassword').focus();
     } else {
-      toast('El servidor no tiene contraseña configurada (UIS_PASSWORD_HASH). Se trabajará en modo local.', 'warn', { duration: 9000 });
+      toast('El servidor no tiene contraseña configurada (.htaccess: PW_ACCESS). Se trabajará en modo local.', 'warn', { duration: 9000 });
     }
   } else if (!probe) {
     toast('Servidor PHP no disponible: la app funciona en local con IndexedDB. La generación con IA requiere el servidor.', 'info', { duration: 8000 });
@@ -275,6 +282,10 @@ async function importFiles(files, { asReference = false, asLayer = true } = {}) 
       toast(`«${original.name}» no es un PNG, JPG, WebP o GIF válido.`, 'error');
       continue;
     }
+    if (mime === 'image/gif') {
+      toast(`«${original.name}»: los GIF no se admiten. Exporta el fotograma como PNG o WebP.`, 'error', { duration: 8000 });
+      continue;
+    }
     let dims;
     try {
       dims = await readImageDimensions(blob);
@@ -289,7 +300,16 @@ async function importFiles(files, { asReference = false, asLayer = true } = {}) 
     const resource = addResource({
       name: original.name, mime, blob, width: dims.width, height: dims.height,
     });
-    void uploadResource(resource);
+    // Subida al servidor: si falla, se dice. Nunca un recurso fantasma que el
+    // proyecto referencie y que en otro dispositivo no exista.
+    if (server.available && server.writable) {
+      try {
+        await uploadResource(resource);
+      } catch (error) {
+        const reason = String(error.message || '').replace(/\.\s*$/, '');
+        toast(`«${original.name}» está en el lienzo, pero no se ha podido guardar en el servidor: ${reason}. Se reintentará al guardar.`, 'error', { duration: 11000 });
+      }
+    }
 
     if (asReference) {
       if (state.ui.refs.length >= LIMITS.maxRefs) {
@@ -1846,4 +1866,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Exponer un mínimo para depuración en consola (sin datos sensibles).
-window.__UIS__ = { state, renderer, importFiles, saveNow, exportImage, build: BUILD };
+window.__UIS__ = { state, renderer, importFiles, saveNow, exportImage, serializeProject, build: BUILD };

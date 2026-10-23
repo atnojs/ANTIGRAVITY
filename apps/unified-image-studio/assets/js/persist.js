@@ -4,7 +4,7 @@
 
 import {
   state, emit, addResource, markSaved, setSaveState, uid, SCHEMA,
-} from './core.js';
+} from './core.js?v=11';
 
 const DB_NAME = 'unified-image-studio';
 const DB_VERSION = 1;
@@ -76,13 +76,23 @@ export const server = {
       const response = await fetch(url, options);
       const text = await response.text();
       let data = null;
-      try { data = text ? JSON.parse(text) : null; } catch { throw new Error('El servidor devolvió una respuesta no válida.'); }
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        // PHP puede anteponer avisos en HTML (p. ej. al superar post_max_size).
+        const start = text.indexOf('{');
+        const end = text.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+          try { data = JSON.parse(text.slice(start, end + 1)); } catch { data = null; }
+        }
+      }
       if (!response.ok) {
-        const error = new Error(data?.error || `Error HTTP ${response.status}`);
+        const error = new Error(data?.error || `Error HTTP ${response.status}${data ? '' : ' (respuesta no válida del servidor)'}`);
         error.status = response.status;
         error.data = data;
         throw error;
       }
+      if (!data) throw new Error('El servidor devolvió una respuesta no válida.');
       return data;
     } finally {
       clearTimeout(timer);
@@ -126,7 +136,11 @@ export async function saveLocal(reason = 'auto') {
     }
     localStorage.setItem('uis:lastProject', state.project.id);
     let sync = 'local';
+    let uploadFailures = 0;
     if (state.ui.mode === 'server' && server.writable) {
+      // Primero las imágenes: un proyecto que apunta a recursos que no existen en el
+      // servidor no se puede recuperar en otro dispositivo.
+      uploadFailures = await flushPendingUploads();
       sync = await syncServer();
     }
     // El proyecto se escribe después de sincronizar para guardar la versión real del servidor.
@@ -146,6 +160,14 @@ export async function saveLocal(reason = 'auto') {
       setSaveState('offline');
     } else if (sync === 'error') {
       setSaveState('error');
+    } else if (uploadFailures > 0) {
+      // El documento está, pero sus imágenes no: se dice tal cual.
+      setSaveState('partial');
+      emit('toast', {
+        type: 'error',
+        duration: 10000,
+        message: `${uploadFailures} imagen(es) no se han podido guardar en el servidor. El proyecto está guardado, pero en otro dispositivo faltarán esos recursos. Revisa el límite de subida del hosting.`,
+      });
     } else {
       markSaved();
     }
@@ -187,26 +209,44 @@ async function syncServer() {
 }
 
 export async function uploadResource(resource) {
-  if (!server.available || !server.writable || !resource?.blob) return null;
-  try {
-    const base64 = await blobToBase64(resource.blob);
-    const result = await server.call('resource.upload', {
-      id: resource.id,
-      name: resource.name,
-      mime: resource.mime,
-      width: resource.width,
-      height: resource.height,
-      data: base64,
-    }, { timeout: 60000 });
-    resource.remoteId = result?.id || resource.id;
-    await idb.put(STORE_RESOURCES, {
-      id: resource.id, name: resource.name, mime: resource.mime, blob: resource.blob,
-      width: resource.width, height: resource.height, remoteId: resource.remoteId,
-    });
-    return resource.remoteId;
-  } catch {
-    return null;
+  if (!server.available || !server.writable) {
+    throw new Error('sin sesión en el servidor');
   }
+  if (!resource?.blob) {
+    throw new Error('el recurso no tiene datos');
+  }
+  const base64 = await blobToBase64(resource.blob);
+  const result = await server.call('resource.upload', {
+    id: resource.id,
+    name: resource.name,
+    mime: resource.mime,
+    width: resource.width,
+    height: resource.height,
+    data: base64,
+  }, { timeout: 120000 });
+  resource.remoteId = result?.id || resource.id;
+  resource.uploadError = null;
+  await idb.put(STORE_RESOURCES, {
+    id: resource.id, name: resource.name, mime: resource.mime, blob: resource.blob,
+    width: resource.width, height: resource.height, remoteId: resource.remoteId,
+  });
+  return resource.remoteId;
+}
+
+/** Reintenta subir los recursos que aún no están en el servidor. Devuelve cuántos fallan. */
+export async function flushPendingUploads() {
+  if (!server.available || !server.writable) return 0;
+  let failures = 0;
+  for (const resource of state.resources.values()) {
+    if (!resource.blob || resource.remoteId) continue;
+    try {
+      await uploadResource(resource);
+    } catch (error) {
+      failures += 1;
+      resource.uploadError = error.message;
+    }
+  }
+  return failures;
 }
 
 function blobToBase64(blob) {
@@ -221,18 +261,26 @@ function blobToBase64(blob) {
 /* ══════════════ Autoguardado ══════════════ */
 let saveTimer = 0;
 let pendingReason = 'auto';
+// Los guardados se encadenan: dos en paralelo enviaban la misma versión base y
+// el segundo recibía un 409 falso que dejaba la app en «Cambios sin guardar».
+let saveChain = Promise.resolve();
+
+function runSave(reason) {
+  saveChain = saveChain.then(() => saveLocal(reason), () => saveLocal(reason));
+  return saveChain;
+}
 
 export function scheduleSave(reason = 'auto', delay = 900) {
   pendingReason = reason;
   clearTimeout(saveTimer);
   saveTimer = window.setTimeout(() => {
-    saveLocal(pendingReason);
+    runSave(pendingReason);
   }, delay);
 }
 
 export function saveNow(reason = 'manual') {
   clearTimeout(saveTimer);
-  return saveLocal(reason);
+  return runSave(reason);
 }
 
 /* ══════════════ Carga de proyectos ══════════════ */

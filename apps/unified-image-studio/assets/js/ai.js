@@ -2,8 +2,8 @@
    ai.js — catálogo de modelos, trabajos y control de costes
    ============================================================ */
 
-import { state, emit, uid, getResource, blobToBase64, dataUrlToBlob, fmtMoney } from './core.js';
-import { server } from './persist.js';
+import { state, emit, uid, getResource, blobToBase64, dataUrlToBlob, fmtMoney } from './core.js?v=11';
+import { server } from './persist.js?v=11';
 
 /* Catálogo espejo del contrato canónico del servidor
    (lib/canonical-image-model.php). No inventa modelos: solo

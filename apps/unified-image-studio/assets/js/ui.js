@@ -6,8 +6,8 @@ import {
   state, emit, on, getLayer, selectLayer, removeLayer, duplicateLayer, reorderLayer,
   moveLayerTo, mutate, getResource, fmtMoney, fmtDate, fmtBytes, canUndo, canRedo,
   clamp, LIMITS,
-} from './core.js';
-import { modelById, describeCost, catalog } from './ai.js';
+} from './core.js?v=11';
+import { modelById, describeCost, catalog } from './ai.js?v=11';
 
 export const $ = (id) => document.getElementById(id);
 export const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -60,13 +60,38 @@ export function toast(message, type = 'info', { duration = 5200 } = {}) {
 
 /* ══════════════ Modales ══════════════ */
 const openStack = [];
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const openers = new WeakMap();
+
+function focusables(modal) {
+  return Array.from(modal.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null || el === document.activeElement);
+}
+
+function trapFocus(event) {
+  if (event.key !== 'Tab') return;
+  const modal = event.currentTarget;
+  const items = focusables(modal);
+  if (items.length === 0) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
 
 export function openModal(id) {
   const modal = $(id);
   if (!modal) return;
+  if (openStack.includes(id)) return; // ya está abierto: no dupliques la pila
+  openers.set(modal, document.activeElement);
   modal.classList.remove('hidden');
+  modal.addEventListener('keydown', trapFocus);
   openStack.push(id);
-  const focusable = modal.querySelector('input, select, textarea, button');
+  const focusable = focusables(modal)[0];
   setTimeout(() => focusable?.focus(), 40);
 }
 
@@ -74,8 +99,14 @@ export function closeModal(id) {
   const modal = $(id);
   if (!modal) return;
   modal.classList.add('hidden');
+  modal.removeEventListener('keydown', trapFocus);
   const index = openStack.indexOf(id);
   if (index >= 0) openStack.splice(index, 1);
+  const opener = openers.get(modal);
+  if (opener && document.contains(opener) && typeof opener.focus === 'function') {
+    opener.focus();
+  }
+  openers.delete(modal);
 }
 
 export function closeTopModal() {
@@ -150,7 +181,7 @@ export function updateTopbar() {
   $('saveState').dataset.state = state.ui.saveState;
   const labels = {
     idle: 'Sin guardar', dirty: 'Cambios sin guardar', saving: 'Guardando…',
-    saved: 'Guardado', offline: 'Solo local', error: 'Error al guardar',
+    saved: 'Guardado', partial: 'Imágenes sin subir', offline: 'Solo local', error: 'Error al guardar',
   };
   $('saveStateText').textContent = labels[state.ui.saveState] || 'Sin guardar';
   $('exportBtn').disabled = !doc || doc.layers.length === 0;
@@ -180,7 +211,7 @@ export function updateSaveState(value, detail = {}) {
   const labels = {
     idle: 'Sin guardar', dirty: 'Cambios sin guardar', saving: 'Guardando…',
     saved: detail.at ? `Guardado ${new Date(detail.at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : 'Guardado',
-    offline: 'Solo local', error: 'Error al guardar',
+    partial: 'Guardado sin las imágenes', offline: 'Solo local', error: 'Error al guardar',
   };
   $('saveStateText').textContent = labels[value] || 'Sin guardar';
   $('dirtyDot').classList.toggle('is-dirty', state.flags.dirty);

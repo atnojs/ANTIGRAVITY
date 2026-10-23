@@ -123,6 +123,8 @@
 .save-state[data-state="saving"] .save-dot { background: var(--cyan); animation: pulse-soft 1s ease-in-out infinite; }
 .save-state[data-state="saving"] { color: var(--cyan); }
 .save-state[data-state="dirty"] .save-dot { background: var(--amber); }
+.save-state[data-state="partial"] .save-dot { background: var(--amber); }
+.save-state[data-state="partial"] { color: var(--amber-soft); }
 .save-state[data-state="offline"] .save-dot { background: var(--amber); }
 .save-state[data-state="error"] .save-dot { background: var(--danger); }
 .save-state[data-state="error"] { color: #ff9b95; }

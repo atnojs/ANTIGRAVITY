@@ -410,6 +410,31 @@ function uis_safe_id(string $id): bool
     return preg_match('/^[A-Za-z0-9_-]{6,80}$/', $id) === 1;
 }
 
+/** Convierte "8M"/"512K"/"1G" del php.ini a bytes (0 = sin límite). */
+function uis_ini_bytes(string $value): int
+{
+    $value = trim($value);
+    if ($value === '' || $value === '-1') return 0;
+    $unit = strtolower(substr($value, -1));
+    $number = (float)$value;
+    return match ($unit) {
+        'g' => (int)($number * 1024 * 1024 * 1024),
+        'm' => (int)($number * 1024 * 1024),
+        'k' => (int)($number * 1024),
+        default => (int)$number,
+    };
+}
+
+/** Tamaño máximo de imagen que el servidor acepta, descontando el base64 del JSON. */
+function uis_max_image_bytes(): int
+{
+    $post = uis_ini_bytes((string)ini_get('post_max_size'));
+    $hard = UIS_MAX_UPLOAD_BYTES;
+    $limit = $post > 0 ? min($post, $hard) : $hard;
+    // El JSON viaja en base64: ~1,37 veces el tamaño real + cabeceras.
+    return max(262144, (int)floor($limit / 1.4));
+}
+
 function uis_write_file(string $path, string $binary): void
 {
     $tmp = $path . '.tmp' . bin2hex(random_bytes(4));

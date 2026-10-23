@@ -22,6 +22,20 @@ if ($method === 'POST') {
 
 $db = uis_db();
 
+// Cuerpo mayor que post_max_size: PHP descarta el cuerpo y deja $_POST vacío.
+$contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+$postMax = uis_ini_bytes((string)ini_get('post_max_size'));
+if ($postMax > 0 && $contentLength > $postMax) {
+    uis_json(413, [
+        'ok' => false,
+        'error' => sprintf(
+            'La solicitud ocupa %s y el servidor admite %s por petición (post_max_size). Reduce la imagen o sube ese límite en el hosting.',
+            number_format($contentLength / 1048576, 1, ',', '.') . ' MB',
+            number_format($postMax / 1048576, 1, ',', '.') . ' MB'
+        ),
+    ]);
+}
+
 switch ($action) {
     case 'state':
         uis_session_start();
@@ -33,6 +47,7 @@ switch ($action) {
             'configured' => uis_password_configured(),
             'needsSetup' => !uis_password_configured(),
             'sharedSession' => uis_auth_lib(),
+            'maxImageBytes' => uis_max_image_bytes(),
         ];
         // El detalle del entorno solo se expone a una sesión válida.
         if ($authenticated) {
