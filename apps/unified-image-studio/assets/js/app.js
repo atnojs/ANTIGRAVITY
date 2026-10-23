@@ -33,6 +33,9 @@ import {
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
+/** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
+const BUILD = 'v1.2.0 · 2026-10-23 · responsive + lectura robusta';
+
 let generationBusy = false;
 let pendingResult = null;
 let lastExportUrl = null;
@@ -62,6 +65,15 @@ async function boot() {
   switchLeftTab('generate');
   switchRightTab('layers');
   renderRecipes(loadRecipes());
+  // Sello de versión: nunca debe tumbar el arranque si falta el elemento.
+  const buildStamp = $('buildStamp');
+  if (buildStamp) buildStamp.textContent = BUILD;
+  const statusBuild = $('statusBuild');
+  if (statusBuild) {
+    statusBuild.textContent = BUILD.split('·')[0].trim();
+    statusBuild.title = BUILD;
+  }
+  console.info('[Unified Image Studio]', BUILD);
 
   const probe = await server.probe();
   paintStorageInfo(await storageInfo());
@@ -239,28 +251,42 @@ async function importFiles(files, { asReference = false, asLayer = true } = {}) 
   const list = Array.from(files || []);
   if (!list.length) return;
   let imported = 0;
-  for (const file of list) {
-    if (file.size > LIMITS.maxFileBytes) {
-      toast(`«${file.name}» supera el límite de ${fmtBytes(LIMITS.maxFileBytes)}.`, 'error');
+  for (const original of list) {
+    if (original.size > LIMITS.maxFileBytes) {
+      toast(`«${original.name}» supera el límite de ${fmtBytes(LIMITS.maxFileBytes)}.`, 'error');
       continue;
     }
-    const mime = await sniffMime(file).catch(() => '');
+    // Se leen los bytes UNA vez, al principio: así no dependemos de que el
+    // navegador siga manteniendo válida la referencia al File del input.
+    let blob;
+    try {
+      const bytes = await original.arrayBuffer();
+      blob = new Blob([bytes], { type: original.type || '' });
+    } catch (error) {
+      console.error('No se pudo leer el archivo', original.name, error);
+      toast(`«${original.name}»: el navegador no dejó leer el archivo (${error.name || 'error'}). Prueba a arrastrarlo al lienzo o a pegarlo con Ctrl+V.`, 'error', { duration: 9000 });
+      continue;
+    }
+
+    const mime = await sniffMime(blob).catch(() => '');
     if (!mime) {
-      toast(`«${file.name}» no es un PNG, JPG, WebP o GIF válido.`, 'error');
+      toast(`«${original.name}» no es un PNG, JPG, WebP o GIF válido.`, 'error');
       continue;
     }
     let dims;
     try {
-      dims = await readImageDimensions(file);
+      dims = await readImageDimensions(blob);
     } catch (error) {
-      toast(`«${file.name}»: ${error.message}`, 'error', { duration: 8000 });
+      toast(`«${original.name}»: ${error.message}`, 'error', { duration: 8000 });
       continue;
     }
     if (dims.width > LIMITS.maxDimension || dims.height > LIMITS.maxDimension) {
-      toast(`«${file.name}» supera ${LIMITS.maxDimension} px de lado.`, 'error');
+      toast(`«${original.name}» supera ${LIMITS.maxDimension} px de lado.`, 'error');
       continue;
     }
-    const resource = addResource({ name: file.name, mime, blob: file, width: dims.width, height: dims.height });
+    const resource = addResource({
+      name: original.name, mime, blob, width: dims.width, height: dims.height,
+    });
     void uploadResource(resource);
 
     if (asReference) {
@@ -278,13 +304,13 @@ async function importFiles(files, { asReference = false, asLayer = true } = {}) 
     if (!asLayer) { imported += 1; continue; }
 
     if (!state.doc) {
-      state.doc = createDoc({ name: file.name.replace(/\.[^.]+$/, ''), width: dims.width, height: dims.height });
+      state.doc = createDoc({ name: original.name.replace(/\.[^.]+$/, ''), width: dims.width, height: dims.height });
       state.project = createProject(state.doc.name, state.doc);
       resetHistory();
     }
     const fits = fitInside(dims.width, dims.height, state.doc.width, state.doc.height);
     const layer = makeImageLayer({
-      name: file.name.replace(/\.[^.]+$/, ''),
+      name: original.name.replace(/\.[^.]+$/, ''),
       resourceId: resource.id,
       x: Math.round((state.doc.width - fits.w) / 2),
       y: Math.round((state.doc.height - fits.h) / 2),
@@ -333,7 +359,9 @@ function bindTopbar() {
   $('rightToggle').addEventListener('click', () => {
     const app = $('app');
     app.classList.toggle('is-right-open');
+    app.classList.remove('is-left-open');
     $('rightToggle').setAttribute('aria-expanded', String(app.classList.contains('is-right-open')));
+    syncPanelBackdrop();
   });
   $('exportBtn').addEventListener('click', openExport);
   $('costMeter').addEventListener('click', openBudgetModal);
@@ -376,7 +404,10 @@ function bindLeftPanel() {
     button.addEventListener('click', () => {
       switchLeftTab(button.dataset.tab);
       if (window.matchMedia('(max-width: 1100px)').matches) {
-        $('app').classList.add('is-left-open');
+        const app = $('app');
+        app.classList.add('is-left-open');
+        app.classList.remove('is-right-open');
+        syncPanelBackdrop();
       }
     });
   });
@@ -386,14 +417,18 @@ function bindLeftPanel() {
     setTimeout(() => { renderer.fit(); }, 220);
   });
   $('railToggle').addEventListener('click', () => {
-    $('app').classList.toggle('is-left-open');
-    const open = $('app').classList.contains('is-left-open');
-    $('railToggle').setAttribute('aria-expanded', String(open));
+    const app = $('app');
+    app.classList.toggle('is-left-open');
+    app.classList.remove('is-right-open');
+    $('railToggle').setAttribute('aria-expanded', String(app.classList.contains('is-left-open')));
+    syncPanelBackdrop();
   });
   $('rightCollapse').addEventListener('click', () => {
     $('app').classList.toggle('is-right-collapsed');
     setTimeout(() => { renderer.fit(); }, 220);
   });
+  $$('[data-close-panel]').forEach((button) => button.addEventListener('click', closePanels));
+  $('panelBackdrop').addEventListener('click', closePanels);
 
   // Generación: prompt
   $('promptInput').addEventListener('input', (event) => {
@@ -548,6 +583,23 @@ function bindLeftPanel() {
     paintStorageInfo(await storageInfo());
   });
   $('diagnosticsBtn').addEventListener('click', showDiagnostics);
+}
+
+/** Paneles superpuestos en móvil y tableta: fondo oscuro y cierre explícito. */
+function syncPanelBackdrop() {
+  const backdrop = $('panelBackdrop');
+  if (!backdrop) return;
+  const app = $('app');
+  const open = app.classList.contains('is-left-open') || app.classList.contains('is-right-open');
+  backdrop.classList.toggle('hidden', !open);
+}
+
+function closePanels() {
+  const app = $('app');
+  app.classList.remove('is-left-open', 'is-right-open');
+  $('railToggle').setAttribute('aria-expanded', 'false');
+  $('rightToggle').setAttribute('aria-expanded', 'false');
+  syncPanelBackdrop();
 }
 
 function applyTextOptions(layer) {
@@ -1642,6 +1694,7 @@ function bindMisc() {
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = window.setTimeout(() => {
+      if (window.innerWidth > 1100) closePanels();
       if (state.ui.fit) {
         renderer.fit();
         updateViewportUI(state.ui.zoom);
@@ -1749,6 +1802,7 @@ async function showDiagnostics() {
   const info = await storageInfo();
   const pending = await recoverPendingJobs();
   const lines = [
+    `Versión: ${BUILD}`,
     `Modo: ${info.mode}`,
     `Servidor: ${info.server ? (info.writable ? 'conectado y autorizado' : 'conectado, sin sesión') : 'no disponible'}`,
     `Proyectos locales: ${info.projects}`,
@@ -1786,4 +1840,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Exponer un mínimo para depuración en consola (sin datos sensibles).
-window.__UIS__ = { state, renderer, importFiles, saveNow, exportImage };
+window.__UIS__ = { state, renderer, importFiles, saveNow, exportImage, build: BUILD };

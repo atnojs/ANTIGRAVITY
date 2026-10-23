@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/base.css?v=1" />
-<link rel="stylesheet" href="assets/css/studio.css?v=1" />
+<link rel="stylesheet" href="assets/css/base.css?v=7" />
+<link rel="stylesheet" href="assets/css/studio.css?v=7" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d1117'/%3E%3Cpath d='M8 22l6-12 4 8 2-4 4 8' stroke='%232ee8ff' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 </head>
 <body>
@@ -129,6 +129,7 @@
   </header>
 
   <!-- ── Área de trabajo ── -->
+  <div class="panel-backdrop hidden" id="panelBackdrop" aria-hidden="true"></div>
   <div class="workspace" id="workspace">
 
     <!-- Rail + panel izquierdo -->
@@ -159,6 +160,9 @@
         <h2 id="panelTitle">Generación</h2>
         <button class="icon-btn panel-collapse" id="leftCollapse" aria-label="Plegar panel" title="Plegar panel">
           <svg class="ico"><use href="#i-chevron-left"/></svg>
+        </button>
+        <button class="icon-btn panel-close" data-close-panel="left" aria-label="Cerrar panel de herramientas" title="Cerrar">
+          <svg class="ico"><use href="#i-x"/></svg>
         </button>
       </div>
       <div class="panel-body" id="panelBody">
@@ -512,6 +516,7 @@
         <button class="ptab" role="tab" aria-selected="false" data-rtab="library">Biblioteca</button>
         <button class="ptab" role="tab" aria-selected="false" data-rtab="recipes">Recetas</button>
         <button class="icon-btn panel-collapse" id="rightCollapse" aria-label="Plegar panel" title="Plegar panel"><svg class="ico"><use href="#i-chevron-right"/></svg></button>
+        <button class="icon-btn panel-close" data-close-panel="right" aria-label="Cerrar panel de capas" title="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
       </div>
 
       <div class="panel-body">
@@ -589,6 +594,7 @@
     <span class="status-spacer"></span>
     <span class="status-item status-mode" id="statusMode" role="button" tabindex="0" title="Modo de almacenamiento activo. Pulsa para acceder o cerrar sesión"><span class="dot"></span><span id="statusModeText">Comprobando…</span></span>
     <span class="status-item mono" id="statusZoom">100 %</span>
+    <span class="status-item mono" id="statusBuild" title="Versión de la aplicación en ejecución">—</span>
   </footer>
 </div>
 
@@ -779,7 +785,7 @@
         </div>
       </div>
     </div>
-    <div class="modal-foot"><button class="btn btn-primary" data-close="helpModal">Entendido</button></div>
+    <div class="modal-foot"><span class="mono hint" id="buildStamp"></span><span class="spacer"></span><button class="btn btn-primary" data-close="helpModal">Entendido</button></div>
   </div>
 </div>
 
@@ -834,6 +840,6 @@
 <input type="file" id="refInput" accept="image/png,image/jpeg,image/webp" hidden multiple />
 <input type="file" id="projectInput" accept=".json,application/json" hidden />
 
-<script type="module" src="assets/js/app.js?v=1"></script>
+<script type="module" src="assets/js/app.js?v=7"></script>
 </body>
 </html>

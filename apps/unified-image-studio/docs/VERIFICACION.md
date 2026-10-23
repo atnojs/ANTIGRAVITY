@@ -152,7 +152,22 @@ PW_EDIT='SoloEdicion2026' \
 | Interfaz: importar y guardar con esa sesión | PASS |
 | Errores de consola | 0 |
 
-## 8. Sintaxis y arranque del backend
+## 8. Responsive y paneles móviles (`test-14-responsive.mjs`) — 25/25
+
+Medido con Chrome a 360, 390, 414, 768, 1024, 1280, 1440 y 1920 px, paneles cerrados y abiertos.
+
+| Prueba | Resultado |
+|---|---|
+| Arranque correcto con sello de versión visible | PASS · `v1.2.0` en la barra de estado y en la ayuda |
+| Sin errores en consola al iniciar | PASS · 0 |
+| Sin desbordes ni solapes a 360/390/414/768/1024/1280/1440/1920 | PASS · `scrollWidth == innerWidth` en todos |
+| Barra flotante y widget de zoom no se solapan | PASS · el zoom pasa por encima del toolbar en móvil |
+| Panel izquierdo abre con fondo oscuro | PASS |
+| El panel se cierra con su aspa o tocando el fondo | PASS |
+| Panel derecho abre y cierra en móvil/tableta | PASS |
+| Sin ensanche por contenido de la barra superior | PASS · corregido a 768 px (era 795 px) |
+
+## 9. Sintaxis y arranque del backend
 
 ```text
 php -l api.php                        → No syntax errors detected
@@ -162,7 +177,7 @@ php -l lib/canonical-image-model.php  → No syntax errors detected
 node --check assets/js/{core,render,tools,ui,persist,exporter,ai,app}.js → 8/8 OK
 ```
 
-## 9. Qué NO está verificado
+## 10. Qué NO está verificado
 
 | Punto | Motivo | Cómo completarlo |
 |---|---|---|
@@ -175,12 +190,12 @@ node --check assets/js/{core,render,tools,ui,persist,exporter,ai,app}.js → 8/8
 | SSO real con otra app del proyecto | Aquí solo hay esta app levantada | Abrir dos apps del dominio y comprobar que una sola sesión vale para ambas |
 | `PW_ACCESS_SHA256` / `PW_EDIT_SHA256` | Se probó con los valores en claro | Cambiar a la variante con hash y confirmar que el login sigue entrando |
 
-## 10. Inventario verificado
+## 11. Inventario verificado
 
 `lib/canonical-image-model.php` conserva el hash `cc89fea361387f64`, idéntico al contrato canónico
 del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 
-## 11. Limitaciones declaradas
+## 12. Limitaciones declaradas
 
 1. El trabajo se ejecuta dentro de `job.create`; con `max_execution_time` bajo puede cortarse la
    respuesta, aunque el trabajo queda registrado y es recuperable por `job.get`.
@@ -189,7 +204,7 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 4. El recorte de fondo local solo funciona con fondos uniformes.
 5. En modo local (sin PHP) no hay IA: el resto del estudio funciona y se guarda en IndexedDB.
 
-## 12. Defectos encontrados y corregidos
+## 13. Defectos encontrados y corregidos
 
 ### 10.1 Detectados en la verificación propia
 
@@ -204,6 +219,10 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 | Al borrar la última capa no aparecía el estado vacío | Prueba de atajos | `deleteSelectedLayer()` actualiza el estado vacío |
 | Deshacer una forma no la eliminaba | Prueba de undo | La transacción se captura antes de crear la capa |
 | El primer guardado tras reabrir daba un 409 falso | Captura con proyecto existente | `openProject` adopta la versión del servidor |
+| **El sello de versión rompía el arranque** (elemento inexistente) | Auditoría responsive: «Cannot set properties of null» | Elemento creado y escritura protegida: un fallo de UI ya no puede tumbar `boot()` |
+| **La barra superior ensanchaba la app a 768 px** (795 px reales) | Medición de `scrollWidth` | Columna del grid `minmax(0, 1fr)` y medidor de coste oculto por debajo de 1024 px |
+| **Los paneles móviles no tenían cierre visible** | Auditoría a 360–768 px | Aspa en cada panel, fondo oscuro y cierre al tocar fuera |
+| Subida de archivos desde el selector | Selector real con JPEG/PNG | Se leen los bytes antes de nada y el input se limpia al terminar |
 
 ### 10.2 Detectados por el verificador independiente (ronda 1 → REWORK)
 
@@ -225,7 +244,7 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 | 14 | Menor | Carrera de idempotencia con `UNIQUE` → 500 | Se captura la violación y se devuelve el trabajo ganador |
 | 15 | Menor | No se valida `doc.id`↔`project.id` | Aceptado: app mono-usuario; documentado |
 
-## 13. Fuera de alcance de esta entrega
+## 14. Fuera de alcance de esta entrega
 
 - Kit de marca y formatos predefinidos de la fase 6 (hay recetas y logos como capa).
 - Cancelación de trabajos y reembolsos (los proveedores no los admiten).

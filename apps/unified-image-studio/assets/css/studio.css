@@ -9,6 +9,9 @@
   height: 100dvh;
   display: grid;
   grid-template-rows: var(--topbar-h) minmax(0, 1fr) var(--statusbar-h);
+  /* Evita que un hijo con mucho contenido ensanche la columna implícita. */
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
 }
 
 /* ══════════════════════ Barra superior ══════════════════════ */
@@ -17,6 +20,7 @@
   align-items: center;
   gap: 14px;
   padding: 0 12px 0 10px;
+  min-width: 0;
   background: linear-gradient(180deg, #171d26 0%, #12171e 100%);
   border-bottom: 1px solid var(--line);
   z-index: 30;
@@ -203,6 +207,7 @@
   color: var(--text);
 }
 .panel-collapse { color: var(--faint); }
+.panel-close { display: none; color: var(--faint); }
 
 .panel-body {
   flex: 1 1 auto;
@@ -942,6 +947,11 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
   .cost-sub { display: none; }
 }
 
+@media (max-width: 1024px) {
+  /* La barra ya no cabe con el medidor de coste: se consulta desde el panel. */
+  .cost-meter { display: none; }
+}
+
 @media (max-width: 1100px) {
   :root { --rail-w: 64px; }
   /* Los paneles pasan a superposición: el lienzo ocupa el ancho completo. */
@@ -967,6 +977,16 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
   .rail-toggle { display: inline-flex; }
   #rightToggle { display: inline-flex; }
   .panel-collapse { display: none; }
+  .panel-close { display: inline-flex; }
+  .panel-backdrop {
+    position: fixed;
+    inset: var(--topbar-h) 0 var(--statusbar-h) 0;
+    z-index: 35;
+    background: rgba(3, 6, 9, .62);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  .panel-backdrop.hidden { display: none; }
   .zoom-widget { bottom: 10px; right: 10px; }
   .toolbar-float { bottom: 10px; }
   .toast-stack { bottom: calc(var(--statusbar-h) + 64px); }
@@ -998,6 +1018,7 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
   .statusbar { font-size: 9.5px; overflow: hidden; }
   .status-sep { display: none; }
   #statusSelection, #statusCursor { display: none; }
-  .zoom-widget { transform: scale(.92); transform-origin: bottom right; }
+  .zoom-widget { transform: scale(.92); transform-origin: bottom right; bottom: 62px; right: 8px; }
   .toolbar-float { max-width: calc(100% - 20px); }
+  #statusBuild { display: none; }
 }
