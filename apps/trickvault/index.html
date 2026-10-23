@@ -428,16 +428,9 @@ const CODE_FOLDER = {
     '/restaurarfotoantigua': 'xl-restauracion',
     '/colorizarfotoantigua': 'xl-restauracion',
     '/prepararparaimprimir': 'xl-restauracion',
-    '/repararcolor': 'xl-restauracion',
-    '/quitarroturas': 'xl-restauracion',
-    '/colorearantigua': 'xl-restauracion',
-    '/enfocarcaras': 'xl-restauracion',
-    '/repararesquinas': 'xl-restauracion',
-    '/quitarmanchas': 'xl-restauracion',
-    '/prepararimpresion': 'xl-restauracion',
-    '/restaurarboda': 'xl-restauracion',
-    '/quitartinte': 'xl-restauracion',
-    '/marcoregalo': 'xl-restauracion',
+    // 2026-10-23: las 10 tarjetas del carrusel sifuyik se retiraron (ver
+    // REMOVED_IMAGE_IDS y CAPTURE_COMMANDS): repetían estas 3 o no eran
+    // restauración. No llevan CODE_FOLDER a propósito.
     '/dobleexposicion-yoga': 'xl-dobleexposicion',
     '/dobleexposicion-ciudad': 'xl-dobleexposicion',
     '/dobleexposicion-libros': 'xl-dobleexposicion',
@@ -1548,7 +1541,14 @@ const REMOVED_IMAGE_IDS = new Set([
     //   /restore       -> ídem
     //   /petphoto      -> se queda /pet
     //   /sameface      -> se queda /samecharacter
-    'ig-dcek-047', 'ig-dcek-172', 'cap-cmd-009', 'cap-cmd-113', 'xl-cmd-131'
+    'ig-dcek-047', 'ig-dcek-172', 'cap-cmd-009', 'cap-cmd-113', 'xl-cmd-131',
+    // 2026-10-23 (Antonio): el carrusel del 2026-10-22 metió 10 tarjetas de
+    // restauración que repetían las 3 de siempre (reparar / colorear / imprimir)
+    // o no eran restauración (boda, marco de regalo). Se dejan RETIRADAS en
+    // CAPTURE_COMMANDS para no renumerar los cap-cmd posteriores y se apagan aquí:
+    // cada navegador las borra al recargar y no vuelven a entrar.
+    'cap-cmd-126', 'cap-cmd-127', 'cap-cmd-128', 'cap-cmd-129', 'cap-cmd-130',
+    'cap-cmd-131', 'cap-cmd-132', 'cap-cmd-133', 'cap-cmd-134', 'cap-cmd-135'
 ]);
 
 
@@ -2313,16 +2313,8 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/restaurarfotoantigua': 'assets/xl-restauracion/restaurarfotoantigua.jpg',
     '/colorizarfotoantigua': 'assets/xl-restauracion/colorizarfotoantigua.jpg',
     '/prepararparaimprimir': 'assets/xl-restauracion/prepararparaimprimir.jpg',
-    '/repararcolor': 'assets/xl-restauracion/restaurarfotoantigua.jpg?v=20261022a',
-    '/quitarroturas': 'assets/xl-restauracion/restaurarfotoantigua.jpg?v=20261022a',
-    '/colorearantigua': 'assets/xl-restauracion/colorizarfotoantigua.jpg?v=20261022a',
-    '/enfocarcaras': 'assets/xl-restauracion/prepararparaimprimir.jpg?v=20261022a',
-    '/repararesquinas': 'assets/xl-restauracion/restaurarfotoantigua.jpg?v=20261022a',
-    '/quitarmanchas': 'assets/xl-restauracion/restaurarfotoantigua.jpg?v=20261022a',
-    '/prepararimpresion': 'assets/xl-restauracion/prepararparaimprimir.jpg?v=20261022a',
-    '/restaurarboda': 'assets/xl-restauracion/restaurarfotoantigua.jpg?v=20261022a',
-    '/quitartinte': 'assets/xl-restauracion/colorizarfotoantigua.jpg?v=20261022a',
-    '/marcoregalo': 'assets/xl-restauracion/prepararparaimprimir.jpg?v=20261022a',
+    // 2026-10-23: retiradas las 10 tarjetas del carrusel sifuyik (usaban estos
+    // mismos 3 ejemplos repetidos); sus códigos ya no están en CODE_FOLDER.
     '/product lava': 'assets/xl-efectosempaque/product lava.jpg',
     '/product ice': 'assets/xl-efectosempaque/product ice.jpg',
     '/product crystal': 'assets/xl-efectosempaque/product crystal.jpg',
@@ -3179,17 +3171,21 @@ const CAPTURE_COMMANDS = [
     ['/colorizarfotoantigua', 'le devuelve el color con tonos naturales de época'],
     ['/prepararparaimprimir', 'la deja nítida en 4K y lista para imprimir'],
 
-    // Carrusel de Instagram (2026-10-22, sifuyik): 10 prompts de restauración.
-    ['/repararcolor', 'recupera el color y el contraste apagados'],
-    ['/quitarroturas', 'borra rayones, grietas y polvo'],
-    ['/colorearantigua', 'colorea una foto en blanco y negro con tonos de epoca'],
-    ['/enfocarcaras', 'enfoca las caras borrosas sin cambiarlas'],
-    ['/repararesquinas', 'reconstruye esquinas rotas o que faltan'],
-    ['/quitarmanchas', 'limpia manchas, marcas de agua y cinta'],
-    ['/prepararimpresion', 'la deja lista para imprimir en A4 u 8x10'],
-    ['/restaurarboda', 'revive una foto de boda antigua'],
-    ['/quitartinte', 'quita el tono amarillo, verde o rosa'],
-    ['/marcoregalo', 'la convierte en un cuadro con marco y dedicatoria'],
+    // Carrusel de Instagram (2026-10-22, sifuyik): 10 prompts de restauración que
+    // repetían las 3 tarjetas de arriba (reparar / colorear / imprimir) o no eran
+    // restauración (/restaurarboda, /marcoregalo). RETIRADOS el 2026-10-23: se
+    // dejan aquí solo para no renumerar los cap-cmd que ya estén guardados y se
+    // apagan con REMOVED_IMAGE_IDS. No llevan CODE_FOLDER a propósito.
+    ['/repararcolor', 'RETIRADO: repetía /colorizarfotoantigua y /restaurarfotoantigua'],
+    ['/quitarroturas', 'RETIRADO: lo cubre /restaurarfotoantigua'],
+    ['/colorearantigua', 'RETIRADO: repetía /colorizarfotoantigua'],
+    ['/enfocarcaras', 'RETIRADO: lo cubren /restaurarfotoantigua y /prepararparaimprimir'],
+    ['/repararesquinas', 'RETIRADO: lo cubre /restaurarfotoantigua'],
+    ['/quitarmanchas', 'RETIRADO: lo cubre /restaurarfotoantigua'],
+    ['/prepararimpresion', 'RETIRADO: repetía /prepararparaimprimir'],
+    ['/restaurarboda', 'RETIRADO: la boda se restaura igual que cualquier otra foto'],
+    ['/quitartinte', 'RETIRADO: lo cubre /colorizarfotoantigua'],
+    ['/marcoregalo', 'RETIRADO: no era restauración; era un marco de regalo'],
 
     // Hoja 2026-10-22 (saddaytechx): 10 retratos de doble exposición.
     ['/dobleexposicion-yoga', 'retrato con escena de yoga y montañas al amanecer'],
@@ -5168,17 +5164,8 @@ const PROMPT_TEMPLATES = {
     "/colorizarfotoantigua": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Colourisation of the black and white or sepia old photograph: believable natural skin tones with subtle undertones, realistic hair colour, softly coloured background and props, period-correct clothing and fabric colours researched for the decade the image belongs to, correct period textile dyes, correct uniform and workwear colours, correct paint and furniture tones of the time, muted realistic palette with gentle desaturated tones, colour applied with restraint as if the original emulsion had always been in colour, subtle colour variation across the frame, slightly faded and uneven colour as the original tinted print would have aged, keeping the original grain, the original lighting and the original softness, no oversaturation, no strong colour casts, no neon and no modern colour grading, no anachronistic colours and no modern materials, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/prepararparaimprimir": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Print-ready high-resolution restoration of the old photograph: rebuild the image at 4K detail, resolved micro-texture in the skin, the fabric weave, the hair strands and the background objects, recover the fine micro-detail of the eyes, the eyelashes, the eyebrows, the lips, the buttons and the jewellery, crisp clean edges without halos, no blur, no ringing artifacts, no pixelation, no jpeg blocking, no mush and no plastic smoothing, natural texture kept and damage repaired; correct print resolution with a generous clean white border, full tonal range with deep blacks and clean highlights, no clipping, sharpened for paper output, neutral colour balance for pigment printing, the picture framed and ready to be printed and hung on a wall, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
 
-    // Carrusel 2026-10-22: 10 prompts de restauración de fotos antiguas.
-    "/repararcolor": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Restore this faded photo. Bring back the original colours, contrast and sharpness. Keep every person, the pose, the background and the vintage feel exactly the same. Do not make it look modern, glossy or over-edited. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-    "/quitarroturas": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Remove all scratches, cracks, creases, white lines and dust spots from this photo. Fill each damaged area using the nearby textures and tones. Do not change faces, clothing or anything that is not damaged. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-    "/colorearantigua": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Colourise this black and white photo with soft, natural, historically accurate colours. Use realistic skin tones and muted clothing colours that fit the era. Keep the original lighting, shadows and film grain. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-    "/enfocarcaras": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gently sharpen the faces in this photo. Keep each person's real face shape, eyes, smile, age and expression. Do not beautify, smooth or change anyone. Add only the detail that a clear version of this photo would show. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-    "/repararesquinas": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. This photo has a torn or missing section. Rebuild it using the surrounding patterns, colours and lighting. Keep the new parts simple and believable. Do not add new people, objects or text. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-    "/quitarmanchas": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Remove the stains, water marks, glue marks and tape from this photo. Rebuild the hidden areas so they blend with the rest of the image. Keep everything else exactly as it is, including the border and the grain. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-    "/prepararimpresion": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Prepare this restored photo for printing at A4 or 8x10. Keep the same framing and crop. Make it crisp and clean while keeping the natural grain, skin texture and film look. Do not over-sharpen. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-    "/restaurarboda": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Restore this vintage wedding photo. Brighten the faded whites on the dress and veil, fix the contrast and repair any damage. Keep the faces, the outfits, the pose and the original framing the same. Keep it timeless, not modern. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-    "/quitartinte": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Remove the yellow, orange, green or pink tint caused by age. Make the whites neutral and the skin tones natural. Balance the colours evenly across the whole photo without changing the mood of the original. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-    "/marcoregalo": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Turn this restored photo into a simple framed print. Add a clean white border with a thin frame. Put a small, neat caption at the bottom that reads the names and the year. Keep the photo itself unchanged. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    // 2026-10-23: retirados los 10 prompts del carrusel sifuyik (repetían estas 3
+    // faenas o no eran restauración). Ver REMOVED_IMAGE_IDS.
 
     // Doble exposición (2026-10-22): retrato + segunda escena, 10 variantes.
     "/dobleexposicion-yoga": "Double exposure photo of a man's side profile with a yoga and meditation scene, mountains, sunrise, lake reflection, trees, birds, peaceful atmosphere, cinematic lighting, vibrant colors, highly detailed.",
