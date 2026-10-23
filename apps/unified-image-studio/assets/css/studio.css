@@ -355,8 +355,8 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
   margin-bottom: 8px;
 }
 .result-tray img { width: 100%; border-radius: var(--r-sm); display: block; background: var(--bg-deep); }
-.result-actions { display: flex; gap: 6px; margin-top: 9px; }
-.result-actions .btn { flex: 1 1 0; }
+.result-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.result-actions .btn { flex: 1 1 44%; }
 
 /* ── Formas y alineación ── */
 .shape-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
@@ -513,7 +513,8 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 10px 16px;
   padding: 10px 14px;
   border-radius: var(--r-md);
   background: var(--surface);

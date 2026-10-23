@@ -210,7 +210,16 @@ async function sniffMime(file) {
   return '';
 }
 
-function readImageDimensions(blob) {
+async function readImageDimensions(blob) {
+  // Vía rápida y fiable; si el navegador no puede decodificarla, se intenta con <img>.
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bitmap = await createImageBitmap(blob);
+      const dims = { width: bitmap.width, height: bitmap.height };
+      bitmap.close?.();
+      return dims;
+    } catch { /* se prueba la vía clásica */ }
+  }
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(blob);
     const img = new Image();
@@ -218,7 +227,10 @@ function readImageDimensions(blob) {
       URL.revokeObjectURL(url);
       resolve({ width: img.naturalWidth, height: img.naturalHeight });
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('La imagen no se pudo decodificar.')); };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('El navegador no pudo decodificar esta imagen. Exporta en PNG, JPG o WebP y vuelve a intentarlo.'));
+    };
     img.src = url;
   });
 }
@@ -232,7 +244,7 @@ async function importFiles(files, { asReference = false, asLayer = true } = {}) 
       toast(`«${file.name}» supera el límite de ${fmtBytes(LIMITS.maxFileBytes)}.`, 'error');
       continue;
     }
-    const mime = await sniffMime(file);
+    const mime = await sniffMime(file).catch(() => '');
     if (!mime) {
       toast(`«${file.name}» no es un PNG, JPG, WebP o GIF válido.`, 'error');
       continue;
@@ -240,8 +252,8 @@ async function importFiles(files, { asReference = false, asLayer = true } = {}) 
     let dims;
     try {
       dims = await readImageDimensions(file);
-    } catch {
-      toast(`«${file.name}» no se pudo leer.`, 'error');
+    } catch (error) {
+      toast(`«${file.name}»: ${error.message}`, 'error', { duration: 8000 });
       continue;
     }
     if (dims.width > LIMITS.maxDimension || dims.height > LIMITS.maxDimension) {
@@ -708,19 +720,32 @@ function bindCanvas() {
     }
   });
 
-  $('fileInput').addEventListener('change', (event) => {
-    const mode = event.target.dataset.mode;
-    const files = event.target.files;
-    importFiles(files, { asLayer: mode !== 'reference' });
-    event.target.value = '';
+  $('fileInput').addEventListener('change', async (event) => {
+    const input = event.target;
+    const mode = input.dataset.mode;
+    const files = Array.from(input.files || []);
+    if (!files.length) return;
+    try {
+      // No se vacía el input hasta terminar: al limpiarlo, Chrome puede invalidar
+      // los File y la lectura falla con «no se pudo leer».
+      await importFiles(files, { asLayer: mode !== 'reference' });
+    } finally {
+      input.value = '';
+    }
   });
-  $('refInput').addEventListener('change', (event) => {
-    importFiles(event.target.files, { asReference: true });
-    event.target.value = '';
+  $('refInput').addEventListener('change', async (event) => {
+    const input = event.target;
+    const files = Array.from(input.files || []);
+    if (!files.length) return;
+    try {
+      await importFiles(files, { asReference: true });
+    } finally {
+      input.value = '';
+    }
   });
   $('projectInput').addEventListener('change', async (event) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
+    const input = event.target;
+    const file = input.files?.[0];
     if (!file) return;
     try {
       const payload = JSON.parse(await file.text());
@@ -738,6 +763,8 @@ function bindCanvas() {
       toast('Proyecto importado.', 'ok');
     } catch (error) {
       toast(`No se pudo importar: ${error.message}`, 'error');
+    } finally {
+      input.value = '';
     }
   });
 
@@ -940,15 +967,27 @@ function bindGeneration() {
   $('variantResult').addEventListener('click', () => acceptResult('variant'));
   $('discardResult').addEventListener('click', discardResult);
   $('closeResult').addEventListener('click', discardResult);
+  $('regenResult').addEventListener('click', regenerateResult);
   $('aiAccept').addEventListener('click', () => acceptResult('apply'));
   $('aiVariant').addEventListener('click', () => acceptResult('variant'));
   $('aiDiscard').addEventListener('click', discardResult);
+  $('aiRegen').addEventListener('click', regenerateResult);
+}
+
+/** Vuelve a generar con el mismo prompt y ajustes, sin dejar la vista previa encima. */
+async function regenerateResult() {
+  if (generationBusy) {
+    toast('La generación anterior sigue en curso. Espera a que termine.', 'warn');
+    return;
+  }
+  discardResult();
+  await runGeneration();
 }
 
 async function runGeneration() {
   const prompt = $('promptInput').value.trim();
   if (!prompt) { toast('Escribe una descripción para generar.', 'warn'); $('promptInput').focus(); return; }
-  if (generationBusy) { toast('Ya hay una generación en curso.', 'warn'); return; }
+  if (generationBusy) { toast('Ya hay una generación en curso. Espera a que termine.', 'warn'); return; }
 
   try {
     if (!server.available) {
@@ -960,6 +999,9 @@ async function runGeneration() {
       return;
     }
   } catch { /* sigue */ }
+
+  // La vista previa anterior estorbaba: se retira antes de lanzar la nueva.
+  if (pendingResult) discardResult();
 
   const images = [];
   for (const ref of state.ui.refs) {
