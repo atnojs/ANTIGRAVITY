@@ -49,7 +49,8 @@ estructura y dónde buscar, no la descripción de cada app.
 
 | Si la tarea es… | Carga |
 |---|---|
-| Crear o editar una app/web | `crear` (maestra) + `style-guide-antigravity` + `capturas-verificacion` |
+| Crear o editar CUALQUIER cosa (archivo, app, web, documento, imagen, datos) | `autocalidad-90` (OBLIGATORIA) + la skill específica |
+| Crear o editar una app/web | `autocalidad-90` + `crear` (maestra) + `style-guide-antigravity` + `capturas-verificacion` |
 | Aplicar la estética del proyecto | `style-guide-antigravity` |
 | Arreglar / refactorizar código que ya funciona | `cirujano-codigo-produccion` |
 | Analizar, clonar o sacar el prompt de una imagen | `analista-visual-pro` |

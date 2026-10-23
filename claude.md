@@ -33,7 +33,21 @@ que indica y aplícalo tal cual. No dupliques el contenido en el puntero.
 
 Cuando la tarea coincida con una de las skills disponibles, carga y aplica la skill correspondiente.
 
+## Gate de calidad obligatorio: `autocalidad-90`
+
+**Antes de generar o editar cualquier cosa** —archivo, app, web, documento, hoja, presentación, imagen, datos, configuración, script o publicación— carga y aplica la skill **`autocalidad-90`**. No es opcional y no admite excepciones por prisa, por ser un cambio pequeño ni por costumbre.
+
+- Todo agente que interviene se autoevalúa con la rúbrica A1–A10 y evidencia reproducible antes de entregar.
+- Un verificador independiente (otro subagente o contexto separado) reproduce la evidencia y emite PASS o REWORK. Nadie se supervisa a sí mismo.
+- **Suelo de calidad 90,0/100**: total truncado ≥ 90,0, ninguna nota < 7,0, criterios críticos A1–A6 ≥ 9,0 y cero defectos bloqueantes/mayores/medios.
+- Sin PASS, el trabajo continúa; si no se puede verificar, se declara BLOCKED. Nunca se entrega «casi» ni «con reservas».
+- Para generar o editar **webs o apps**, la skill carga el protocolo completo `tools/prompts/maestro-web-autocalidad/PROMPT_MAESTRO_WEB_AUTOCALIDAD_90.md` y se aplica junto a `crear` y `maestra-produccion-antigravity`.
+
 ## Skill maestra (cárgala SIEMPRE para crear o editar apps/webs)
+
+### autocalidad-90
+
+Puerta de calidad OBLIGATORIA antes de generar o editar cualquier artefacto. Fija la autoevaluación de todos los roles, la verificación independiente, el umbral 90,0, el rework hasta PASS y el BLOCKED. Para webs/apps aplica el protocolo completo `tools/prompts/maestro-web-autocalidad/PROMPT_MAESTRO_WEB_AUTOCALIDAD_90.md`. Cárgala en cualquier tarea de creación o edición, no solo en apps.
 
 ### crear
 
@@ -87,6 +101,7 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 
 ## Reglas críticas del proyecto
 
+- **Ninguna entrega sin PASS de `autocalidad-90`.** Cualquier creación o edición (aunque sea de un archivo suelto) lleva autoevaluación y verificación independiente; si el resultado queda por debajo de 90,0 o queda una mejora asequible, no se entrega: se corrige o se declara BLOCKED. No se admite «aprobado con reservas».
 - **Comprueba SIEMPRE que la app funciona como debe EN UN NAVEGADOR antes de dar nada por terminado.** Recorre el flujo completo del usuario en Chrome, no basta con leer el código, ni con el diff, ni con comprobar el HTML servido: clics, navegación, formularios, subida, **descarga y generación de ficheros (.json incluidos)**, errores, consola y recarga. Una descarga se da por buena solo cuando el fichero aparece en disco y su contenido es válido. No afirmes que algo funciona sin haberlo probado en el entorno que realmente lo ejecutará.
 - **Comprueba SIEMPRE que se ha seguido al pie de la letra la skill maestra** (`skills/SKILL_MAESTRA.md`, con sus Fases 4 y 5, y `skills/SKILL_CREAR.md`) y repasa su checklist de salida. Si un paso obligatorio no se ha cumplido, no lo maquilles: dilo y complétalo antes de entregar.
 - **Un arreglo sin subir no existe: un commit sin push deja la app rota en producción.** Antes de decir que algo está terminado, `git log --oneline origin/main..HEAD` debe estar vacío y `git status` no debe tener modificados los ficheros del encargo. Comprueba siempre que la versión que se sirve en producción es la que acabas de arreglar (tamaño, hash o marcador del cambio en el fichero servido).

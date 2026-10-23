@@ -16,6 +16,7 @@ Actuar como Director de Producto que coordina las skills especializadas para gar
 3. **Bloque de modelos de imagen**: usar únicamente el selector canónico de `apps/dibujo_lineas_copia`: `OPENAI 2.5` agrupado por modelo: `MEDIUM`, `HIGH`, `MAX FLARE` (gpt-image-2.5-flare) y `XHIGH`, `MAX SUNBURST` (gpt-image-2.5-sunburst), `GEMINI` (`3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`LOW` activo por defecto, `MEDIUM`, `HIGH`). Mapeo vigente: `openai-image-2-low` → `gpt-image-2` (image 2) con quality `low`, **el activo por defecto**; `openai-image-2`/`openai-image-2-high` → `gpt-image-2` (image 2) con quality `medium`/`high`; `openai-medium`/`openai-high` → `gpt-image-2.5-flare` (image 2.5) con quality `medium`/`high`; `openai-xhigh` → `gpt-image-2.5-sunburst` quality `xhigh`; `openai-max-flare` → `gpt-image-2.5-flare` quality `max`; `openai-max-sunburst` → `gpt-image-2.5-sunburst` quality `max`; `gemini-flash`/`gemini-pro` → `google/gemini-3.1-flash-image`/`google/gemini-3-pro-image`; `qwen-pro` → `qwen/qwen-image-3-pro`. La edición va por `/v1/images/edits` (multipart) y sin `response_format`. No añadir proveedores ni conservar selectores anteriores. Para apps de solo texto o descripción de imágenes, el modelo es `xiaomi/mimo-v2.6-pro` (OpenRouter).
 4. **Verificación real en navegador (OBLIGATORIA)**: antes de dar una app o una edición por terminada, recórrela entera en Chrome como lo haría el usuario (clics, navegación, formularios, subida, **descarga y generación de ficheros, los `.json` incluidos**, errores, consola y recarga). Una descarga se comprueba viendo el fichero en disco y validando su contenido. No basta con leer el código, ni con el diff, ni con comprobar el HTML servido: si no lo has probado en el navegador, no está verificado.
 5. **Cumplimiento literal de la skill maestra (OBLIGATORIO)**: repasa `skills/SKILL_MAESTRA.md` y esta skill punto por punto (Fases 4 y 5 y checklist de salida incluidas) antes de entregar. Si un paso obligatorio no se ha cumplido, dilo y complétalo; nunca lo maquilles.
+6. **Gate `autocalidad-90` (OBLIGATORIO)**: ninguna app/web se entrega sin autoevaluación de todos los roles, verificación independiente y PASS ≥ 90,0; si queda una mejora asequible o algo no verificable, se corrige o se declara BLOCKED. Protocolo completo: `tools/prompts/maestro-web-autocalidad/PROMPT_MAESTRO_WEB_AUTOCALIDAD_90.md`.
 
 ## 🧠 Skills integradas
 
@@ -31,6 +32,7 @@ Al activar `crear`, se invocan automáticamente:
 | `history-server` | Historial persistente server-side |
 | `capturas-verificacion` | Medir la geometría real en Chrome y entregar capturas del antes/después |
 | `auditor-lighthouse-accesibilidad` | Control de calidad final |
+| `autocalidad-90` | Puerta de calidad: autoevaluación, verificación independiente y PASS ≥ 90,0 antes de entregar |
 
 ---
 

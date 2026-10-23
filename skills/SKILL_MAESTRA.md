@@ -7,6 +7,10 @@ description: Protocolo central para crear, editar y validar archivos, aplicacion
 
 Entregar resultados completos, funcionales, seguros y visualmente cuidados desde la primera versión. Aplicar esta skill de forma autosuficiente: no depender de otras skills para crear o editar archivos, apps o webs.
 
+## Gate obligatorio `autocalidad-90`
+
+Esta skill define **cómo producir**; la skill `autocalidad-90` define **cuándo se puede entregar**. Toda creación o edición pasa por su gate: autoevaluación de todos los roles, verificación independiente y umbral 90,0. Si no hay PASS ≥ 90,0, no se entrega: se corrige o se declara BLOCKED. Para webs y apps se aplica además el protocolo completo `tools/prompts/maestro-web-autocalidad/PROMPT_MAESTRO_WEB_AUTOCALIDAD_90.md`.
+
 ## Principios no negociables
 
 1. Leer y comprender los archivos originales antes de modificarlos.

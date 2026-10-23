@@ -194,3 +194,24 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
   `LEEME` explica el reparto por rol.
 - **Verificación:** `EVIDENCIA.md` (matriz R1–R8, gates FG-A 96,0 y FG-B 95,0, red-team sin
   B/M/Med/Men abiertos) y `supervision/scorecard-supervisor-*.md`.
+- **Actualización (misma fecha):** Antonio pidió que el gate se aplique solo, sin copiar/pegar; se
+  convierte en skill obligatoria `autocalidad-90` (ver la entrada siguiente). El protocolo completo
+  sigue siendo la fuente de verdad en `tools/prompts/maestro-web-autocalidad/`.
+
+### [2026-10-23] `autocalidad-90`: el gate del prompt maestro pasa a skill obligatoria
+
+- **Decisión:** el protocolo de autoevaluación + supervisión ≥ 90 se operativiza como skill canónica
+  `skills/SKILL_AUTOCALIDAD_90.md` (puntero `.claude/skills/autocalidad-90/SKILL.md`), obligatoria
+  antes de generar o editar cualquier artefacto. El protocolo completo sigue en
+  `tools/prompts/maestro-web-autocalidad/PROMPT_MAESTRO_WEB_AUTOCALIDAD_90.md` y se carga solo para
+  webs/apps o trabajos multiarchivo.
+- **Motivo:** Antonio no quiere copiar/pegar: la skill se autodescubre y se activa por su descripción
+  en cualquier tarea de creación/edición. Cargar los 184 KB completos en cada edición sería inviable
+  y duplicaría la fuente de verdad; la skill compacta aplica el gate y remite al protocolo completo
+  cuando hace falta.
+- **Contrapartida:** en tareas pequeñas el gate se aplica con la versión compacta (rúbrica + PASS);
+  para webs/apps hay una lectura adicional del protocolo completo, una vez por tarea.
+- **Verificación:** `autocalidad-90` aparece en el catálogo de skills de DSH de la sesión; puntero
+  validado con `php tools/generar-punteros-skills.php --check`; `claude.md` la declara obligatoria y
+  `SKILL_MAESTRA.md`, `SKILL_CREAR.md`, `SKILL_EDITAR_cirujano-codigo-produccion.md` y `mapa.md` la
+  referencian.

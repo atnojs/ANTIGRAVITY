@@ -9,6 +9,10 @@ description: "Activa este skill para aplicar correcciones de errores, añadir ca
 
 Aplicar correcciones, mejoras o refactorizaciones sobre archivos existentes de forma no destructiva, preservando el código funcional y modificando solo los bloques necesarios.
 
+## Gate obligatorio `autocalidad-90`
+
+Esta skill define cómo editar sin romper; `autocalidad-90` define cuándo se puede entregar. Antes de dar por terminado: autoevaluación A1–A10, verificación independiente del diff y PASS ≥ 90,0. Sin PASS no hay entrega; si no se puede verificar, BLOCKED. Protocolo completo: `tools/prompts/maestro-web-autocalidad/PROMPT_MAESTRO_WEB_AUTOCALIDAD_90.md`.
+
 ## Inputs esperados
 
 - `target_file`: ruta del archivo físico que se va a modificar.
