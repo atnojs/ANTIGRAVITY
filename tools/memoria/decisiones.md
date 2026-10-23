@@ -206,7 +206,7 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
   `tools/prompts/maestro-web-autocalidad/PROMPT_MAESTRO_WEB_AUTOCALIDAD_90.md` y se carga solo para
   webs/apps o trabajos multiarchivo.
 - **Motivo:** Antonio no quiere copiar/pegar: la skill se autodescubre y se activa por su descripción
-  en cualquier tarea de creación/edición. Cargar los 184 KB completos en cada edición sería inviable
+  en cualquier tarea de creación/edición. Cargar los ~185 KB (189.489 bytes) completos en cada edición sería inviable
   y duplicaría la fuente de verdad; la skill compacta aplica el gate y remite al protocolo completo
   cuando hace falta.
 - **Contrapartida:** en tareas pequeñas el gate se aplica con la versión compacta (rúbrica + PASS);

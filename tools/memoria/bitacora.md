@@ -12,17 +12,18 @@ Una entrada por sesión de trabajo relevante.
   verificación real por tipo de artefacto y uso con Agent Teams) y puntero
   `.claude/skills/autocalidad-90/SKILL.md`. DSH la descubre sola por el junction `.dsh/skills`.
 - **Motivo:** Antonio no quiere copiar/pegar el prompt; la skill se activa por su descripción en
-  cualquier tarea de creación o edición. El protocolo completo (184 KB) sigue en
+  cualquier tarea de creación o edición. El protocolo completo (~185 KB; 189.489 bytes) sigue en
   `tools/prompts/maestro-web-autocalidad/PROMPT_MAESTRO_WEB_AUTOCALIDAD_90.md` y la skill lo carga
   solo para webs/apps o trabajos multiarchivo, para no duplicar la fuente de verdad ni inflar el
   contexto en cada edición.
 - **Integración:** `claude.md` la declara obligatoria antes de generar/editar cualquier cosa y la
   añade a la skill maestra; `SKILL_MAESTRA.md`, `SKILL_CREAR.md`,
   `SKILL_EDITAR_cirujano-codigo-produccion.md` y `tools/memoria/mapa.md` la referencian.
-- **Verificación:** el catálogo de skills de DSH de esta sesión ya incluye `autocalidad-90`; el
-  puntero conserva el front matter y remite al canonical; `php tools/generar-punteros-skills.php
-  --check` lo reconoce como OK; el junction `.dsh/skills` apunta a `skills/` sin copia.
-- **Commit:** se registra en el commit de esta entrada; ver `git log --oneline -- skills/SKILL_AUTOCALIDAD_90.md`.
+- **Verificación independiente:** PASS 96,3/100 (`verificador-skill`, ronda 2 sobre `681e24f`;
+  ronda 1 95,4 sobre `3c3b963`), con scorecard en
+  `tools/prompts/maestro-web-autocalidad/supervision/scorecard-skill-autocalidad.md`. Catálogo DSH,
+  puntero OK, junction sin copia y coherencia con el protocolo comprobados.
+- **Commit:** `3c3b963` (skill y cableado) y `681e24f` (precisiones); push verificado.
 
 ## 2026-10-23 — Prompt maestro de generación web con autoevaluación y supervisión ≥ 90 %
 
