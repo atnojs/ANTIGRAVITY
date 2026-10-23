@@ -16,6 +16,72 @@
 <body>
 <a class="skip-link" href="#stage">Saltar al lienzo</a>
 
+<!-- ══════════════════════ VIGILANTE DE ARRANQUE ══════════════════════
+     Si un recurso no carga (caché vieja, MIME, CSP) o el módulo falla,
+     esta pantalla lo dice en lugar de dejar la interfaz muerta. -->
+<script>
+(function () {
+  var problems = [];
+  var shown = false;
+
+  window.addEventListener('error', function (event) {
+    var el = event.target;
+    if (el && (el.tagName === 'SCRIPT' || el.tagName === 'LINK')) {
+      problems.push((el.tagName === 'SCRIPT' ? 'Script' : 'Estilo') + ' no cargado: ' + (el.src || el.href));
+    } else if (event.message) {
+      problems.push('Error de JavaScript: ' + event.message);
+    }
+  }, true);
+
+  document.addEventListener('securitypolicyviolation', function (event) {
+    problems.push('La política CSP bloqueó ' + (event.blockedURI || 'un recurso') + ' (' + event.violatedDirective + ')');
+  });
+
+  window.__UIS_DIAG__ = { problems: problems, started: false, show: function () { panel(); } };
+
+  function esc(text) {
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  }
+
+  function panel() {
+    if (shown) return;
+    if (window.__UIS_DIAG__ && window.__UIS_DIAG__.started) return;
+    shown = true;
+    var box = document.createElement('div');
+    box.id = 'uisBootGuard';
+    box.setAttribute('role', 'alertdialog');
+    box.setAttribute('aria-label', 'Aviso de arranque');
+    box.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(5,8,12,.94);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#e6edf3';
+    var items = problems.length
+      ? '<ul style="margin:8px 0 0;padding-left:18px;line-height:1.6">' + problems.map(function (p) {
+          return '<li style="font-family:ui-monospace,monospace;font-size:12px;color:#ff9b95">' + esc(p) + '</li>';
+        }).join('') + '</ul>'
+      : '<p style="margin:8px 0 0;font-size:13px;color:#b6c2cf">El script principal no llegó a ejecutarse. Normalmente es una copia antigua en caché o un recurso bloqueado.</p>';
+    box.innerHTML = '<div style="max-width:620px;width:100%;background:#161b22;border:1px solid #f85149;border-radius:14px;padding:22px">' +
+      '<h1 style="margin:0 0 6px;font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:#ff9b95">La aplicación no ha arrancado</h1>' +
+      '<p style="margin:0;font-size:13px;color:#b6c2cf">Esta pantalla aparece sola cuando el estudio no puede iniciarse, para que no se quede en «Comprobando…» sin explicación.</p>' +
+      items +
+      '<p style="margin:14px 0 0;font-size:12px;color:#8b949e">Dirección: <span style="font-family:ui-monospace,monospace">' + esc(location.href) + '</span></p>' +
+      '<p style="margin:6px 0 0;font-size:12px;color:#8b949e">Servidor: <a style="color:#2ee8ff" href="api.php?action=state" target="_blank" rel="noopener">api.php?action=state</a></p>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px">' +
+        '<button id="uisDiagReload" style="height:34px;padding:0 14px;border-radius:8px;border:0;background:#2ee8ff;color:#04252b;font-weight:700;cursor:pointer">Recargar sin caché</button>' +
+        '<button id="uisDiagCopy" style="height:34px;padding:0 14px;border-radius:8px;border:1px solid #36414f;background:transparent;color:#b6c2cf;cursor:pointer">Copiar diagnóstico</button>' +
+      '</div></div>';
+    document.body.appendChild(box);
+    box.querySelector('#uisDiagReload').onclick = function () { location.reload(true); };
+    box.querySelector('#uisDiagCopy').onclick = function () {
+      var text = JSON.stringify({ url: location.href, problems: problems, ua: navigator.userAgent }, null, 2);
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () {
+        box.querySelector('#uisDiagCopy').textContent = 'Copiado';
+      });
+    };
+  }
+
+  window.addEventListener('load', function () { setTimeout(panel, 5000); });
+  setTimeout(panel, 12000);
+})();
+</script>
+
 <!-- ══════════════════════ ICONOS ══════════════════════ -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>

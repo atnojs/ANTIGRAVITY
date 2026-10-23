@@ -109,6 +109,8 @@ async function boot() {
 
   renderer.fit();
   updateViewportUI(state.ui.zoom);
+  // Arranque completado: el vigilante ya no debe mostrar el aviso.
+  if (window.__UIS_DIAG__) window.__UIS_DIAG__.started = true;
 }
 
 /** Trabajos que quedaron en curso en el servidor: se retoman sin reenviar ni pagar. */
@@ -1832,6 +1834,10 @@ on('save:conflict', () => {});
 document.addEventListener('DOMContentLoaded', () => {
   boot().catch((error) => {
     console.error(error);
+    if (window.__UIS_DIAG__) {
+      window.__UIS_DIAG__.problems.push('Arranque: ' + (error?.message || String(error)));
+      window.__UIS_DIAG__.show();
+    }
     toast(`Error al iniciar: ${error.message}`, 'error', { duration: 12000 });
   });
   document.addEventListener('uis:tab', (event) => switchLeftTab(event.detail.tab));
