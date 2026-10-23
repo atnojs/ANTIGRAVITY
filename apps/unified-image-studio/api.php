@@ -30,8 +30,9 @@ switch ($action) {
             'ok' => true,
             'version' => UIS_VERSION,
             'authenticated' => $authenticated,
-            'configured' => uis_password_hash() !== '',
-            'needsSetup' => uis_password_hash() === '',
+            'configured' => uis_password_configured(),
+            'needsSetup' => !uis_password_configured(),
+            'sharedSession' => uis_auth_lib(),
         ];
         // El detalle del entorno solo se expone a una sesión válida.
         if ($authenticated) {
@@ -47,27 +48,22 @@ switch ($action) {
         if (uis_rate_limited($db)) uis_fail(429, 'Demasiados intentos. Espera unos minutos.');
         $body = uis_read_json();
         $password = (string)($body['password'] ?? '');
-        $hash = uis_password_hash();
-        if ($hash === '') uis_fail(503, 'No hay contraseña configurada en el servidor (UIS_PASSWORD_HASH).');
-        $valid = str_starts_with($hash, '$2') || str_starts_with($hash, '$argon')
-            ? password_verify($password, $hash)
-            : hash_equals($hash, $password);
-        if (!$valid) {
+        if (!uis_password_configured()) {
+            uis_fail(503, 'No hay contraseña configurada en el servidor (.htaccess raíz: PW_ACCESS / PW_EDIT).');
+        }
+        if (!uis_check_password($password)) {
             uis_register_failure($db);
             uis_fail(401, 'Contraseña incorrecta.');
         }
         uis_session_start();
         session_regenerate_id(true);
-        $_SESSION['uis_auth'] = true;
-        $_SESSION['uis_seen'] = time();
+        uis_mark_authenticated();
         uis_json(200, ['ok' => true, 'authenticated' => true]);
         break;
 
     case 'logout':
-        uis_session_start();
         if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
-        $_SESSION = [];
-        session_destroy();
+        uis_logout();
         uis_json(200, ['ok' => true]);
         break;
 

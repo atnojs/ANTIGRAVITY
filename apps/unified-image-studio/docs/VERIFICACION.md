@@ -48,8 +48,9 @@ Servidor estático local + Chrome headless a 1440×900, 1024×768 y 390×844.
 
 ## 3. Backend PHP real (`api-test.mjs`) — 24/24
 
-`php -S 127.0.0.1:8100` con `UIS_PASSWORD_HASH`, `UIS_STORAGE_DIR` de prueba, SQLite y un
-`pricing.json` de prueba.
+`php -S 127.0.0.1:8100` con `UIS_PASSWORD_HASH` (modo instalación suelta), `UIS_STORAGE_DIR` de
+prueba, SQLite y un `pricing.json` de prueba. El modo con las contraseñas del proyecto
+(`PW_ACCESS` / `PW_EDIT`) se verifica en el apartado 7 con otro servidor.
 
 | Prueba | Resultado |
 |---|---|
@@ -120,7 +121,33 @@ añadieron estas pruebas:
 | Límite de trabajos por minuto | PASS · 429 |
 | Recuperación al arrancar | Cubierta por `status=active` + `resumeJob` (sin clave no hay trabajo que recuperar) |
 
-## 7. Sintaxis y arranque del backend
+## 7. Autenticación compartida del proyecto (`test-09` / `test-10`) — 13/13
+
+La app no tiene contraseña propia: usa `auth/lib.php` con `PW_ACCESS` / `PW_EDIT` del `.htaccess`
+raíz y la cookie de dominio `antigravity_auth`. Para reproducirlo:
+
+```bash
+PW_ACCESS='ClaveCompartida2026' PW_EDIT='ClaveCompartida2026' \
+  php -S 127.0.0.1:8102 -t apps/unified-image-studio
+```
+
+| Prueba | Resultado |
+|---|---|
+| `state` detecta la contraseña del `.htaccess` | PASS · `configured:true`, `sharedSession:true` |
+| Sin sesión la API responde 401 | PASS |
+| Contraseña incorrecta rechazada | PASS · 401 |
+| `PW_ACCESS` abre la sesión | PASS |
+| Cookie común del dominio | PASS · `antigravity_auth` |
+| La sesión compartida autoriza el resto de la API | PASS |
+| La contraseña de edición (`PW_EDIT`) también abre sesión | PASS |
+| Guardar proyecto con la sesión compartida | PASS |
+| Logout cierra la sesión común | PASS |
+| Interfaz: pide contraseña, error visible con clave incorrecta | PASS |
+| Interfaz: la contraseña del proyecto abre el estudio | PASS · «Servidor privado» |
+| Interfaz: importar y guardar con esa sesión | PASS |
+| Errores de consola | 0 |
+
+## 8. Sintaxis y arranque del backend
 
 ```text
 php -l api.php                        → No syntax errors detected
@@ -130,7 +157,7 @@ php -l lib/canonical-image-model.php  → No syntax errors detected
 node --check assets/js/{core,render,tools,ui,persist,exporter,ai,app}.js → 8/8 OK
 ```
 
-## 8. Qué NO está verificado
+## 9. Qué NO está verificado
 
 | Punto | Motivo | Cómo completarlo |
 |---|---|---|
@@ -140,13 +167,15 @@ node --check assets/js/{core,render,tools,ui,persist,exporter,ai,app}.js → 8/8
 | El `.htaccess` de `storage/` negando el acceso | El servidor embebido de PHP ignora `.htaccess` | Comprobar en el hosting que `storage/studio.sqlite` y `storage/resources/*` devuelven 403 |
 | Presupuesto con importes reales | Las tarifas de prueba eran 0,04 € | Escribir `storage/pricing.json` con los precios del panel del proveedor |
 | Copia y restauración de `storage/` | No hay `sqlite3`/`tar` en este equipo | Ejecutar los comandos del README en el servidor |
+| SSO real con otra app del proyecto | Aquí solo hay esta app levantada | Abrir dos apps del dominio y comprobar que una sola sesión vale para ambas |
+| `PW_ACCESS_SHA256` / `PW_EDIT_SHA256` | Se probó con los valores en claro | Cambiar a la variante con hash y confirmar que el login sigue entrando |
 
-## 9. Inventario verificado
+## 10. Inventario verificado
 
 `lib/canonical-image-model.php` conserva el hash `cc89fea361387f64`, idéntico al contrato canónico
 del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 
-## 10. Limitaciones declaradas
+## 11. Limitaciones declaradas
 
 1. El trabajo se ejecuta dentro de `job.create`; con `max_execution_time` bajo puede cortarse la
    respuesta, aunque el trabajo queda registrado y es recuperable por `job.get`.
@@ -155,7 +184,7 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 4. El recorte de fondo local solo funciona con fondos uniformes.
 5. En modo local (sin PHP) no hay IA: el resto del estudio funciona y se guarda en IndexedDB.
 
-## 11. Defectos encontrados y corregidos
+## 12. Defectos encontrados y corregidos
 
 ### 10.1 Detectados en la verificación propia
 
@@ -191,7 +220,7 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 | 14 | Menor | Carrera de idempotencia con `UNIQUE` → 500 | Se captura la violación y se devuelve el trabajo ganador |
 | 15 | Menor | No se valida `doc.id`↔`project.id` | Aceptado: app mono-usuario; documentado |
 
-## 12. Fuera de alcance de esta entrega
+## 13. Fuera de alcance de esta entrega
 
 - Kit de marca y formatos predefinidos de la fase 6 (hay recetas y logos como capa).
 - Cancelación de trabajos y reembolsos (los proveedores no los admiten).

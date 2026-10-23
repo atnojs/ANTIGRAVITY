@@ -204,10 +204,24 @@ SQL);
     $db->exec('PRAGMA user_version = 1');
 }
 
-/* ── Autenticación ── */
+/* ── Autenticación ──
+   Usa el sistema centralizado del proyecto (`auth/lib.php`): la contraseña vive
+   en el `.htaccess` raíz como PW_ACCESS / PW_EDIT (o sus *_SHA256), igual que
+   las claves de API, y la sesión (`antigravity_auth`) es común a todas las apps. */
+function uis_auth_lib(): bool
+{
+    static $ok = null;
+    if ($ok !== null) return $ok;
+    $lib = dirname(__DIR__, 3) . '/auth/lib.php';
+    if (is_file($lib)) require_once $lib;
+    $ok = function_exists('au_comprobar');
+    return $ok;
+}
+
 function uis_session_start(): void
 {
     if (session_status() === PHP_SESSION_ACTIVE) return;
+
     // El hosting puede dejar session.save_path vacío o sin permisos de escritura:
     // sin una ruta escribible no hay sesión y todo responde 401.
     $current = (string)ini_get('session.save_path');
@@ -222,6 +236,14 @@ function uis_session_start(): void
             }
         }
     }
+
+    // Con la librería común manda su cookie (antigravity_auth), compartida con
+    // el resto de apps: entrar en una es entrar en todas.
+    if (uis_auth_lib()) {
+        au_sesion();
+        return;
+    }
+
     $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
         || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
     session_set_cookie_params([
@@ -235,14 +257,47 @@ function uis_session_start(): void
     @session_start();
 }
 
-function uis_password_hash(): string
+/** ¿Hay contraseña configurada en el servidor (PW_ACCESS/PW_EDIT o UIS_*)? */
+function uis_password_configured(): bool
 {
-    return uis_env('UIS_PASSWORD_HASH', 'UIS_PASSWORD');
+    if (uis_auth_lib() && (au_configurada('acceso') || au_configurada('edicion'))) {
+        return true;
+    }
+    return uis_env('UIS_PASSWORD_HASH', 'UIS_PASSWORD') !== '';
+}
+
+/** Acepta la contraseña de acceso o la de edición: en este proyecto son la misma. */
+function uis_check_password(string $password): bool
+{
+    if ($password === '') return false;
+
+    if (uis_auth_lib()) {
+        if (au_comprobar('acceso', $password) || au_comprobar('edicion', $password)) {
+            return true;
+        }
+    }
+
+    // Alternativa para instalaciones sueltas, sin la librería del proyecto.
+    $hash = uis_env('UIS_PASSWORD_HASH');
+    if ($hash !== '') {
+        if (str_starts_with($hash, '$2') || str_starts_with($hash, '$argon')) {
+            return password_verify($password, $hash);
+        }
+        return hash_equals($hash, $password);
+    }
+    $plain = uis_env('UIS_PASSWORD');
+    return $plain !== '' && hash_equals($plain, $password);
 }
 
 function uis_authenticated(): bool
 {
     uis_session_start();
+
+    if (uis_auth_lib() && (au_sesion_ok('acceso') || au_sesion_ok('edicion'))) {
+        return true;
+    }
+
+    // Sesión propia (instalación sin la librería común).
     if (empty($_SESSION['uis_auth'])) return false;
     $seen = (int)($_SESSION['uis_seen'] ?? 0);
     if ($seen > 0 && (time() - $seen) > 60 * 60 * 12) {
@@ -252,6 +307,29 @@ function uis_authenticated(): bool
     }
     $_SESSION['uis_seen'] = time();
     return true;
+}
+
+/** Marca la sesión compartida al acertar la contraseña. */
+function uis_mark_authenticated(): void
+{
+    uis_session_start();
+    if (uis_auth_lib()) {
+        au_marcar('acceso');
+        return;
+    }
+    $_SESSION['uis_auth'] = true;
+    $_SESSION['uis_seen'] = time();
+}
+
+function uis_logout(): void
+{
+    uis_session_start();
+    if (uis_auth_lib()) {
+        au_cerrar_sesion('acceso');
+        au_cerrar_sesion('edicion');
+    }
+    $_SESSION = [];
+    session_destroy();
 }
 
 function uis_require_auth(): void

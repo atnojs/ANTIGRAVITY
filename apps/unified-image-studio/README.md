@@ -49,28 +49,30 @@ apps/unified-image-studio/
 
 1. **Subir** `apps/unified-image-studio/` (el webhook de este repositorio ya despliega en la raíz pública).
 2. **Permisos** de `storage/`: `chmod 770 storage` y que el usuario PHP sea el propietario.
-3. **Contraseña** (obligatoria para usar la API). Genera el hash:
-
-   ```bash
-   php -r "echo password_hash('TU_CONTRASEÑA', PASSWORD_DEFAULT), PHP_EOL;"
-   ```
-
-   Y declara en el `.htaccess` **raíz** de Hostinger (fuera del repositorio):
+3. **Contraseña: no hay que configurar ninguna nueva.** La app usa el sistema centralizado del
+   proyecto (`auth/lib.php`) y valida contra `PW_ACCESS` / `PW_EDIT` del `.htaccess` **raíz**,
+   que ya existen para el resto de apps y webs. La sesión es la misma cookie de dominio
+   (`antigravity_auth`): entrar en cualquier app del proyecto abre también esta.
 
    ```apache
-   SetEnv UIS_PASSWORD_HASH "$2y$10$..."
-   SetEnv OPENAI_API_KEY "AQUI_TU_API_KEY_OPENAI"
-   SetEnv R "AQUI_TU_API_KEY_OPENROUTER"
+   # Ya presente en el .htaccess raíz; no dupliques estas líneas.
+   SetEnv PW_ACCESS "…"
+   SetEnv PW_EDIT "…"
+   # Variante con hash (opcional, manda sobre el valor en claro):
+   #SetEnv PW_ACCESS_SHA256 "…"
+   #SetEnv PW_EDIT_SHA256 "…"
    ```
 
-   `UIS_PASSWORD` acepta texto plano solo si necesitas una prueba rápida; no lo uses en producción.
+   Solo si instalas la app **suelta**, sin el resto del proyecto, puedes definir una contraseña
+   propia: `SetEnv UIS_PASSWORD_HASH "$2y$10$…"` (o `UIS_PASSWORD` en texto plano, solo pruebas).
 
 4. **Tarifas** (opcional pero necesario para que el presupuesto en euros se aplique):
    copia `pricing.example.json` a `storage/pricing.json` y escribe el precio real por imagen de
    cada modelo. Sin tarifa, el trabajo se registra con coste desconocido y el límite en euros no
    se aplica (sí queda registrado el trabajo).
 
-5. Comprueba `GET api.php?action=state`: debe responder `ok:true`, `sqlite:true`, `curl:true`.
+5. Comprueba `GET api.php?action=state`: debe responder `ok:true`, `configured:true`,
+   `sharedSession:true` y, con sesión, `sqlite:true` y `curl:true`.
 
 > No hay fichero `config.php`: las claves viven **solo** en el entorno. Un `config.php` antiguo
 > en esta carpeta debe borrarse del servidor.
@@ -79,12 +81,13 @@ apps/unified-image-studio/
 
 | Variable | Uso |
 |---|---|
-| `UIS_PASSWORD_HASH` | Hash `password_hash()` de la contraseña de administración |
-| `UIS_PASSWORD` | Alternativa en texto plano (solo pruebas) |
+| `PW_ACCESS` / `PW_ACCESS_SHA256` | **Contraseña de acceso del proyecto** (login). La app la comparte con el resto de apps |
+| `PW_EDIT` / `PW_EDIT_SHA256` | **Contraseña de edición** (aquí es la misma). Cualquiera de las dos abre sesión |
 | `OPENAI_API_KEY` / `O` | OpenAI Images (`gpt-image-2`, `gpt-image-2.5-*`) |
 | `R` | OpenRouter (Gemini y Qwen) |
 | `UIS_STORAGE_DIR` | Ruta alternativa para `storage/` (recomendada fuera de `public_html` si el hosting lo permite) |
 | `UIS_PRICING_JSON` | Tarifas en JSON, si prefieres no usar `storage/pricing.json` |
+| `UIS_PASSWORD_HASH` / `UIS_PASSWORD` | Solo para una instalación suelta sin `auth/lib.php` |
 
 ## 5. Modelo de datos
 
@@ -172,6 +175,10 @@ con sus capas.
    lugar de un `history.php` separado, para no duplicar almacenamiento.
 7. **Presupuesto**: el importe «de sesión» es la ventana de las últimas 24 h, porque la app tiene un
    único administrador. El límite por proyecto se aplica aunque no llegue `projectId`.
+8. **Contraseñas**: no hay contraseña propia. Se usa `auth/lib.php` del proyecto con
+   `PW_ACCESS` / `PW_EDIT` del `.htaccess` raíz y la cookie de dominio `antigravity_auth`, de modo
+   que la misma contraseña sirve para el login y la edición y vale para todas las apps. La
+   comprobación se hace siempre en el servidor; el cliente nunca ve el valor.
 
 ## 10. Limitaciones conocidas
 
