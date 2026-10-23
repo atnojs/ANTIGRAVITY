@@ -33,7 +33,7 @@ Si no existe un verificador independiente posible, el gate queda **BLOCKED**. La
 1. **Contexto.** Lee `claude.md`, la memoria (`tools/memoria/MEMORIA.md` y lo que la tarea necesite), la skill específica (`crear`, `maestra-produccion-antigravity`, `cirujano-codigo-produccion`, `history-server`, `verificacion-playwright`, `auditor-lighthouse-accesibilidad`, etc.) y, si es web/app, el protocolo completo indicado en §0.
 2. **Descomposición.** Divide en tareas con entregable verificable. Cada tarea declara: dueño, entregable, archivos/scope, evidencia exigida y verificador independiente distinto del dueño. Una tarea sin verificador no empieza.
 3. **Ejecución.** Aplica la skill específica, la skill maestra y las reglas del proyecto. No inventes requisitos ni datos; lo no verificado se declara.
-4. **Autoevaluación del autor.** Puntúa A1–A10 con evidencia, calcula el total truncado, declara mejoras residuales con severidad y decide **ENTREGO / NO ENTREGO** según D1–D7. Si queda una mejora asequible (≤ 15 min), se corrige antes de entregar.
+4. **Autoevaluación del autor.** Puntúa A1–A10 con evidencia, calcula el total truncado, declara mejoras residuales con severidad y decide **ENTREGO / NO ENTREGO** según D1–D7. Si queda una mejora asequible (≤ 15 min, sin dependencia externa, sin riesgo de regresión y con beneficio observable), se corrige antes de entregar. Los supervisores, el auditor y el orquestador también se autoevalúan antes de entregar su artefacto (protocolo §5.8).
 5. **Verificación independiente.** El verificador reproduce el 100 % de las afirmaciones críticas y ≥ 50 % del resto, recalcula el total y emite veredicto escrito con evidencia. Sin scorecard firmado no hay PASS.
 6. **Rework o BLOCKED.** Si algo falla, defectos numerados con severidad, ubicación y esperado. El autor corrige solo lo pedido, re-verifica todo y se repite. Máximo 5 rondas; después, escalar o BLOCKED. **Nunca se rebaja el umbral.**
 7. **Entrega.** Solo con PASS. Incluye la tabla de tareas con notas y veredictos, evidencias reproducibles, riesgos residuales y la verificación real del entorno. Si no se puede verificar algo, se dice: BLOCKED o limitación declarada, nunca «hecho».
@@ -53,7 +53,7 @@ Si no existe un verificador independiente posible, el gate queda **BLOCKED**. La
 | A9 | Evidencias, documentación y trazabilidad | 5 | No |
 | A10 | Claridad, mantenibilidad y limpieza | 3 | No |
 
-`total = (A1×18 + A2×15 + A3×13 + A4×10 + A5×12 + A6×10 + A7×8 + A8×6 + A9×5 + A10×3) / 10`, **truncado a un decimal, nunca redondeado al alza**.
+`total = (A1×18 + A2×15 + A3×13 + A4×10 + A5×12 + A6×10 + A7×8 + A8×6 + A9×5 + A10×3) / 10`, **truncado a un decimal, nunca redondeado al alza**. Las notas se puntúan de 0,0 a 10,0. La calibración se vigila: más de 10,0 puntos de diferencia o ≥ 2,0 en un criterio crítico es defecto y se registra.
 
 **Condiciones simultáneas de PASS (D1–D7):**
 
@@ -124,7 +124,7 @@ Vigila y rechaza estas señales: «funciona» sin ejecutarlo; «lo he revisado»
 - Descompón con `team_task_create` y asigna dueño y verificador distintos. Cada tarea declara write scope disjunto y evidencia.
 - Crea agentes con `spawn_teammate` (autores y verificadores separados) o `subagent` para verificaciones puntuales. El verificador no puede ser el autor ni compartir el archivo que supervisa.
 - El autor se autoevalúa y envía el paquete; el verificador responde con PASS/REWORK; el rework va al autor y se registra la ronda. Usa `send_message`/`team_task_update` y cierra la tarea solo con PASS.
-- Para un cambio pequeño, basta un verificador independiente con el diff/artefacto y la rúbrica; para una web/app, sigue el protocolo completo con tareas y supervivisión por tarea.
+- Para un cambio pequeño, basta un verificador independiente con el diff/artefacto y la rúbrica; para una web/app, sigue el protocolo completo con tareas y supervisión por tarea.
 - Si el entorno no permite separar contextos: declara la limitación y queda **BLOCKED** para el gate. Nunca te autosupervisas.
 
 ## 12. Referencias

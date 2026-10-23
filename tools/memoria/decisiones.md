@@ -190,7 +190,7 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
   agente, supervisor independiente, 90 % inviolable) exige un proceso de validación propio: red-team
   y dos gates finales sobre el mismo SHA.
 - **Contrapartida:** no se autodescubre como skill: hay que cargarlo explícitamente. Compensa porque
-  el documento completo ocupa ~184 KB y no debe consumir contexto en tareas que no lo necesiten; el
+  el documento completo ocupa ~185 KB (189.489 bytes) y no debe consumir contexto en tareas que no lo necesiten; el
   `LEEME` explica el reparto por rol.
 - **Verificación:** `EVIDENCIA.md` (matriz R1–R8, gates FG-A 96,0 y FG-B 95,0, red-team sin
   B/M/Med/Men abiertos) y `supervision/scorecard-supervisor-*.md`.
