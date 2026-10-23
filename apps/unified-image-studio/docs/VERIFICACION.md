@@ -121,14 +121,17 @@ añadieron estas pruebas:
 | Límite de trabajos por minuto | PASS · 429 |
 | Recuperación al arrancar | Cubierta por `status=active` + `resumeJob` (sin clave no hay trabajo que recuperar) |
 
-## 7. Autenticación compartida del proyecto (`test-09` / `test-10`) — 13/13
+## 7. Autenticación compartida del proyecto (`test-09` / `test-10` / `test-11`) — 16/16
 
 La app no tiene contraseña propia: usa `auth/lib.php` con `PW_ACCESS` / `PW_EDIT` del `.htaccess`
-raíz y la cookie de dominio `antigravity_auth`. Para reproducirlo:
+raíz y la cookie de dominio `antigravity_auth`. **Manda `PW_ACCESS`**; `PW_EDIT` solo se acepta si
+no hay `PW_ACCESS` configurado (en el `.htaccess` real `PW_EDIT` vale `0`, y eso no debe abrir nada).
 
 ```bash
-PW_ACCESS='ClaveCompartida2026' PW_EDIT='ClaveCompartida2026' \
+PW_ACCESS='ClaveCompartida2026' PW_EDIT='0' \
   php -S 127.0.0.1:8102 -t apps/unified-image-studio
+PW_EDIT='SoloEdicion2026' \
+  php -S 127.0.0.1:8103 -t apps/unified-image-studio
 ```
 
 | Prueba | Resultado |
@@ -136,13 +139,15 @@ PW_ACCESS='ClaveCompartida2026' PW_EDIT='ClaveCompartida2026' \
 | `state` detecta la contraseña del `.htaccess` | PASS · `configured:true`, `sharedSession:true` |
 | Sin sesión la API responde 401 | PASS |
 | Contraseña incorrecta rechazada | PASS · 401 |
+| **`PW_EDIT` (`0`) no abre la app cuando hay `PW_ACCESS`** | PASS · 401 |
 | `PW_ACCESS` abre la sesión | PASS |
 | Cookie común del dominio | PASS · `antigravity_auth` |
 | La sesión compartida autoriza el resto de la API | PASS |
-| La contraseña de edición (`PW_EDIT`) también abre sesión | PASS |
 | Guardar proyecto con la sesión compartida | PASS |
 | Logout cierra la sesión común | PASS |
-| Interfaz: pide contraseña, error visible con clave incorrecta | PASS |
+| Instalación sin `PW_ACCESS`: entra con `PW_EDIT` | PASS · 8103 |
+| Esa sesión autoriza la API | PASS |
+| Interfaz: pide contraseña y muestra el error con clave incorrecta | PASS |
 | Interfaz: la contraseña del proyecto abre el estudio | PASS · «Servidor privado» |
 | Interfaz: importar y guardar con esa sesión | PASS |
 | Errores de consola | 0 |

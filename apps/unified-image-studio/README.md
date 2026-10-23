@@ -54,17 +54,18 @@ apps/unified-image-studio/
    que ya existen para el resto de apps y webs. La sesión es la misma cookie de dominio
    (`antigravity_auth`): entrar en cualquier app del proyecto abre también esta.
 
+   Precedencia: **manda `PW_ACCESS`**. `PW_EDIT` solo se usa si no hay `PW_ACCESS` (así una
+   contraseña de edición débil, como `0`, no abre el estudio). El login se comprueba siempre en
+   el servidor y admite también las variantes `PW_ACCESS_SHA256` / `PW_EDIT_SHA256`.
+
    ```apache
    # Ya presente en el .htaccess raíz; no dupliques estas líneas.
    SetEnv PW_ACCESS "…"
    SetEnv PW_EDIT "…"
-   # Variante con hash (opcional, manda sobre el valor en claro):
-   #SetEnv PW_ACCESS_SHA256 "…"
-   #SetEnv PW_EDIT_SHA256 "…"
    ```
 
-   Solo si instalas la app **suelta**, sin el resto del proyecto, puedes definir una contraseña
-   propia: `SetEnv UIS_PASSWORD_HASH "$2y$10$…"` (o `UIS_PASSWORD` en texto plano, solo pruebas).
+   Solo si instalas la app **suelta**, sin `auth/lib.php`, define una contraseña propia:
+   `SetEnv UIS_PASSWORD_HASH "$2y$10$…"` (o `UIS_PASSWORD` en texto plano, solo pruebas).
 
 4. **Tarifas** (opcional pero necesario para que el presupuesto en euros se aplique):
    copia `pricing.example.json` a `storage/pricing.json` y escribe el precio real por imagen de
@@ -81,8 +82,8 @@ apps/unified-image-studio/
 
 | Variable | Uso |
 |---|---|
-| `PW_ACCESS` / `PW_ACCESS_SHA256` | **Contraseña de acceso del proyecto** (login). La app la comparte con el resto de apps |
-| `PW_EDIT` / `PW_EDIT_SHA256` | **Contraseña de edición** (aquí es la misma). Cualquiera de las dos abre sesión |
+| `PW_ACCESS` / `PW_ACCESS_SHA256` | **Contraseña de acceso del proyecto** (login). Es la que manda |
+| `PW_EDIT` / `PW_EDIT_SHA256` | **Contraseña de edición**. Solo se usa si no hay `PW_ACCESS` |
 | `OPENAI_API_KEY` / `O` | OpenAI Images (`gpt-image-2`, `gpt-image-2.5-*`) |
 | `R` | OpenRouter (Gemini y Qwen) |
 | `UIS_STORAGE_DIR` | Ruta alternativa para `storage/` (recomendada fuera de `public_html` si el hosting lo permite) |
@@ -177,8 +178,9 @@ con sus capas.
    único administrador. El límite por proyecto se aplica aunque no llegue `projectId`.
 8. **Contraseñas**: no hay contraseña propia. Se usa `auth/lib.php` del proyecto con
    `PW_ACCESS` / `PW_EDIT` del `.htaccess` raíz y la cookie de dominio `antigravity_auth`, de modo
-   que la misma contraseña sirve para el login y la edición y vale para todas las apps. La
-   comprobación se hace siempre en el servidor; el cliente nunca ve el valor.
+   que la misma contraseña de acceso vale para todas las apps. Manda `PW_ACCESS`; `PW_EDIT` queda
+   como respaldo para instalaciones sin `PW_ACCESS`, porque en el `.htaccess` real vale `0` y una
+   contraseña así no puede abrir el estudio. La comprobación se hace siempre en el servidor.
 
 ## 10. Limitaciones conocidas
 

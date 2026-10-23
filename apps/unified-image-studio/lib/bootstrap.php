@@ -266,13 +266,21 @@ function uis_password_configured(): bool
     return uis_env('UIS_PASSWORD_HASH', 'UIS_PASSWORD') !== '';
 }
 
-/** Acepta la contraseña de acceso o la de edición: en este proyecto son la misma. */
+/** Tipo de contraseña que manda para entrar: PW_ACCESS y, si no existe, PW_EDIT. */
+function uis_auth_tipo(): string
+{
+    if (!uis_auth_lib()) return '';
+    return au_configurada('acceso') ? 'acceso' : (au_configurada('edicion') ? 'edicion' : '');
+}
+
+/** Acepta la contraseña de acceso del proyecto (o la de edición si no hay PW_ACCESS). */
 function uis_check_password(string $password): bool
 {
     if ($password === '') return false;
 
     if (uis_auth_lib()) {
-        if (au_comprobar('acceso', $password) || au_comprobar('edicion', $password)) {
+        $tipo = uis_auth_tipo();
+        if ($tipo !== '' && au_comprobar($tipo, $password)) {
             return true;
         }
     }
@@ -293,7 +301,8 @@ function uis_authenticated(): bool
 {
     uis_session_start();
 
-    if (uis_auth_lib() && (au_sesion_ok('acceso') || au_sesion_ok('edicion'))) {
+    $tipo = uis_auth_lib() ? uis_auth_tipo() : '';
+    if ($tipo !== '' && au_sesion_ok($tipo)) {
         return true;
     }
 
@@ -309,12 +318,13 @@ function uis_authenticated(): bool
     return true;
 }
 
-/** Marca la sesión compartida al acertar la contraseña. */
+/** Marca la sesión al acertar: la común del proyecto si hay PW_*, si no la local. */
 function uis_mark_authenticated(): void
 {
     uis_session_start();
-    if (uis_auth_lib()) {
-        au_marcar('acceso');
+    $tipo = uis_auth_lib() ? uis_auth_tipo() : '';
+    if ($tipo !== '') {
+        au_marcar($tipo);
         return;
     }
     $_SESSION['uis_auth'] = true;
