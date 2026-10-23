@@ -22,13 +22,18 @@ vídeo de Veo 3.1 Lite cuesta 10 puntos → 5 vídeos/día**. Al agotarlos:
 - El lote (`lanzar_lote.ps1`) detecta la cuota agotada y se detiene solo en vez de
   reintentar en bucle; `vigilar_cuota.py` lo relanza cuando hay puntos.
 
-### ⚠️ La reposición diaria NO está llegando (verificado 2026-10-16)
+### ⚠️ La reposición diaria NO está llegando (verificado 2026-10-17)
 
-Los días 15 y 16 de octubre el contador siguió a **0** pese a ~10 pasadas del runner:
-en `one.google.com/ai/activity` **no aparece ninguna concesión nueva** desde el
-14/10 (solo un reembolso de +10). Es decir: se consumieron los 50 puntos del ciclo y
-no se han repuesto. No hay nada que arreglar en el código; el lote reanudará solo en
-cuanto Google otorgue puntos nuevos.
+Los días **15, 16 y 17** de octubre el contador siguió a **0** pese a ~20 pasadas del
+runner: en `one.google.com/ai/activity` **no aparece ninguna concesión nueva** desde
+el 14/10 (solo un reembolso de +10). Se consumieron los 50 puntos del ciclo el 14/10
+y no se han repuesto, así que la frase de Google *"50 additional Flow credits daily"*
+**no se está cumpliendo en esta cuenta**: o el ciclo real es mensual, o hay que
+reclamarlos. No hay nada que arreglar en el código; el lote reanudará solo en cuanto
+Google otorgue puntos.
+
+La tarea programada se dejó en **1 pasada diaria a las 09:00** (con 75 min de
+reintentos): 4 pasadas al día no aportaban nada mientras el saldo no cambie.
 
 Alternativas si se quiere acelerar (decide Antonio, no el agente):
 - **Comprar puntos de IA**: `one.google.com/ai/credits` → 2.500 pts = 27,99 €,
