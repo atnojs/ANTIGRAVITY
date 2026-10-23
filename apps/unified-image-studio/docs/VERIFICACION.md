@@ -186,7 +186,7 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 | 9 | Menor | Longitud del prompt comprobada antes de añadir la frase en español | Se comprueba después; un prompt de 12.000 caracteres da 413 sin registrar trabajo |
 | 10 | Menor | El aviso apuntaba a `api/pricing.json` | Ahora indica `storage/pricing.json` |
 | 11 | Menor | `logout` por GET | Solo POST (405 comprobado) |
-| 12 | Menor | `.htaccess` de `storage/` no verificable con el servidor embebido | Declarado como pendiente de comprobar bajo Apache/LiteSpeed |
+| 12 | Menor | `.htaccess` de `storage/` no verificable con el servidor embebido | Declarado como pendiente de comprobar bajo Apache/LiteSpeed. Además, el repositorio ignora `.htaccess` de forma global, así que `lib/` no puede llevarlo: `bootstrap.php` y `jobs.php` responden 404 si se piden por HTTP directamente (comprobado) |
 | 13 | Menor | Prueba de idioma vacua y tamaño de WebP mal documentado | La prueba lee `job.get` y comprueba la frase; el tamaño real es ≈16 KB |
 | 14 | Menor | Carrera de idempotencia con `UNIQUE` → 500 | Se captura la violación y se devuelve el trabajo ganador |
 | 15 | Menor | No se valida `doc.id`↔`project.id` | Aceptado: app mono-usuario; documentado |

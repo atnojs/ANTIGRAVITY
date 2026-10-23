@@ -10,6 +10,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/canonical-image-model.php';
 
+// Fichero interno: si se pide por HTTP directamente, no se sirve.
+if (isset($_SERVER['SCRIPT_FILENAME']) && realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
+    http_response_code(404);
+    exit;
+}
+
 final class UisHttpError extends RuntimeException
 {
     public array $details = [];

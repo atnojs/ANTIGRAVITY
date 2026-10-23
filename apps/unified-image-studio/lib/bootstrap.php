@@ -16,6 +16,12 @@ header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: same-origin');
 header('Cache-Control: no-store');
 
+// Fichero interno: si se pide por HTTP directamente, no se sirve.
+if (isset($_SERVER['SCRIPT_FILENAME']) && realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
+    http_response_code(404);
+    exit;
+}
+
 const UIS_VERSION = '1.0.0';
 const UIS_MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 const UIS_MAX_JSON_BYTES = 32 * 1024 * 1024;
