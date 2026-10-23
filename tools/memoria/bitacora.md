@@ -5,6 +5,26 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-23 — Prompt maestro de generación web con autoevaluación y supervisión ≥ 90 %
+
+- **Qué se creó:** `tools/prompts/maestro-web-autocalidad/` con `PROMPT_MAESTRO_WEB_AUTOCALIDAD_90.md`
+  (v1.1, 1.832 líneas, 189.489 bytes, SHA-256 `5be0bb94…f1da7`), `LEEME.md`, `EVIDENCIA.md`,
+  `BRIEF.md`, las 4 secciones canónicas, autoevaluaciones, scorecards y el informe red-team.
+- **Proceso:** equipo Agent Teams real (4 autores + 2 supervisores independientes + 1 auditor
+  adversarial) coordinado con tareas compartidas y scopes de escritura disjuntos. Cada autor se
+  autoevaluó y ningún fragmento se aceptó por debajo de 90: T1 94,2 · T2 93,6 · T3 93,60 · T4 93,80.
+  La integración del Lead pasó por dos rondas de red-team (RT-01…RT-32), con 0 bloqueantes, mayores o
+  medios abiertos al cierre, y por dos gates finales independientes sobre el mismo SHA:
+  **FG-A 96,0** y **FG-B 95,0**.
+- **Verificación:** hashes y métricas, aritmética de rúbricas y ejemplos, 71 referencias § resueltas
+  contra encabezados, tablas y cercas sin incoherencias y matriz R1–R8 con líneas. No se generó una
+  web real: el encargo era el prompt; quedan prueba de mesa y anti-gaming documentadas.
+- **Uso:** ver `LEEME.md`; el prompt se pega completo al orquestador y se añade el brief real.
+- **Decisión asociada:** vive en `tools/` (protegido) y no se convierte en skill pública
+  (ver `decisiones.md`).
+- **Commit:** se registra en el mismo commit de esta entrada; ver
+  `git log --oneline -- tools/prompts/maestro-web-autocalidad`.
+
 ## 2026-10-23 — TrickVault: vuelven las 3 tarjetas de restauración y se retiran las 10 del carrusel
 
 - **Lo que vio Antonio:** en la carpeta «Restauración de fotos antiguas» ya no estaban las 3

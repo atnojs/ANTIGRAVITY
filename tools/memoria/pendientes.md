@@ -5,6 +5,19 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
+## 🧪 Probar el prompt maestro en una web real (2026-10-23)
+
+- **Estado:** el prompt está aprobado por doble gate (FG-A 96,0 · FG-B 95,0), red-team ACEPTABLE y
+  matrices de trazabilidad completas, pero no se ha ejercitado generando una web real: las pruebas
+  son de mesa, trazabilidad y coherencia.
+- **Siguiente paso:** lanzarlo con un brief real (mejor una app pequeña) y comprobar que el equipo
+  produce tabla de tareas, autoevaluaciones, scorecards ≥90 y la evidencia de §9 sin
+  interpretaciones. Anotar fricciones y, si aparecen, corregir el prompt y re-pasar los gates.
+- **Verificación:** salida completa con PASS por tarea, evidencias de navegador y entrega final con
+  notas; contrastar con la checklist §12.3 de `PROMPT_MAESTRO_WEB_AUTOCALIDAD_90.md`.
+
+---
+
 ## 🔎 TrickVault: hueco y lupa suelta en la cabecera de carpeta a ≤768 px (2026-10-23)
 
 - **Estado:** detectado al verificar la restauración; **preexistente**, no lo provoca el cambio

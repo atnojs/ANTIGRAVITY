@@ -178,3 +178,19 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
   esquemas MCP grandes.
 - **Contrapartida:** en DSH con sandbox `workspace-write` Chrome no arranca (`spawn EPERM`): hay que
   ejecutarlo con permiso ampliado. No sustituye a Safari/iOS real (webkit no está instalado).
+
+### [2026-10-23] El prompt maestro de calidad web vive en `tools/prompts/` y se valida con doble gate
+
+- **Decisión:** el prompt que exige autoevaluación de **todos** los roles, supervisión independiente
+  y suelo de 90 % vive en `tools/prompts/maestro-web-autocalidad/` (carpeta protegida por
+  `.htaccess`), no en `skills/`. Se entrega como documento con `LEEME.md`, `EVIDENCIA.md`, las
+  secciones canónicas, autoevaluaciones, scorecards y auditoría adversarial.
+- **Motivo:** Antonio pidió un prompt, no una skill, y el contenido incluye evidencias, rutas y
+  detalles internos que no tienen por qué publicarse. El contrato de calidad (autoevaluación de cada
+  agente, supervisor independiente, 90 % inviolable) exige un proceso de validación propio: red-team
+  y dos gates finales sobre el mismo SHA.
+- **Contrapartida:** no se autodescubre como skill: hay que cargarlo explícitamente. Compensa porque
+  el documento completo ocupa ~184 KB y no debe consumir contexto en tareas que no lo necesiten; el
+  `LEEME` explica el reparto por rol.
+- **Verificación:** `EVIDENCIA.md` (matriz R1–R8, gates FG-A 96,0 y FG-B 95,0, red-team sin
+  B/M/Med/Men abiertos) y `supervision/scorecard-supervisor-*.md`.
