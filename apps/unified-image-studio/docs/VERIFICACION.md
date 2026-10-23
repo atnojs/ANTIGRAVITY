@@ -250,3 +250,19 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 - Cancelación de trabajos y reembolsos (los proveedores no los admiten).
 - Interfaz de copias de seguridad en la app (se resuelve con los comandos del README).
 - Colaboración multiusuario, roles y suscripciones: fuera del producto por diseño.
+
+
+## 15. Vigilante de arranque y despliegue real (`test-15` / `test-17` / `test-18`) — 6/6
+
+| Prueba | Resultado |
+|---|---|
+| Despliegue roto (app.js 404): aparece el aviso de arranque | PASS |
+| El aviso nombra el recurso que falló | PASS · «Script no cargado: …/app.js?v=8» |
+| Despliegue sano: el aviso no aparece y el arranque se marca completo | PASS |
+| Subpath real (`/apps/unified-image-studio/`) con MIME `application/x-javascript` | PASS · arranca |
+| URL de producción cargada en Chrome headless | PASS · `v1.3.0`, modal de acceso, 0 errores de consola |
+| `api.php?action=state` en producción | PASS · `ok:true`, `configured:true`, `sharedSession:true` |
+
+Nota: el servidor de producción sirve los `.js` como `application/x-javascript`; Chrome lo acepta.
+La página con «Comprobando…» sin fin solo puede darse si un recurso no carga o el arranque se
+interrumpe, y desde esta versión eso se muestra con un aviso explícito en pantalla.

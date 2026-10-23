@@ -34,7 +34,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v1.2.0 · 2026-10-23 · responsive + lectura robusta';
+const BUILD = 'v1.3.0 · 2026-10-23 · vigilante de arranque';
 
 let generationBusy = false;
 let pendingResult = null;
