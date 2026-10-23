@@ -114,6 +114,10 @@
         <span id="saveStateText">Sin guardar</span>
       </div>
 
+      <button class="icon-btn" id="authBtn" title="Acceso y sesión" aria-label="Acceso y sesión">
+        <svg class="ico"><use href="#i-lock"/></svg>
+      </button>
+
       <button class="icon-btn" id="rightToggle" aria-label="Mostrar u ocultar capas y biblioteca" aria-expanded="false" aria-controls="rightPanel" title="Capas y biblioteca">
         <svg class="ico"><use href="#i-layers"/></svg>
       </button>
@@ -581,7 +585,7 @@
     <span class="status-sep"></span>
     <span class="status-item mono" id="statusCursor">0, 0</span>
     <span class="status-spacer"></span>
-    <span class="status-item status-mode" id="statusMode" title="Modo de almacenamiento activo"><span class="dot"></span><span id="statusModeText">Comprobando…</span></span>
+    <span class="status-item status-mode" id="statusMode" role="button" tabindex="0" title="Modo de almacenamiento activo. Pulsa para acceder o cerrar sesión"><span class="dot"></span><span id="statusModeText">Comprobando…</span></span>
     <span class="status-item mono" id="statusZoom">100 %</span>
   </footer>
 </div>
@@ -804,8 +808,10 @@
         <input type="password" id="loginPassword" autocomplete="current-password" />
       </div>
       <p class="field-note" id="loginError" style="color:#ff9b95"></p>
+      <p class="field-note">Usa la contraseña de acceso del proyecto (<code>PW_ACCESS</code>), la misma que en el resto de apps. Si no aparece este formulario al abrir la app, es que el servidor no responde: pulsa «Reintentar conexión» o abre <code>api.php?action=state</code>.</p>
     </div>
     <div class="modal-foot">
+      <button class="link-btn" id="retryServer">Reintentar conexión</button>
       <span class="spacer"></span>
       <button class="btn btn-ghost" data-close="loginModal">Seguir en local</button>
       <button class="btn btn-primary" id="loginBtn">Entrar</button>

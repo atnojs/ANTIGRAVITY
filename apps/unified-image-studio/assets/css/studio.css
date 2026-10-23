@@ -987,9 +987,11 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
 }
 
 @media (max-width: 520px) {
-  .project-chip { max-width: 120px; min-width: 0; }
+  .project-chip { max-width: 104px; min-width: 0; }
   .topbar-project { min-width: 0; overflow: hidden; }
-  .topbar-actions { gap: 4px; min-width: 0; }
+  .topbar { gap: 5px; padding: 0 6px; }
+  .topbar-actions { gap: 2px; min-width: 0; }
+  .topbar-actions .icon-btn { width: 30px; }
   .btn-group[aria-label="Vista"] { display: none; }
   .save-state { padding: 0 4px; }
   .statusbar { font-size: 9.5px; overflow: hidden; }

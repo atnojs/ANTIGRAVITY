@@ -161,6 +161,16 @@ export function updateTopbar() {
   $('statusModeText').textContent = mode === 'server'
     ? 'Servidor privado'
     : mode === 'auth' ? 'Sin sesión' : 'Modo local';
+
+  const authBtn = $('authBtn');
+  if (authBtn) {
+    authBtn.querySelector('use').setAttribute('href', mode === 'server' ? '#i-unlock' : '#i-lock');
+    authBtn.title = mode === 'server' ? 'Sesión iniciada (pulsa para cerrar sesión)' : 'Acceso al servidor privado';
+    authBtn.classList.toggle('is-active', mode === 'server');
+  }
+  modeEl.title = mode === 'server'
+    ? 'Sesión iniciada. Pulsa para gestionar el acceso'
+    : 'Sin sesión: pulsa para entrar con la contraseña del proyecto';
 }
 
 export function updateSaveState(value, detail = {}) {

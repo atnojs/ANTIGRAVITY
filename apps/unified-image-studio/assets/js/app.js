@@ -312,6 +312,12 @@ function bindTopbar() {
   $('zoomOutBtn').addEventListener('click', () => { renderer.zoomBy(0.8); updateViewportUI(state.ui.zoom); });
   $('zoomValue').addEventListener('click', () => { renderer.actualSize(); updateViewportUI(state.ui.zoom); });
   $('projectChip').addEventListener('click', openProjectsModal);
+  $('authBtn').addEventListener('click', openAuth);
+  $('statusMode').addEventListener('click', openAuth);
+  $('statusMode').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openAuth(); }
+  });
+  $('retryServer').addEventListener('click', retryServerConnection);
   $('rightToggle').addEventListener('click', () => {
     const app = $('app');
     app.classList.toggle('is-right-open');
@@ -1617,6 +1623,48 @@ function bindMisc() {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Tab') document.body.classList.add('using-keyboard');
   });
+}
+
+/** Acceso siempre a mano: candado de la barra y estado de la barra inferior. */
+async function openAuth() {
+  if (server.available && server.writable) {
+    const out = await confirmDialog({
+      title: 'Sesión iniciada',
+      text: 'Tienes sesión en el servidor privado. ¿Quieres cerrarla? La app seguirá funcionando en modo local.',
+      okLabel: 'Cerrar sesión',
+      danger: true,
+    });
+    if (!out) return;
+    try { await server.call('logout', {}); } catch { /* la cookie puede haber caducado */ }
+    server.writable = false;
+    state.ui.mode = 'auth';
+    updateTopbar();
+    toast('Sesión cerrada.', 'ok');
+    return;
+  }
+  $('loginError').textContent = server.available
+    ? ''
+    : 'El servidor PHP no responde, por eso no aparece solo. Comprueba api.php?action=state en el navegador.';
+  openModal('loginModal');
+  setTimeout(() => $('loginPassword').focus(), 60);
+}
+
+async function retryServerConnection() {
+  $('loginError').textContent = 'Comprobando el servidor…';
+  const probe = await server.probe();
+  if (probe?.ok) {
+    $('loginError').textContent = '';
+    await loadCatalog();
+    updateTopbar();
+    if (probe.authenticated) {
+      closeModal('loginModal');
+      toast('Sesión ya activa en el servidor privado.', 'ok');
+    } else {
+      toast('Servidor disponible: introduce la contraseña.', 'ok');
+    }
+  } else {
+    $('loginError').textContent = 'Sigue sin responder. Abre api.php?action=state en el navegador para ver el error exacto.';
+  }
 }
 
 async function submitLogin() {
