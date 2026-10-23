@@ -1,0 +1,16 @@
+{
+  "_nota": "Plantilla de tarifas. Copia este archivo como storage/pricing.json y escribe el precio real por imagen de cada modelo (consulta tu panel del proveedor). No hay precios inventados: mientras 'unit' sea null, el trabajo se registra con coste desconocido y el presupuesto en euros no se aplica.",
+  "_formato": { "modelo": { "unit": "precio en euros por imagen" } },
+  "openai-image-2-low": { "unit": null },
+  "openai-image-2": { "unit": null },
+  "openai-image-2-high": { "unit": null },
+  "openai-medium": { "unit": null },
+  "openai-high": { "unit": null },
+  "openai-max-flare": { "unit": null },
+  "openai-xhigh": { "unit": null },
+  "openai-max-sunburst": { "unit": null },
+  "gemini-2": { "unit": null },
+  "gemini-flash": { "unit": null },
+  "gemini-pro": { "unit": null },
+  "qwen-pro": { "unit": null }
+}
