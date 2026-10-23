@@ -379,38 +379,6 @@ switch ($action) {
         foreach ($jobs as $index => $job) unset($jobs[$index]['image']);
         uis_json(200, ['ok' => true, 'jobs' => $jobs]);
         break;
-    case 'job.get':
-        uis_require_auth();
-        $id = (string)($_GET['id'] ?? '');
-        if (!uis_safe_id($id)) uis_fail(400, 'Identificador no válido.');
-        $stmt = $db->prepare('SELECT * FROM jobs WHERE id = ?');
-        $stmt->execute([$id]);
-        $row = $stmt->fetch();
-        if (!$row) uis_fail(404, 'El trabajo no existe.');
-        uis_json(200, ['ok' => true, 'job' => uis_public_job($row)]);
-        break;
-
-    case 'job.list':
-        uis_require_auth();
-        $status = (string)($_GET['status'] ?? '');
-        $limit = max(1, min(100, (int)($_GET['limit'] ?? 20)));
-        $sql = 'SELECT * FROM jobs';
-        $params = [];
-        if (in_array($status, ['queued', 'running'], true)) {
-            $sql .= ' WHERE status IN (?, ?)';
-            $params = ['queued', 'running'];
-        } elseif ($status !== '') {
-            $sql .= ' WHERE status = ?';
-            $params = [$status];
-        }
-        $sql .= ' ORDER BY created_at DESC LIMIT ' . $limit;
-        $stmt = $db->prepare($sql);
-        $stmt->execute($params);
-        $jobs = array_map('uis_public_job', $stmt->fetchAll());
-        // La lista no devuelve las imágenes en base64: solo el estado y el coste.
-        foreach ($jobs as $index => $job) unset($jobs[$index]['image']);
-        uis_json(200, ['ok' => true, 'jobs' => $jobs]);
-        break;
 
     default:
         uis_fail(404, 'Acción no reconocida.');

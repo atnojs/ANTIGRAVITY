@@ -397,7 +397,7 @@ function uis_check_budget(PDO $db, ?string $projectId, ?float $estimate): array
     if ($estimate === null) {
         return ['known' => false];
     }
-    $spent = uis_spent($db, $projectId, session_id());
+    $spent = uis_spent($db, $projectId);
     $sessionLimit = uis_budget($db, 'session', 5.0);
     $projectLimit = uis_budget($db, 'project:' . ($projectId ?? 'null'), 20.0);
     $operationLimit = uis_budget($db, 'operation', 1.5);

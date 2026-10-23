@@ -71,7 +71,10 @@ function uis_job_create(PDO $db, array $body, string $key): array
 
     $prompt = trim((string)($body['prompt'] ?? ''));
     if ($prompt === '') throw new UisHttpError('Falta el prompt.', 400);
-    if (mb_strlen($prompt) > 11800) throw new UisHttpError('El prompt supera 12.000 caracteres.', 413);
+    // Se reserva espacio para la instrucción de idioma que se añade después.
+    if (mb_strlen($prompt) > 11800) {
+        throw new UisHttpError('El prompt es demasiado largo: deja margen para la instrucción de idioma (máximo 12.000 caracteres en total).', 413);
+    }
     if (!str_contains(mb_strtolower($prompt), 'español')) {
         $prompt .= "\n\nTodo texto o audio generado debe estar obligatoriamente en español.";
     }

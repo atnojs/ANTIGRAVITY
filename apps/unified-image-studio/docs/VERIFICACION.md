@@ -130,7 +130,7 @@ php -l lib/canonical-image-model.php  → No syntax errors detected
 node --check assets/js/{core,render,tools,ui,persist,exporter,ai,app}.js → 8/8 OK
 ```
 
-## 7. Qué NO está verificado
+## 8. Qué NO está verificado
 
 | Punto | Motivo | Cómo completarlo |
 |---|---|---|
@@ -141,12 +141,12 @@ node --check assets/js/{core,render,tools,ui,persist,exporter,ai,app}.js → 8/8
 | Presupuesto con importes reales | Las tarifas de prueba eran 0,04 € | Escribir `storage/pricing.json` con los precios del panel del proveedor |
 | Copia y restauración de `storage/` | No hay `sqlite3`/`tar` en este equipo | Ejecutar los comandos del README en el servidor |
 
-## 8. Inventario verificado
+## 9. Inventario verificado
 
 `lib/canonical-image-model.php` conserva el hash `cc89fea361387f64`, idéntico al contrato canónico
 del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 
-## 9. Limitaciones declaradas
+## 10. Limitaciones declaradas
 
 1. El trabajo se ejecuta dentro de `job.create`; con `max_execution_time` bajo puede cortarse la
    respuesta, aunque el trabajo queda registrado y es recuperable por `job.get`.
@@ -155,7 +155,7 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 4. El recorte de fondo local solo funciona con fondos uniformes.
 5. En modo local (sin PHP) no hay IA: el resto del estudio funciona y se guarda en IndexedDB.
 
-## 10. Defectos encontrados y corregidos
+## 11. Defectos encontrados y corregidos
 
 ### 10.1 Detectados en la verificación propia
 
@@ -186,12 +186,12 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 | 9 | Menor | Longitud del prompt comprobada antes de añadir la frase en español | Se comprueba después; un prompt de 12.000 caracteres da 413 sin registrar trabajo |
 | 10 | Menor | El aviso apuntaba a `api/pricing.json` | Ahora indica `storage/pricing.json` |
 | 11 | Menor | `logout` por GET | Solo POST (405 comprobado) |
-| 12 | Menor | `.htaccess` de `storage/` no verificable con el servidor embebido | Declarado como pendiente de comprobar bajo Apache/LiteSpeed. Además, el repositorio ignora `.htaccess` de forma global, así que `lib/` no puede llevarlo: `bootstrap.php` y `jobs.php` responden 404 si se piden por HTTP directamente (comprobado) |
+| 12 | Menor | `.htaccess` de `storage/` no verificable con el servidor embebido | Declarado como pendiente de comprobar bajo Apache/LiteSpeed. Además, el repositorio ignora `.htaccess` de forma global, así que `lib/` no puede llevarlo: `bootstrap.php` y `jobs.php` responden **404** si se piden por HTTP directamente (comprobado); `canonical-image-model.php` solo define funciones y devuelve un cuerpo vacío, sin filtrar código fuente |
 | 13 | Menor | Prueba de idioma vacua y tamaño de WebP mal documentado | La prueba lee `job.get` y comprueba la frase; el tamaño real es ≈16 KB |
 | 14 | Menor | Carrera de idempotencia con `UNIQUE` → 500 | Se captura la violación y se devuelve el trabajo ganador |
 | 15 | Menor | No se valida `doc.id`↔`project.id` | Aceptado: app mono-usuario; documentado |
 
-## 11. Fuera de alcance de esta entrega
+## 12. Fuera de alcance de esta entrega
 
 - Kit de marca y formatos predefinidos de la fase 6 (hay recetas y logos como capa).
 - Cancelación de trabajos y reembolsos (los proveedores no los admiten).
