@@ -72,7 +72,7 @@ export function describeCost(modelId, count = 1) {
     return {
       known: false,
       text: 'Tarifa no configurada',
-      detail: 'Configura api/pricing.json con el precio real de cada modelo para que el presupuesto se aplique en euros.',
+      detail: 'Configura storage/pricing.json con el precio real de cada modelo para que el presupuesto se aplique en euros.',
     };
   }
   return { known: true, text: fmtMoney(value), detail: 'Estimación: el proveedor no informa del importe real de la operación.' };
@@ -214,14 +214,28 @@ async function pollJob(jobId, { interval = 2500, timeout = 240000 } = {}) {
   throw new Error('El trabajo sigue pendiente en el servidor. Puedes recuperarlo al recargar: no se ha reenviado.');
 }
 
-/** Recupera trabajos pendientes del servidor tras recargar. */
+/** Recupera trabajos en curso del servidor tras recargar. */
 export async function recoverPendingJobs() {
   if (!server.available || !server.writable) return [];
   try {
-    const data = await server.call('job.list', { status: 'pending' }, { method: 'GET', timeout: 8000 });
+    const data = await server.call('job.list', { status: 'active', limit: 10 }, { method: 'GET', timeout: 8000 });
     return data?.jobs || [];
   } catch {
     return [];
+  }
+}
+
+/** Sigue un trabajo ya existente sin volver a enviarlo. */
+export async function resumeJob(job) {
+  if (!job?.id) return null;
+  activeJob = { ...job };
+  notify(activeJob);
+  try {
+    const final = await pollJob(job.id);
+    return final;
+  } finally {
+    activeJob = null;
+    notify(null);
   }
 }
 
@@ -239,9 +253,7 @@ export async function saveBudget(budget) {
   assertReady();
   const data = await server.call('budget.set', budget, { timeout: 10000 });
   return data?.budget || null;
-}
-
-export async function jobHistory(limit = 20) {
+}export async function jobHistory(limit = 20) {
   if (!server.available || !server.writable) return [];
   try {
     const data = await server.call('job.list', { limit }, { method: 'GET', timeout: 8000 });

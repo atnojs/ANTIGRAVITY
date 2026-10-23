@@ -23,7 +23,7 @@ Servidor estático local + Chrome headless a 1440×900, 1024×768 y 390×844.
 | Zoom 100 %, acercar y ajustar | PASS · 1 → 1,25 → 0,625 |
 | Exportar PNG con DPI real | PASS · 1024×1024, chunk `pHYs` → 300 ppp |
 | Exportar JPG al 50 % con densidad | PASS · 512×512, `units=1`, densidad 150 |
-| Exportar WebP | PASS · `image/webp`, 21 KB |
+| Exportar WebP | PASS · `image/webp`, unos 16 KB |
 | Exportar proyecto con recursos | PASS · esquema 1, 3 capas, base64 del recurso presente |
 | Guardado con estado visible | PASS · `data-state="saved"` |
 | Reabrir restaura la composición editable | PASS · mismas capas, máscara y recurso en IndexedDB |
@@ -103,7 +103,24 @@ Servidor estático local + Chrome headless a 1440×900, 1024×768 y 390×844.
 | Al quedarse sin capas vuelve el estado vacío | PASS |
 | Errores de consola | 0 |
 
-## 6. Sintaxis y arranque del backend
+## 6. Correcciones del REWORK (`test-08-fixes.mjs`) — 9/9
+
+Tras la primera verificación independiente (REWORK), se corrigieron los defectos señalados y se
+añadieron estas pruebas:
+
+| Prueba | Resultado |
+|---|---|
+| `proxy.php` exige sesión | PASS · 401 sin cookie |
+| `proxy.php` con sesión devuelve salud y 12 modelos | PASS |
+| **`proxy.php` respeta el presupuesto** (antes lo saltaba) | PASS · 402 «La operación cuesta más que el límite por operación» y no llega al proveedor |
+| `budget.set` devuelve el presupuesto resultante | PASS · igual que `budget.get` |
+| `logout` por GET rechazado y la sesión sigue viva | PASS · 405 |
+| Trabajo colgado → se cierra como fallido al consultarlo | PASS · «Sin respuesta del proveedor: tiempo agotado.» |
+| `job.list?status=active` responde | PASS |
+| Límite de trabajos por minuto | PASS · 429 |
+| Recuperación al arrancar | Cubierta por `status=active` + `resumeJob` (sin clave no hay trabajo que recuperar) |
+
+## 7. Sintaxis y arranque del backend
 
 ```text
 php -l api.php                        → No syntax errors detected
@@ -120,6 +137,7 @@ node --check assets/js/{core,render,tools,ui,persist,exporter,ai,app}.js → 8/8
 | Llamada real a OpenAI/Gemini/Qwen | No hay claves en este equipo | Añadir `OPENAI_API_KEY`/`R` en el `.htaccess` raíz y generar: el trabajo debe pasar a `succeeded` y guardar el archivo en `storage/resources/` |
 | Inpainting y «quitar fondo con IA» | Dependen del proveedor | Mismo procedimiento con una máscara pintada |
 | Ejecución bajo LiteSpeed/Hostinger | Aquí solo hay el servidor embebido de PHP | Subir la app y repetir `api.php?action=state` y un guardado real |
+| El `.htaccess` de `storage/` negando el acceso | El servidor embebido de PHP ignora `.htaccess` | Comprobar en el hosting que `storage/studio.sqlite` y `storage/resources/*` devuelven 403 |
 | Presupuesto con importes reales | Las tarifas de prueba eran 0,04 € | Escribir `storage/pricing.json` con los precios del panel del proveedor |
 | Copia y restauración de `storage/` | No hay `sqlite3`/`tar` en este equipo | Ejecutar los comandos del README en el servidor |
 
@@ -137,18 +155,41 @@ del repositorio (`apps/dibujo_lineas_copia/canonical-image-model.php`).
 4. El recorte de fondo local solo funciona con fondos uniformes.
 5. En modo local (sin PHP) no hay IA: el resto del estudio funciona y se guarda en IndexedDB.
 
-## 10. Defectos encontrados y corregidos durante la verificación
+## 10. Defectos encontrados y corregidos
+
+### 10.1 Detectados en la verificación propia
 
 | Defecto | Detección | Corrección |
 |---|---|---|
-| Un conflicto de versión (409) se mostraba como «Guardado» | Prueba con versión base obsoleta | `persist.js`: el conflicto deja el estado en `dirty`, avisa y no llama a `markSaved()` |
+| Un conflicto de versión (409) se mostraba como «Guardado» | Prueba con versión base obsoleta | `persist.js`: el conflicto deja el estado en `dirty` y no llama a `markSaved()` |
 | Los recursos no se recargaban al reabrir (imagen en blanco) | Recarga real del proyecto | `app.js`: `state.resources.clear()` pasa a ejecutarse **antes** de `loadProject` |
-| Las versiones solo vivían en IndexedDB | Revisión de la API | `version.save`/`version.get` en servidor; `saveVersion` y `listVersions` sincronizan y restauran |
+| Las versiones solo vivían en IndexedDB | Revisión de la API | `version.save`/`version.get` en servidor; `saveVersion` y `listVersions` sincronizan |
 | El historial de opacidad guardaba un estado inútil | Revisión del código | Transacción con `pointerdown` + `pushHistory` |
 | Sin `session.save_path` escribible no había sesión (todo 401) | Prueba en servidor local | `lib/bootstrap.php` elige una ruta escribible (`sys_get_temp_dir` o `storage/sessions`) |
 | `pricing.json` con BOM no se leía | Prueba de presupuesto | `uis_pricing()` elimina el BOM antes de `json_decode` |
 | Al borrar la última capa no aparecía el estado vacío | Prueba de atajos | `deleteSelectedLayer()` actualiza el estado vacío |
 | Deshacer una forma no la eliminaba | Prueba de undo | La transacción se captura antes de crear la capa |
+| El primer guardado tras reabrir daba un 409 falso | Captura con proyecto existente | `openProject` adopta la versión del servidor |
+
+### 10.2 Detectados por el verificador independiente (ronda 1 → REWORK)
+
+| # | Severidad | Defecto | Corrección aplicada |
+|---|---|---|---|
+| 1 | Mayor | `proxy.php` gastaba sin pasar por presupuesto ni registrar trabajo | Pipeline único `lib/jobs.php`: `api.php` y `proxy.php` usan `uis_job_create` (presupuesto, idempotencia, registro y libro de costes). Probado: `proxy.php` → 402 |
+| 2 | Mayor | `recoverPendingJobs` pedía `status=pending` (nunca escrito) y el arranque descartaba el resultado | `status=active` en servidor y cliente; `resumeJob()` retoma el trabajo y muestra la vista previa |
+| 3 | Medio | Cualquier fallo HTTP de guardado degradaba la app a modo local | Solo los fallos de red cambian de modo; los errores HTTP se muestran sin perder la sesión |
+| 4 | Medio | `budget.set` devolvía solo `{ok:true}` y la barra quedaba a ciegas | Devuelve el mismo objeto que `budget.get` |
+| 5 | Medio | `UIS_MAX_JOBS_PER_MINUTE` sin usar | Límite aplicado en `uis_job_create` (429 comprobado) |
+| 6 | Medio | `project_id = ?` con NULL nunca casaba; el gasto «de sesión» era global | `IS ?` en las consultas; la ventana de 24 h se documenta como tal (app mono-usuario) |
+| 7 | Medio | Trabajo insertado `running` sin `set_time_limit`; un corte lo dejaba colgado | `set_time_limit(200)` y reconciliación: los `running` con más de 15 min pasan a `failed` |
+| 8 | Menor | `state` y `proxy.php` sin sesión revelaban entorno y claves configuradas | `state` solo expone PHP/SQLite/cURL con sesión; `proxy.php` exige sesión (401) |
+| 9 | Menor | Longitud del prompt comprobada antes de añadir la frase en español | Se comprueba después; un prompt de 12.000 caracteres da 413 sin registrar trabajo |
+| 10 | Menor | El aviso apuntaba a `api/pricing.json` | Ahora indica `storage/pricing.json` |
+| 11 | Menor | `logout` por GET | Solo POST (405 comprobado) |
+| 12 | Menor | `.htaccess` de `storage/` no verificable con el servidor embebido | Declarado como pendiente de comprobar bajo Apache/LiteSpeed |
+| 13 | Menor | Prueba de idioma vacua y tamaño de WebP mal documentado | La prueba lee `job.get` y comprueba la frase; el tamaño real es ≈16 KB |
+| 14 | Menor | Carrera de idempotencia con `UNIQUE` → 500 | Se captura la violación y se devuelve el trabajo ganador |
+| 15 | Menor | No se valida `doc.id`↔`project.id` | Aceptado: app mono-usuario; documentado |
 
 ## 11. Fuera de alcance de esta entrega
 

@@ -1,5 +1,4 @@
 # Datos privados de la app: nunca se versionan.
 storage/*
 !storage/.htaccess
-!storage/pricing.example.json
 *.log

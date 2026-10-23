@@ -144,6 +144,8 @@ export async function saveLocal(reason = 'auto') {
       emit('toast', { type: 'warn', message: 'Hay una versión más reciente en el servidor: elige qué conservar.' });
     } else if (sync === 'offline') {
       setSaveState('offline');
+    } else if (sync === 'error') {
+      setSaveState('error');
     } else {
       markSaved();
     }
@@ -171,6 +173,12 @@ async function syncServer() {
       emit('save:conflict', { server: error.data });
       return 'conflict';
     }
+    if (error.status) {
+      // Error del servidor (401/413/500): no se pierde la conexión, solo este guardado.
+      emit('toast', { type: 'error', message: `El servidor rechazó el guardado: ${error.message}` });
+      return 'error';
+    }
+    // Fallo de red: se sigue trabajando en local.
     state.ui.mode = 'local';
     server.available = false;
     emit('toast', { type: 'warn', message: 'Sin conexión con el servidor: guardando solo en este navegador.' });

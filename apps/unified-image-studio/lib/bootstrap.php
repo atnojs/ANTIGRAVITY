@@ -359,12 +359,14 @@ function uis_catalog(): array
 }
 
 /* ── Comprobación de presupuesto en servidor ── */
-function uis_spent(PDO $db, ?string $projectId, ?string $sessionId): array
+function uis_spent(PDO $db, ?string $projectId): array
 {
-    $stmt = $db->prepare('SELECT COALESCE(SUM(amount),0) FROM ledger WHERE project_id = ?');
+    // project_id IS ? compara también con NULL (project_id = NULL nunca casa).
+    $stmt = $db->prepare('SELECT COALESCE(SUM(amount),0) FROM ledger WHERE project_id IS ?');
     $stmt->execute([$projectId]);
     $project = (float)$stmt->fetchColumn();
 
+    // Ventana de 24 h: la app es de un solo administrador, no hay sesiones concurrentes.
     $stmt = $db->prepare('SELECT COALESCE(SUM(amount),0) FROM ledger WHERE created_at >= ?');
     $stmt->execute([time() - 86400]);
     $session = (float)$stmt->fetchColumn();

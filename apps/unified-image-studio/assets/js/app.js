@@ -27,7 +27,7 @@ import {
 } from './exporter.js';
 import {
   MODELS, modelById, loadCatalog, catalog, describeCost, costFor, generate, fetchBudget, saveBudget,
-  recoverPendingJobs, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
+  recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
 } from './ai.js';
 
 const stageInner = $('stageInner');
@@ -91,12 +91,33 @@ async function boot() {
   } else {
     startNewProject({ blank: false });
   }
-  void recoverPendingJobs();
+  void recoverJobsOnBoot();
   await refreshProjectLists();
   updateUtilities();
 
   renderer.fit();
   updateViewportUI(state.ui.zoom);
+}
+
+/** Trabajos que quedaron en curso en el servidor: se retoman sin reenviar ni pagar. */
+async function recoverJobsOnBoot() {
+  const pending = await recoverPendingJobs();
+  if (!pending.length) return;
+  const job = pending[0];
+  toast(`Hay un trabajo en curso en el servidor (${job.id}). Se recupera sin volver a enviarlo.`, 'info', { duration: 9000 });
+  try {
+    const final = await resumeJob(job);
+    if (final?.image) {
+      pendingResult = {
+        job: final,
+        dataUrl: final.image.startsWith('data:') ? final.image : `data:${final.mimeType || 'image/png'};base64,${final.image}`,
+      };
+      showResultPreview(pendingResult);
+      toast('Trabajo recuperado. Acéptalo para añadirlo al lienzo.', 'ok');
+    }
+  } catch (error) {
+    toast(`No se pudo recuperar el trabajo: ${error.message}`, 'warn');
+  }
 }
 
 /* ══════════════════════ Documento y proyecto ══════════════════════ */

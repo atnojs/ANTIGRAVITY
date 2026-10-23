@@ -26,8 +26,9 @@ apps/unified-image-studio/
 │   ├── exporter.js             PNG/JPG/WebP, escala, DPI real, portapapeles
 │   └── ai.js                   Catálogo de modelos, trabajos y costes
 ├── api.php                     API privada: sesión, proyectos, recursos, trabajos, presupuesto
-├── proxy.php                   Entrada del proveedor de imágenes (contrato canónico)
+├── proxy.php                   Entrada del proveedor: mismo pipeline y mismo presupuesto
 ├── lib/bootstrap.php           Configuración, SQLite, migraciones, auth, presupuesto
+├── lib/jobs.php                Pipeline único de trabajos (idempotencia, coste, proveedor)
 ├── lib/canonical-image-model.php  Contrato de generación del proyecto (copia sincronizada)
 ├── storage/                    Datos privados: SQLite, originales y derivados (denegado por web)
 ├── pricing.example.json        Plantilla de tarifas (sin precios inventados)
@@ -161,12 +162,16 @@ con sus capas.
    configurada», el trabajo se registra con coste desconocido y el presupuesto en euros no bloquea.
 4. **Trabajos**: `job.create` es idempotente por `idempotencyKey`; un reintento con la misma clave
    devuelve el trabajo existente y **no** vuelve a llamar al proveedor. El sondeo (`job.get`) nunca
-   reenvía la generación.
-5. **Sin cron garantizado**: el trabajo se ejecuta dentro de `job.create` y queda persistido. Si el
-   cliente cierra la pestaña, `job.list?status=pending` lo recupera; no hay cancelación porque los
-   proveedores usados no la admiten.
+   reenvía la generación. `proxy.php` usa el **mismo pipeline** (`lib/jobs.php`): no existe ningún
+   camino que gaste sin registrar trabajo ni comprobar presupuesto.
+5. **Sin cron garantizado**: el trabajo se ejecuta dentro de `job.create` y queda persistido. Al
+   arrancar, la app busca trabajos `queued`/`running` (`status=active`) y los retoma con
+   `resumeJob()` sin reenviarlos; los que llevan más de 15 minutos en `running` se cierran como
+   `failed` («tiempo agotado»).
 6. **Historial**: se cubre con proyectos + versiones + tabla `jobs` (con el archivo resultante), en
    lugar de un `history.php` separado, para no duplicar almacenamiento.
+7. **Presupuesto**: el importe «de sesión» es la ventana de las últimas 24 h, porque la app tiene un
+   único administrador. El límite por proyecto se aplica aunque no llegue `projectId`.
 
 ## 10. Limitaciones conocidas
 

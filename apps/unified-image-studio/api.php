@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/lib/bootstrap.php';
+require_once __DIR__ . '/lib/jobs.php';
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $action = strtolower(trim((string)($_REQUEST['action'] ?? 'state')));
@@ -24,16 +25,21 @@ $db = uis_db();
 switch ($action) {
     case 'state':
         uis_session_start();
-        uis_json(200, [
+        $authenticated = uis_authenticated();
+        $payload = [
             'ok' => true,
             'version' => UIS_VERSION,
-            'authenticated' => uis_authenticated(),
+            'authenticated' => $authenticated,
             'configured' => uis_password_hash() !== '',
             'needsSetup' => uis_password_hash() === '',
-            'php' => PHP_VERSION,
-            'sqlite' => extension_loaded('pdo_sqlite'),
-            'curl' => function_exists('curl_init'),
-        ]);
+        ];
+        // El detalle del entorno solo se expone a una sesión válida.
+        if ($authenticated) {
+            $payload['php'] = PHP_VERSION;
+            $payload['sqlite'] = extension_loaded('pdo_sqlite');
+            $payload['curl'] = function_exists('curl_init');
+        }
+        uis_json(200, $payload);
         break;
 
     case 'login':
@@ -59,6 +65,7 @@ switch ($action) {
 
     case 'logout':
         uis_session_start();
+        if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
         $_SESSION = [];
         session_destroy();
         uis_json(200, ['ok' => true]);
@@ -271,7 +278,7 @@ switch ($action) {
     case 'budget.get':
         uis_require_auth();
         $projectId = (string)($_GET['projectId'] ?? '');
-        $spent = uis_spent($db, $projectId !== '' ? $projectId : null, session_id());
+        $spent = uis_spent($db, $projectId !== '' ? $projectId : null);
         $sessionLimit = uis_budget($db, 'session', 5.0);
         $projectLimit = uis_budget($db, 'project:' . ($projectId !== '' ? $projectId : 'null'), 20.0);
         $operationLimit = uis_budget($db, 'operation', 1.5);
@@ -291,10 +298,10 @@ switch ($action) {
         uis_require_auth();
         if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
         $body = uis_read_json();
-        $projectId = (string)($body['projectId'] ?? 'null');
+        $scopeProject = (string)($body['projectId'] ?? 'null');
         $pairs = [
             'session' => (float)($body['sessionLimit'] ?? 5),
-            'project:' . $projectId => (float)($body['projectLimit'] ?? 20),
+            'project:' . $scopeProject => (float)($body['projectLimit'] ?? 20),
             'operation' => (float)($body['operationLimit'] ?? 1.5),
         ];
         $stmt = $db->prepare('INSERT INTO budgets (scope, limit_amount, updated_at) VALUES (?, ?, ?)
@@ -302,102 +309,76 @@ switch ($action) {
         foreach ($pairs as $scope => $value) {
             $stmt->execute([$scope, max(0.0, $value), time()]);
         }
-        uis_json(200, ['ok' => true]);
+        // Devuelve el presupuesto resultante para que la interfaz no quede a ciegas.
+        $spent = uis_spent($db, $scopeProject !== 'null' ? $scopeProject : null);
+        uis_json(200, ['ok' => true, 'budget' => [
+            'sessionLimit' => uis_budget($db, 'session', 5.0),
+            'projectLimit' => uis_budget($db, 'project:' . $scopeProject, 20.0),
+            'operationLimit' => uis_budget($db, 'operation', 1.5),
+            'sessionSpent' => $spent['session'],
+            'projectSpent' => $spent['project'],
+            'pending' => $spent['pending'],
+            'remaining' => max(0, min(
+                uis_budget($db, 'session', 5.0) - $spent['session'],
+                uis_budget($db, 'project:' . $scopeProject, 20.0) - $spent['project']
+            )),
+            'currency' => 'EUR',
+        ]]);
         break;
 
     case 'job.create':
         uis_require_auth();
         if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
-        require_once uis_root() . '/lib/canonical-image-model.php';
         $body = uis_read_json();
-
-        $key = (string)($body['idempotencyKey'] ?? '');
-        if (!uis_safe_id($key)) uis_fail(400, 'Falta la clave de idempotencia del trabajo.');
-        $modelId = (string)($body['model'] ?? '');
-        $catalog = ag_image_catalog();
-        if (!isset($catalog[$modelId])) uis_fail(400, 'Modelo no soportado.');
-        $prompt = trim((string)($body['prompt'] ?? ''));
-        if ($prompt === '') uis_fail(400, 'Falta el prompt.');
-        if (mb_strlen($prompt) > 12000) uis_fail(413, 'El prompt supera 12.000 caracteres.');
-        if (!str_contains(mb_strtolower($prompt), 'español')) {
-            $prompt .= "\n\nTodo texto o audio generado debe estar obligatoriamente en español.";
-        }
-
-        $stmt = $db->prepare('SELECT * FROM jobs WHERE idempotency_key = ?');
-        $stmt->execute([$key]);
-        $existing = $stmt->fetch();
-        if ($existing) {
-            uis_json(200, ['ok' => true, 'job' => uis_public_job($existing), 'deduplicated' => true]);
-        }
-
-        $pricing = uis_pricing();
-        $unit = isset($pricing[$modelId]['unit']) ? (float)$pricing[$modelId]['unit'] : null;
-        $estimate = $unit !== null ? $unit : null;
-        $check = uis_check_budget($db, $body['projectId'] ?? null, $estimate);
-        if (isset($check['ok']) && $check['ok'] === false) {
-            uis_json(402, ['ok' => false, 'error' => $check['message'], 'budget' => $check]);
-        }
-
-        $images = [];
-        if (isset($body['images']) && is_array($body['images'])) {
-            $images = array_slice(array_values(array_filter($body['images'], 'is_string')), 0, 8);
-        }
-        $mask = isset($body['mask']) && is_string($body['mask']) ? $body['mask'] : null;
-
-        $jobId = 'job_' . bin2hex(random_bytes(12));
-        $now = time();
-        $stmt = $db->prepare(
-            'INSERT INTO jobs (id, idempotency_key, project_id, doc_id, doc_version, kind, model, prompt, status,
-                cost_estimate, currency, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-        );
-        $stmt->execute([
-            $jobId, $key, $body['projectId'] ?? null, $body['docId'] ?? null, (int)($body['docVersion'] ?? 0),
-            (string)($body['kind'] ?? 'generate'), $modelId, $prompt, 'running',
-            $estimate, 'EUR', $now, $now,
-        ]);
-
-        $request = [
-            'model' => $modelId,
-            'prompt' => $prompt,
-            'aspectRatio' => (string)($body['aspectRatio'] ?? '1:1'),
-            'resolution' => (int)($body['resolution'] ?? 1024),
-        ];
-        if ($images !== []) $request['images'] = $images;
-        if ($mask !== null) $request['mask'] = $mask;
-
         try {
-            $result = ag_image_generate($request, uis_root());
-            $binary = base64_decode((string)$result['image'], true);
-            if ($binary === false || $binary === '') throw new RuntimeException('El proveedor no devolvió una imagen válida.');
-            $filename = $jobId . '.png';
-            uis_write_file(uis_resource_dir() . '/' . $filename, $binary);
-
-            $db->beginTransaction();
-            $stmt = $db->prepare('UPDATE jobs SET status = ?, result_file = ?, provider = ?, provider_ref = ?, updated_at = ?, completed_at = ? WHERE id = ?');
-            $stmt->execute(['succeeded', $filename, (string)($result['provider'] ?? ''), (string)($result['model'] ?? ''), time(), time(), $jobId]);
-            if ($estimate !== null) {
-                $stmt = $db->prepare('INSERT INTO ledger (job_id, project_id, kind, amount, currency, created_at) VALUES (?, ?, ?, ?, ?, ?)');
-                $stmt->execute([$jobId, $body['projectId'] ?? null, 'estimate', $estimate, 'EUR', time()]);
-            }
-            $db->commit();
-
-            $stmt = $db->prepare('SELECT * FROM jobs WHERE id = ?');
-            $stmt->execute([$jobId]);
-            uis_json(200, ['ok' => true, 'job' => uis_public_job($stmt->fetch())]);
-        } catch (Throwable $error) {
-            $status = (int)$error->getCode();
-            $message = $error->getMessage();
-            $stmt = $db->prepare('UPDATE jobs SET status = ?, error = ?, updated_at = ?, completed_at = ? WHERE id = ?');
-            $stmt->execute(['failed', mb_substr($message, 0, 500), time(), time(), $jobId]);
-            uis_json($status >= 400 && $status < 600 ? $status : 502, [
-                'ok' => false,
-                'error' => 'El proveedor no pudo completar la generación: ' . $message,
-                'job' => ['id' => $jobId, 'status' => 'failed', 'error' => $message, 'kind' => $body['kind'] ?? 'generate'],
-            ]);
+            $job = uis_job_create($db, $body, (string)($body['idempotencyKey'] ?? ''));
+        } catch (UisHttpError $error) {
+            uis_json($error->getCode(), ['ok' => false, 'error' => $error->getMessage()] + $error->details);
         }
+        $deduplicated = false;
+        if (isset($job['deduplicated'])) {
+            $deduplicated = true;
+            unset($job['deduplicated']);
+        }
+        uis_json(200, ['ok' => true, 'job' => $job, 'deduplicated' => $deduplicated]);
         break;
 
+    case 'job.get':
+        uis_require_auth();
+        uis_jobs_sweep($db);
+        $id = (string)($_GET['id'] ?? '');
+        if (!uis_safe_id($id)) uis_fail(400, 'Identificador no válido.');
+        $stmt = $db->prepare('SELECT * FROM jobs WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        if (!$row) uis_fail(404, 'El trabajo no existe.');
+        $job = uis_public_job($row);
+        $job['prompt'] = (string)$row['prompt'];
+        uis_json(200, ['ok' => true, 'job' => $job]);
+        break;
+
+    case 'job.list':
+        uis_require_auth();
+        uis_jobs_sweep($db);
+        $status = (string)($_GET['status'] ?? '');
+        $limit = max(1, min(100, (int)($_GET['limit'] ?? 20)));
+        $sql = 'SELECT * FROM jobs';
+        $params = [];
+        if ($status === 'active' || in_array($status, ['queued', 'running'], true)) {
+            $sql .= ' WHERE status IN (?, ?)';
+            $params = ['queued', 'running'];
+        } elseif ($status !== '') {
+            $sql .= ' WHERE status = ?';
+            $params = [$status];
+        }
+        $sql .= ' ORDER BY created_at DESC LIMIT ' . $limit;
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $jobs = array_map('uis_public_job', $stmt->fetchAll());
+        // La lista no devuelve imágenes en base64 ni el prompt.
+        foreach ($jobs as $index => $job) unset($jobs[$index]['image']);
+        uis_json(200, ['ok' => true, 'jobs' => $jobs]);
+        break;
     case 'job.get':
         uis_require_auth();
         $id = (string)($_GET['id'] ?? '');
