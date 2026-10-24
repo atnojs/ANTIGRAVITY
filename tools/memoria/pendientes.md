@@ -5,6 +5,27 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
+## 🔐 Contraseña de ACCESO rotada y purgada (2026-10-24)
+
+- **Estado:** ✅ rotada en el servidor (`.htaccess` guarda solo `PW_ACCESS_SHA256`) y purgada del
+  repositorio, historial, copias locales, logs y backups. La nueva vive **solo** en
+  `.private/password-acceso.txt`. Verificado: antigua 403, nueva 200.
+- **Siguiente paso 1 (dueño):** si quiere cero absoluto en GitHub, abrir ticket a soporte para
+  purgar los commits viejos que aún se pueden pedir por SHA. El historial actual ya no los tiene.
+- **Siguiente paso 2 (dueño):** rotar o borrar en la bóveda **viva** de Bitwarden la entrada con
+  el valor viejo; el export local ya está saneado, pero la bóveda se cifra con la contraseña
+  maestra y no se puede editar desde aquí.
+- **Siguiente paso 3 (dueño):** revisar las copias de seguridad de Hostinger anteriores al
+  2026-10-24 (no son accesibles por web, pero contienen el valor antiguo).
+- **Siguiente paso 4 (dueño):** borrar del gestor de sesiones de DSH la sesión del saneado si
+  quiere que el transcript desaparezca; ese fichero estaba vivo y no se pudo limpiar.
+- **No purgable sin administrador:** log de diagnóstico de Windows Defender (`MPLog`) e índice de
+  Windows Search.
+- **Verificación:** `GET /auth/validar.php` (`edicion`+`acceso` configurados), publicación de
+  TrickVault con la contraseña nueva, y `git log -S` / escaneo de objetos sin ocurrencias.
+
+---
+
 ## 🧪 Probar el prompt maestro en una web real (2026-10-23)
 
 - **Estado:** el prompt está aprobado por doble gate (FG-A 96,0 · FG-B 95,0), red-team ACEPTABLE y

@@ -5,6 +5,23 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 
 ---
 
+### [2026-10-24] Reescritura del historial de `main`: excepción puntual para borrar un secreto
+
+- **Decisión:** se reescribió el historial de `main` con `git filter-repo` y se publicó con
+  `--force-with-lease`. Es la **única excepción autorizada** a las normas «nunca `--force`» y
+  «nunca reescribir historia publicada» de la skill `publicar-git`.
+- **Motivo:** la contraseña de ACCESO estaba en claro en commits públicos (`auth/lib.php`,
+  memoria y `rotar-password.ps1`). Rotarla no basta si el valor sigue visible en el historial:
+  el dueño pidió explícitamente que no quedara ni una copia.
+- **Cómo:** `git filter-repo --replace-text` con el valor sustituido + retirada del endpoint
+  temporal; verificación objeto a objeto antes y después; `force-with-lease` sobre el SHA
+  remoto esperado. Después: `reflog expire --expire=now --all` y `gc --prune=now` en local.
+- **Contrapartida:** los SHA cambian (los locales y los de cualquier otra sesión quedan
+  obsoletos: hay que hacer `fetch --force` y `reset --hard origin/main`); GitHub puede mantener
+  commits viejos accesibles por SHA hasta su GC. Para lo segundo, ticket a soporte de GitHub.
+- **Regla que queda:** nunca escribir valores reales de contraseñas en ficheros versionados,
+  ni siquiera en docblocks de ejemplo. Solo placeholders y rutas de almacén.
+
 ### [2026-10-23] Restauración de fotos antiguas: 3 tarjetas canónicas, nunca una por caso
 
 - **Decisión:** la carpeta «Restauración de fotos antiguas» contiene solo 3 tarjetas, una por

@@ -5,6 +5,24 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-24] El valor real de una contraseña acabó en un docblock de un fichero versionado
+
+- **Síntoma:** la contraseña de ACCESO del proyecto (la de publicar en TrickVault) aparecía en
+  claro en `auth/lib.php`, en `tools/memoria/` y en `tools/rotar-password.ps1`, todos versionados
+  en un repositorio **público**. El mismo valor se reutilizaba como `DB_PASS` en `.env` antiguos
+  y quedó en logs de agentes, export de Bitwarden y sesiones comprimidas.
+- **Causa:** el docblock decía «ejemplo, no versionar» pero llevaba el valor real; la memoria del
+  proyecto también lo copió. Un repositorio público no tiene «zona privada»: cualquier valor
+  escrito en un fichero versionado es público para siempre mientras exista en el historial.
+- **Solución:** rotar el valor en el servidor (`.htaccess` con `PW_ACCESS_SHA256`), guardar la
+  contraseña nueva solo en `.private/` (ignorado y protegido), sustituir el valor por placeholders
+  en código y memoria, reescribir el historial con `git filter-repo --replace-text`, publicar con
+  `force-with-lease` (autorizado) y purgar objetos locales con `reflog expire` + `gc --prune=now`.
+  Limpiar también copias, backups comprimidos, sesiones de agentes y bases SQLite.
+- **Verificación:** `git log -S` sin resultados, escaneo de todos los objetos (2,1 GB, 0
+  ocurrencias), antigua 403 / nueva 200 en `/auth/validar.php`, y escaneo del servidor
+  (8.626 ficheros, 0 ocurrencias).
+
 ### [2026-10-22] Ventana de terminal cada 2 minutos: el `pythonw.exe` de un venv era el de consola
 
 - **Síntoma:** cada ~2 min aparecía sola una ventana de Windows Terminal con consola negra y título
