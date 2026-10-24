@@ -5,6 +5,28 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-24 (despliegue) — Webhook perdido: producción parada en `e12e1cc5`, re-disparada y verificada
+
+- **Síntoma (chequeo diario):** `origin/main..HEAD` vacío y árbol sin ficheros versionados
+  modificados, pero producción servía `apps/trickvault/index.html` con el blob de `e12e1cc5` y
+  `catalogo.json` con el de `ee52e710` (16:07), ambos con `last-modified: 17:59:24 GMT`. Faltaban
+  por desplegar `0081d59f` (index.html), `6d31bc83` y `e7c4583f` (publicaciones hechas desde la app).
+- **Diagnóstico:** no era caché — con `?cb=` nuevo, `x-hcdn-cache-status: DYNAMIC` (origen) y el
+  `last-modified` no se movía desde las 17:59. El push llegó a GitHub; el **webhook de Hostinger**
+  no volvió a desplegar. Detectado comparando hashes de blobs git contra lo servido, no por HTTP 200.
+- **Local:** estaba 2 commits por detrás de `origin/main` (solo `catalogo.json`); resuelto con
+  `git pull --ff-only` → `e7c4583f`.
+- **Solución:** `git commit --allow-empty -m "chore: re-disparar despliegue (...)"` + push (`b2e9d50c`).
+  Desplegado en ~2 minutos (`last-modified: 21:03:48 GMT`).
+- **Verificación:** `index.html` 1.091.305 B sha256 `155e3bd6…` y `catalogo.json` 66.384 B sha256
+  `7abeb5f9…`, idénticos a los blobs de HEAD; auditoría completa de los **131** `index.html`
+  versionados: **131/131** byte a byte iguales a git.
+- **Lección:** un `git status` limpio y `origin/main..HEAD` vacío no prueban que producción esté al
+  día; hay que comparar el **hash del blob** de un fichero servido. Cabecera para distinguir caché
+  de despliegue atrasado: `x-hcdn-cache-status`. Receta añadida a `skills/SKILL_GIT_PUBLICAR.md` § Paso 5.
+
+---
+
 ## 2026-10-24 (seguridad) — Purga, rotación y restauración de la contraseña de ACCESO
 
 - **Incidente:** la contraseña de ACCESO (`PW_ACCESS`, la que pide TrickVault para publicar)

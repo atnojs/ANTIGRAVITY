@@ -160,6 +160,10 @@ $r.Content -match '<marcador del cambio>'
 
 - Usa un parámetro **nuevo y distinto** en cada comprobación. Reutilizar el mismo o pedir la
   URL sin parámetro puede devolver la versión cacheada vieja (error ya cometido).
+- Para saber si lo que llega es el origen o una copia de la CDN, mira las cabeceras:
+  `curl -sSI "https://atnojs.es/<ruta>?cb=<guid>"` → `x-hcdn-cache-status: DYNAMIC` significa
+  **origen** (no caché), y `last-modified` da la hora real de escritura en Hostinger. Si el
+  `last-modified` es anterior al push, el problema es el **despliegue**, no la caché.
 - Si la CDN sigue sirviendo lo antiguo, **renombra el asset con fecha** (`app.css` →
   `app.20261024.css`), actualiza la referencia, commit y push; no esperes a que expire.
 - Apps del catálogo: `powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\verificar-despliegue.ps1`
