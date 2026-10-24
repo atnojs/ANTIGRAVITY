@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20261019-dup">
+    <link rel="stylesheet" href="app.css?v=20261024-renombrar">
 </head>
 <body>
     <div id="root"></div>
@@ -95,6 +95,12 @@ const FOLDERS_KEY = 'trickvault_folders';
 // «borradas» y que desaparezcan también en los demás navegadores (si no, cada
 // navegador conservaría su copia y las ventanas seguirían viéndose distintas).
 const FOLDERS_BORRADAS_KEY = 'trickvault_folders_borradas';
+// Nombres de carpeta puestos a mano en este navegador y aún sin publicar. La
+// capa publicada manda en los nombres (así todos los navegadores ven lo mismo),
+// pero un renombrado LOCAL no puede desaparecer al recargar antes de publicar:
+// se apunta aquí y se vuelve a aplicar DESPUÉS de la capa publicada. Al
+// publicar, el nombre viaja en `listaCarpetas` y lo ven los demás equipos.
+const FOLDERS_RENAMES_KEY = 'trickvault_folders_renombradas';
 // Versión del esquema de carpetas: sirve para añadir UNA sola vez las carpetas
 // nuevas a quien ya tuviera su lista guardada en el navegador, sin resucitar las
 // que el usuario haya borrado a mano ni reordenar las suyas.
@@ -4167,7 +4173,42 @@ function removeEmptyLegacyFolders(saved) {
     return saved.filter(folder => !legacyIds.has(folder.id) || occupied.has(folder.id));
 }
 
-function loadFolders() {
+// ── Nombres de carpeta puestos a mano ─────────────────────────────────────
+// Ver FOLDERS_RENAMES_KEY: lo que el usuario acaba de renombrar en ESTE
+// navegador gana sobre lo publicado (y se publica con el botón de publicar).
+function readFolderRenames() {
+    try {
+        const raw = JSON.parse(localStorage.getItem(FOLDERS_RENAMES_KEY) || '{}');
+        return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    } catch { return {}; }
+}
+function applyFolderRenames(list) {
+    if (!Array.isArray(list)) return list;
+    const renames = readFolderRenames();
+    if (!Object.keys(renames).length) return list;
+    return list.map(folder => {
+        if (!folder) return folder;
+        const cambio = renames[String(folder.id)];
+        const label = cambio ? String(cambio.label || '').trim() : '';
+        return label && label !== folder.label ? { ...folder, label } : folder;
+    });
+}
+function rememberFolderRename(id, label) {
+    const limpio = String(label || '').trim();
+    if (!id || !limpio) return;
+    const renames = readFolderRenames();
+    renames[String(id)] = { label: limpio };
+    try { localStorage.setItem(FOLDERS_RENAMES_KEY, JSON.stringify(renames)); }
+    catch (error) { console.warn('No se pudo apuntar el nombre de la carpeta', error); }
+}
+function forgetFolderRename(id) {
+    const renames = readFolderRenames();
+    if (!Object.prototype.hasOwnProperty.call(renames, String(id))) return;
+    delete renames[String(id)];
+    try { localStorage.setItem(FOLDERS_RENAMES_KEY, JSON.stringify(renames)); } catch { /* ignorar */ }
+}
+
+function loadFoldersBase() {
     let saved = null;
     try {
         const raw = localStorage.getItem(FOLDERS_KEY);
@@ -4215,6 +4256,12 @@ function loadFolders() {
     const known = new Set(saved.map(f => f && f.id));
     const missing = DEFAULT_FOLDERS.filter(f => !known.has(f.id));
     return missing.length ? [...saved, ...missing] : saved;
+}
+// La lista efectiva: lo guardado + los nombres puestos a mano en este navegador.
+// Los nombres van SIEMPRE al final para que la migración de esquema o la capa
+// publicada no puedan pisar un renombrado del usuario sin publicar.
+function loadFolders() {
+    return applyFolderRenames(loadFoldersBase());
 }
 function readFolderIds() {
     return loadFolders().map(f => f.id);
@@ -6079,8 +6126,8 @@ function applyPublishedFolders(locales, capa) {
         return local ? { ...local, ...pub } : { ...pub };
     });
     const soloLocales = salida.filter(f => !idsPublicados.has(String(f.id)));
-    const lista = [...fusion, ...soloLocales];
-    return lista.length ? lista : actuales;
+    const lista = applyFolderRenames([...fusion, ...soloLocales]);
+    return lista.length ? lista : applyFolderRenames(actuales);
 }
 
 /** ¿La lista de carpetas o su orden se han movido respecto a lo publicado? */
@@ -6881,7 +6928,7 @@ function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId,
 /* ═══════════════════════════════════════════════
    COMPONENT: CategoryGrid (Main Dashboard)
    ═══════════════════════════════════════════════ */
-function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFolder, onReorderFolders }) {
+function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFolder, onRenameFolder, onReorderFolders }) {
     const counts = useMemo(() => {
         const map = {};
         tricks.forEach(t => { map[t.category] = (map[t.category] || 0) + 1; });
@@ -6949,6 +6996,14 @@ function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFold
                         setTimeout(() => { suppressClickRef.current = false; }, 0);
                     }}
                 >
+                    {canEdit && cat.id !== 'favorites' && (
+                        <button
+                            className="folder-rename"
+                            onClick={(e) => { e.stopPropagation(); onRenameFolder(cat); }}
+                            aria-label={`Renombrar carpeta ${cat.label}`}
+                            title="Cambiar el nombre de la carpeta"
+                        >✏️</button>
+                    )}
                     {canEdit && cat.id !== 'favorites' && (
                         <button
                             className="folder-delete"
@@ -7450,48 +7505,56 @@ function ExportImport({ tricks, onImport }) {
 }
 
 /* ═══════════════════════════════════════════════
-   COMPONENT: FolderForm (Nueva carpeta)
+   COMPONENT: FolderForm (Nueva carpeta / Renombrar)
    ═══════════════════════════════════════════════ */
-function FolderForm({ onSave, onClose }) {
-    const [label, setLabel] = useState('');
-    const [icon, setIcon] = useState('📁');
-    const [color, setColor] = useState('cyan');
+function FolderForm({ onSave, onClose, folder = null }) {
+    const renombrando = !!folder;
+    const [label, setLabel] = useState(renombrando ? String(folder.label || '') : '');
+    const [icon, setIcon] = useState(renombrando ? (folder.icon || '📁') : '📁');
+    const [color, setColor] = useState(renombrando ? (folder.color || 'cyan') : 'cyan');
     const [error, setError] = useState('');
 
     function handleSubmit(e) {
         e.preventDefault();
         const clean = String(label || '').trim();
         if (!clean) { setError('Escribe un nombre para la carpeta.'); return; }
-        onSave({ label: clean, icon: icon.trim() || '📁', color });
-        onClose();
+        const resultado = onSave({ label: clean, icon: icon.trim() || '📁', color });
+        if (resultado === true) { onClose(); return; }
+        setError(String(resultado || 'No se pudo guardar el nombre.'));
     }
 
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal folder-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="folder-form-title">
                 <div className="modal-header">
-                    <h2 id="folder-form-title">📁 Nueva carpeta</h2>
+                    <h2 id="folder-form-title">{renombrando ? '✏️ Renombrar carpeta' : '📁 Nueva carpeta'}</h2>
                     <button className="modal-close" onClick={onClose} aria-label="Cerrar">✕</button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body">
-                        <label>Nombre de la carpeta *</label>
-                        <input type="text" value={label} onChange={(e) => { setLabel(e.target.value); setError(''); }} placeholder="Ej: Ideas para Instagram" autoFocus />
-                        <label>Emoji</label>
-                        <input type="text" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="📁" maxLength="4" />
-                        <label>Color</label>
-                        <select value={color} onChange={(e) => setColor(e.target.value)}>
-                            <option value="cyan">Cian</option>
-                            <option value="purple">Morado</option>
-                            <option value="emerald">Verde</option>
-                            <option value="pink">Rosa</option>
-                            <option value="amber">Ámbar</option>
-                        </select>
+                        <label htmlFor="folder-form-label">Nombre de la carpeta *</label>
+                        <input id="folder-form-label" type="text" value={label} maxLength="48" onChange={(e) => { setLabel(e.target.value); setError(''); }} placeholder="Ej: Ideas para Instagram" autoFocus />
+                        {renombrando ? (
+                            <p className="form-hint">Se guarda en este navegador y pasa a los demás al pulsar «🚀 Publicar cambios».</p>
+                        ) : (
+                            <>
+                                <label>Emoji</label>
+                                <input type="text" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="📁" maxLength="4" />
+                                <label>Color</label>
+                                <select value={color} onChange={(e) => setColor(e.target.value)}>
+                                    <option value="cyan">Cian</option>
+                                    <option value="purple">Morado</option>
+                                    <option value="emerald">Verde</option>
+                                    <option value="pink">Rosa</option>
+                                    <option value="amber">Ámbar</option>
+                                </select>
+                            </>
+                        )}
                         {error && <p className="form-error">{error}</p>}
                     </div>
                     <div className="modal-footer">
                         <button type="button" className="btn btn-glass" onClick={onClose}>Cancelar</button>
-                        <button type="submit" className="btn btn-primary">Crear carpeta</button>
+                        <button type="submit" className="btn btn-primary">{renombrando ? 'Guardar nombre' : 'Crear carpeta'}</button>
                     </div>
                 </form>
             </div>
@@ -7543,6 +7606,8 @@ function App() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [pendingEditAction, setPendingEditAction] = useState(null);
     const [showFolderForm, setShowFolderForm] = useState(false);
+    // Carpeta que se está renombrando (null = modal cerrado).
+    const [renamingFolder, setRenamingFolder] = useState(null);
 
     function addToast(msg, type = 'success') {
         const id = uid();
@@ -7609,13 +7674,32 @@ function App() {
 
     const createFolder = useCallback(({ label, icon, color }) => {
         const clean = String(label || '').trim();
-        if (!clean) return;
-        if (folders.some(f => f.label.toLowerCase() === clean.toLowerCase())) {
-            addToast('Ya existe una carpeta con ese nombre', 'error');
-            return;
-        }
+        if (!clean) return 'Escribe un nombre para la carpeta.';
+        const repetido = [...folders, FAVORITES_FOLDER].some(f => f &&
+            String(f.label || '').trim().toLowerCase() === clean.toLowerCase());
+        if (repetido) return 'Ya existe una carpeta con ese nombre.';
         setFolders(prev => [...prev, { id: 'f_' + uid(), label: clean, icon: icon || '📁', color: color || 'cyan', bgIcon: '🗂️' }]);
         addToast('📁 Carpeta creada');
+        return true;
+    }, [folders, setFolders]);
+
+    // Renombrar una carpeta es un cambio LOCAL: se guarda en este navegador y se
+    // apunta aparte para que la capa publicada no lo pise al recargar (ver
+    // FOLDERS_RENAMES_KEY). Los demás equipos lo ven en cuanto se publica: el
+    // nombre nuevo viaja en `listaCarpetas`. Devuelve true o el motivo del fallo.
+    const changeFolderName = useCallback((folder, nuevoNombre) => {
+        if (!folder) return 'No se encontró la carpeta.';
+        if (folder.id === 'favorites') return 'La carpeta Favoritos no se puede renombrar.';
+        const limpio = String(nuevoNombre || '').trim().replace(/\s+/g, ' ');
+        if (!limpio) return 'Escribe un nombre para la carpeta.';
+        if (limpio === String(folder.label || '').trim()) return true; // sin cambios
+        const ocupado = [...folders, FAVORITES_FOLDER].some(f => f && f.id !== folder.id &&
+            String(f.label || '').trim().toLowerCase() === limpio.toLowerCase());
+        if (ocupado) return 'Ya existe una carpeta con ese nombre.';
+        setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, label: limpio } : f));
+        rememberFolderRename(folder.id, limpio);
+        addToast('✏️ Carpeta renombrada');
+        return true;
     }, [folders, setFolders]);
 
     const reorderFolders = useCallback((sourceId, targetId) => {
@@ -7671,6 +7755,8 @@ function App() {
             // Se apunta la baja para que la próxima publicación la lleve al
             // servidor y desaparezca también en los demás navegadores.
             rememberDeletedFolder(folder.id);
+            // Si tenía un nombre puesto a mano, se olvida con la carpeta.
+            forgetFolderRename(folder.id);
             addToast('🗑️ Carpeta eliminada', 'error');
         });
     }, [folders, setFolders, setTricks, withEditAccess]);
@@ -8108,13 +8194,14 @@ function App() {
                             </div>
                         )}
                     </div>
-                    {editUnlocked && <p className="drag-hint">⠿ Arrastra cualquier carpeta, incluido Favoritos, sobre otra para cambiar su posición. El orden se guarda automáticamente.</p>}
+                    {editUnlocked && <p className="drag-hint">⠿ Arrastra cualquier carpeta, incluido Favoritos, sobre otra para cambiar su posición. El orden se guarda automáticamente. Usa ✏️ para cambiarle el nombre y ✕ para eliminarla.</p>}
                     <CategoryGrid
                         tricks={tricks}
                         folders={orderedFolderCards}
                         onSelectCategory={selectCategory}
                         canEdit={editUnlocked}
                         onDeleteFolder={deleteFolder}
+                        onRenameFolder={setRenamingFolder}
                         onReorderFolders={reorderFolders}
                     />
                 </div>
@@ -8195,6 +8282,14 @@ function App() {
 
             {showFolderForm && (
                 <FolderForm onSave={createFolder} onClose={() => setShowFolderForm(false)} />
+            )}
+
+            {renamingFolder && (
+                <FolderForm
+                    folder={renamingFolder}
+                    onSave={({ label }) => changeFolderName(renamingFolder, label)}
+                    onClose={() => setRenamingFolder(null)}
+                />
             )}
 
             {lightboxSrc && (

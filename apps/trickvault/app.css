@@ -555,6 +555,39 @@ h1, h2, h3, h4, .font-montserrat {
     transform: scale(1.08);
 }
 
+/* Renombrar carpeta (modo edición): botón hermano del de borrar. */
+.category-card .folder-rename {
+    position: absolute;
+    top: 0.65rem;
+    right: 2.55rem;
+    z-index: 3;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    border: 1px solid rgba(34, 211, 238, 0.5);
+    background: rgba(34, 211, 238, 0.18);
+    color: #a5f3fc;
+    font-size: 0.72rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.category-card .folder-rename:hover {
+    background: rgba(34, 211, 238, 0.45);
+    color: #062a2f;
+    transform: scale(1.08);
+}
+
+.category-card .folder-rename:focus-visible,
+.category-card .folder-delete:focus-visible {
+    outline: 2px solid var(--acc, #22d3ee);
+    outline-offset: 2px;
+}
+
 .category-card.is-drag-over {
     border-color: var(--acc);
     box-shadow: 0 0 26px var(--glow-soft), inset 0 0 18px rgba(0, 208, 208, 0.12);
@@ -1053,6 +1086,13 @@ h1, h2, h3, h4, .font-montserrat {
     color: var(--neon-pink);
     font-size: 0.85rem;
     margin: 0.5rem 0 0;
+}
+
+.modal-body .form-hint {
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+    margin: 0.55rem 0 0;
 }
 
 .image-upload-field {
