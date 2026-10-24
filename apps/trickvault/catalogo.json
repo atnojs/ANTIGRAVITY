@@ -145,7 +145,18 @@
         "ig-dcek-172",
         "cap-cmd-009",
         "cap-cmd-113",
-        "xl-cmd-131"
+        "xl-cmd-131",
+        "cap-cmd-206",
+        "cap-cmd-207",
+        "cap-cmd-215",
+        "cap-cmd-216",
+        "cap-cmd-218",
+        "cap-cmd-219",
+        "cap-cmd-220",
+        "cap-cmd-221",
+        "cap-cmd-223",
+        "cap-cmd-224",
+        "cap-cmd-225"
     ],
     "orden": {
         "xl-letras3d": [
@@ -1519,5 +1530,5 @@
         "xl-dobleexposicion"
     ],
     "carpetasBorradas": [],
-    "actualizado": "2026-10-24T14:45:06+00:00"
+    "actualizado": "2026-10-24T15:07:35+00:00"
 }
