@@ -92,7 +92,7 @@ primero; `git commit -- <ruta>` solo resuelve rutas que git ya conoce:
 
 ```powershell
 git -C E:\ANTIGRAVITY add -- ruta/nueva.md otra/nueva.md
-git -C E:\ANTIGRAVITY commit -m "docs(ambito): resumen" -- ruta/nueva.md ruta/otra.md
+git -C E:\ANTIGRAVITY commit -m "docs(ambito): resumen" -- ruta/nueva.md otra/nueva.md
 ```
 
 Si git pide identidad (no hay `user.name`/`user.email` configurados), pásala en el propio

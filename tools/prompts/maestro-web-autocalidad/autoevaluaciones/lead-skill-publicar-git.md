@@ -2,7 +2,7 @@
 
 **Tarea:** crear una skill de commit/push y eliminar las instrucciones peligrosas de publicación
 **Autor:** Lead (DSH) — autor del cambio, no verificador
-**Fecha:** 2026-10-24 15:3x (Atlantic/Canary) · **Iteración interna:** 4
+**Fecha:** 2026-10-24 15:4x (Atlantic/Canary) · **Iteración interna:** 5 (tras REWORK de la ronda 1)
 **Entorno:** `E:\ANTIGRAVITY`, rama `main`, Windows + PowerShell 7, PHP 8.3.30, Python con PyYAML
 
 ## 0. Contrato de referencia (encargo del usuario)
@@ -21,7 +21,7 @@ trabajo de otras sesiones.
 
 | Artefacto | Líneas | Bytes | SHA-256 |
 |---|---:|---:|---|
-| `skills/SKILL_GIT_PUBLICAR.md` (nuevo, canónico) | 255 | 13.159 | `4d248062d5e60031caeb56174dc625ce4e27f167268f3a56982e0f20369599c2` |
+| `skills/SKILL_GIT_PUBLICAR.md` (nuevo, canónico) | 255 | 13.160 | `2db294a001f52493a8de18469732c9f1106b927b89cc9e855e8f118c7423a30a` |
 | `.claude/skills/publicar-git/SKILL.md` (nuevo, puntero) | 35 | 2.635 | `49632976d009cfb59db231e28ba23c7dd7e62082cf0a5861d5f5589e0b262efd` |
 | `skills/SKILL_CREAR.md` (corregido) | 198 | 10.360 | `56ea66b0124be12d56326624e16903eec1f48f01b61d47e60efdd3ef7682526a` |
 | `skills/SKILL_MAESTRA.md` (enlace a la skill) | 1.016 | 63.258 | `d5cd8666ef7bde55f14b0e669507c292263a5843f9704f2f589e332fa7d7fa65` |
@@ -33,20 +33,22 @@ trabajo de otras sesiones.
 | `tools/commit-aislado.ps1` (normaliza `-Rutas`, documenta uso real y refresca el índice real) | 60 | 2.832 | `d0196bb6be3d6aa97a09c8da699108de2b53c467ee468ca7f882995c40271c49` |
 
 Hashes: `Get-FileHash <ruta> -Algorithm SHA256` el 2026-10-24, posteriores a todos los cambios.
+La bitácora y el scorecard del verificador son documentos de evidencia: se comprueban por contenido
+y commits citados, no por hash congelado (la bitácora se completa al cerrar la tarea).
 
 ## 2. Puntuación A1–A10
 
 | ID | Criterio | Peso | Crítico | Nota | Evidencia |
 |---|---|---|---|---|---|
-| A1 | Cobertura del contrato | 18 | Sí | 9,5 | Los 4 requisitos cubiertos: skill `skills/SKILL_GIT_PUBLICAR.md:1-247`; `git add .` eliminado de `SKILL_CREAR.md:166-181`; gate y publicación. Sin recortes; se añaden los derivados del proyecto (puntero, catálogo, mapa, recetas) y el gemelo `SKILL_EDITAR…:147-162` |
-| A2 | Corrección funcional y técnica | 15 | Sí | 9,4 | Sintaxis git validada con `git commit --dry-run -m "test" -- tools/memoria/mapa.md` (exit 0, sin error de parseo); pathspec y `-c` de identidad probados igual; `php tools/generar-punteros-skills.php --check` → `OK .claude/skills/publicar-git/SKILL.md`; puntero idéntico al que genera el script; junction `.dsh/skills` → skill descubierta por el catálogo DSH (`publicar-git` presente en el catálogo de la sesión); `tools/commit-aislado.ps1` probado con rutas reales sin cambios: resuelve la lista separada por comas, no avisa de ruta inexistente y falla limpio sin crear commit. Detectados y corregidos que `&` directo está bloqueado por la ExecutionPolicy (§4.7) y que el índice real quedaba desincronizado tras el commit (§4.8) |
+| A1 | Cobertura del contrato | 18 | Sí | 9,5 | Los 4 requisitos cubiertos: skill completa (255 líneas, `skills/SKILL_GIT_PUBLICAR.md`); `git add .` eliminado de `SKILL_CREAR.md:166-181`; gate y publicación. Sin recortes; se añaden los derivados del proyecto (puntero, catálogo, mapa, recetas) y el gemelo `SKILL_EDITAR…:147-162` |
+| A2 | Corrección funcional y técnica | 15 | Sí | 9,4 | Sintaxis git validada con `git commit --dry-run -m "test" -- apps/trickvault/index.html` (ruta con cambios → exit 0) y con `-c user.name/user.email` (exit 0); control negativo del orden antiguo `-- tools/memoria/mapa.md -m "test"` → `error: pathspec '-m'`; con ruta limpia el mismo comando sale 1 por «nada que commitear», no por parseo/pathspec. `php tools/generar-punteros-skills.php --check` → `OK .claude/skills/publicar-git/SKILL.md`; puntero idéntico al que genera el script; junction `.dsh/skills` → skill descubierta por el catálogo DSH (`publicar-git` presente en el catálogo de la sesión); `tools/commit-aislado.ps1` probado con rutas reales sin cambios: resuelve la lista separada por comas, no avisa de ruta inexistente y falla limpio sin crear commit. Detectados y corregidos que `&` directo está bloqueado por la ExecutionPolicy (§4.7) y que el índice real quedaba desincronizado tras el commit (§4.8) |
 | A3 | Verificación real y evidencia reproducible | 13 | Sí | 9,5 | Todo lo anterior ejecutado en el repo real y reproducible con los comandos de este informe; hashes §1; YAML parseado con PyYAML (`name`, `description`, desc_len 312; puntero con front matter idéntico) |
-| A4 | Reglas del encargo y del proyecto | 10 | Sí | 9,5 | Español; solo `main`; nada de ramas/worktrees; sin secretos (`claude.md:98,124`, `mapa.md:59`, `recetas.md:72-73`); herramientas en `tools/`; no se reescriben archivos completos, se editan bloques; no se toca trabajo ajeno (`apps/trickvault/index.html`, `agenda/`, etc. quedan fuera) |
+| A4 | Reglas del encargo y del proyecto | 10 | Sí | 9,5 | Español; solo `main`; nada de ramas/worktrees; sin secretos (`claude.md:121-122` claves y `:124-127` commit/main/raíz pública; `mapa.md:59`, `recetas.md:72-73`); herramientas en `tools/`; no se reescriben archivos completos, se editan bloques; no se toca trabajo ajeno (`apps/trickvault/index.html`, `agenda/`, etc. quedan fuera) |
 | A5 | Autoevaluación honesta y calibrada | 12 | Sí | 9,4 | Este informe declara lo no verificado (§5) y los defectos encontrados y corregidos (§4); sin notas infladas; la nota no se apoya en el esfuerzo sino en salidas reales |
-| A6 | Mejora residual agotada | 10 | Sí | 9,0 | Corregidas en iteración todas las mejoras asequibles detectadas (§4: 7 puntos); residuales: 3 menores declaradas en §3, ninguna bloqueante/mayor/media y ninguna asequible sin decisión externa |
+| A6 | Mejora residual agotada | 10 | Sí | 9,0 | Corregidas en iteración todas las mejoras asequibles detectadas (§4); residuales: 3 menores declaradas en §3, ninguna bloqueante/mayor/media y ninguna asequible sin decisión externa |
 | A7 | Calidad del resultado para el usuario final | 8 | No | 9,3 | Procedimiento operativo paso a paso, ejemplos reales del repo, tabla de errores conocidos, prohibiciones y checklist de salida; el texto completo de la skill se lee sin saltos (`skills/SKILL_GIT_PUBLICAR.md`) |
 | A8 | Robustez y seguridad | 6 | No | 9,2 | Cubre rechazo de push, índice compartido, identidad ausente, webhook perdido, caché de CDN, secretos, `--force`, BLOCKED si no hay red/credenciales (`SKILL_GIT_PUBLICAR.md:130-227`) |
-| A9 | Evidencias, documentación y trazabilidad | 5 | No | 9,5 | Hashes, comandos y salidas en este informe; skill enlazada desde `claude.md`, `mapa.md`, `recetas.md`, `SKILL_CREAR.md`, `SKILL_MAESTRA.md` y `SKILL_AUTOCALIDAD_90.md`; bitácora y scorecard del verificador en la publicación |
+| A9 | Evidencias, documentación y trazabilidad | 5 | No | 9,5 | Hashes, comandos y salidas en este informe; skill enlazada desde `claude.md`, `mapa.md`, `recetas.md`, `SKILL_CREAR.md`, `SKILL_MAESTRA.md` y `SKILL_AUTOCALIDAD_90.md`; entrada en `tools/memoria/bitacora.md` (2026-10-24) y scorecard `supervision/scorecard-skill-publicar-git.md` |
 | A10 | Claridad, mantenibilidad y limpieza | 3 | No | 9,4 | Una sola fuente de verdad (canonical `skills/`), puntero sin duplicar contenido, sin archivos temporales ni restos de prueba; ediciones quirúrgicas |
 
 **Cálculo:** 9,5×18 = 171,0 · 9,4×15 = 141,0 · 9,5×13 = 123,5 · 9,5×10 = 95,0 · 9,4×12 = 112,8 ·
@@ -93,12 +95,22 @@ Hashes: `Get-FileHash <ruta> -Algorithm SHA256` el 2026-10-24, posteriores a tod
    refresca el índice real **solo** de las rutas commiteadas (lo preparado por otras sesiones no se
    toca). Índice actual reparado con `git add -- <rutas>` (status vacío). La corrección se valida en
    el commit siguiente a este informe.
+9. **Ronda 1 del verificador independiente (REWORK 92,0; A6 8,8):** V-01 (ejemplo de commit manual
+   con rutas descuadradas) → alineado a `ruta/nueva.md` + `otra/nueva.md`; V-02 (cita errónea de
+   líneas de `claude.md` en A4) → `:121-122` claves y `:124-127` commit/main; V-03 («§4: 7 puntos»)
+   → eliminado el recuento; V-04 (evidencia del `--dry-run` sin declarar el estado de la ruta) →
+   documentada con ruta sucia y control negativo del orden antiguo; V-05 (falta bitácora) →
+   añadida a `tools/memoria/bitacora.md`. Todo en el commit de cierre; pendiente la ronda 2.
 
 Re-verificación tras cada cambio: hashes §1 recalculados al final, `--check` del generador, grep de
 malas prácticas (solo quedan menciones **prohibitivas**), parseo YAML, `--dry-run` de git y prueba
 del script con rutas reales y sin cambios.
 
 ## 5. Riesgos, supuestos y límites
+
+- **Ronda 1 del verificador independiente:** REWORK 92,0 (A6 8,8) por 4 menores asequibles
+  (V-01…V-04) y la entrada de bitácora (V-05); corregidas en esta iteración. El veredicto de la
+  ronda 2 queda en `supervision/scorecard-skill-publicar-git.md`.
 
 - **No verificado en esta sesión:** el push real y el despliegue de Hostinger, porque el push es
   posterior al gate (se hará con el procedimiento de la propia skill; el SHA se anota en la

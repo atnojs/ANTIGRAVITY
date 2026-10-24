@@ -5,6 +5,37 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-24 — Skill `publicar-git`: el commit y el push dejan de improvisarse
+
+- **Qué se creó:** skill canónica `skills/SKILL_GIT_PUBLICAR.md` (pre-vuelo, cierre de scope,
+  commit aislado, verificación del commit, push a `main`, comprobación del despliegue y de la
+  versión servida, re-disparo con commit vacío, formato de mensaje, errores conocidos,
+  prohibiciones y checklist) y puntero `.claude/skills/publicar-git/SKILL.md` generado con el
+  formato oficial.
+- **Motivo:** no existía skill de commit/push; la norma estaba repartida en `SKILL_MAESTRA` (Fase 5),
+  `autocalidad-90` y `recetas.md`, y dos skills ordenaban `git add .` (contradicción con la regla de
+  oro «commit por ruta explícita»). Además `tools/commit-aislado.ps1` no aceptaba la forma de
+  invocación que documentaba.
+- **Integración:** `claude.md` (catálogo + regla crítica), `SKILL_MAESTRA` Fase 5, `SKILL_CREAR`
+  (Paso 6 y tabla de skills integradas), `SKILL_EDITAR_cirujano-codigo-produccion` (Paso 8),
+  `SKILL_AUTOCALIDAD_90` (fila de publicación), `tools/memoria/mapa.md` (índice y recuento de
+  punteros 13→19) y `recetas.md` (receta con pathspec + uso real de la herramienta).
+- **Herramienta corregida:** `tools/commit-aislado.ps1` ahora normaliza `-Rutas` separadas por
+  comas (con `-File` llegaba una sola cadena `"a,b"` y no commiteaba nada) y, tras commitear con
+  índice temporal, refresca el índice real **solo** de las rutas commiteadas (antes `git status`
+  mostraba `D`/`??` fantasma en esas rutas).
+- **Verificación independiente:** ronda 1 **REWORK 92,0** (A6 8,8) con 4 menores asequibles
+  (V-01 ejemplo con rutas descuadradas, V-02 cita de líneas de `claude.md`, V-03 recuento §4,
+  V-04 evidencia del `--dry-run`) y la entrada de bitácora pendiente; corregidas en el commit de
+  cierre. Scorecard: `tools/prompts/maestro-web-autocalidad/supervision/scorecard-skill-publicar-git.md`.
+  Autoevaluación del autor: `tools/prompts/maestro-web-autocalidad/autoevaluaciones/lead-skill-publicar-git.md`.
+- **Commit:** `002e74c` (skill y cableado) y `1143365` (correcciones del script y de la skill);
+  el push a `main` y su comprobación (`origin/main..HEAD` vacío) se anotan al cerrar la tarea.
+- **Residuales declaradas:** 2 punteros preexistentes desactualizados (`investigacion`,
+  `mejora-continua`, con resumen manual que el generador borraría) y rutas raras
+  (rebase por rechazo, commit vacío, renombrado por CDN) documentadas desde incidentes y no
+  re-ejecutadas por su riesgo en producción.
+
 ## 2026-10-23 — `autocalidad-90`: el gate del prompt maestro pasa a skill obligatoria
 
 - **Qué se creó:** skill canónica `skills/SKILL_AUTOCALIDAD_90.md` (front matter + gate compacto:
