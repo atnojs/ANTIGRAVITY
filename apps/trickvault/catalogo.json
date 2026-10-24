@@ -139,6 +139,284 @@
             "createdAt": 1791477744141,
             "updatedAt": 1792862793440,
             "sortOrder": 0
+        },
+        {
+            "title": "/Dobleexposicion",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [],
+            "codeSnippet": "",
+            "imageUrl": "uploads/example_mvmmyxmani83y958o_c0a45746dbeb.webp",
+            "sourceUrl": "",
+            "difficulty": "beginner",
+            "isFavorite": true,
+            "customPrompt": "Cinematic double-exposure portrait. On the left, a close-up profile view (image 1) looking to the left. Blended organically into the back and right side of the head is the detailed, realistic head of a Canarian Warren Hound (Podenco Canario) looking toward the right. Within the silhouette and in the background, there is a dense, fog-covered pine forest, distant mountains, and a massive, bright full moon in the night sky. In the bottom-right corner, a rustic, weathered wooden sign features carved, uppercase text that reads \"MIRA PA´LANTE,\" with a smaller plaque below it that reads \"POR OSCURA QUE SEA LA NOCHE.\" The color palette is cool and desaturated, dominated by grayish-blue tones; the image features high contrast, movie-poster-style lighting, hyper-realistic textures, and a mysterious atmosphere.",
+            "ownImage": true,
+            "id": "mvmmyxmani83y958o",
+            "lote": "2026-10-24",
+            "createdAt": 1792860700648,
+            "updatedAt": 1792862830993,
+            "sortOrder": 56
+        },
+        {
+            "id": "cap-cmd-138",
+            "title": "/dobleexposicion-libros — retrato con biblioteca mágica y libros flotantes",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-libros",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-libros.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799863,
+            "updatedAt": 1792854396843,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-143",
+            "title": "/dobleexposicion-cabana — retrato con cabaña en el bosque y lago",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-cabana",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-cabana.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799858,
+            "updatedAt": 1792854353932,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-154",
+            "title": "/dobleexposicion-oceano — retrato con fondo marino y ballena",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-oceano",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-oceano.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799847,
+            "updatedAt": 1792854320839,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-155",
+            "title": "/dobleexposicion-cielosueno — retrato con islas flotantes y cielo de ensueño",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-cielosueno",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-cielosueno.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799846,
+            "updatedAt": 1792857129752,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-158",
+            "title": "/dobleexposicion-playa — retrato con playa, palmeras y atardecer",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-playa",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-playa.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799843,
+            "updatedAt": 1792854290730,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-160",
+            "title": "/dobleexposicion-hielofuego — retrato con fuego y hielo entre montañas",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-hielofuego",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-hielofuego.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799841,
+            "updatedAt": 1792854235849,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-164",
+            "title": "/dobleexposicion-vialactea — retrato con vía láctea y figura en la montaña",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-vialactea",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-vialactea.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799837,
+            "updatedAt": 1792854215149,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-168",
+            "title": "/dobleexposicion-tren — retrato con tren, puente y montañas",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-tren",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-tren.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799833,
+            "updatedAt": 1792854178619,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-177",
+            "title": "/dobleexposicion-reloj — retrato con reloj gigante y ciudad",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-reloj",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-reloj.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799824,
+            "updatedAt": 1792854145064,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-185",
+            "title": "/dobleexposicion-patrimonio — retrato con edificio histórico, río y barca",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-patrimonio",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-patrimonio.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799816,
+            "updatedAt": 1792854103405,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-186",
+            "title": "/dobleexposicion-sol — retrato con sol, nubes y montañas",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-sol",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-sol.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799815,
+            "updatedAt": 1792854076494,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-191",
+            "title": "/dobleexposicion-estaciones — retrato con las cuatro estaciones en una",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-estaciones",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-estaciones.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799810,
+            "updatedAt": 1792854027635,
+            "lote": "2026-10-06",
+            "customPrompt": ""
+        },
+        {
+            "id": "cap-cmd-198",
+            "title": "/dobleexposicion-verano — retrato con playa, palmeras y surfista",
+            "description": "",
+            "category": "f_mv73ghs02h22sxpzp",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Capturas"
+            ],
+            "codeSnippet": "/dobleexposicion-verano",
+            "difficulty": "beginner",
+            "sourceUrl": "",
+            "imageUrl": "assets/xl-dobleexposicion/dobleexposicion-verano.jpg",
+            "isFavorite": false,
+            "createdAt": 1791244799803,
+            "updatedAt": 1792864320654,
+            "lote": "2026-10-06",
+            "customPrompt": "/dobleexposicion-verano If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. /dobleexposicion-verano /dobleexposicion-verano If the user attaches an image, you must apply the style solely to that image, ensuring the original image remains completely unaltered; in other words, you must recreate the image provided by the user and apply exclusively the requested style. Double-exposure photograph: a side profile (from image 1) combined with a beach at sunset, palm trees, ocean waves, a surfer, and birds in flight; summery atmosphere, cinematic style, vibrant colors, high level of detail, realistic appearance. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
         }
     ],
     "borradas": [
@@ -1402,6 +1680,22 @@
         ],
         "xl-dobleexposicion": [
             "muzrldq0pyjtdj8fe"
+        ],
+        "f_mv73ghs02h22sxpzp": [
+            "mvmmyxmani83y958o",
+            "cap-cmd-138",
+            "cap-cmd-143",
+            "cap-cmd-154",
+            "cap-cmd-155",
+            "cap-cmd-158",
+            "cap-cmd-160",
+            "cap-cmd-164",
+            "cap-cmd-168",
+            "cap-cmd-177",
+            "cap-cmd-185",
+            "cap-cmd-186",
+            "cap-cmd-191",
+            "cap-cmd-198"
         ]
     },
     "listaCarpetas": [
@@ -1613,5 +1907,5 @@
         "xl-dobleexposicion",
         "f_mvmm88u2iao4ez2zn"
     ],
-    "actualizado": "2026-10-24T17:41:24+00:00"
+    "actualizado": "2026-10-24T17:52:56+00:00"
 }
