@@ -34,24 +34,21 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
-## 🔐 Contraseña de ACCESO rotada y purgada (2026-10-24)
+## 🔐 Contraseña de ACCESO restaurada y purgada (2026-10-24)
 
-- **Estado:** ✅ rotada en el servidor (`.htaccess` guarda solo `PW_ACCESS_SHA256`) y purgada del
-  repositorio, historial, copias locales, logs y backups. La nueva vive **solo** en
-  `.private/password-acceso.txt`. Verificado: antigua 403, nueva 200.
-- **Siguiente paso 1 (dueño):** si quiere cero absoluto en GitHub, abrir ticket a soporte para
-  purgar los commits viejos que aún se pueden pedir por SHA. El historial actual ya no los tiene.
-- **Siguiente paso 2 (dueño):** rotar o borrar en la bóveda **viva** de Bitwarden la entrada con
-  el valor viejo; el export local ya está saneado, pero la bóveda se cifra con la contraseña
-  maestra y no se puede editar desde aquí.
-- **Siguiente paso 3 (dueño):** revisar las copias de seguridad de Hostinger anteriores al
-  2026-10-24 (no son accesibles por web, pero contienen el valor antiguo).
-- **Siguiente paso 4 (dueño):** borrar del gestor de sesiones de DSH la sesión del saneado si
-  quiere que el transcript desaparezca; ese fichero estaba vivo y no se pudo limpiar.
-- **No purgable sin administrador:** log de diagnóstico de Windows Defender (`MPLog`) e índice de
-  Windows Search.
+- **Estado:** ✅ **purgada de los sitios públicos y restaurada la contraseña original** (petición
+  del dueño): el `.htaccess` del servidor guarda solo su `PW_ACCESS_SHA256`, el repositorio y su
+  historial ya no contienen el valor y la contraseña temporal de la rotación quedó invalidada.
+  Valor vigente en `.private/password-acceso.txt`. Verificado: original 200, temporal 403.
+- **Siguiente paso 1 (dueño):** abrir ticket a soporte de GitHub para purgar los commits viejos
+  `3396a40`, `0397ac4` y `92b1364`, aún accesibles por SHA. Es la única exposición pendiente real.
+- **Siguiente paso 2 (dueño):** revisar las copias de seguridad de Hostinger anteriores al
+  2026-10-24 (no accesibles por web; pueden contener el valor en claro).
+- **Siguiente paso 3 (dueño):** si la bóveda de Bitwarden se considera «fuera de control», rotar
+  o borrar allí la entrada (cifrada, no editable desde aquí).
+- **Los ficheros del PC (bajo control del dueño) no requieren purga.**
 - **Verificación:** `GET /auth/validar.php` (`edicion`+`acceso` configurados), publicación de
-  TrickVault con la contraseña nueva, y `git log -S` / escaneo de objetos sin ocurrencias.
+  TrickVault con la contraseña restaurada, y `git log -S` / escaneo de objetos sin ocurrencias.
 
 ---
 

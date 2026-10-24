@@ -5,7 +5,7 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
-## 2026-10-24 (seguridad) — Purga y rotación de la contraseña de ACCESO
+## 2026-10-24 (seguridad) — Purga, rotación y restauración de la contraseña de ACCESO
 
 - **Incidente:** la contraseña de ACCESO (`PW_ACCESS`, la que pide TrickVault para publicar)
   estaba en claro en ficheros **versionados** del repositorio **público**: el docblock de
@@ -13,11 +13,11 @@ Una entrada por sesión de trabajo relevante.
   pendientes, errores) y `tools/rotar-password.ps1`. El mismo valor se reutilizaba como `DB_PASS`
   en `.env` antiguos y aparecía en un export de Bitwarden, dumps de Hermes, logs de Codex y
   sesiones comprimidas de DSH.
-- **Rotación:** el `.htaccess` raíz del servidor guarda ahora **solo** `PW_ACCESS_SHA256` (el
-  valor en claro ya no está allí). La contraseña nueva vive **únicamente** en
-  `.private/password-acceso.txt` (ignorado por git y con `Deny from all`). Verificado:
-  la antigua da 403, la nueva da 200 y `GET /auth/validar.php` responde con `edicion` y `acceso`
-  configurados.
+- **Rotación y restauración:** se rotó primero a una contraseña temporal y, a petición del dueño,
+  se **restauró la original**, dejando en el `.htaccess` raíz **solo su SHA-256** (sin valor en
+  claro). La contraseña vigente está en `.private/password-acceso.txt` (ignorado por git y con
+  `Deny from all`). Verificado: la original da 200, la temporal da 403 y `GET /auth/validar.php`
+  responde con `edicion` y `acceso` configurados.
 - **Cómo se rotó sin hPanel ni FTP:** se desplegó un endpoint PHP temporal firmado con RSA-SHA256
   (autodestructivo, sin secretos en el código) que sustituyó la línea de `PW_ACCESS` en el
   `.htaccess` y limpió los ficheros de texto de `public_html`; después se retiró del repositorio.
@@ -30,14 +30,13 @@ Una entrada por sesión de trabajo relevante.
   reemplazar, recomprimir y verificar), log de Codex, SQLite de Codex y Hermes (UPDATE + rebuild
   FTS + VACUUM, 0 bytes restantes) y backups `.bak` de Hermes; 5 ZIP con el valor (4 backups de
   Hermes y el `public_html` completo) se reconstruyeron saneados.
-- **Residuales que dependen del dueño:** (1) GitHub mantiene commits viejos accesibles por SHA
-  hasta su recolección de basura: para cero absoluto hay que pedirlo a soporte de GitHub;
-  (2) Hostinger conserva copias de seguridad anteriores al cambio (no accesibles por web);
-  (3) la entrada del valor viejo en la bóveda **viva** de Bitwarden debe rotarse o borrarse;
-  (4) el transcript de la sesión DSH que hizo el saneado (fichero vivo, se sigue escribiendo)
-  conserva el valor: hay que borrar esa sesión si se quiere cero absoluto; (5) el log de
-  diagnóstico de Windows Defender (`MPLog`, bloqueado por el servicio) y el índice de Windows
-  Search no son purgables sin permisos de administrador.
+- **Residuales fuera de control (requieren al dueño):** (1) GitHub mantiene accesibles por SHA
+  los commits viejos `3396a40`, `0397ac4` y `92b1364` hasta su recolección de basura: es la única
+  exposición pendiente real y se cierra con un ticket a soporte de GitHub; (2) Hostinger puede
+  conservar copias de seguridad anteriores al 2026-10-24 con el valor en claro (no accesibles por
+  web; no se pueden purgar sin hPanel/soporte); (3) si la bóveda de Bitwarden se considera fuera
+  de control, conviene rotar o borrar allí la entrada. Los ficheros del PC (bajo control del
+  dueño) no requieren purga.
 
 ---
 

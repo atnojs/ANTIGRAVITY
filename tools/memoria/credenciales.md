@@ -44,7 +44,7 @@ dependencias. Si necesitas el valor, ve al almacén.
 | `OPENAI_API_KEY` / `O` | `.htaccess` raíz de Hostinger. La usan los proxies de IA del proyecto y la **transcripción de `apps/agenda`**. Si se rota o falta, la agenda sigue guardando audios pero no transcribe (permite escribir el texto a mano). |
 | Claves de Google | `.env`, `keys/`, y **los frontends que las tengan incrustadas** (ver abajo) |
 | Token de GitHub | `inicio.md` (está en `.gitignore`: **no** quitar esa línea) |
-| **Contraseñas del proyecto** (edición y acceso) | **Un solo sitio desde el 2026-10-21:** el `.htaccess` raíz de Hostinger (`SetEnv PW_EDIT` y `PW_ACCESS_SHA256`), igual que las claves de API. **No** hay que tocar ninguna app ni desplegar. La de acceso se rotó el **2026-10-24** y su valor en claro vive solo en `.private/password-acceso.txt` (gitignored). Ver la sección «Contraseñas centralizadas» abajo |
+| **Contraseñas del proyecto** (edición y acceso) | **Un solo sitio desde el 2026-10-21:** el `.htaccess` raíz de Hostinger (`SetEnv PW_EDIT` y `PW_ACCESS_SHA256`), igual que las claves de API. **No** hay que tocar ninguna app ni desplegar. La de acceso se restauró el **2026-10-24** tras una rotación temporal: el servidor guarda solo su sha256 y el valor en claro vive en `.private/password-acceso.txt` (gitignored). Ver la sección «Contraseñas centralizadas» abajo |
 
 ---
 
@@ -58,9 +58,9 @@ SetEnv PW_ACCESS_SHA256 "…"    # acceder: login de Descargas, agenda (Brisa) y
 ```
 
 - **Desde el 2026-10-24 el `.htaccess` guarda solo el sha256 de la de acceso** (no el valor en
-  claro). El valor vigente está en `.private/password-acceso.txt`, fuera de git y con
-  `Deny from all`. Si se pierde, se rota con `tools/rotar-password.ps1 -Hash` y se pega la línea
-  en hPanel.
+  claro; la contraseña original se restauró ese mismo día tras una rotación temporal). El valor
+  vigente está en `.private/password-acceso.txt`, fuera de git y con `Deny from all`. Si se
+  pierde, se rota con `tools/rotar-password.ps1 -Hash` y se pega la línea en hPanel.
 
 - Las lee **`auth/lib.php`** (versionado; no contiene ningún valor) con la misma cascada
   que los proxies: `getenv` → `REDIRECT_` → `$_SERVER` → `$_ENV`.

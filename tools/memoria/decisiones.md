@@ -21,6 +21,10 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
   commits viejos accesibles por SHA hasta su GC. Para lo segundo, ticket a soporte de GitHub.
 - **Regla que queda:** nunca escribir valores reales de contraseñas en ficheros versionados,
   ni siquiera en docblocks de ejemplo. Solo placeholders y rutas de almacén.
+- **Cierre (mismo día):** a petición del dueño se **restauró la contraseña original**; el
+  servidor guarda solo su SHA-256 y el valor vive en `.private/password-acceso.txt`. La
+  reescritura del historial se mantiene (el valor ya no está en ningún commit del historial
+  actual); GitHub aún puede servir los commits viejos por SHA hasta su GC.
 
 ### [2026-10-23] Restauración de fotos antiguas: 3 tarjetas canónicas, nunca una por caso
 
