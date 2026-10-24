@@ -103,7 +103,7 @@ Declaración: no hay evidencia inventada; todo se reproduce desde el informe y e
 | Código o script | Ejecutar/tests/build, consola limpia, caso principal y de error; revisar el diff contra el scope |
 | Imagen | Abrirla, comprobar dimensiones, formato, legibilidad y que el contenido pedido está |
 | Datos o configuración | Validar esquema, integridad, muestra representativa y que el consumidor real los procesa |
-| Publicación/commit | `main`, commit aislado, push, `git log origin/main..HEAD` vacío y comprobación de la versión servida |
+| Publicación/commit | `main`, commit aislado, push, `git log origin/main..HEAD` vacío y comprobación de la versión servida (procedimiento exacto: skill `publicar-git`) |
 
 Si el entorno impide la verificación real, **no se declara verificado**: BLOCKED.
 

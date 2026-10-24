@@ -95,6 +95,10 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 
 Úsala para convertir una idea en un plan ejecutable por fases, con checklist, riesgos y entregables.
 
+### publicar-git
+
+Úsala para publicar cambios: commit aislado por rutas explícitas (sin arrastrar trabajo ajeno), push a `main`, re-disparo del despliegue de Hostinger y comprobación de la versión servida en producción. Obligatoria al terminar cualquier cambio de archivo.
+
 ### style-guide-antigravity
 
 Úsala para aplicar el estilo hoola/relatos (cian #00D0D0 + verde #26C626, Electrolize, glassmorphism) a una app o web.
@@ -117,7 +121,7 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 - No insertes claves API reales en archivos compartidos, documentación, ejemplos o código frontend.
 - Si detectas una clave API expuesta, avisa de que debe revocarse y regenerarse.
 - En proyectos web, revisa accesibilidad básica: contraste, atributos `alt`, `loading="lazy"`, foco visible y estados de carga.
-- Haz commit + push tras CADA cambio de archivo (el webhook de Hostinger despliega automáticamente).
+- Haz commit + push tras CADA cambio de archivo siguiendo la skill `publicar-git` (el webhook de Hostinger despliega automáticamente).
 - Trabaja SIEMPRE sobre la rama `main` en `E:\ANTIGRAVITY`. NO crees ramas, worktrees ni copias de trabajo: cada worktree genera una historia paralela con SHAs distintos y deja ramas huérfanas si la tarea se abandona.
 - Si por alguna razón abres una rama o un worktree, bórralos al terminar la tarea y publica siempre en `main`.
 - El repositorio se despliega en la RAÍZ PÚBLICA de Hostinger: **cualquier archivo versionado es accesible por web**. Nunca versiones scripts de prueba ni herramientas de desarrollo; déjalas en `tools/`, que está protegida por `.htaccess`.

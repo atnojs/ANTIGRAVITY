@@ -33,6 +33,7 @@ Al activar `crear`, se invocan automáticamente:
 | `capturas-verificacion` | Medir la geometría real en Chrome y entregar capturas del antes/después |
 | `auditor-lighthouse-accesibilidad` | Control de calidad final |
 | `autocalidad-90` | Puerta de calidad: autoevaluación, verificación independiente y PASS ≥ 90,0 antes de entregar |
+| `publicar-git` | Publicar: commit aislado por rutas, push a `main` y verificación del despliegue |
 
 ---
 
@@ -165,12 +166,19 @@ Ejecutar `auditor-lighthouse-accesibilidad` completo:
 
 ### Paso 6: Sincronización con GitHub (OBLIGATORIO)
 
+Aplica la skill **`publicar-git`** (`skills/SKILL_GIT_PUBLICAR.md`): commit aislado por rutas
+explícitas, push a `main` y verificación del despliegue. Nunca `git add .`, `git add -A`,
+`git commit -a` ni `-am`: arrastran trabajo ajeno o a medias.
+
 1. `git remote -v`
 2. Si existe remoto:
-   - `git add .`
-   - `git commit -m "feat: creación de <nombre-app>"`
-   - `git pull --rebase origin main`
+   - `git add -- <rutas del encargo>` (solo rutas nuevas o modificadas del encargo)
+   - `git commit -m "feat: creación de <nombre-app>" -- <rutas del encargo>`, o
+     `tools/commit-aislado.ps1 -Mensaje "..." -Rutas ...`
+   - `git show --name-only --pretty=format: HEAD` → debe listar solo las rutas del encargo
+   - `git pull --rebase origin main` solo si el push se rechaza y no hay cambios ajenos
    - `git push origin main`
+   - `git log --oneline origin/main..HEAD` vacío y comprobación de la versión servida en producción
 
 ---
 

@@ -9,7 +9,7 @@ estructura y dónde buscar, no la descripción de cada app.
 |---|---|
 | `apps/` | ~85 carpetas: una por app/web desplegada (`apps/<nombre>/`) |
 | `skills/` | Skills **canónicas** (`SKILL_*.md`) + infraestructura compartida |
-| `.claude/skills/` | 13 punteros con front matter: al abrirlos, remiten a `skills/<archivo>.md` |
+| `.claude/skills/` | 19 punteros con front matter: al abrirlos, remiten a `skills/<archivo>.md` |
 | `tools/` | Herramientas de desarrollo (**protegido por `.htaccess`, no público**) |
 | `tools/memoria/` | Esta memoria |
 | `tools/omniroute/` | Gateway OmniRoute: daemon, instalador, verificador y guía |
@@ -56,6 +56,7 @@ estructura y dónde buscar, no la descripción de cada app.
 | Analizar, clonar o sacar el prompt de una imagen | `analista-visual-pro` |
 | Imágenes de las tarjetas de trickvault | `trickvault-imagenes` |
 | Publicar cambios de TrickVault desde la app (lo hace Antonio) | `recetas.md` → «TrickVault: publicar cambios desde la propia app» |
+| Publicar en git: commit aislado, push a `main`, despliegue y versión servida | `publicar-git` |
 | Vídeos de video-vault | `videovault-videos` |
 | Vídeo gratis (Veo) con Google Flow | `google-flow` |
 | Claves de API / proxy PHP en Hostinger | `arquitecto-backend-php-hostinger` |

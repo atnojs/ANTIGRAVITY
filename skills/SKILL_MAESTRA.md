@@ -506,7 +506,9 @@ Antes de publicar:
 
 ## Fase 5: publicación y validación obligatoria en servidor
 
-Cuando se cree o modifique una app/web, la validación debe realizarse siempre desde el servidor:
+Cuando se cree o modifique una app/web, la validación debe realizarse siempre desde el servidor.
+El procedimiento exacto de commit aislado, push y comprobación del despliegue está en la skill
+**`publicar-git`** (`skills/SKILL_GIT_PUBLICAR.md`); aplícala tal cual.
 
 1. Completar primero una unidad lógica y verificable.
 2. Añadir a Git únicamente los archivos del encargo.

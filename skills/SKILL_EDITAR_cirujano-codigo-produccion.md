@@ -146,12 +146,19 @@ Si la edición afecta estructura HTML, estilos CSS o lógica de interacción, ej
 
 ### Paso 8: Sincronización con GitHub (OBLIGATORIO)
 
+Aplica la skill **`publicar-git`** (`skills/SKILL_GIT_PUBLICAR.md`): commit aislado por rutas
+explícitas, push a `main` y verificación del despliegue. Nunca `git add .`, `git add -A`,
+`git commit -a` ni `-am`.
+
 1. `git remote -v` (verificar remoto).
 2. Si existe:
-   - `git add .`
-   - `git commit -m "fix: descripción del cambio"`
-   - `git pull --rebase origin main`
+   - `git add -- <rutas del encargo>` (solo rutas nuevas; las modificadas van sin add)
+   - `git commit -m "fix: descripción del cambio" -- <rutas del encargo>`, o
+     `tools/commit-aislado.ps1 -Mensaje "..." -Rutas ...`
+   - `git show --name-only --pretty=format: HEAD` → solo las rutas del encargo
+   - `git pull --rebase origin main` solo si el push se rechaza y no hay cambios ajenos
    - `git push origin main`
+   - `git log --oneline origin/main..HEAD` vacío y comprobación de la versión servida
 
 ---
 

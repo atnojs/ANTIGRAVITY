@@ -69,17 +69,25 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "E:\ANTIGRAVITY\tools\..
 **Regla de oro: commit por ruta explícita. NUNCA `git commit -a` ni `-am`** — escenifica
 todo lo modificado del repo y publica trabajo ajeno o a medias (nos pasó el 2026-10-15).
 
+Procedimiento completo y obligatorio (commit aislado, push, verificación del despliegue y de la
+versión servida): skill **`publicar-git`** en `skills/SKILL_GIT_PUBLICAR.md`.
+
 ```powershell
 git -C E:\ANTIGRAVITY status --porcelain                 # ver qué hay tocado ANTES
 git -C E:\ANTIGRAVITY add tools/memoria/bitacora.md      # SOLO lo mío, ruta explícita
-git -C E:\ANTIGRAVITY -c user.name='atnojs' -c user.email='atnojs@gmail.com' commit -m "tipo(ambito): resumen"
-git -C E:\ANTIGRAVITY show --stat HEAD                   # confirmar que solo va lo mío
+# pathspec en el commit: inmune a lo que otra sesión tenga preparado en .git/index
+git -C E:\ANTIGRAVITY -c user.name='atnojs' -c user.email='atnojs@gmail.com' commit -m "tipo(ambito): resumen" -- tools/memoria/bitacora.md
+git -C E:\ANTIGRAVITY show --name-only --pretty=format: HEAD   # confirmar que solo va lo mío
 git -C E:\ANTIGRAVITY push origin main
 git -C E:\ANTIGRAVITY log --oneline origin/main..HEAD    # vacío = todo subido
 git -C E:\ANTIGRAVITY status --porcelain ruta/fichero    # vacío = limpio
 ```
 
-Alternativa ya existente en el repo: `tools/commit-aislado.ps1`.
+Alternativa ya existente en el repo: `tools/commit-aislado.ps1` (índice temporal propio).
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\commit-aislado.ps1 -Mensaje "tipo(ambito): resumen" -Rutas ruta/uno.ext,ruta/dos.ext
+```
 
 ## Git: ver qué se va a publicar de verdad (antes del push)
 

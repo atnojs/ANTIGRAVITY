@@ -2,12 +2,23 @@
 # commit a las rutas indicadas, para no arrastrar cambios que otros procesos
 # (agentes en paralelo) tengan en el indice compartido de .git/index.
 #
-# Uso:
-#   powershell -NoProfile -ExecutionPolicy Bypass -File tools/commit-aislado.ps1 -Mensaje "..." -Rutas apps/foo,apps/bar
+# Uso recomendado (la politica de ejecucion de este equipo bloquea invocar el .ps1
+# directamente con &; se usa un proceso hijo con -ExecutionPolicy Bypass):
+#   powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\commit-aislado.ps1 -Mensaje "..." -Rutas apps/foo,apps/bar
+#
+# Tambien acepta un array si se invoca desde una sesion con ExecutionPolicy que lo permita:
+#   & E:\ANTIGRAVITY\tools\commit-aislado.ps1 -Mensaje "..." -Rutas @('apps/foo','apps/bar')
+#
+# Si git no tiene identidad configurada, exporta antes GIT_AUTHOR_NAME/EMAIL y
+# GIT_COMMITTER_NAME/EMAIL en la misma sesion: el script no pasa -c al commit.
 param(
     [Parameter(Mandatory = $true)][string]$Mensaje,
     [Parameter(Mandatory = $true)][string[]]$Rutas
 )
+
+# Normaliza las rutas: un array de PowerShell o una unica cadena "a,b" (forma -File).
+$Rutas = @($Rutas | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' })
+if ($Rutas.Count -eq 0) { throw 'No hay rutas que commitear.' }
 
 $root = 'E:\ANTIGRAVITY'
 $indexFile = Join-Path $env:TEMP ("dsh_index_" + [guid]::NewGuid().ToString('N'))
