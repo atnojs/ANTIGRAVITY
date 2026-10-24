@@ -1,0 +1,1250 @@
+/* ===========================
+   1. VARIABLES DE COLOR (Esenciales para el brillo azul/cyan)
+   =========================== */
+:root {
+  --glass-border: rgba(0, 208, 208, 0.65);
+  --glass-shadow: rgba(3, 7, 18, 0.95);
+  --accent: #00D0D0;
+  --accent-strong: #00b0b0;
+  --text-main: #eaffff;
+  --text-muted: #9ca3af;
+  --danger: #ef4444;
+}
+
+/* ===========================
+   2. CLASE GLASS-MODAL (El efecto cristal del fondo)
+   =========================== */
+.glass-modal {
+  background: linear-gradient(145deg,
+      rgba(15, 23, 42, 0.95),
+      rgba(2, 14, 20, 0.98));
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(0, 208, 208, 0.3),
+    0 0 60px rgba(0, 208, 208, 0.15);
+  /* Resplandor azul externo */
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* ===========================
+   3. ESTILOS DE LOS INPUTS (Para que las cajas de texto sean oscuras)
+   =========================== */
+/* Esto asegura que los campos de Email/Contraseña tengan el fondo oscuro correcto */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(0, 208, 208, 0.2) !important;
+  color: white !important;
+  border-radius: 12px;
+}
+
+input:focus {
+  border-color: var(--accent) !important;
+  outline: none;
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+
+
+
+
+/* ===========================
+   TOKENS GLASS + GRADIENT
+   =========================== */
+
+:root {
+  --bg1: #001018;
+  --bg2: #0E5368;
+  --glass-bg: rgba(6, 30, 44, 0.55);
+  --glass-bg-soft: rgba(15, 23, 42, 0.45);
+  --glass-border: rgba(0, 208, 208, 0.65);
+  --glass-border-soft: rgba(0, 208, 208, 0.35);
+  --glass-shadow: rgba(3, 7, 18, 0.95);
+  --accent: #00D0D0;
+  --accent-strong: #00b0b0;
+  --accent-soft: rgba(0, 208, 208, 0.5);
+  --accent-purple: #26C626;
+  /* Tokens kit tooltip de modelos */
+  --contenedor: #174F7A;
+  --acc: #00D0D0;
+  --border-strong: #00D0D0;
+  --glow: rgba(0,208,208,.8);
+  --glow-soft: rgba(0,208,208,.4);
+  --faint: #669999;
+  --font-ui: 'Electrolize',system-ui,sans-serif;
+  --muted: #99CCCC;
+  --text-main: #eaffff;
+  --text-muted: #9ca3af;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  color-scheme: dark;
+}
+
+/* ===========================
+   BASE GLOBAL
+   =========================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Electrolize', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-main);
+}
+
+/* Fondo degradado azul → teal ocupando toda la pantalla */
+.glass-body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+  background-attachment: fixed;
+  position: relative;
+}
+
+/* Sutil overlay para sensación "digital" */
+.glass-body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.18), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.9), transparent 55%),
+    radial-gradient(circle at 0% 100%, rgba(0, 208, 208, 0.18), transparent 55%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Asegurar que el root se adapta a la pantalla */
+#root {
+  height: 100%;
+}
+
+/* El div principal de React (flex, h-full) se comporta como "shell" glass */
+#root>div {
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  background: linear-gradient(145deg,
+      rgba(6, 30, 44, 0.75),
+      rgba(15, 23, 42, 0.65),
+      rgba(15, 23, 42, 0.35));
+  box-shadow:
+    0 25px 60px var(--glass-shadow),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+  border-radius: 24px;
+  border: 1px solid var(--glass-border-soft);
+  padding: 8px;
+}
+
+/* ===========================
+   TIPOGRAFÍA
+   =========================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Electrolize', system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+h1 {
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+p,
+span,
+label,
+small {
+  color: var(--text-main);
+}
+
+/* Texto secundario / ayudas */
+.text-slate-500,
+.text-slate-400,
+.text-slate-300 {
+  color: var(--text-muted) !important;
+}
+
+/* ===========================
+   HEADER GLASS
+   =========================== */
+
+body header {
+  background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.84),
+      rgba(15, 23, 42, 0.72));
+  border-radius: 18px;
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 15px 45px rgba(3, 7, 18, 0.85),
+    0 0 0 1px rgba(15, 23, 42, 0.95),
+    0 0 40px rgba(0, 208, 208, 0.25);
+  backdrop-filter: blur(26px) saturate(1.7);
+  -webkit-backdrop-filter: blur(26px) saturate(1.7);
+  margin-bottom: 8px;
+}
+
+/* Logo y título */
+body header h1 {
+  color: var(--text-main);
+}
+
+/* ===========================
+   LAYOUT PRINCIPAL
+   =========================== */
+
+body main {
+  gap: 8px;
+}
+
+/* Paneles laterales y sección central como tarjetas glass */
+body main>aside,
+body main>section.canvas-container {
+  background: radial-gradient(circle at 0% 0%,
+      rgba(0, 208, 208, 0.15),
+      transparent 55%),
+    radial-gradient(circle at 100% 100%,
+      rgba(38, 198, 38, 0.15),
+      transparent 55%),
+    var(--glass-bg-soft);
+  border-radius: 18px;
+  border: 1px solid var(--glass-border-soft);
+  box-shadow:
+    0 24px 60px var(--glass-shadow),
+    0 0 0 1px rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(28px) saturate(1.8);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+}
+
+/* ===========================
+   PANEL IZQUIERDO (Asistente)
+   =========================== */
+
+body main>aside:first-of-type {
+  background: linear-gradient(145deg,
+      rgba(15, 23, 42, 0.9),
+      rgba(15, 23, 42, 0.7)),
+    radial-gradient(circle at 0% 0%, rgba(0, 208, 208, 0.16), transparent 55%);
+}
+
+/* Tarjeta del asistente Gemini */
+body .bg-gradient-to-br.from-indigo-900\/50.to-slate-900 {
+  background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.9),
+      rgba(0, 208, 208, 0.9),
+      rgba(0, 208, 208, 0.25)) !important;
+  border-radius: 18px;
+  border: 1px solid rgba(38, 198, 38, 0.6);
+  box-shadow:
+    0 16px 40px rgba(3, 7, 18, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 42px rgba(38, 198, 38, 0.3);
+}
+
+/* ===========================
+   PANEL DERECHO (Historial)
+   =========================== */
+
+body main>aside:last-of-type {
+  background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.9),
+      rgba(15, 23, 42, 0.7)),
+    radial-gradient(circle at 100% 0%, rgba(0, 208, 208, 0.16), transparent 55%);
+}
+
+/* Tarjetas del historial */
+body .bg-slate-800.rounded-lg.p-2.border {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-radius: 14px;
+  border-color: rgba(0, 208, 208, 0.6) !important;
+  box-shadow:
+    0 15px 36px rgba(3, 7, 18, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 1);
+}
+
+/* ===========================
+   CONTENEDOR CENTRAL / CANVAS
+   =========================== */
+
+.canvas-container {
+  position: relative;
+  background: radial-gradient(circle at 50% 0%,
+      rgba(0, 208, 208, 0.22),
+      transparent 55%),
+    radial-gradient(circle at 50% 100%,
+      rgba(6, 40, 55, 0.9),
+      rgba(15, 23, 42, 0.95));
+  border-radius: 18px;
+  border-left: 1px solid var(--glass-border);
+  border-right: 1px solid var(--glass-border);
+  box-shadow:
+    0 40px 80px rgba(3, 7, 18, 1),
+    0 0 0 1px rgba(15, 23, 42, 1);
+  backdrop-filter: blur(30px) saturate(1.9);
+  -webkit-backdrop-filter: blur(30px) saturate(1.9);
+}
+
+/* Estado "dropzone" sin imagen */
+.canvas-container>div.text-center {
+  background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.9),
+      rgba(15, 23, 42, 0.8));
+  border-radius: 16px;
+  border: 1px dashed rgba(0, 208, 208, 0.55);
+  box-shadow:
+    0 24px 60px rgba(3, 7, 18, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 40px rgba(0, 208, 208, 0.4);
+}
+
+/* El canvas en sí (imagen) */
+.canvas-container canvas {
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 50%,
+      rgba(15, 23, 42, 0.6),
+      rgba(15, 23, 42, 0.95));
+  box-shadow:
+    0 22px 50px rgba(3, 7, 18, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 40px rgba(0, 208, 208, 0.5);
+}
+
+/* ===========================
+   BOTONES GLASS 3D + BORDE AZUL
+   =========================== */
+
+/* Base para TODOS los botones dentro de la app */
+body button {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: radial-gradient(circle at 0% 0%,
+      rgba(0, 208, 208, 0.16),
+      transparent 55%),
+    linear-gradient(135deg,
+      rgba(15, 23, 42, 0.98),
+      rgba(0, 208, 208, 0.95));
+  color: var(--text-main);
+  box-shadow:
+    0 16px 32px rgba(3, 7, 18, 0.95),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 32px rgba(0, 208, 208, 0.65);
+  transform: translateY(0);
+  transition:
+    transform 0.16s ease-out,
+    box-shadow 0.16s ease-out,
+    background 0.18s ease-out,
+    border-color 0.16s ease-out,
+    opacity 0.18s ease-out;
+}
+
+/* Borde "iluminado" azul intenso (efecto glow en el contorno) */
+body button::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(120deg,
+      rgba(0, 208, 208, 0.95),
+      rgba(0, 208, 208, 0.9),
+      rgba(0, 208, 208, 0.95),
+      rgba(0, 208, 208, 0.9));
+  opacity: 0.85;
+  pointer-events: none;
+  padding: 1px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Hover → más 3D, borde más brillante */
+body button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 20px 40px rgba(3, 7, 18, 1),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 45px rgba(0, 208, 208, 0.9);
+  border-color: var(--accent-strong);
+}
+
+/* Active → "pulsa" el botón */
+body button:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow:
+    0 8px 20px rgba(3, 7, 18, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 20px rgba(0, 208, 208, 0.6);
+}
+
+/* Disabled → sin glow exagerado */
+body button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow:
+    0 6px 14px rgba(3, 7, 18, 0.7),
+    0 0 0 1px rgba(15, 23, 42, 1);
+  border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* ===========================
+   FIX: botones del modal de IA (opciones de estilo/select).
+   La regla global "body button" les mete overflow:hidden + radius:999px
+   + gradiente/glow, lo que RECORTA el texto largo de las opciones
+   (se veía solo media línea). Aquí se neutraliza ese efecto para que
+   las etiquetas se lean completas, envolviendo a 2 líneas si hace falta.
+   =========================== */
+#ai-modal-overlay button.ai-option-btn,
+#ai-tools-section button.ai-quality-btn,
+#ai-tools-section button.ai-ar-btn,
+#ai-tools-section button.ai-res-btn,
+#ai-tools-section button.ai-tone-btn,
+#ai-tools-section button#ai-apply-dims {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 2.25rem !important;
+  white-space: normal !important;
+  line-height: 1.35 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+  background-image: none !important;
+  transform: none !important;
+  display: flex !important;
+  align-items: center !important;
+}
+#ai-modal-overlay button.ai-option-btn::before,
+#ai-tools-section button.ai-quality-btn::before,
+#ai-tools-section button.ai-ar-btn::before,
+#ai-tools-section button.ai-res-btn::before,
+#ai-tools-section button.ai-tone-btn::before,
+#ai-tools-section button#ai-apply-dims::before {
+  display: none !important;
+}
+#ai-tools-section button.ai-quality-btn,
+#ai-tools-section button.ai-ar-btn,
+#ai-tools-section button.ai-res-btn,
+#ai-tools-section button.ai-tone-btn,
+#ai-tools-section button#ai-apply-dims {
+  justify-content: center !important;
+  min-height: 1.75rem !important;
+}
+
+/* Ajustes específicos para botones peligrosos (rojos) */
+body button.bg-red-600,
+body button.bg-red-600\/95,
+body button.text-red-100 {
+  background: linear-gradient(135deg,
+      rgba(127, 29, 29, 0.98),
+      rgba(220, 38, 38, 0.98));
+}
+
+body button.bg-red-600:hover,
+body button.bg-red-600\/95:hover,
+body button.text-red-100:hover {
+  box-shadow:
+    0 20px 40px rgba(127, 29, 29, 1),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 45px rgba(248, 113, 113, 0.9);
+}
+
+/* Ajuste para botones pequeños redondos (p.ej. acciones en historial) */
+body button.w-7.h-7 {
+  border-radius: 999px;
+  padding: 0;
+}
+
+/* ===========================
+   MODALES GLASS (LOGIN & ADMIN)
+   =========================== */
+.glass-modal {
+  background: linear-gradient(145deg,
+      rgba(15, 23, 42, 0.95),
+      rgba(2, 14, 20, 0.98));
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(0, 208, 208, 0.3),
+    0 0 60px rgba(0, 208, 208, 0.15);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* ===========================
+   INPUT RANGE (SLIDERS)
+   =========================== */
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+
+input[type=range]:focus {
+  outline: none;
+}
+
+/* Pista */
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: linear-gradient(90deg,
+      rgba(15, 23, 42, 0.9),
+      rgba(0, 208, 208, 0.85),
+      rgba(0, 208, 208, 0.85));
+  border-radius: 999px;
+}
+
+/* Thumb */
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffffff, #ccffff);
+  cursor: pointer;
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 1),
+    0 0 18px rgba(0, 208, 208, 0.9);
+  margin-top: -7px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 1),
+    0 0 24px rgba(0, 208, 208, 1);
+}
+
+/* Firefox */
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: linear-gradient(90deg,
+      rgba(15, 23, 42, 0.9),
+      rgba(0, 208, 208, 0.85),
+      rgba(0, 208, 208, 0.85));
+  border-radius: 999px;
+}
+
+input[type=range]::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  border: none;
+  background: radial-gradient(circle at 30% 30%, #ffffff, #ccffff);
+  cursor: pointer;
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 1),
+    0 0 18px rgba(0, 208, 208, 0.9);
+}
+
+/* Barra rellena en Firefox */
+input[type=range]::-moz-range-progress {
+  height: 4px;
+  background: rgba(0, 208, 208, 0.8);
+}
+
+/* ===========================
+   SCROLLBARS PERSONALIZADOS
+   =========================== */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,
+      rgba(0, 208, 208, 0.9),
+      rgba(38, 198, 38, 0.9));
+  border-radius: 999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg,
+      rgba(0, 208, 208, 1),
+      rgba(38, 198, 38, 1));
+}
+
+/* ===========================
+   LOADER OVERLAY
+   =========================== */
+
+.loader {
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  border-top: 3px solid var(--accent);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  animation: spin 1s linear infinite;
+  box-shadow: 0 0 20px rgba(0, 208, 208, 0.75);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Overlay de carga principal */
+body .fixed.inset-0.z-50 {
+  background: radial-gradient(circle at 0% 0%,
+      rgba(0, 208, 208, 0.3),
+      transparent 55%),
+    radial-gradient(circle at 100% 100%,
+      rgba(15, 23, 42, 0.95),
+      rgba(15, 23, 42, 1));
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+}
+
+/* ===========================
+   MENSAJES DE IA / CAJAS TEXTO
+   =========================== */
+
+body .font-mono.p-3.bg-black\/40 {
+  background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.95),
+      rgba(15, 23, 42, 0.85)) !important;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 208, 208, 0.6);
+  box-shadow:
+    0 18px 40px rgba(3, 7, 18, 0.95),
+    0 0 0 1px rgba(15, 23, 42, 1);
+}
+
+/* Entradas de texto del chat y meme */
+body input[type="text"].w-full,
+body input[type="email"].w-full,
+body input[type="password"].w-full,
+body textarea.w-full {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 208, 208, 0.55) !important;
+  box-shadow: 0 10px 24px rgba(3, 7, 18, 0.9);
+  color: white;
+}
+
+/* ===========================
+   SELECT DESPLEGABLE (ESTILOS VISUALES)
+   GLASS + 3D + BORDE ILUMINADO
+   =========================== */
+
+/* Solo afecta al select del panel (usa text-xs) */
+body select.text-xs {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  width: 100%;
+  border-radius: 12px !important;
+  border: 1px solid var(--glass-border) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(0, 208, 208, 0.18), transparent 55%),
+    linear-gradient(135deg,
+      rgba(15, 23, 42, 0.98),
+      rgba(0, 208, 208, 0.96)) !important;
+  color: var(--text-main) !important;
+  padding: 8px 30px 8px 12px !important;
+  font-size: 11px !important;
+  font-weight: 500;
+  box-shadow:
+    0 12px 28px rgba(3, 7, 18, 0.95),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 26px rgba(0, 208, 208, 0.5) !important;
+  outline: none;
+  cursor: pointer;
+  transition:
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.16s ease,
+    background 0.22s ease;
+  overflow: hidden;
+}
+
+/* Efecto 3D en hover */
+body select.text-xs:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 18px 36px rgba(3, 7, 18, 1),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 40px rgba(0, 208, 208, 0.85) !important;
+  border-color: var(--accent-strong) !important;
+}
+
+/* Estado focus → borde iluminado fuerte */
+body select.text-xs:focus-visible {
+  border-color: var(--accent-strong) !important;
+  box-shadow:
+    0 20px 42px rgba(3, 7, 18, 1),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 50px rgba(0, 208, 208, 1) !important;
+}
+
+/* Deshabilitado */
+body select.text-xs:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow:
+    0 6px 14px rgba(3, 7, 18, 0.7),
+    0 0 0 1px rgba(15, 23, 42, 1) !important;
+}
+
+/* Flecha "custom" */
+body select.text-xs {
+  background-image:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.2), rgba(15, 23, 42, 0.9)),
+    linear-gradient(45deg, transparent 50%, #00D0D0 50%),
+    linear-gradient(-45deg, transparent 50%, #00D0D0 50%);
+  background-position:
+    0 0,
+    calc(100% - 14px) 50%,
+    calc(100% - 9px) 50%;
+  background-size:
+    100% 100%,
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+}
+
+/* Opciones del desplegable */
+body select.text-xs option {
+  background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.98),
+      rgba(6, 35, 48, 0.98)) !important;
+  color: var(--text-main) !important;
+}
+
+/* "Iluminación" de la opción al pasar el ratón / seleccionada
+   (limitado por soporte del navegador, pero lo forzamos) */
+body select.text-xs option:hover,
+body select.text-xs option:checked {
+  background: radial-gradient(circle at 0% 0%,
+      rgba(0, 208, 208, 0.3),
+      transparent 55%),
+    linear-gradient(135deg,
+      rgba(15, 23, 42, 0.98),
+      rgba(0, 208, 208, 0.98)) !important;
+  color: var(--text-main) !important;
+}
+
+/* Placeholder un poco más apagado */
+body select.text-xs option[value=""] {
+  color: var(--text-muted) !important;
+}
+
+/* ===========================
+   AJUSTES VARIOS
+   =========================== */
+
+/* Etiquetas de tiempo en historial */
+body .font-mono.text-[10px].text-slate-500 {
+  color: rgba(148, 163, 184, 0.85) !important;
+}
+
+/* Etiqueta "Versión guardada" */
+body span.text-blue-400 {
+  color: rgba(0, 208, 208, 0.95) !important;
+}
+
+/* Pequeño badge numerado en historial */
+body span.bg-black\/70 {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 208, 208, 0.6);
+}
+
+/* Botón flotante "Eliminar solo esta edición" */
+body button.absolute.bottom-4.right-4 {
+  border-radius: 999px;
+}
+
+/* Botón flotante para eliminar imagen */
+body button.absolute.top-4.right-4 {
+  border-radius: 999px;
+  z-index: 30;
+}
+
+/* Añadir al final del archivo CSS */
+/* Estilos para los nuevos deslizadores */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffffff, #ccffff);
+  cursor: pointer;
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 1),
+    0 0 18px rgba(0, 208, 208, 0.9);
+  margin-top: -7px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 1),
+    0 0 24px rgba(0, 208, 208, 1);
+}
+
+/* Estilos para los botones de acciones avanzadas */
+button.bg-indigo-700 {
+  background: linear-gradient(135deg,
+      rgba(0, 208, 208, 0.98),
+      rgba(38, 198, 38, 0.98));
+}
+
+button.bg-indigo-700:hover {
+  box-shadow:
+    0 20px 40px rgba(0, 208, 208, 1),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 45px rgba(38, 198, 38, 0.9);
+}
+
+
+
+
+/* ===========================
+   TOOLTIPS PREMIUM (ULTRA GLASS)
+   =========================== */
+.glass-popup {
+  /* FONDO: Mucho más transparente (0.45) con tinte azul profundo */
+  background:
+    radial-gradient(circle at 0% 0%, rgba(0, 208, 208, 0.01), transparent 80%),
+    linear-gradient(160deg, rgba(6, 40, 55, 0.01), rgba(1, 10, 16, 0.01)) !important;
+
+  /* Blur fuerte para que el texto se lea bien sobre fondo transparente */
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+
+  /* Borde sutil cian */
+  border: 2px solid rgba(0, 208, 208, 0.25) !important;
+  border-top: 2px solid rgba(0, 208, 208, 0.4) !important;
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(0, 208, 208, 0.1) !important;
+
+  border-radius: 16px;
+  color: #eaffff;
+  /* Texto base claro */
+}
+
+/* ===========================
+   3-RING LOADING SPINNER
+   =========================== */
+
+/* Loading Overlay - matches _combinar_imagenes */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  background: rgba(0, 0, 0, 0.30);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.spinner-triple {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.spinner-triple .ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid transparent;
+}
+
+.spinner-triple .ring-1 {
+  inset: 0;
+  border-top-color: #00D0D0;
+  animation: spin-loader 1.2s linear infinite;
+  box-shadow: 0 0 20px rgba(0, 208, 208, 0.4);
+}
+
+.spinner-triple .ring-2 {
+  inset: 10px;
+  border-right-color: #26C626;
+  animation: spin-loader-reverse 1s linear infinite;
+  box-shadow: 0 0 15px rgba(38, 198, 38, 0.4);
+}
+
+.spinner-triple .ring-3 {
+  inset: 20px;
+  border-bottom-color: #00D0D0;
+  animation: spin-loader 0.8s linear infinite;
+  box-shadow: 0 0 10px rgba(38, 198, 38, 0.4);
+}
+
+@keyframes spin-loader {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-loader-reverse {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.loading-text {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 10px rgba(0, 208, 208, 0.8);
+  animation: pulse-text 2s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   REMAP TAILWIND -> paleta hoola (estilo relatos)
+   Las clases de utilidad Tailwind que usa app-compiled.js
+   se remapean por CSS (sin tocar el JS) a los DOS acentos:
+     CIAN  #00D0D0 <- blue, sky, cyan, teal, fuchsia
+     VERDE #26C626 <- emerald, violet, indigo, purple
+   El ROJO (red-*) se conserva para acciones destructivas.
+   ═══════════════════════════════════════════════ */
+
+/* --- TEXTO -> CIAN --- */
+[class*="text-blue-"]:not([class*="text-blue-500/"]),
+[class*="text-sky-"]:not([class*="text-sky-500/"]),
+[class*="text-cyan-"]:not([class*="text-cyan-500/"]),
+[class*="text-teal-"]:not([class*="text-teal-500/"]),
+[class*="text-fuchsia-"]:not([class*="text-fuchsia-500/"]) {
+  color: #00D0D0 !important;
+}
+
+/* --- TEXTO -> VERDE --- */
+[class*="text-emerald-"]:not([class*="text-emerald-500/"]),
+[class*="text-violet-"]:not([class*="text-violet-500/"]),
+[class*="text-indigo-"]:not([class*="text-indigo-500/"]),
+[class*="text-purple-"]:not([class*="text-purple-500/"]) {
+  color: #26C626 !important;
+}
+
+/* --- FONDOS SÓLIDOS -> CIAN --- */
+.bg-blue-500, .bg-sky-500, .bg-cyan-500, .bg-teal-500 { background-color: #00D0D0 !important; }
+.bg-blue-600, .bg-sky-600, .bg-sky-700, .bg-cyan-600, .bg-teal-600 { background-color: #00b0b0 !important; }
+
+/* --- FONDOS SÓLIDOS -> VERDE --- */
+.bg-emerald-500, .bg-violet-500, .bg-indigo-500, .bg-purple-500 { background-color: #26C626 !important; }
+.bg-emerald-600, .bg-indigo-600, .bg-indigo-700, .bg-purple-600 { background-color: #1fa81f !important; }
+
+/* --- FONDOS TRANSLÚCIDOS (bg-xxx-500/NN) -> CIAN --- */
+[class*="bg-blue-500/"], [class*="bg-sky-500/"], [class*="bg-sky-700/"],
+[class*="bg-cyan-500/"], [class*="bg-teal-500/"], [class*="bg-blue-600/"] {
+  background-color: rgba(0, 208, 208, 0.18) !important;
+}
+
+/* --- FONDOS TRANSLÚCIDOS -> VERDE --- */
+[class*="bg-emerald-500/"], [class*="bg-violet-500/"], [class*="bg-indigo-500/"],
+[class*="bg-indigo-900/"], [class*="bg-purple-500/"] {
+  background-color: rgba(38, 198, 38, 0.18) !important;
+}
+
+/* --- BORDES -> CIAN --- */
+[class*="border-blue-"], [class*="border-sky-"], [class*="border-cyan-"], [class*="border-teal-"] {
+  border-color: rgba(0, 208, 208, 0.55) !important;
+}
+
+/* --- BORDES -> VERDE --- */
+[class*="border-emerald-"], [class*="border-violet-"], [class*="border-indigo-"], [class*="border-purple-"] {
+  border-color: rgba(38, 198, 38, 0.55) !important;
+}
+
+/* --- GRADIENTES (from/to/via) -> paleta hoola ---
+   Las tarjetas/botones usan gradientes tipo from-cyan-400 to-violet-400.
+   Se fijan las paradas Tailwind a cian (from/via cian) y verde (to). */
+.from-cyan-400, .from-cyan-300, .from-sky-400, .from-blue-400, .from-teal-400, .from-emerald-300, .from-emerald-500 {
+  --tw-gradient-from: #00D0D0 !important;
+  --tw-gradient-to: rgba(0, 208, 208, 0) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+.from-violet-300, .from-indigo-900\/50, .from-purple-400 {
+  --tw-gradient-from: #26C626 !important;
+  --tw-gradient-to: rgba(38, 198, 38, 0) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+.to-cyan-300, .to-teal-600, .to-fuchsia-300, .to-blue-600 { --tw-gradient-to: #00b0b0 !important; }
+.to-violet-400, .to-violet-300, .to-purple-400 { --tw-gradient-to: #26C626 !important; }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE (tablet / móvil)  —  v2 SIN backdrop-filter
+   La app usa un layout fijo de 3 columnas (aside w-80 +
+   canvas flex-1 + aside w-64) pensado para escritorio, con el
+   body en overflow-hidden. En pantallas estrechas los paneles
+   aplastan el canvas y el contenido se recorta.
+
+   IMPORTANTE: al permitir que la página crezca y haga scroll,
+   los contenedores con `backdrop-filter` (efecto cristal) se
+   pintan como un BLOQUE OPACO en Chrome/Safari de móvil (bug
+   conocido de backdrop-filter en contenedores altos/scrollables).
+   Por eso aquí, SOLO en móvil, se anula el backdrop-filter de
+   esos contenedores y se sustituye por un fondo sólido oscuro.
+   No se toca el JS.
+   ═══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+
+  /* Permitir scroll vertical de toda la página */
+  body.glass-body {
+    height: auto !important;
+    width: 100% !important;
+    min-height: 100vh;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  #root {
+    height: auto !important;
+    min-height: 100vh;
+  }
+
+  /* Shell principal: quitar el cristal (causa la opacidad) y
+     usar fondo sólido; dejar que crezca en alto */
+  #root > div {
+    height: auto !important;
+    min-height: 100vh;
+    padding: 6px;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #041722 !important;
+  }
+
+  /* Cabecera: sin cristal, fondo sólido, sin recortar */
+  body header {
+    flex-wrap: wrap;
+    height: auto !important;
+    min-height: 3.5rem;
+    row-gap: 0.4rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* El contenedor principal pasa de fila a columna */
+  body main {
+    flex-direction: column !important;
+    overflow: visible !important;
+  }
+
+  /* Reordenar en móvil: la GALERÍA DE EDICIÓN (lienzo central)
+     sube justo debajo de la cabecera "Editor de Imágenes",
+     empujando el panel de herramientas más abajo. */
+  body main > section.canvas-container { order: 1 !important; }
+  body main > aside:first-of-type       { order: 2 !important; }
+  body main > aside:last-of-type        { order: 3 !important; }
+
+  /* Paneles laterales y canvas a ancho completo, SIN cristal */
+  body main > aside,
+  body main > section.canvas-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #061e2c !important;
+  }
+
+  body main > aside:first-of-type {
+    border-bottom: 1px solid var(--glass-border-soft);
+  }
+  body main > aside:first-of-type > div {
+    overflow: visible !important;
+  }
+
+  /* Canvas central: altura mínima para ver la imagen */
+  body main > section.canvas-container {
+    min-height: 55vh;
+  }
+
+  /* Panel de historial (derecha): altura acotada con scroll propio */
+  body main > aside:last-of-type {
+    max-height: 45vh;
+    border-top: 1px solid var(--glass-border-soft);
+  }
+}
+
+/* Móvil estrecho: padding y separación */
+@media (max-width: 520px) {
+  body main > aside:first-of-type > div {
+    padding: 0.9rem !important;
+  }
+
+  body main > section.canvas-container {
+    min-height: 48vh;
+  }
+
+  body main > aside:first-of-type .grid-cols-2 {
+    gap: 0.4rem;
+  }
+}
+/* ═══ Selector de Modelo IA (panel estrecho, patrón en FILAS) ═══
+   Antes: 4 proveedores en rejilla de 2 columnas y dentro otra rejilla de 2
+   columnas → cápsulas de 59 px con el texto partido y recortado.
+   Ahora: cada proveedor ocupa UNA FILA y sus botones fluyen en filas
+   horizontales (flex-wrap) repartiéndose el ancho disponible. */
+.model-selector{
+  display:flex; flex-direction:column; align-items:center; gap:.42rem;
+  margin:.6rem 0 .4rem; width:100%;
+}
+.model-selector-label{
+  color:rgba(204,255,255,0.55); font-size:.8rem; letter-spacing:0.08em; text-transform:uppercase;
+}
+.model-provider-layout{
+  display:flex; flex-direction:column; gap:.42rem;
+  width:100%;
+}
+.model-provider-row{
+  display:flex; flex-direction:column; gap:.22rem;
+  width:100%; min-width:0;
+}
+.model-provider-head{
+  display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between;
+  gap:.1rem .45rem; padding:0 .15rem;
+}
+.model-toggle-group{
+  display:flex; flex-wrap:wrap; gap:.22rem; padding:.22rem; border-radius:.6rem;
+  width:100%;
+  background:rgba(0,16,24,0.85); border:1px solid rgba(0,208,208,0.2);
+  box-shadow:0 0 12px rgba(0,208,208,0.12);
+}
+.model-provider-title{
+  color:rgba(204,255,255,0.78); font-size:.66rem; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase; text-shadow:0 0 10px var(--glow-soft);
+}
+.model-quality-hint{
+  color:var(--faint); font-size:.55rem; letter-spacing:.07em; text-transform:uppercase;
+  text-shadow:0 0 8px var(--glow-soft); white-space:nowrap;
+}
+.model-toggle{
+  font-family:'Electrolize',sans-serif; font-size:.68rem; letter-spacing:0.02em;
+  padding:.4rem .45rem; border-radius:.4rem; border:1px solid transparent;
+  background:transparent; color:rgba(204,255,255,0.72); cursor:pointer;
+  transition:color .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+  text-transform:uppercase; flex:1 1 auto; min-width:0;
+}
+.model-toggle:hover{
+  color:#eaffff; border-color:rgba(0,208,208,0.55);
+  background:rgba(255,255,255,0.08);
+  box-shadow:0 0 10px rgba(0,208,208,0.2);
+}
+.model-toggle.active{
+  background:linear-gradient(135deg,rgba(0,16,24,0.9),#00D0D0);
+  color:#CCFFFF; text-shadow:0 0 8px rgba(0,208,208,0.7);
+  border-color:rgba(0,208,208,0.65); box-shadow:0 0 14px rgba(0,208,208,0.35);
+}
+.model-toggle:focus-visible{
+  outline:2px solid #00D0D0; outline-offset:2px;
+}
+/* Candado de ModelGate en chips compactos: se reserva hueco a la derecha
+   para que el icono no se monte encima de la etiqueta. */
+#ai-tools-section .model-toggle.ag-model-locked{ padding-right:.95rem; }
+#ai-tools-section .model-toggle.ag-model-locked::after{
+  top:50%; right:.3rem; transform:translateY(-50%); font-size:.5rem;
+}
+
+/* ═══ Tono de color frío / cálido (local, sin IA) ═══ */
+.ai-tone-block{ margin:0 0 .55rem; }
+.ai-tone-label{
+  display:block; font-size:10px; color:#94a3b8; text-transform:uppercase;
+  letter-spacing:.04em; margin-bottom:.25rem;
+}
+.ai-tone-note{ color:#669999; font-size:9px; letter-spacing:.04em; text-transform:none; }
+.ai-tone-row{ display:flex; gap:.35rem; }
+.ai-tone-btn{
+  flex:1 1 0; gap:.3rem; padding:.42rem .3rem;
+  font-family:'Electrolize',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:.05em; text-transform:uppercase; cursor:pointer;
+  border-radius:.45rem; border:1px solid; color:#eaffff;
+  transition:background .15s ease, border-color .15s ease, box-shadow .15s ease, color .15s ease;
+}
+.ai-tone-btn svg{ width:.85rem; height:.85rem; flex:0 0 auto; }
+/* El reset global de la app fija color en TODO <span> ("p, span, label,
+   small"), lo que dejaría el texto claro sobre el fondo cian/naranja del
+   estado activo (contraste 1,85:1). El texto del botón debe seguir su color. */
+#ai-tools-section .ai-tone-btn span{ color:inherit !important; }
+.ai-tone-cold{ border-color:rgba(0,208,208,.5); background-color:rgba(0,208,208,.12); color:#ccffff; }
+.ai-tone-cold:hover:not(:disabled){ background-color:rgba(0,208,208,.22); border-color:#00D0D0; box-shadow:0 0 14px rgba(0,208,208,.25) !important; }
+.ai-tone-warm{ border-color:rgba(255,159,64,.5); background-color:rgba(255,159,64,.12); color:#ffe6c7; }
+.ai-tone-warm:hover:not(:disabled){ background-color:rgba(255,159,64,.22); border-color:#FF9F40; box-shadow:0 0 14px rgba(255,159,64,.28) !important; }
+.ai-tone-cold.is-active{ background-color:#00D0D0 !important; border-color:#baffff !important; color:#04222a !important; box-shadow:0 0 16px rgba(0,208,208,.45) !important; }
+.ai-tone-warm.is-active{ background-color:#FF9F40 !important; border-color:#ffe4c0 !important; color:#2a1400 !important; box-shadow:0 0 16px rgba(255,159,64,.45) !important; }
+.ai-tone-btn:disabled{ opacity:.6; cursor:progress; }
+.ai-tone-btn:focus-visible{ outline:2px solid #00D0D0; outline-offset:2px; }
+.ai-tone-status{
+  display:block; min-height:1em; margin-top:.28rem;
+  font-size:9.5px; line-height:1.3; color:#9fe8e8; letter-spacing:.03em;
+}
+@media (max-width:520px){
+  .model-toggle{ font-size:.64rem; padding:.38rem .35rem; }
+  .ai-tone-btn{ font-size:9.5px; }
+}
+
+/* === Tooltip de modelos (popup hover, kit canónico) === */
+.model-tooltip{position:fixed;z-index:10000;max-width:300px;padding:.55rem 1.05rem;background:linear-gradient(135deg,var(--contenedor),var(--acc));border:1px solid var(--border-strong);border-radius:999px;color:#CCFFFF;font-family:var(--font-ui);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;text-align:center;text-shadow:0 0 8px var(--glow);box-shadow:0 0 18px var(--glow);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:none;opacity:0;visibility:hidden;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease,visibility .18s ease}
+.model-tooltip.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.model-tooltip::after{content:"";position:absolute;left:50%;width:11px;height:11px;background:var(--acc);border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);transform:translateX(-50%) rotate(45deg)}
+.model-tooltip.tip-below{transform:translateY(-6px) scale(.97)}
+.model-tooltip.tip-below.visible{transform:translateY(0) scale(1)}
+.model-tooltip.tip-below::after{top:-7px;border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);border-right:none;border-bottom:none}
+.model-tooltip.tip-above::after{bottom:-7px;border-right:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);border-left:none;border-top:none}
+@media (prefers-reduced-motion: reduce){.model-tooltip{transition:none}}
