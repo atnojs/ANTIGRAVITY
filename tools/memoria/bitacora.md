@@ -26,11 +26,20 @@ Una entrada por sesión de trabajo relevante.
   mostraba `D`/`??` fantasma en esas rutas).
 - **Verificación independiente:** ronda 1 **REWORK 92,0** (A6 8,8) con 4 menores asequibles
   (V-01 ejemplo con rutas descuadradas, V-02 cita de líneas de `claude.md`, V-03 recuento §4,
-  V-04 evidencia del `--dry-run`) y la entrada de bitácora pendiente; corregidas en el commit de
-  cierre. Scorecard: `tools/prompts/maestro-web-autocalidad/supervision/scorecard-skill-publicar-git.md`.
+  V-04 evidencia del `--dry-run`) y la entrada de bitácora pendiente; corregidas en `37d1d8f` y
+  **ronda 2 PASS 94,2** (A1–A6: 9,5 · 9,4 · 9,4 · 9,6 · 9,3 · 9,3; 0 B/M/Med). Scorecard:
+  `tools/prompts/maestro-web-autocalidad/supervision/scorecard-skill-publicar-git.md`
+  (598 líneas, SHA-256 `7492fcdf25f4e81381035a8bc7bf33fb12917d4a43bc18727324d72c68d7937e`).
   Autoevaluación del autor: `tools/prompts/maestro-web-autocalidad/autoevaluaciones/lead-skill-publicar-git.md`.
-- **Commit:** `002e74c` (skill y cableado) y `1143365` (correcciones del script y de la skill);
-  el push a `main` y su comprobación (`origin/main..HEAD` vacío) se anotan al cerrar la tarea.
+- **Commit y publicación:** `002e74c` (skill y cableado), `1143365` (correcciones del script y de
+  la skill) y `37d1d8f` (ronda 1 del verificador + bitácora). **Push verificado:** `HEAD` =
+  `origin/main` = `6cf4e2d` y `git log origin/main..HEAD` vacío; los 3 commits del encargo viajaron
+  en el push que otra sesión concurrente hizo a las 15:26 con su commit `6cf4e2d`
+  (`apps/imagenes_ia/…`, ajeno y sin contaminar los nuestros; `git branch -r --contains 37d1d8f`
+  → `origin/main`). **Producción comprobada:** `https://atnojs.es/claude.md` sirve exactamente el
+  blob del commit (SHA-256 `fbabfa1f…3926` = contenido local normalizado a LF, 9.588 B, con
+  `publicar-git`), mientras `skills/SKILL_GIT_PUBLICAR.md` y `tools/memoria/bitacora.md` responden
+  **403** (`.htaccess` en pie).
 - **Residuales declaradas:** 2 punteros preexistentes desactualizados (`investigacion`,
   `mejora-continua`, con resumen manual que el generador borraría) y rutas raras
   (rebase por rechazo, commit vacío, renombrado por CDN) documentadas desde incidentes y no
