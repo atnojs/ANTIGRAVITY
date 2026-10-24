@@ -121,9 +121,6 @@
         },
         "cap-cmd-159": {
             "customPrompt": "/dobleexposicion-animal Cinematic double-exposure portrait. On the left, a close-up profile shot (image 1) looking to the left. Blended organically into the back and right side of the head is the detailed, realistic head of a Canarian Warren Hound (Podenco Canario) looking toward the right. Within the silhouette and in the background, there is a dense, fog-covered pine forest, distant mountains, and a massive, bright full moon in the night sky. In the bottom-right corner, there is a rustic, weathered wooden sign with carved, uppercase text reading \"TEXT,\" and a smaller plaque below it that also reads \"TEXT.\" A cool, desaturated color palette in shades of grayish-blue, high contrast, movie-poster-style lighting, hyper-realistic textures, and a mysterious atmosphere."
-        },
-        "muzrldq0pyjtdj8fe": {
-            "category": "xl-dobleexposicion"
         }
     },
     "nuevas": [
@@ -140,7 +137,7 @@
             "customPrompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Create an image featuring [OBJETO] as the central focus, applying a polished chrome-metal retro-futurist aesthetic to the subject itself: mirror-like surfaces, smooth volumes, rounded edges, precise details, and steel-blue reflections. Adapt this finish to its natural forms while preserving its identity and recognizable features. Concentrate visual richness and detail on the subject.\n\nPlace it against a uniform, solid-color background that contrasts with its silhouette and reflections. Select a tone that best highlights the subject and use a fine, subtle matte texture to contrast with the chrome's sheen. Keep the background clean, free of objects or elements that might compete for attention.\n\nIlluminate the subject with soft, enveloping studio lighting, featuring controlled highlights and shadows that define its volume. Use a centered composition, a clearly defined silhouette, ample surrounding space, and maximum sharpness on the main subject. Render with a hyper-realistic product finish. all visible text and neon signs must be written in Spanish with no English words",
             "id": "muzrldq0pyjtdj8fe",
             "createdAt": 1791477744141,
-            "updatedAt": 1792159280315,
+            "updatedAt": 1792862793440,
             "sortOrder": 0
         }
     ],
@@ -1404,8 +1401,7 @@
             "cap-cmd-113"
         ],
         "xl-dobleexposicion": [
-            "muzrldq0pyjtdj8fe",
-            "ig-dcek-004"
+            "muzrldq0pyjtdj8fe"
         ]
     },
     "listaCarpetas": [
@@ -1572,14 +1568,14 @@
         },
         {
             "id": "f_mv73ghs02h22sxpzp",
-            "label": "Propias",
+            "label": "Doble Exposición",
             "icon": "📁",
             "color": "purple",
             "bgIcon": "🗂️"
         },
         {
             "id": "xl-dobleexposicion",
-            "label": "Doble exposición",
+            "label": "Propia",
             "icon": "🌀",
             "color": "cyan",
             "bgIcon": "🌄"
@@ -1613,6 +1609,9 @@
         "f_mv73ghs02h22sxpzp",
         "xl-dobleexposicion"
     ],
-    "carpetasBorradas": [],
-    "actualizado": "2026-10-24T16:29:40+00:00"
+    "carpetasBorradas": [
+        "xl-dobleexposicion",
+        "f_mvmm88u2iao4ez2zn"
+    ],
+    "actualizado": "2026-10-24T17:41:24+00:00"
 }
