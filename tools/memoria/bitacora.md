@@ -175,7 +175,8 @@ Una entrada por sesión de trabajo relevante.
 
 ## 2026-10-21 (quinta parte) — Contraseñas centralizadas en el `.htaccess` raíz
 
-Antonio: «la contraseña para editar cualquier app/web → `0`; para acceder → `[ELIMINADO]`; que las
+Antonio: «la contraseña para editar cualquier app/web → `0`; para acceder → una contraseña de
+acceso propia; que las
 contraseñas estén en un solo sitio, como las claves de API, y que todas las apps vayan a buscarlas».
 
 - **Módulo nuevo** `auth/lib.php` + endpoint `/auth/validar.php`. Lee `PW_EDIT` / `PW_ACCESS` del
@@ -190,7 +191,8 @@ contraseñas estén en un solo sitio, como las claves de API, y que todas las ap
   privados y **publicar en GitHub**.
 - **TrickVault:** publicar pide ahora la contraseña de acceso en un modal aparte, validada contra
   `/auth/validar.php`; `publicar.php` comprueba `au_comprobar('acceso', …)` en local (sin HTTP).
-- **`.htaccess` raíz** (lo pegó Antonio): `SetEnv PW_EDIT "0"` y `SetEnv PW_ACCESS "[ELIMINADO]"`.
+- **`.htaccess` raíz** (lo pegó Antonio): `SetEnv PW_EDIT "0"` y `SetEnv PW_ACCESS "…"` (el valor
+  no se anota aquí: el repositorio es público).
 - **Bóveda privada:** producción había perdido `vault_data/vault.json` (pedía «crear bóveda»);
   Antonio creó una nueva. Añadido `storage.php?action=diagnostico` (booleanos y tamaños, sin
   datos), escritura atómica del meta y negativa a sobrescribir un `vault.json` dañado.
@@ -199,7 +201,8 @@ contraseñas estén en un solo sitio, como las claves de API, y que todas las ap
 - **Verificado en producción (2026-10-21, tarde):** `GET /auth/validar.php` →
   `"configurado":{"edicion":true,"acceso":true}`; en Chrome real: portada entra en edición con
   `0`, TrickVault y video-vault desbloquean edición con `0`, publicar con `0` se rechaza y con
-  `[ELIMINADO]` pide confirmación, Descargas y agenda entran con `[ELIMINADO]`, bóveda vuelve a mostrar
+  la contraseña de acceso pide confirmación, Descargas y agenda entran con la contraseña de
+  acceso, bóveda vuelve a mostrar
   «Bóveda protegida». Retirada la compatibilidad (commit `9fb2175`) y comprobado que la contraseña
   vieja de 20 caracteres y `050309` dan 403. Evidencias:
   `tools/evidencias/2026-10-21-passwords/produccion/` (`comparativa_boveda.png`,

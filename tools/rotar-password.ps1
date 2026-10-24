@@ -14,7 +14,7 @@
 #   powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1
 #       (pregunta las dos contraseñas y enseña el bloque para pegar)
 #
-#   powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1 -Edit "0" -Acceso "[ELIMINADO]"
+#   powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1 -Edit "0" -Acceso "..."
 #   powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-password.ps1 -Edit "0" -Acceso "..." -Hash
 #       (con -Hash imprime solo los sha256, para no dejar el valor en claro)
 #

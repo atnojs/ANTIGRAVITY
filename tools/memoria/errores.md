@@ -90,8 +90,8 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 ### [2026-10-21] Pegar el bloque de contraseñas con vallas de Markdown rompe el `.htaccess`
 
 - **Síntoma:** `/auth/validar.php` devolvía `configurado:false` aunque el `.htaccess` «ya estaba».
-  La captura del editor mostraba `apache SetEnv PW_EDIT "0" SetEnv PW_ACCESS "[ELIMINADO]"` todo en
-  una línea, con backticks (` ``` `) y repetido dos veces.
+  La captura del editor mostraba las directivas `SetEnv` pegadas todas en una misma línea (con el
+  valor de acceso incluido), con backticks (` ``` `) y repetido dos veces.
 - **Causa:** al copiar el bloque de código del chat se pegaron las **vallas de Markdown** y se
   perdieron los saltos de línea. Apache no encuentra ninguna directiva `SetEnv` válida; peor aún,
   una línea que empiece por `apache …` puede tumbar el sitio entero (HTTP 500).

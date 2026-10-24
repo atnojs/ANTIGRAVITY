@@ -41,7 +41,8 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 - **Estado:** ✅ **verificado en producción y cerrado** (commit `3396a40` + retirada de la
   compatibilidad en `9fb2175`). El `.htaccess` raíz tiene `PW_EDIT` y `PW_ACCESS`; entran `0` y
-  `[ELIMINADO]` y las antiguas dan 403.
+  la contraseña de acceso (su valor vive solo en el servidor; **rotada el 2026-10-24** tras
+  detectarse en claro en el repositorio) y las antiguas dan 403.
 - **Siguiente paso 1 (hecho):** `AU_PERMITIR_ANTIGUAS` retirado de `auth/lib.php`; comprobado que
   la contraseña antigua de 20 caracteres y `050309` ya no entran.
 - **Siguiente paso 2:** borrar por hPanel el `apps/codigos_imagen/config.php` del servidor: ya no

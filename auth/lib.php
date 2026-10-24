@@ -7,15 +7,16 @@
  * Apache). Ninguna app guarda ya una contraseña: todas incluyen este fichero y
  * llaman a las funciones `au_*`.
  *
- * Líneas que deben estar en el `.htaccess` raíz (ejemplo, no versionar):
+ * Líneas que deben estar en el `.htaccess` raíz (NUNCA pongas aquí valores
+ * reales: este fichero está versionado y el repositorio es público):
  *
- *     SetEnv PW_EDIT "0"
- *     SetEnv PW_ACCESS "[ELIMINADO]"
+ *     SetEnv PW_EDIT "<contraseña de edición>"
+ *     SetEnv PW_ACCESS "<contraseña de acceso>"
  *
  * Opcional, si se prefiere guardar solo el hash sha256 (64 hex):
  *
- *     SetEnv PW_EDIT_SHA256 "…"
- *     SetEnv PW_ACCESS_SHA256 "…"
+ *     SetEnv PW_EDIT_SHA256 "<sha256 de la de edición>"
+ *     SetEnv PW_ACCESS_SHA256 "<sha256 de la de acceso>"
  *
  * Si hay hash configurado manda el hash; si no, el valor en claro. Cambiar una
  * contraseña es editar UNA línea del `.htaccess`: no hay que tocar ninguna app
