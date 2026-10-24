@@ -215,3 +215,11 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
   validado con `php tools/generar-punteros-skills.php --check`; `claude.md` la declara obligatoria y
   `SKILL_MAESTRA.md`, `SKILL_CREAR.md`, `SKILL_EDITAR_cirujano-codigo-produccion.md` y `mapa.md` la
   referencian.
+
+
+## 2026-10-24 — Los tonos frío/cálido de `ajustes_imagen` se calculan en local, no con IA
+
+- **Contexto:** había que añadir 2 botones para pasar la imagen a colores fríos/cálidos.
+- **Decisión:** grading local por píxeles en canvas (balance de blancos normalizado por luminancia + split toning + micro saturación), aplicado a la imagen de trabajo y guardado con el botón de historial existente.
+- **Por qué:** es instantáneo, gratis y determinista; no depende de `proxy.php` ni de la clave de ninguna API, y el resultado es reversible (segundo clic en el tono activo restaura el original) sin acumular el efecto.
+- **Cómo se comprueba:** `tools/evidencias/2026-10-24-ajustes-imagen/verificacion-produccion-fix.json` (contraste activo 8,63:1 / 8,58:1) y `flujo-verificacion.json` (medias RGB: original 153,162,171 → frío 141,163,190 → cálido 166,161,146 → restaurado 153,162,171).

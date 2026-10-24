@@ -1706,3 +1706,35 @@ obligatoria de Windows 11 rompía el acceso de invitado que usa la red (Invitado
 - El TP-Link (extensor, `192.168.18.2`) no parte la red: ambos PCs están en `192.168.18.0/24` y se
   alcanzan; solo cambió la identidad de red a ojos de Windows.
 - Detalle y verificación: `errores.md` (entrada 2026-10-21) y `entorno.md` («Red doméstica»).
+
+
+## 2026-10-24 — ajustes_imagen: botones de modelos en filas y 2 botones de tono frío/cálido
+
+Antonio pidió, en `apps/imagenes_ia/ajustes_imagen`, que los botones de los modelos
+dejaran de verse en columnas y añadir 2 botones para pasar la imagen a colores fríos o
+cálidos.
+
+**Qué se cambió** (commits `6cf4e2d` + `a97ed93`, push a `main`)
+
+| Acción | Resultado |
+|---|---|
+| Selector de modelos | Reescrito el bloque que inyecta `ai-tools.js`: una fila por proveedor (`.model-provider-row`) y sus botones en filas horizontales con `flex-wrap`. Medido en Chrome a 1280×900: antes 4 proveedores en rejilla 2×2, botones de 59 px con 3 etiquetas recortadas y 436 px de alto; ahora 4 filas, botones de 29 px, 0 recortes y 285 px (móvil 393 px: 599 → 277 px). |
+| Tonos frío/cálido | 2 botones locales (`#ai-temp-cold` / `#ai-temp-warm`): balance de blancos + split toning por píxel en canvas, sin IA y sin coste (0 peticiones). El segundo clic en el tono activo restaura el original; la base no se reutiliza si otra herramienta/recorte/subida cambia la imagen (firma de píxeles 1:1). |
+| Anti-caché de la CDN | Assets nuevos por ruta: `ai-tools.20261024a.js`, `app.20261024a.css` y, tras el fix de contraste, `app.20261024b.css`; se conservan `app.css`, `ai-tools.js` y la hoja `a` para el HTML cacheado. |
+| Accesibilidad | axe-core 4.10.2 sobre `#ai-tools-section`: 0 violaciones AA en reposo y con tono activo. Lighthouse accessibility en producción 0,82 antes y 0,82 después (los 5 fallos binarios son preexistentes: `button-name`, `color-contrast` de AR/res, `heading-order`, `image-redundant-alt` y `label` de los sliders). |
+
+**Defecto detectado por el verificador y corregido (V-01, medio):** el texto (`<span>`) de
+los botones de tono en estado activo quedaba a 1,85:1 / 1,97:1 porque la regla global
+`p, span, label, small{color:var(--text-main)}` pisaba el color oscuro del botón activo.
+Fix en `a97ed93` con `#ai-tools-section .ai-tone-btn span{color:inherit!important}` →
+8,63:1 (frío) y 8,58:1 (cálido). Verificado en producción.
+
+**Verificación** (Chrome real con Playwright, sin tocar el historial de producción):
+- Flujo local: 20/20 pasos (subida, tooltip, ModelGate, selección de modelo, frío/cálido/restaurar con medias RGB, guardado en historial PHP 200, descarga JPEG válida 366 KB, recarga e historial persistente), consola sin errores propios y red sin 4xx/5xx.
+- Producción: HTML sirve `app.20261024b.css` (200) y el contenido servido coincide con el commit y con el local (normalizando CRLF); 3 anchos sin recortes ni scroll horizontal; tonos con restauración exacta.
+- Verificador independiente: **PASS 96,3/100** (`tools/evidencias/2026-10-24-ajustes-imagen/verificador/VEREDICTO.md`); autoevaluación del autor 96,5.
+
+**Commits:** `6cf4e2d` (feature) y `a97ed93` (fix de contraste).
+**Evidencias:** `tools/evidencias/2026-10-24-ajustes-imagen/`; comparativas `tools/comparativa_selector_modelos_ajustes_imagen.png` y `tools/comparativa_tonos_ajustes_imagen.png`.
+
+**Pendiente/limitación:** el historial de producción no se probó a propósito (no se pulsó «Guardar y reiniciar» en la URL real); el guardado se verificó en local. El historial etiqueta las acciones manuales con «IA:» (código de la app, no tocado).
