@@ -1554,7 +1554,30 @@ const REMOVED_IMAGE_IDS = new Set([
     // CAPTURE_COMMANDS para no renumerar los cap-cmd posteriores y se apagan aquí:
     // cada navegador las borra al recargar y no vuelven a entrar.
     'cap-cmd-126', 'cap-cmd-127', 'cap-cmd-128', 'cap-cmd-129', 'cap-cmd-130',
-    'cap-cmd-131', 'cap-cmd-132', 'cap-cmd-133', 'cap-cmd-134', 'cap-cmd-135'
+    'cap-cmd-131', 'cap-cmd-132', 'cap-cmd-133', 'cap-cmd-134', 'cap-cmd-135',
+    // 2026-10-24 (Antonio): se vacía la carpeta «Doble exposición». Las 90
+    // tarjetas del carrusel del 2026-10-23 se retiran del catálogo: sus ids se
+    // apagan aquí, así desaparecen también de los navegadores que ya las
+    // tuvieran guardadas (y de la capa publicada) y no vuelven a entrar al
+    // recargar. La carpeta queda libre para las tarjetas de «Propias».
+    'cap-cmd-136', 'cap-cmd-137', 'cap-cmd-138', 'cap-cmd-139', 'cap-cmd-140',
+    'cap-cmd-141', 'cap-cmd-142', 'cap-cmd-143', 'cap-cmd-144', 'cap-cmd-145',
+    'cap-cmd-146', 'cap-cmd-147', 'cap-cmd-148', 'cap-cmd-149', 'cap-cmd-150',
+    'cap-cmd-151', 'cap-cmd-152', 'cap-cmd-153', 'cap-cmd-154', 'cap-cmd-155',
+    'cap-cmd-156', 'cap-cmd-157', 'cap-cmd-158', 'cap-cmd-159', 'cap-cmd-160',
+    'cap-cmd-161', 'cap-cmd-162', 'cap-cmd-163', 'cap-cmd-164', 'cap-cmd-165',
+    'cap-cmd-166', 'cap-cmd-167', 'cap-cmd-168', 'cap-cmd-169', 'cap-cmd-170',
+    'cap-cmd-171', 'cap-cmd-172', 'cap-cmd-173', 'cap-cmd-174', 'cap-cmd-175',
+    'cap-cmd-176', 'cap-cmd-177', 'cap-cmd-178', 'cap-cmd-179', 'cap-cmd-180',
+    'cap-cmd-181', 'cap-cmd-182', 'cap-cmd-183', 'cap-cmd-184', 'cap-cmd-185',
+    'cap-cmd-186', 'cap-cmd-187', 'cap-cmd-188', 'cap-cmd-189', 'cap-cmd-190',
+    'cap-cmd-191', 'cap-cmd-192', 'cap-cmd-193', 'cap-cmd-194', 'cap-cmd-195',
+    'cap-cmd-196', 'cap-cmd-197', 'cap-cmd-198', 'cap-cmd-199', 'cap-cmd-200',
+    'cap-cmd-201', 'cap-cmd-202', 'cap-cmd-203', 'cap-cmd-204', 'cap-cmd-205',
+    'cap-cmd-206', 'cap-cmd-207', 'cap-cmd-208', 'cap-cmd-209', 'cap-cmd-210',
+    'cap-cmd-211', 'cap-cmd-212', 'cap-cmd-213', 'cap-cmd-214', 'cap-cmd-215',
+    'cap-cmd-216', 'cap-cmd-217', 'cap-cmd-218', 'cap-cmd-219', 'cap-cmd-220',
+    'cap-cmd-221', 'cap-cmd-222', 'cap-cmd-223', 'cap-cmd-224', 'cap-cmd-225'
 ]);
 
 
@@ -3904,6 +3927,12 @@ const SEED_TRICKS = [
         // Tarjetas retiradas (fusionadas en otras): no vuelven a entrar y su id
         // se borra también de los navegadores que ya las tuvieran guardadas.
         if (REMOVED_IMAGE_IDS.has(id)) return [];
+        // El carrusel de doble exposición (90 códigos) entró el 2026-10-23. Lleva
+        // su propia fecha de lote para que «Últimas» lo trate como el push más
+        // reciente; el resto de capturas sigue en el lote del 6 de octubre.
+        const lote = command.startsWith('/dobleexposicion-') ? '2026-10-23' : '2026-10-06';
+        const [loteY, loteM, loteD] = lote.split('-').map(Number);
+        const sello = Date.UTC(loteY, loteM - 1, loteD);
         return [{
             id,
             title: `${command} — ${meaning}`,
@@ -3915,9 +3944,9 @@ const SEED_TRICKS = [
             sourceUrl: '',
             imageUrl: SEED_COMMAND_IMAGES[command] || '',
             isFavorite: false,
-            createdAt: Date.UTC(2026, 9, 6) - index,
-            updatedAt: Date.UTC(2026, 9, 6),
-            lote: '2026-10-06',
+            createdAt: sello - index,
+            updatedAt: sello,
+            lote,
         }];
     }),
     // Códigos nuevos de los reels y los carruseles de Instagram (2026-10-13).
@@ -6522,6 +6551,81 @@ function applyRemoteFavorites(items, ids) {
     });
 }
 
+// Migración (2026-10-23): las 90 tarjetas de doble exposición nacieron dentro de
+// CAPTURE_COMMANDS y heredaron el lote del 6 de octubre, así que no aparecían en
+// «Últimas» (que enseña solo el push más reciente) y su fecha salía como 6 oct.
+// Aquí se les pone su fecha real una sola vez, también en los navegadores que ya
+// las tuvieran guardadas. Solo toca tarjetas sin editar por el usuario.
+const DOBLE_LOTE_MIGRACION = '2026-10-23';
+const DOBLE_LOTE_MIGRACION_KEY = 'trickvault_doble_lote_v1';
+function migrateDobleLote(list) {
+    try {
+        if (localStorage.getItem(DOBLE_LOTE_MIGRACION_KEY) === DOBLE_LOTE_MIGRACION) return list;
+    } catch { /* sin almacenamiento: se migra igualmente en memoria */ }
+    const sello = Date.UTC(2026, 9, 23);
+    let tocadas = 0;
+    const siguiente = (list || []).map(trick => {
+        if (!trick) return trick;
+        const code = String(trick.codeSnippet || '').trim();
+        if (!code.startsWith('/dobleexposicion-')) return trick;
+        const loteActual = String(trick.lote || '');
+        // Si el usuario ya la editó (updatedAt distinto del sello viejo), no se toca.
+        const editada = Number(trick.updatedAt || 0) > Date.UTC(2026, 9, 6) + 60000;
+        if (editada) return trick;
+        if (loteActual === DOBLE_LOTE_MIGRACION) return trick;
+        tocadas += 1;
+        return { ...trick, lote: DOBLE_LOTE_MIGRACION, createdAt: sello, updatedAt: sello };
+    });
+    try { localStorage.setItem(DOBLE_LOTE_MIGRACION_KEY, DOBLE_LOTE_MIGRACION); } catch { /* ignorar */ }
+    if (tocadas > 0) console.info('[TrickVault] doble exposición: ' + tocadas + ' tarjetas movidas al lote ' + DOBLE_LOTE_MIGRACION);
+    return siguiente;
+}
+
+// Migración (2026-10-24, Antonio): «Doble exposición» se vacía (las 90 tarjetas
+// del carrusel se apagan en REMOVED_IMAGE_IDS) y pasa a contener las tarjetas
+// que Antonio tenía en «Propias». Se hace una sola vez por navegador: primero
+// se vacía la carpeta y después se mueven las de «Propias» (por su id publicado
+// y también por nombre, por si la carpeta se llamó «Copias»). Al mover se
+// conserva todo lo demás de la tarjeta (imagen, prompt, favorito, etc.).
+const PROPIAS_FOLDER_ID = 'f_mv73ghs02h22sxpzp';
+const DOBLE_REORG_KEY = 'trickvault_doble_reorganizada_v1';
+function folderIdsDePropias() {
+    const ids = new Set([PROPIAS_FOLDER_ID]);
+    try {
+        for (const carpeta of loadFolders()) {
+            const nombre = String((carpeta && carpeta.label) || '').trim().toLowerCase();
+            if (nombre === 'propias' || nombre === 'copias') ids.add(String(carpeta.id));
+        }
+    } catch { /* sin lista de carpetas: vale el id publicado */ }
+    return ids;
+}
+function migrateDobleReorganizada(list) {
+    try {
+        if (localStorage.getItem(DOBLE_REORG_KEY) === '1') return list;
+    } catch { /* sin almacenamiento: se migra igualmente en memoria */ }
+    const propias = folderIdsDePropias();
+    let vaciadas = 0;
+    let movidas = 0;
+    const siguiente = (list || []).flatMap(trick => {
+        if (!trick) return [trick];
+        if (String(trick.category) === 'xl-dobleexposicion') {
+            vaciadas += 1;
+            return [];             // la carpeta se vacía antes de mover las de «Propias»
+        }
+        if (propias.has(String(trick.category))) {
+            movidas += 1;
+            return [{ ...trick, category: 'xl-dobleexposicion', updatedAt: Date.now() }];
+        }
+        return [trick];
+    });
+    try { localStorage.setItem(DOBLE_REORG_KEY, '1'); } catch { /* ignorar */ }
+    if (vaciadas || movidas) {
+        console.info('[TrickVault] Doble exposición: ' + vaciadas + ' tarjetas retiradas y ' +
+            movidas + ' de «Propias» movidas a la carpeta');
+    }
+    return siguiente;
+}
+
 function useLocalStorage(key, initial) {
     const [val, setVal] = useState(() => {
         try {
@@ -6535,7 +6639,7 @@ function useLocalStorage(key, initial) {
                 localStorage.setItem(key, JSON.stringify(migrated));
             }
             const merged = mergeSeedCards(migrated, initial);
-            return normalizeTrickOrder(cleanLegacyImageCommandDescriptions(migrateGeneratedCardImages(dedupeCardsByCommand(merged))));
+            return normalizeTrickOrder(cleanLegacyImageCommandDescriptions(migrateGeneratedCardImages(migrateDobleReorganizada(migrateDobleLote(dedupeCardsByCommand(merged))))));
         } catch { return initial; }
     });
 

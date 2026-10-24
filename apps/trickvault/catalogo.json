@@ -116,16 +116,21 @@
         "ig-dcek-003": {
             "customPrompt": "/cutaway If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Precise cutaway cross-section view of [OBJETO], half outer surface sliced cleanly to expose intricate inner mechanism, detailed gears and interior chambers, studio lighting, technical product illustration, crisp depth and materials. . all visible text and labels must be written in Spanish with no English words."
         },
-        "ig-dcek-004": [],
+        "ig-dcek-004": {
+            "category": "xl-dobleexposicion"
+        },
         "cap-cmd-159": {
             "customPrompt": "/dobleexposicion-animal Cinematic double-exposure portrait. On the left, a close-up profile shot (image 1) looking to the left. Blended organically into the back and right side of the head is the detailed, realistic head of a Canarian Warren Hound (Podenco Canario) looking toward the right. Within the silhouette and in the background, there is a dense, fog-covered pine forest, distant mountains, and a massive, bright full moon in the night sky. In the bottom-right corner, there is a rustic, weathered wooden sign with carved, uppercase text reading \"TEXT,\" and a smaller plaque below it that also reads \"TEXT.\" A cool, desaturated color palette in shades of grayish-blue, high contrast, movie-poster-style lighting, hyper-realistic textures, and a mysterious atmosphere."
+        },
+        "muzrldq0pyjtdj8fe": {
+            "category": "xl-dobleexposicion"
         }
     },
     "nuevas": [
         {
             "title": "/Mercury",
             "description": "Objeto visto en Mercurio",
-            "category": "f_mv73ghs02h22sxpzp",
+            "category": "xl-dobleexposicion",
             "tags": [],
             "codeSnippet": "",
             "imageUrl": "uploads/example_muzrldq0pyjtdj8fe_e7ecf5db34d3.webp",
@@ -156,7 +161,86 @@
         "cap-cmd-221",
         "cap-cmd-223",
         "cap-cmd-224",
-        "cap-cmd-225"
+        "cap-cmd-225",
+        "cap-cmd-136",
+        "cap-cmd-137",
+        "cap-cmd-138",
+        "cap-cmd-139",
+        "cap-cmd-140",
+        "cap-cmd-141",
+        "cap-cmd-142",
+        "cap-cmd-143",
+        "cap-cmd-144",
+        "cap-cmd-145",
+        "cap-cmd-146",
+        "cap-cmd-147",
+        "cap-cmd-148",
+        "cap-cmd-149",
+        "cap-cmd-150",
+        "cap-cmd-151",
+        "cap-cmd-152",
+        "cap-cmd-153",
+        "cap-cmd-154",
+        "cap-cmd-155",
+        "cap-cmd-156",
+        "cap-cmd-157",
+        "cap-cmd-158",
+        "cap-cmd-159",
+        "cap-cmd-160",
+        "cap-cmd-161",
+        "cap-cmd-162",
+        "cap-cmd-163",
+        "cap-cmd-164",
+        "cap-cmd-165",
+        "cap-cmd-166",
+        "cap-cmd-167",
+        "cap-cmd-168",
+        "cap-cmd-169",
+        "cap-cmd-170",
+        "cap-cmd-171",
+        "cap-cmd-172",
+        "cap-cmd-173",
+        "cap-cmd-174",
+        "cap-cmd-175",
+        "cap-cmd-176",
+        "cap-cmd-177",
+        "cap-cmd-178",
+        "cap-cmd-179",
+        "cap-cmd-180",
+        "cap-cmd-181",
+        "cap-cmd-182",
+        "cap-cmd-183",
+        "cap-cmd-184",
+        "cap-cmd-185",
+        "cap-cmd-186",
+        "cap-cmd-187",
+        "cap-cmd-188",
+        "cap-cmd-189",
+        "cap-cmd-190",
+        "cap-cmd-191",
+        "cap-cmd-192",
+        "cap-cmd-193",
+        "cap-cmd-194",
+        "cap-cmd-195",
+        "cap-cmd-196",
+        "cap-cmd-197",
+        "cap-cmd-198",
+        "cap-cmd-199",
+        "cap-cmd-200",
+        "cap-cmd-201",
+        "cap-cmd-202",
+        "cap-cmd-203",
+        "cap-cmd-204",
+        "cap-cmd-205",
+        "cap-cmd-208",
+        "cap-cmd-209",
+        "cap-cmd-210",
+        "cap-cmd-211",
+        "cap-cmd-212",
+        "cap-cmd-213",
+        "cap-cmd-214",
+        "cap-cmd-217",
+        "cap-cmd-222"
     ],
     "orden": {
         "xl-letras3d": [
@@ -1319,7 +1403,7 @@
             "cap-cmd-125",
             "cap-cmd-113"
         ],
-        "f_mv73ghs02h22sxpzp": [
+        "xl-dobleexposicion": [
             "muzrldq0pyjtdj8fe",
             "ig-dcek-004"
         ]
@@ -1530,5 +1614,5 @@
         "xl-dobleexposicion"
     ],
     "carpetasBorradas": [],
-    "actualizado": "2026-10-24T15:07:35+00:00"
+    "actualizado": "2026-10-24T16:29:40+00:00"
 }
