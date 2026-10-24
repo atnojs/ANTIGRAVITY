@@ -1777,3 +1777,44 @@ Fix en `a97ed93` con `#ai-tools-section .ai-tone-btn span{color:inherit!importan
 **Evidencias:** `tools/evidencias/2026-10-24-ajustes-imagen/`; comparativas `tools/comparativa_selector_modelos_ajustes_imagen.png` y `tools/comparativa_tonos_ajustes_imagen.png`.
 
 **Pendiente/limitación:** el historial de producción no se probó a propósito (no se pulsó «Guardar y reiniciar» en la URL real); el guardado se verificó en local. El historial etiqueta las acciones manuales con «IA:» (código de la app, no tocado).
+
+
+## 2026-10-24 (tarde) — TrickVault: renombrar carpetas en modo edición
+
+Antonio: «edita la app trickvault. quiero poder cambiar el nombre de las carpetas en el modo
+edición.»
+
+**Qué se cambió** (commit `e12e1cc5`, push a `main`, desplegado a las 18:00)
+
+| Acción | Resultado |
+|---|---|
+| Botón por tarjeta | `.folder-rename` (✏️) junto al ✕, visible solo con `editUnlocked`; «Favoritos» no lo tiene (carpeta de sistema). 25 botones sobre 26 tarjetas. |
+| Modal | `FolderForm` ampliado: modo renombrar con título, input `#folder-form-label` precargado y «Guardar nombre»; crear carpeta sigue igual (emoji + color). |
+| Validación | Vacío/espacios y duplicado (case-insensitive, contra todas las carpetas y contra «Favoritos») → `.form-error` y el modal no se cierra. |
+| Persistencia | `trickvault_folders` + capa local `trickvault_folders_renombradas`, que se aplica **después** de la capa publicada: un nombre sin publicar no se pierde al recargar. El nombre viaja en `listaCarpetas` al publicar (mecanismo existente). |
+| Limpieza | Al borrar una carpeta se olvida su nombre manual; `createFolder` muestra error inline si el nombre ya existe. |
+| CSS | `.folder-rename` (26×26, `right: 2.55rem`), `:focus-visible` y `.form-hint`; `app.css?v=20261024-renombrar` para saltar la CDN. |
+
+**Commit aislado (importante).** El árbol tenía cambios **sin commitear de otra sesión**
+(migraciones de «Doble exposición» en `index.html` y `catalogo.json`). Para no arrastrarlos se
+separó el diff en hunks (`tools/evidencias/2026-10-24-trickvault-renombrar/publicacion/`), se
+aplicó al índice **solo** el parche del encargo y se commiteó; el trabajo previo sigue intacto y
+sin publicar (el HTML servido no contiene `migrateDobleReorganizada` ni `DOBLE_REORG_KEY`).
+
+**Verificación** (Chrome real con Playwright; no se publicó nada desde la app)
+- Local: **29/29** (`local/informe-local.json`) + regresión **9/9** (`regresion-local.json`).
+- Producción: **32/32** (`prod-despues/informe-prod-despues.json`), incluido el `confirm` de
+  «Publicar cambios» con «25 carpetas y su orden», **cancelado**, y `publish-estado` vacío.
+- Lo servido es **byte a byte** igual a los blobs del commit (index `dfd82c85…`, CSS `da8ea4fc…`).
+- Verificador independiente: **PASS 96,0/100** (`verificador/VEREDICTO.md`; 66/66 local + 37/37
+  producción con scripts propios). 3 defectos menores: D1 (la capa local de nombres no se limpia;
+  escenario multi-dispositivo), D2 (ids «24px» en la evidencia del autor miden 26 px), D3 (botón de
+  26 px en móvil). Ninguno Bloqueante/Mayor/Medio.
+
+**Commits:** `e12e1cc5` (feature) y el de esta entrada (docs).
+**Evidencias:** `tools/evidencias/2026-10-24-trickvault-renombrar/`; comparativa
+`tools/comparativa_renombrar_carpetas_trickvault.png`.
+
+**Pendiente/limitación:** D1 anotado en `pendientes.md`; el trabajo de «Doble exposición» de la
+sesión anterior sigue sin publicar (decisión del dueño); al publicar de verdad, el confirm listará
+además diferencias de datos preexistentes (O1 del veredicto del verificador).

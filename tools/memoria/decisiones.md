@@ -240,3 +240,22 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 - **Decisión:** grading local por píxeles en canvas (balance de blancos normalizado por luminancia + split toning + micro saturación), aplicado a la imagen de trabajo y guardado con el botón de historial existente.
 - **Por qué:** es instantáneo, gratis y determinista; no depende de `proxy.php` ni de la clave de ninguna API, y el resultado es reversible (segundo clic en el tono activo restaura el original) sin acumular el efecto.
 - **Cómo se comprueba:** `tools/evidencias/2026-10-24-ajustes-imagen/verificacion-produccion-fix.json` (contraste activo 8,63:1 / 8,58:1) y `flujo-verificacion.json` (medias RGB: original 153,162,171 → frío 141,163,190 → cálido 166,161,146 → restaurado 153,162,171).
+
+
+## 2026-10-24 — TrickVault: el nombre manual de una carpeta gana a la capa publicada en ese navegador
+
+- **Contexto:** `applyPublishedFolders` deja que la capa publicada mande en el nombre de las
+  carpetas. Un renombrado local aún sin publicar se perdía al recargar, justo lo que pide el
+  encargo («cambiar el nombre de las carpetas en el modo edición»).
+- **Decisión:** apuntar los nombres puestos a mano en `trickvault_folders_renombradas` y aplicarlos
+  **después** de la capa publicada (`loadFolders` y `applyPublishedFolders`). «Favoritos» no se
+  puede renombrar: es una carpeta de sistema que se resuelve por constante (`FAVORITES_FOLDER`).
+- **Por qué:** no se pierde el trabajo local y publicar sigue siendo el mecanismo para propagarlo a
+  los demás equipos (`listaCarpetas`). Alternativa descartada: reescribir la capa publicada en cada
+  recarga (perdería los nombres puestos desde otros navegadores).
+- **Contrapartida:** en multi-dispositivo, un nombre local viejo puede pisar un cambio remoto
+  posterior; limpiar/rebasar la capa al publicar con éxito queda como mejora futura (D1 del
+  veredicto del verificador). `PW_EDIT` del proyecto es «0» (ver `credenciales.md`): el candado no
+  protege, la publicación sí pide `PW_ACCESS`.
+- **Verificación:** `tools/evidencias/2026-10-24-trickvault-renombrar/prod-despues/informe-prod-despues.json`
+  (persistencia tras recarga con la capa publicada antigua) y `verificador/VEREDICTO.md` (PASS 96,0).

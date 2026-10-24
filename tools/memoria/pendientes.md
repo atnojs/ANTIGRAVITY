@@ -5,6 +5,35 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
+## 🃏 TrickVault: cambios de «Doble exposición» sin commitear (2026-10-24)
+
+- **Estado:** en el árbol de trabajo hay cambios de una sesión anterior en
+  `apps/trickvault/index.html` (migraciones `migrateDobleLote` / `migrateDobleReorganizada`, ids
+  apagados) y `apps/trickvault/catalogo.json`, **sin commitear y sin publicar**. El commit
+  `e12e1cc5` (renombrar carpetas) se hizo aislado y no los incluye; producción no los sirve
+  (comprobado: el HTML servido no contiene `migrateDobleReorganizada`).
+- **Siguiente paso (dueño):** decidir si esa reorganización está terminada y publicarla en un commit
+  propio (`git diff -- apps/trickvault`), o descartarla. No mezclarla con otros encargos.
+- **Verificación:** `git status -- apps/trickvault` y buscar `migrateDobleReorganizada` en el HTML
+  servido con cache-buster (no debe estar hasta publicarlo).
+
+---
+
+## 🃏 TrickVault: renombrar carpetas — límites conocidos (2026-10-24)
+
+- **Favoritos no se renombra:** es carpeta de sistema (`FAVORITES_FOLDER` + `getCat`). Exponerlo
+  exigiría persistir su label aparte. Decisión consciente; el botón ✏️ no aparece en su tarjeta.
+- **D1 (menor):** `trickvault_folders_renombradas` no se limpia al publicar; en multi-dispositivo un
+  nombre local viejo puede pisar un cambio remoto posterior. Mejora futura: limpiar/rebasar la capa
+  local cuando la publicación de carpetas tenga éxito.
+- **D2 (menor, evidencia):** los ids `botones-24px-*` de los informes del autor miden 26 px (solo la
+  etiqueta; el dato es correcto).
+- **D3 (menor, UX):** botón de 26×26 px (cumple AA 24 px; recomendable 32–36 px en móvil).
+- **O1:** al publicar de verdad, el `confirm` listará además diferencias de datos preexistentes
+  (tarjetas/orden) que **no** introduce este encargo; revisarlas antes de pulsar publicar.
+
+---
+
 ## 🔐 Contraseña de ACCESO rotada y purgada (2026-10-24)
 
 - **Estado:** ✅ rotada en el servidor (`.htaccess` guarda solo `PW_ACCESS_SHA256`) y purgada del
