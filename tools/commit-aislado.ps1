@@ -42,6 +42,16 @@ try {
     & git commit -q -m $Mensaje
     if ($LASTEXITCODE -ne 0) { throw 'git commit fallo (nada que commitear?)' }
     & git log --oneline -1
+
+    # El commit salio del indice temporal: el indice real (.git/index) sigue en el estado
+    # anterior y 'git status' mostraria borrados/modificados fantasma en estas rutas.
+    # Se refresca SOLO para las rutas commiteadas; lo que otras sesiones tengan preparado
+    # en el indice real no se toca.
+    Remove-Item Env:GIT_INDEX_FILE -ErrorAction SilentlyContinue
+    & git add -- @Rutas
+    if ($LASTEXITCODE -ne 0) {
+        Write-Output 'AVISO: no se pudo refrescar el indice real; ejecuta a mano: git add -- <rutas>'
+    }
 } finally {
     Pop-Location
     Remove-Item $indexFile -Force -ErrorAction SilentlyContinue

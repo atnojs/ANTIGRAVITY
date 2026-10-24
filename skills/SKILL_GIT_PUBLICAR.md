@@ -83,6 +83,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\commit-
   -Rutas skills/SKILL_GIT_PUBLICAR.md,.claude/skills/publicar-git/SKILL.md
 ```
 
+El script, tras commitear, **refresca el índice real solo de esas rutas** para que `git status`
+no muestre borrados/modificados fantasma; el resto de lo preparado por otras sesiones queda
+intacto. Si usas la vía manual, `git add` + `commit` normales ya mantienen el índice al día.
+
 **Método manual** (si el script no está disponible). Con rutas **nuevas** hay que prepararlas
 primero; `git commit -- <ruta>` solo resuelve rutas que git ya conoce:
 
@@ -218,6 +222,8 @@ Sin punto final, sin mayúscula inicial en el resumen, un solo tema por commit.
 | Hostinger no publica el último push | webhook perdido | `git commit --allow-empty -m "chore: re-disparar despliegue (...)"` + push |
 | Producción sigue sirviendo lo viejo | CDN/caché con la URL ya pedida | comprobar con `?cb=<guid>` nuevo; si persiste, renombrar el asset con fecha |
 | `fatal: unable to auto-detect email address` | identidad git sin configurar | `-c user.name=... -c user.email=...` o variables de entorno (ver `recetas.md`) |
+| `commit-aislado` imprime `AVISO: no existe <ruta>` y no commitea | rutas mal pasadas al script (con `-File` van separadas por comas; no por espacios) | corregir la lista; el script normaliza comas y espacios alrededor, nada más |
+| Tras un commit aislado `git status` muestra `D` + `??` de los archivos nuevos | el índice real no se refrescó (versión antigua del script o commit interrumpido) | `git add -- <rutas del commit>` y comprobar `git status --porcelain -- <rutas>` vacío |
 
 ## Prohibiciones
 

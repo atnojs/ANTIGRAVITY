@@ -2,7 +2,7 @@
 
 **Tarea:** crear una skill de commit/push y eliminar las instrucciones peligrosas de publicación
 **Autor:** Lead (DSH) — autor del cambio, no verificador
-**Fecha:** 2026-10-24 15:2x (Atlantic/Canary) · **Iteración interna:** 3
+**Fecha:** 2026-10-24 15:3x (Atlantic/Canary) · **Iteración interna:** 4
 **Entorno:** `E:\ANTIGRAVITY`, rama `main`, Windows + PowerShell 7, PHP 8.3.30, Python con PyYAML
 
 ## 0. Contrato de referencia (encargo del usuario)
@@ -21,7 +21,7 @@ trabajo de otras sesiones.
 
 | Artefacto | Líneas | Bytes | SHA-256 |
 |---|---:|---:|---|
-| `skills/SKILL_GIT_PUBLICAR.md` (nuevo, canónico) | 249 | 12.383 | `3a6ff3614fdd515ac3a359133d34f4e2acad1dc288cfa033e6737db2f60cb8f3` |
+| `skills/SKILL_GIT_PUBLICAR.md` (nuevo, canónico) | 255 | 13.159 | `4d248062d5e60031caeb56174dc625ce4e27f167268f3a56982e0f20369599c2` |
 | `.claude/skills/publicar-git/SKILL.md` (nuevo, puntero) | 35 | 2.635 | `49632976d009cfb59db231e28ba23c7dd7e62082cf0a5861d5f5589e0b262efd` |
 | `skills/SKILL_CREAR.md` (corregido) | 198 | 10.360 | `56ea66b0124be12d56326624e16903eec1f48f01b61d47e60efdd3ef7682526a` |
 | `skills/SKILL_MAESTRA.md` (enlace a la skill) | 1.016 | 63.258 | `d5cd8666ef7bde55f14b0e669507c292263a5843f9704f2f589e332fa7d7fa65` |
@@ -30,7 +30,7 @@ trabajo de otras sesiones.
 | `claude.md` (catálogo + regla crítica) | 128 | 9.716 | `ce2df30c8c70b6bf1d1905195ffc6aeadf57d163bad467d8f0c43bc54cfdcdde` |
 | `tools/memoria/mapa.md` (índice + recuento) | 85 | 5.123 | `a68249646825b8fc9ee3fd48a28ef0f419b26f419c814e4e1a2a221c0a20905d` |
 | `tools/memoria/recetas.md` (receta con pathspec + herramienta) | 403 | 21.582 | `ca5e29127c7edb55f358eff754bf3a1f3d422d94ebcd0b8b11d5987da3464486` |
-| `tools/commit-aislado.ps1` (normaliza `-Rutas` y documenta uso real) | 50 | 2.301 | `2b4984f47bc65ec670ccad123d45d00a23f44f69927e34d6da62c1a096a0cce6` |
+| `tools/commit-aislado.ps1` (normaliza `-Rutas`, documenta uso real y refresca el índice real) | 60 | 2.832 | `d0196bb6be3d6aa97a09c8da699108de2b53c467ee468ca7f882995c40271c49` |
 
 Hashes: `Get-FileHash <ruta> -Algorithm SHA256` el 2026-10-24, posteriores a todos los cambios.
 
@@ -39,7 +39,7 @@ Hashes: `Get-FileHash <ruta> -Algorithm SHA256` el 2026-10-24, posteriores a tod
 | ID | Criterio | Peso | Crítico | Nota | Evidencia |
 |---|---|---|---|---|---|
 | A1 | Cobertura del contrato | 18 | Sí | 9,5 | Los 4 requisitos cubiertos: skill `skills/SKILL_GIT_PUBLICAR.md:1-247`; `git add .` eliminado de `SKILL_CREAR.md:166-181`; gate y publicación. Sin recortes; se añaden los derivados del proyecto (puntero, catálogo, mapa, recetas) y el gemelo `SKILL_EDITAR…:147-162` |
-| A2 | Corrección funcional y técnica | 15 | Sí | 9,4 | Sintaxis git validada con `git commit --dry-run -m "test" -- tools/memoria/mapa.md` (exit 0, sin error de parseo); pathspec y `-c` de identidad probados igual; `php tools/generar-punteros-skills.php --check` → `OK .claude/skills/publicar-git/SKILL.md`; puntero idéntico al que genera el script; junction `.dsh/skills` → skill descubierta por el catálogo DSH (`publicar-git` presente en el catálogo de la sesión); `tools/commit-aislado.ps1` probado con ruta sin cambios por la vía documentada (`-File -Rutas a,b`): resuelve las dos rutas, no avisa de ruta inexistente y falla limpio sin crear commit (`fallo_nada_que_commitear=True`, HEAD intacto). Detectado y corregido que `&` directo está bloqueado por la ExecutionPolicy del equipo (§4.6) |
+| A2 | Corrección funcional y técnica | 15 | Sí | 9,4 | Sintaxis git validada con `git commit --dry-run -m "test" -- tools/memoria/mapa.md` (exit 0, sin error de parseo); pathspec y `-c` de identidad probados igual; `php tools/generar-punteros-skills.php --check` → `OK .claude/skills/publicar-git/SKILL.md`; puntero idéntico al que genera el script; junction `.dsh/skills` → skill descubierta por el catálogo DSH (`publicar-git` presente en el catálogo de la sesión); `tools/commit-aislado.ps1` probado con rutas reales sin cambios: resuelve la lista separada por comas, no avisa de ruta inexistente y falla limpio sin crear commit. Detectados y corregidos que `&` directo está bloqueado por la ExecutionPolicy (§4.7) y que el índice real quedaba desincronizado tras el commit (§4.8) |
 | A3 | Verificación real y evidencia reproducible | 13 | Sí | 9,5 | Todo lo anterior ejecutado en el repo real y reproducible con los comandos de este informe; hashes §1; YAML parseado con PyYAML (`name`, `description`, desc_len 312; puntero con front matter idéntico) |
 | A4 | Reglas del encargo y del proyecto | 10 | Sí | 9,5 | Español; solo `main`; nada de ramas/worktrees; sin secretos (`claude.md:98,124`, `mapa.md:59`, `recetas.md:72-73`); herramientas en `tools/`; no se reescriben archivos completos, se editan bloques; no se toca trabajo ajeno (`apps/trickvault/index.html`, `agenda/`, etc. quedan fuera) |
 | A5 | Autoevaluación honesta y calibrada | 12 | Sí | 9,4 | Este informe declara lo no verificado (§5) y los defectos encontrados y corregidos (§4); sin notas infladas; la nota no se apoya en el esfuerzo sino en salidas reales |
@@ -86,9 +86,17 @@ Hashes: `Get-FileHash <ruta> -Algorithm SHA256` el 2026-10-24, posteriores a tod
    («no está firmado digitalmente»). El borrador de la skill la recomendaba; corregido a la forma
    real que funciona aquí (`powershell -NoProfile -ExecutionPolicy Bypass -File …`), tanto en la
    skill como en `tools/memoria/recetas.md`.
+8. **Índice real desincronizado tras el commit aislado** (defecto medio, detectado al verificar
+   `git status` después del primer commit `002e74c`): el commit sale del índice temporal, así que
+   el índice real quedaba en el estado anterior y mostraba `D` en los archivos nuevos y `??` en el
+   árbol. Corregido en `tools/commit-aislado.ps1:45-56`: tras commitear, quita `GIT_INDEX_FILE` y
+   refresca el índice real **solo** de las rutas commiteadas (lo preparado por otras sesiones no se
+   toca). Índice actual reparado con `git add -- <rutas>` (status vacío). La corrección se valida en
+   el commit siguiente a este informe.
 
 Re-verificación tras cada cambio: hashes §1 recalculados al final, `--check` del generador, grep de
-malas prácticas (solo quedan menciones **prohibitivas**), parseo YAML y `--dry-run` de git.
+malas prácticas (solo quedan menciones **prohibitivas**), parseo YAML, `--dry-run` de git y prueba
+del script con rutas reales y sin cambios.
 
 ## 5. Riesgos, supuestos y límites
 
