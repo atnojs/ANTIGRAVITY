@@ -1911,3 +1911,26 @@ además diferencias de datos preexistentes (O1 del veredicto del verificador).
 **Decisión:** no se commitea (documento de 5,5 MB en `tools/`, protegido por `.htaccess`, y el árbol tiene 30+ cambios ajenos en curso). Reconstruir: `cd tools\tutoriales\unified-image-studio\_build; powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1`.
 
 **Limitación:** generaciones reales, vista comparativa y portapapeles no verificables sin proveedor/claves; declarado en el pie del documento.
+
+## 2026-10-25 — infografia-referencia: modelos del selector por filas (entrega verificada)
+
+Antonio: «edita esta app: apps/infografia-referencia y coloca los modelos por filas, no por columnas».
+
+**Qué se cambió** (commit `b83ef753`, push a `main`)
+
+| Acción | Resultado |
+|---|---|
+| Estructura HTML | `.model-provider-layout` pasa a columna: OPENAI 2.5 en la 1.ª línea y `.model-provider-row` con GEMINI + QWEN + IMAGE 2 en la 2.ª. 12/12 botones con `data-model`, tooltip, `aria-pressed`, orden y activo `openai-image-2-low` intactos. |
+| CSS | Bloque canónico de `skills/SKILL_MAESTRA.md` §«Selector de Modelo IA»: fila con `flex-wrap`, grupos sin compresión, pills `.5rem .85rem`, avisos invisibles `width:0` y media queries DESPUÉS de la base. `app.css?v=9`. |
+| Medidas (Chrome) | 1280 px: antes 1 línea de proveedores con botones 3/3/1/3 apilados → ahora **2 líneas y grupos 1/1/1/1** (812×267 → 812×261). 768 px: 696×289 → 3 líneas. **393 px: `docScrollWidth` 593 → 393, sin desbordamiento**. Sin overflow también a 320/360/600/901/1920. |
+| Producción | `https://atnojs.es/apps/infografia-referencia/` sirve `app.css?v=9` y `model-provider-row` (`x-hcdn-cache-status: DYNAMIC`, `last-modified` 16:22:42 GMT); medido en vivo: 2 líneas a 1280 y 0 overflow a 393. |
+
+**Verificación** (Chrome real con Playwright): toggle libre, gate de contraseña (el activo no cambia y Escape cierra), tooltip, AR 16:9, RES 2048 y reload. Consola sin errores propios (el 404 de `favicon.ico` es del sitio, preexistente). Foco por Tab en los 12 botones con outline visible.
+
+- Autoevaluación del autor: **97,3** (`tools/evidencias/2026-10-25-infografia-filas/AUTOEVALUACION.md`).
+- Verificador independiente: **PASS 97,3/100** (`tools/evidencias/2026-10-25-infografia-filas/verificacion-independiente/INFORME.md`), 0 defectos bloqueantes/mayores/medios. Observación sin acción: a 393 px OPENAI envuelve sus 5 botones en 2 líneas por el `flex-wrap` canónico (sin overflow ni apilado en columna).
+
+**Commits:** `b83ef753` (style) y el de esta entrada (docs).
+**Evidencias:** `tools/evidencias/2026-10-25-infografia-filas/`; comparativa `tools/comparativa_selector_modelos_infografia.png`.
+
+**Limitación:** no se ejecutó una generación real de infografía (necesita claves/crédito y el diff no toca ese circuito).
