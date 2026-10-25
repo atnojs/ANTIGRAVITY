@@ -2002,3 +2002,12 @@ Antonio: «genera una copia de la app pero con el estilo hoola. solo debes tocar
 - Verificado en local (1440/390, sin desbordes ni errores de consola) y en producción (CSS 30.194 B y JS 200; `ping` ok; `flow_store` e `history_store` responden 403).
 - Limitación: al no tocar nada fuera del estilo, la copia tiene su propia cola y ningún worker la sondea: sale «PC dormido» y lo que se encole no avanza. Se resuelve apuntando el worker a la copia o compartiendo la cola de la original (una línea) cuando se pida.
 - Commits `b55a3877`, `10f622a6`, `c3a58306` y `9bdd5477`; evidencias en `tools/evidencias/2026-10-25-flow-studio-hoola/`.
+
+## 2026-10-25 (noche) — Flow Studio Hoola: cola compartida y trabajos rescatados
+
+Antonio: «hazlo» (activar la generación en la copia Hoola).
+
+- `flow_studio_hoola/flow_queue.php` usa ahora el `flow_store` de la app original (`../flow_studio/flow_store`): el worker que ya corre en el PC procesa también los trabajos de la copia.
+- Migración única: al arrancar, los trabajos `queued`/`running` que quedaran en la cola propia se pasan a la compartida (copiando sus referencias) y `queue.json` se renombra a `queue.json.merged`.
+- Verificado en producción: `ping` de copia y original con el mismo `lastSeen`/`pending`; los 4 trabajos atrapados pasaron de 4 a 0 y aparecieron en el lienzo; `?action=img` sirve desde la copia las mismas imágenes; generación real desde la UI de la copia en 51 s (1024×1024, 162.944 B) con «PC conectado».
+- Commits `73a748ae`, `ed6902e8` y el de evidencias. La app original no se ha tocado.
