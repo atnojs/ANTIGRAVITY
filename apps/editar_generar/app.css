@@ -851,3 +851,33 @@ textarea:focus-visible {
   background:linear-gradient(135deg,var(--contenedor),rgba(0,208,208,.55));
   text-shadow:0 0 8px var(--glow);
 }
+
+/* === Historial: dos filas visibles y scroll propio a partir de la tercera ===
+   El alto lo fija app.js midiendo una tarjeta real (syncHistoryHeight), porque
+   depende del numero de columnas y del pie de la tarjeta en cada breakpoint.
+   Antes de que JS mida, este valor evita un salto de layout. */
+.history-scroll{
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  padding-right:6px;
+  /* Reserva el hueco de la barra: al aparecer el scroll no cambia el ancho de las
+     columnas y el alto de dos filas medido sigue siendo exacto. */
+  scrollbar-gutter:stable;
+  max-height:70vh;
+  border-radius:1rem;
+}
+/* Barra fina coherente con la app (hereda .custom-scrollbar cuando existe) */
+.history-scroll::-webkit-scrollbar{width:8px}
+.history-scroll::-webkit-scrollbar-track{background:rgba(0,0,0,.2);border-radius:20px}
+.history-scroll::-webkit-scrollbar-thumb{
+  background:linear-gradient(var(--bg2),var(--acc));
+  border-radius:20px;
+  border:2px solid transparent;
+  background-clip:content-box;
+}
+.history-scroll:focus-visible{
+  outline:2px solid var(--acc);
+  outline-offset:4px;
+}
+/* La rejilla del historial no necesita estilos propios: conserva Tailwind. */

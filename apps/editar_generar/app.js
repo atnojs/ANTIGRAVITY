@@ -1,5 +1,5 @@
 const ReactObj = window.React || {};
-const { useState, useRef, useEffect, Fragment } = ReactObj;
+const { useState, useRef, useEffect, useLayoutEffect, Fragment } = ReactObj;
 const ReactDOM = window.ReactDOM || {};
 
 // --- Lucide Icon Wrapper ---
@@ -723,6 +723,57 @@ const App = () => {
     const fileInputRef = useRef(null);
     // Entrada de archivo propia de la segunda imagen de referencia (modo Generar).
     const fileInput2Ref = useRef(null);
+    // Contenedor del historial con scroll propio: dos filas visibles.
+    const historyScrollRef = useRef(null);
+
+    // Alto del historial = dos filas de tarjetas. A partir de la tercera fila el
+    // panel hace scroll en su interior en vez de estirar la página entera.
+    // Se mide en el navegador porque el alto de fila depende del ancho de columna
+    // (1, 2 o 3 columnas segun el breakpoint) y del pie de cada tarjeta.
+    const syncHistoryHeight = () => {
+        const box = historyScrollRef.current;
+        if (!box) return;
+        const grid = box.firstElementChild;
+        const firstCard = grid && grid.firstElementChild;
+        if (!firstCard) return;
+        const gap = parseFloat(window.getComputedStyle(grid).rowGap) || 40;
+        const cardHeight = firstCard.getBoundingClientRect().height;
+        if (!cardHeight) return;
+        const dosFilas = Math.ceil(cardHeight * 2 + gap);
+        const next = dosFilas + 'px';
+        if (box.style.maxHeight !== next) box.style.maxHeight = next;
+    };
+
+    useLayoutEffect(() => {
+        const box = historyScrollRef.current;
+        if (!box) return undefined;
+        const firstCard = box.firstElementChild && box.firstElementChild.firstElementChild;
+        // Primera medida + re-medida cuando Tailwind, la tipografia o un cambio de
+        // breakpoint alteran el alto real de la tarjeta.
+        syncHistoryHeight();
+        let observer = null;
+        if (firstCard && typeof ResizeObserver !== 'undefined') {
+            observer = new ResizeObserver(() => syncHistoryHeight());
+            observer.observe(firstCard);
+        }
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => syncHistoryHeight()).catch(() => {});
+        }
+        return () => { if (observer) observer.disconnect(); };
+    }, [images]);
+
+    useEffect(() => {
+        let frame = 0;
+        const onResize = () => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(syncHistoryHeight);
+        };
+        window.addEventListener('resize', onResize);
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener('resize', onResize);
+        };
+    }, []);
 
     // Cargar historial desacoplado por modo activo
     useEffect(() => {
@@ -1285,10 +1336,18 @@ const App = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-                                        {images.map((img) => (
-                                            <ImageCard key={img.id} image={img} onDelete={handleDelete} onRegenerate={handleRegenerate} onEdit={handleOpenEdit} onClick={setLightboxImage} />
-                                        ))}
+                                    <div
+                                        ref={historyScrollRef}
+                                        className="history-scroll custom-scrollbar"
+                                        tabIndex={0}
+                                        role="region"
+                                        aria-label="Historial de imágenes"
+                                    >
+                                        <div className="history-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                                            {images.map((img) => (
+                                                <ImageCard key={img.id} image={img} onDelete={handleDelete} onRegenerate={handleRegenerate} onEdit={handleOpenEdit} onClick={setLightboxImage} />
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>
