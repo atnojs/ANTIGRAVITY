@@ -1992,3 +1992,13 @@ Antonio: «cuando clico en mejorar prompt aparecen 4 campos con los prompts. Lo 
 - Assets fechados `app.20261025e.css/js` (la CDN cachea por ruta) y `version.txt` actualizado.
 - Verificado en producción con el modelo real: 4 títulos distintos y prompt de 336 caracteres en el editor, botón activo y foco correctos, sin errores de consola; a 390 px dos columnas de 144×42 sin desbordes.
 - Commit `4e60e904`. Evidencias en `tools/evidencias/2026-10-25-flow-studio-prompts/`.
+
+## 2026-10-25 (noche) — Flow Studio: copia con estilo Hoola
+
+Antonio: «genera una copia de la app pero con el estilo hoola. solo debes tocar el estilo, nada más».
+
+- Nueva app `apps/flow_studio_hoola/`, publicada en `https://atnojs.es/apps/flow_studio_hoola/`. Único cambio real: `app.hoola.css` (nuevo) y en `index.html` el `theme-color` y el `<link>` de la hoja; `app.20261025e.js`, `flow_queue.php`, `proxy.php`, `history.php` y `history-manager.js` son byte a byte idénticos (SHA-256), y se copiaron los `.htaccess` de datos.
+- Sistema Hoola: tokens canónicos (cian `#00D0D0`, verde `#26C626`, Electrolize), fondo degradado con halos y rejilla de 46 px, paneles de vidrio con borde cian de 2 px y halo, estados activos con gradiente contenedor→cian y texto oscuro, y CTA cian→verde.
+- Verificado en local (1440/390, sin desbordes ni errores de consola) y en producción (CSS 30.194 B y JS 200; `ping` ok; `flow_store` e `history_store` responden 403).
+- Limitación: al no tocar nada fuera del estilo, la copia tiene su propia cola y ningún worker la sondea: sale «PC dormido» y lo que se encole no avanza. Se resuelve apuntando el worker a la copia o compartiendo la cola de la original (una línea) cuando se pida.
+- Commits `b55a3877`, `10f622a6`, `c3a58306` y `9bdd5477`; evidencias en `tools/evidencias/2026-10-25-flow-studio-hoola/`.
