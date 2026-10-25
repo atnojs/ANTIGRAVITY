@@ -1962,7 +1962,7 @@ Antonio: «elimina esta app: webs/curso-ia-2026».
 | Acción | Resultado |
 |---|---|
 | Repo | `git rm -r webs/curso-ia-2026` (6 ficheros, 995 líneas). Commit aislado `658b881b` por pathspec, solo esos 6 paths; push a `main`. |
-| Referencias | `git grep -in 'curso.ia'` en versionados: única coincidencia, el marcador «1111» del estado **vivo** de `nueva_pestana` (`estado_nueva_pestaña.json`), que `load_state.php` prohíbe versionar → se deja y se avisa. Sin enlaces en índices ni otras apps. |
+| Referencias | `git grep -in 'curso.ia'` en versionados: única coincidencia, el marcador «1111» del estado **vivo** de `nueva_pestana` (`estado_nueva_pestaña.json`), que `load_state.php` prohíbe versionar pero que **sí está en el repo** (el despliegue lo sobrescribe) → se deja y se avisa. Sin más enlaces en índices ni otras apps. |
 | Despliegue | El despliegue de Hostinger **no borra** lo retirado del repo: 4 push y ~25 min después la URL seguía en 200 con el `Last-Modified` del despliegue anterior. Prueba independiente: `apps/agenda/index.dev.html`, borrado del repo el 21-oct, sigue servido. Receta corregida en `recetas.md` y entrada nueva en `errores.md`. |
 | Producción | Carpeta retirada por Antonio en hPanel (`public_html/webs/curso-ia-2026`). Verificado con `?cb=` nuevo: `index.html`, `app.js`, `app.css`, `proxy.php`, `history.php`, `history-manager.js`, `history_data/history.json`, la raíz `/webs/curso-ia-2026/` y variantes `www`/mayúsculas → **404**. |
 

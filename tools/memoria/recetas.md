@@ -129,8 +129,11 @@ Invoke-WebRequest "https://atnojs.es/webs/<app>/index.html?cb=$([guid]::NewGuid(
   solos: comprobar `https://atnojs.es/webs/<app>/history_data/history.json` (200 = quedan
   restos; retirarlos en el mismo paso manual de hPanel).
 - Un enlace externo que apunte a la app (p. ej. un marcador del panel de `nueva_pestana`) no
-  está en el repo: vive en `estado_nueva_pestaña.json`, que es **estado vivo del usuario** y
-  `load_state.php` prohíbe versionar; se avisa y se deja que el usuario lo borre desde la app.
+  vive en el código de la app: está en `webs/nueva_pestana/estado_nueva_pestaña.json`. Ojo:
+  **ese fichero sí está versionado** (aunque `load_state.php` avisa de que no debería, porque
+  el despliegue lo sobrescribe con la copia del repo). Por eso **no se edita para quitar el
+  marcador** —se pisaría el estado vivo del usuario—: se avisa y se deja que lo borre él desde
+  la app.
 
 ## Git: ¿está un fichero ignorado? (importante antes de meter secretos)
 
