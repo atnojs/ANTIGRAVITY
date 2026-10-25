@@ -1934,3 +1934,23 @@ Antonio: «edita esta app: apps/infografia-referencia y coloca los modelos por f
 **Evidencias:** `tools/evidencias/2026-10-25-infografia-filas/`; comparativa `tools/comparativa_selector_modelos_infografia.png`.
 
 **Limitación:** no se ejecutó una generación real de infografía (necesita claves/crédito y el diff no toca ese circuito).
+
+## 2026-10-25 (tarde) — infografia-referencia: descargar y usar como referencia desde el historial
+
+Antonio: «el historial solo tiene un botón de eliminar, añade uno de descargar y otro que cuando lo clique coloque la imagen como imagen de referencia».
+
+**Qué se cambió** (commit `85ee9983`, push a `main`)
+
+| Acción | Resultado |
+|---|---|
+| Tarjeta del historial | Sustituido el único ✕ por el patrón canónico de acciones de `escenario_modelo`: overlay `.history-actions` con 3 botones circulares + etiqueta (Descargar / Referencia / Eliminar), `aria-label`, `title`, SVG `aria-hidden`, `:focus-within`, siempre visibles en `(hover:none)` y ≤900 px y compactos ≤600 px. |
+| Descargar | `fetch` → blob → `<a download>` con nombre `infografia-historial-<id>.png`. Verificado en local y producción: 228.370 B / PNG 512×288 / SHA-256 idéntico al fichero de `history_store/`, con ratón, teclado (Enter) y a 393 px. En producción: 1.474.295 B, PNG 768×1376, hash idéntico al servido. |
+| Usar como referencia | `fetch` → `File` → `loadFile()`: la imagen pasa a la sección 01, preview visible, «Analizar» habilitado, JSON reseteado y scroll a la referencia. Verificado en local y producción (status «Referencia cargada: infografia-historial-…»). |
+| Resto | Eliminar sigue con `confirm` y no borra al cancelar (9→9); el lightbox se mantiene (la miniatura lo abre, los botones no); recarga → 9 tarjetas/27 botones; sin scroll horizontal a 1280/768/393; consola limpia (solo el 404 de favicon del sitio). `app.css?v=10`, `app.js?v=12`. |
+
+**Verificación:** autoevaluación **97,5** (`tools/evidencias/2026-10-25-infografia-historial/AUTOEVALUACION.md`) y verificador independiente **PASS 97,5/100** (`…/verificacion-independiente/INFORME.md`), 0 defectos bloqueantes/mayores/medios; 3 observaciones menores heredadas del patrón canónico (fecha bajo el overlay visible, velo del overlay a ≤900 px, `aria-hidden` en el contenedor del icono) y 2 limitaciones declaradas (no se aceptó el borrado real; sin entradas no-PNG).
+
+**Commits:** `85ee9983` (feat) y el de esta entrada (docs).
+**Evidencias:** `tools/evidencias/2026-10-25-infografia-historial/`; comparativa `tools/comparativa_historial_acciones_infografia.png`.
+
+**Limitación:** no se probó la ruta destructiva del borrado (se canceló el confirm para no borrar historial real) ni la conversión de mime no-PNG (no hay entradas de ese tipo); tampoco se lanzó una generación real con IA (fuera del alcance del cambio).
