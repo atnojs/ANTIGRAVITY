@@ -5,6 +5,52 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-25] El ojo no se podía alcanzar con Tab en un modal que atrapa el foco
+
+- **Síntoma:** el verificador independiente (defecto D1) comprobó en producción que en
+  `apps/unified-image-studio/` el ojo no era accesible con el teclado: 20 pulsaciones de Tab
+  ciclaban entre los 5 controles del `#loginModal` sin llegar al botón. Ratón y `Alt+Shift+P` sí
+  funcionaban.
+- **Causa:** el modal usa `backdrop-filter`, que crea bloque contenedor para `position:fixed`; para
+  que el ojo quedara en el sitio correcto se montaba en `body`, fuera del modal y, por tanto, fuera
+  de su trampa de foco.
+- **Solución:** cuando el control se monta en `body`, se inserta junto al campo un botón puente de
+  1×1 px (`clip-path`, solo teclado) con el mismo `aria-label`/`aria-pressed`, que sí está dentro
+  del modal y entra en la trampa de foco; al enfocarse dibuja el anillo de foco sobre el ojo visible
+  y al activarse (Enter/Espacio) alterna la contraseña y devuelve el foco al campo. El control
+  visible pasa a ser un `<span aria-hidden>` (solo ratón) para no duplicar semántica.
+- **Verificación:** en `unified-image-studio`, `trickvault` y la raíz, Tab desde el campo llega al
+  puente, Enter alterna y el foco vuelve al campo; smoke local 165/165 OK. Commit `c4e9a916`.
+
+### [2026-10-25] Los `admin.php` con dos ramas se quedaban sin el visor en la pantalla de login
+
+- **Síntoma:** tras inyectar la etiqueta del visor, `apps/paginas/web_app/admin.php` y su copia de
+  `webs/web_app/` seguían mostrando el formulario de contraseña sin ojo.
+- **Causa:** el inyector insertaba la etiqueta solo antes del **último** `</body>` del fichero.
+  Esos PHP tienen dos `<body>`/`</body>` (login y panel) y la primera rama termina en `exit;` antes
+  de llegar al final, así que la etiqueta caía en la rama que no se ejecutaba.
+- **Solución:** para ficheros `.php` el inyector inserta la etiqueta antes de **cada** `</body>`;
+  para `.html` mantiene solo el último (hay páginas que llevan `</body>` dentro de plantillas JS).
+  Aplicado en `tools/inject-password-eye.mjs` y comprobado en las dos ramas.
+- **Verificación:** `webs/web_app/admin.php` y `apps/paginas/web_app/admin.php` sirven la etiqueta
+  en su login (comprobado en producción con `?cb=`) y el smoke carga ambas páginas OK.
+
+### [2026-10-25] El smoke en local daba falsos fallos por `alert()` y por contar campos que no se ven
+
+- **Síntoma:** 7 páginas marcadas como fallo sin serlo: 2 se quedaban con `timeout CDP
+  Runtime.evaluate` y 5 decían «ojos visibles 0 < campos visibles 1».
+- **Causa:** (a) páginas legacy abren un `alert()` al cargar porque en el `php -S` local falta un
+  JSON de datos; el diálogo bloquea el renderer y la evaluación CDP nunca vuelve; (b) el criterio de
+  visibilidad del smoke solo miraba `display`/`visibility`/tamaño: contaba campos con `opacity:0` o
+  muy por debajo del viewport como «visibles», y en esas páginas el ojo está (correctamente) oculto.
+- **Solución:** el smoke atiende `Page.javascriptDialogOpening` y acepta el diálogo; el criterio de
+  visibilidad exige intersección con el viewport y opacidad acumulada de antecesores. En el
+  componente se añadió también la opacidad acumulada (una caja `opacity:0` ocupa sitio y tapaba el
+  ojo).
+- **Verificación:** rerun de las páginas afectadas OK y smoke completo local y producción 165/165 OK.
+
+---
+
 ### [2026-10-24] El valor real de una contraseña acabó en un docblock de un fichero versionado
 
 - **Síntoma:** la contraseña de ACCESO del proyecto (la de publicar en TrickVault) aparecía en

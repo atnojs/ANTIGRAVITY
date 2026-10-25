@@ -452,3 +452,34 @@ propósito, para que no se pierda de vista.
 - **Verificación:** `GET https://atnojs.es/apps/agenda/api/health` → `{"status":"ok",
   "version":"2.0.0","openai_configured":true}`; evidencias en
   `tools/evidencias/2026-10-21-agenda/`.
+
+---
+
+## 🔍 Visor de contraseña (`apps/_shared/password-eye.js`) — límites declarados
+
+- **Estado:** desplegado (commits `601716af` y `c4e9a916`, versión final `20261025b`) con smoke
+  165/165 en local y producción. La verificación independiente señaló D1 (el ojo no se alcanzaba
+  con Tab en un modal con trampa de foco), ya corregido con un botón puente oculto junto al campo.
+  Receta para reaplicarlo o cambiar la versión: `recetas.md`.
+- **Pendiente 1 — Safari/iOS real:** no hay webkit instalado; probar en un iPhone real un login
+  (descargas o bóveda) y confirmar que el ojo flota dentro del campo y no tapa el texto.
+  *Siguiente paso:* abrir la URL en un iPhone y capturar, o `npx playwright install webkit`.
+- **Pendiente 2 — campos diminutos:** los `input` de menos de 56 px de ancho o 14 px de alto no
+  reciben ojo (no cabría). *Siguiente paso:* si aparece un login así, ensanchar el campo o añadir
+  una variante compacta al componente.
+- **Pendiente 3 — apps nuevas:** el visor no se añade solo. Al crear una página con contraseña,
+  ejecutar `node tools/inject-password-eye.mjs --apply` y el smoke antes de publicar.
+
+---
+
+## 🐞 Unified Image Studio (`apps/unified-image-studio`) — defectos detectados en la verificación del tutorial
+
+- **Estado:** app estable y usable; el tutorial completo está entregado y verificado (`tools/tutoriales/unified-image-studio/TUTORIAL.html`, PASS 94,5). Los defectos están **documentados dentro del tutorial** con su solución provisional.
+- **Pendiente 1 — redimensión por asas:** el tamaño se calcula bien pero la capa salta de posición (`tools.js` `applyResize`, doble cómputo del ancla). *Siguiente paso:* corregir `applyResize` y probar las 8 asas con capa rotada.
+- **Pendiente 2 — «Mantener proporción»:** listener vacío (`app.js:1731`); 800×600 con ancho 1600 acaba en 1600×600. *Siguiente paso:* conectar la casilla a `applyResize`.
+- **Pendiente 3 — transparencia JPG→PNG:** al volver a PNG la casilla sigue desmarcada, el resumen dice «conservada» y el PNG sale opaco (`app.js:1416-1417`). *Siguiente paso:* recordar el estado previo por formato o volver a marcar en PNG.
+- **Pendiente 4 — doble import al soltar en la dropzone:** burbujeo del `drop` a `#stageInner` (`app.js:777-785`). *Siguiente paso:* `stopPropagation()` en el handler de `#dropzone`.
+- **Pendiente 5 — `Shift+2`:** el código exige `event.key === '@'` (`app.js:1698`), inoperante en teclado ES. *Siguiente paso:* aceptar `'@' || '"' || event.code === 'Digit2'`.
+- **Pendiente 6 — conflicto 409:** al «Conservar la mía» el guardado se hace pero salta `setSaveState is not defined` (`app.js:1540`). *Siguiente paso:* importar `setSaveState` desde `core.js` y probar el flujo.
+- **Pendiente 7 — máscara y roles:** el contrato canónico no reenvía `mask` ni los roles de referencia al proveedor (`canonical-image-model.php`). *Siguiente paso:* decidir si se implementa el envío (OpenAI `/images/edits` admite `mask`) o se retira la promesa de la UI.
+- **Evidencias:** `tools/evidencias/2026-10-25-tutorial-uis/verificacion-ui.md` (68 capturas, descargas validadas) y `verificacion-tutorial-r2.md`.

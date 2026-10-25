@@ -401,3 +401,31 @@ backend en PHP). Pasos:
 `--ignore-scripts` + permiso ampliado y `--cache` dentro del workspace); el BOM de PowerShell rompe
 los PHP; y el despliegue de Hostinger puede tardar >10 min o servir un commit anterior (ver
 `errores.md`: reempujar; y **borrar una carpeta a mano no la borra**).
+
+## Ver/ocultar contraseña en las apps y webs (password-eye) — verificado 2026-10-25
+
+El componente vive en `apps/_shared/password-eye.js` y se incluye en cada página con
+`<script src="/apps/_shared/password-eye.js?v=20261025b" defer></script>` antes de `</body>`.
+
+```powershell
+# 1) ver el alcance y si falta alguna página (sin escribir nada)
+node tools\inject-password-eye.mjs
+
+# 2) añadir la etiqueta a las que falten (idempotente, a nivel de bytes)
+node tools\inject-password-eye.mjs --apply
+node tools\inject-password-eye.mjs --check
+
+# 3) humo en Chrome real (local o producción); deja JSON con el detalle
+node tools\smoke-password-eye.mjs
+node tools\smoke-password-eye.mjs --base https://atnojs.es --json tools\evidencias\...\smoke-prod.json
+```
+
+**Al cambiar el componente:** subir `VERSION` en `apps/_shared/password-eye.js` y en
+`tools/inject-password-eye.mjs` y re-ejecutar `--apply`: reescribe el `?v=` de todas las páginas.
+El `.js` se sirve con `Cache-Control: max-age=604800`; sin cambiar la versión se queda en caché
+hasta 7 días.
+
+**Servidor local para el humo:** `php -S 127.0.0.1:8123 -t E:\ANTIGRAVITY`. En `php -S` no hay
+`.htaccess` y algunas páginas legacy abren `alert()` porque les falta un JSON de datos; el smoke los
+descarta solo. El componente cubre también los campos que crea el JS (TrickVault, gate de modelos,
+bóveda, login de Firebase) porque se detectan por `MutationObserver`.

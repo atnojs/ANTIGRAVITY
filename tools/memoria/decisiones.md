@@ -5,6 +5,30 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 
 ---
 
+### [2026-10-25] Visor de contraseña: un componente compartido con botón flotante, en vez de editar 165 formularios
+
+- **Decisión:** un único `apps/_shared/password-eye.js` incluido con una etiqueta por página, y el
+  botón posicionado en `position:fixed` sobre el borde derecho del campo (montado en `body` o en el
+  `<dialog>` abierto), sin envolver el input ni tocar la estructura del formulario.
+- **Por qué:** hay 165 páginas con estilos y stacks distintos (apps React/Babel, modales
+  glassmorphism con `backdrop-filter`, webs legacy, login PHP con dos ramas). Envolver el campo o
+  inyectar el botón dentro del formulario rompía selectores CSS y layouts flex; editar 165
+  formularios a mano duplicaba código y divergía. Un componente único se mantiene una sola vez,
+  cubre campos creados por JS (modales de TrickVault, gate de modelos, bóveda, login de Firebase) y
+  se actualiza subiendo la versión en la URL.
+- **Contrapartidas asumidas:** cuando un antecesor del campo crea bloque contenedor
+  (`transform`/`filter`/`backdrop-filter`), el control visible se monta en `body` y se añade un
+  **botón puente oculto** junto al campo para que entre en el orden de tabulación y en la trampa de
+  foco del modal (así el ojo se alcanza con Tab + Enter incluso en modales que atrapan el foco;
+  defecto D1 detectado por el verificador). Los campos muy pequeños (<56 px de ancho o <14 px de
+  alto) no reciben ojo. El `.js` se sirve con `Cache-Control: max-age=604800`: al cambiarlo hay que
+  subir `VERSION` y re-ejecutar `tools/inject-password-eye.mjs --apply` (actualiza el `?v=` de las
+  165 páginas).
+- **Verificación:** smoke local y de producción 165/165 y flujos manuales en producción; evidencias
+  en `tools/evidencias/2026-10-25-password-eye/`.
+
+---
+
 ### [2026-10-24] Reescritura del historial de `main`: excepción puntual para borrar un secreto
 
 - **Decisión:** se reescribió el historial de `main` con `git filter-repo` y se publicó con

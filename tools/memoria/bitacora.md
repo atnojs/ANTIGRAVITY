@@ -5,6 +5,45 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-25 — Visor de contraseña (ojo para ver/ocultar lo escrito) en las 165 páginas publicadas con contraseña
+
+- **Encargo:** «edita las aps/webs que soliciten contraseña para que si lo deseo pueda ver la
+  contraseña que he escrito».
+- **Qué se hizo:** componente compartido `apps/_shared/password-eye.js` (versión `20261025b`) que
+  añade un botón de ojo a cada `input[type=password]` —los que ya existen y los que pinta el
+  JS/React después—: alterna `password`↔`text` conservando el valor exacto, `aria-label`/
+  `aria-pressed`, atajo `Alt+Shift+P` con el campo enfocado, se oculta si el campo no está
+  visible/tapado/transparente/fuera de pantalla, paleta adaptativa (color base = color del propio
+  campo; acento cian `#00D0D0` en fondo oscuro y teal `#007a78` en claro) y `padding-right` medido
+  para no romper layouts. El botón flota en `position:fixed` sobre el borde derecho del campo (se
+  monta en `body` cuando hay `transform`/`backdrop-filter` de por medio) y no altera la estructura
+  del formulario. En esos modales con trampa de foco se añade un botón puente oculto junto al campo
+  para que el ojo sea accesible con Tab + Enter.
+- **Alcance:** etiqueta `<script src="/apps/_shared/password-eye.js?v=20261025b" defer></script>`
+  antes del `</body>` en **165 páginas** (108 de `apps/`, 56 de `webs/`, `index.html` raíz). Los 4
+  `admin.php` con dos ramas (login y panel) llevan la etiqueta en las dos. Alcance calculado con
+  `tools/lib/password-eye-targets.mjs` (HTML con `type=password`, páginas que cargan
+  `model-gate.js` y páginas con contraseña creada por JS) y contrastado con el inventario
+  independiente del auditor de cobertura.
+- **Herramientas nuevas:** `tools/inject-password-eye.mjs` (inyección idempotente a nivel de bytes
+  y actualización del `?v=` al subir versión) y `tools/smoke-password-eye.mjs` (humo CDP en Chrome
+  real de las 165 rutas, con autodescarte de `alert()` y criterio de visibilidad real).
+- **Verificación:** smoke local **165/165 OK** y smoke producción **165/165 OK** (versión a y b);
+  flujos reales en producción: descargas (revelar/ocultar y la contraseña incorrecta sigue
+  rechazando), raíz modal ACTIVAR, TrickVault modal «Edición protegida», bóveda privada,
+  `admin.php` login, campo claro de `web_apps` (icono negro/teal), móvil 393x844 sin scroll
+  horizontal, teclado y atajo. **Verificación independiente:** `verificador-ojo` emitió REWORK en
+  `601716af` por D1 (el ojo no se alcanzaba con Tab en un modal con trampa de foco) y **PASS 94,6**
+  en `c4e9a916` tras corregirlo; `auditor-cobertura` emitió **PASS** de cobertura (165/165 rutas con
+  etiqueta, HTTP 200 y consola sin excepciones nuevas; delta de la versión b verificado también).
+  Evidencias en `tools/evidencias/2026-10-25-password-eye/` (lead, verificador y cobertura).
+- **Publicación:** commits `601716af` (visor) y `c4e9a916` (corrección del defecto D1: acceso por
+  teclado en modales con trampa de foco), ambos pusheados a `main` y comprobados en producción con
+  `?cb=` nuevo. Versión final del componente: `20261025b`.
+- **Pendiente declarado:** Safari/iOS real no probado (no hay webkit instalado); ver `pendientes.md`.
+
+---
+
 ## 2026-10-25 — Auditoría semanal de atnojs.es: 164 páginas, 0 5xx, 44 enlaces/recursos 404
 
 - Cobertura: `/` + todas las `webs/*` y `apps/*` versionadas (164 entry points) y 142 enlaces del
@@ -1856,3 +1895,19 @@ sin publicar (el HTML servido no contiene `migrateDobleReorganizada` ni `DOBLE_R
 **Pendiente/limitación:** D1 anotado en `pendientes.md`; el trabajo de «Doble exposición» de la
 sesión anterior sigue sin publicar (decisión del dueño); al publicar de verdad, el confirm listará
 además diferencias de datos preexistentes (O1 del veredicto del verificador).
+
+## 2026-10-25 (tarde) — Tutorial completo de Unified Image Studio (entrega verificada)
+
+**Encargo:** examinar `apps/unified-image-studio` y entregar un tutorial paso a paso exhaustivo para usarla «como un top».
+
+**Entregable:** `tools/tutoriales/unified-image-studio/TUTORIAL.html` — HTML autocontenido (5,5 MB, 25 capturas en base64, 33 capítulos, portada e índice), más `LEEME.md` y fuentes reproducibles en `_build/` (`build.ps1` ensambla y resuelve `IMG:…`). SHA-256: `781bf10b…`. Abrir en Chrome; no requiere servidor.
+
+**Proceso:** 3 agentes en paralelo (ficha frontend, ficha backend, verificación real en Chrome) + redacción del Lead + verificación independiente en dos rondas. Evidencias en `tools/evidencias/2026-10-25-tutorial-uis/`: 68 capturas, descargas reales validadas (PNG/JPG/WebP/`.uis.json`), 3 anchos medidos, informe funcional, análisis con citas `archivo:línea`, diff r1→r2.
+
+**Resultado del gate `autocalidad-90`:** ronda 1 REWORK 89,9 (1 Mayor, 1 Medio, 5 menores); ronda 2 **PASS 94,5** con cero defectos abiertos (`verificacion-tutorial-r2.md`; autoevaluación 93,8 en `autoevaluacion-tutorial.md`).
+
+**Defectos reales de la app v1.4.0 detectados y documentados:** redimensionar con asas desplaza la capa; «Mantener proporción» no está conectado; soltar un archivo sobre la tarjeta del estado vacío lo importa dos veces; tras pasar por JPG el PNG puede salir opaco aunque el resumen diga «transparencia conservada»; `Shift+2` no funciona en teclado ES; al resolver un 409 aparece `setSaveState is not defined` (aunque guarda); la máscara y los papeles de referencia no se envían al proveedor. La IA real no se ejecutó (sin claves); el tutorial lo declara.
+
+**Decisión:** no se commitea (documento de 5,5 MB en `tools/`, protegido por `.htaccess`, y el árbol tiene 30+ cambios ajenos en curso). Reconstruir: `cd tools\tutoriales\unified-image-studio\_build; powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1`.
+
+**Limitación:** generaciones reales, vista comparativa y portapapeles no verificables sin proveedor/claves; declarado en el pie del documento.
