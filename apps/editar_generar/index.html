@@ -32,6 +32,9 @@
 
   <script>
     window.onerror = function (msg, url, line, col, error) {
+      // Un aviso de bucle de ResizeObserver no es un fallo de la app: no debe
+      // sustituir la interfaz por la pantalla de error.
+      if (String(msg).indexOf('ResizeObserver loop') === 0) { console.warn(msg); return true; }
       document.body.innerHTML = '<div style="color:#2ee8ff; background:#041847; padding:20px; font-family:monospace; border: 2px solid #ff4ecd;">' +
         '<h1>Error Critico en la Interfaz</h1>' +
         '<p>' + msg + '</p>' +
@@ -46,7 +49,7 @@
   <div id="root"></div>
   <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
   <script src="history-manager.js?v=1"></script>
-    <script type="text/babel" src="app.js?v=27"></script>
+    <script type="text/babel" src="app.js?v=28"></script>
   <!-- Bloqueo de modelos avanzados: IMAGE 2 LOW y MEDIUM libres, el resto pide contraseña -->
   <script src="../_shared/model-gate.js?v=3"></script>
 <script src="/apps/_shared/password-eye.js?v=20261025b" defer></script>

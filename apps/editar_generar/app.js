@@ -615,15 +615,21 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
                             </div>
                             <span className="btn-canon text-[8px] text-slate-300">Bajar</span>
                         </button>
-
-                        <button onClick={(e) => { e.stopPropagation(); onDelete(image.id); }} className="flex flex-col items-center gap-1.5 group/btn">
-                            <div className="w-9 h-9 rounded-full bg-red-900/40 border border-red-500/50 flex items-center justify-center group-hover/btn:bg-red-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
-                                <Trash2 className="text-red-400" size={16} />
-                            </div>
-                            <span className="btn-canon text-[8px] text-red-300">Quitar</span>
-                        </button>
                     </div>
                 </div>
+
+                {/* Eliminar: siempre visible, también en móvil (donde no hay hover).
+                    Va sobre la esquina de la imagen para no tapar la etiqueta del modelo. */}
+                <button
+                    type="button"
+                    data-accion="eliminar-historial"
+                    onClick={(e) => { e.stopPropagation(); onDelete(image.id); }}
+                    title="Eliminar del historial"
+                    aria-label="Eliminar esta imagen del historial"
+                    className="absolute bottom-3 right-3 z-30 w-9 h-9 rounded-full bg-slate-950/80 border border-red-500/50 text-red-300 flex items-center justify-center backdrop-blur-sm shadow-lg transition-all hover:bg-red-500/90 hover:text-white hover:border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                >
+                    <Trash2 size={16} />
+                </button>
             </div>
 
             <div className="p-4 bg-slate-900/80 backdrop-blur-md flex flex-col gap-1 border-t border-white/5">
@@ -748,18 +754,35 @@ const App = () => {
         const box = historyScrollRef.current;
         if (!box) return undefined;
         const firstCard = box.firstElementChild && box.firstElementChild.firstElementChild;
+        let rafId = 0;
+        // La medida se escribe FUERA del ciclo de notificacion del observador: si se
+        // cambia el layout dentro del callback, Chrome emite "ResizeObserver loop
+        // completed with undelivered notifications" y el onerror global de la pagina
+        // sustituye la interfaz por la pantalla de error.
+        const medirDiferido = () => {
+            if (rafId) return;
+            rafId = requestAnimationFrame(() => { rafId = 0; syncHistoryHeight(); });
+        };
         // Primera medida + re-medida cuando Tailwind, la tipografia o un cambio de
         // breakpoint alteran el alto real de la tarjeta.
         syncHistoryHeight();
         let observer = null;
         if (firstCard && typeof ResizeObserver !== 'undefined') {
-            observer = new ResizeObserver(() => syncHistoryHeight());
+            observer = new ResizeObserver(medirDiferido);
             observer.observe(firstCard);
         }
+        const temporizadores = [120, 600, 1500].map(ms => setTimeout(medirDiferido, ms));
+        const alCargarFuentes = () => medirDiferido();
         if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(() => syncHistoryHeight()).catch(() => {});
+            document.fonts.ready.then(alCargarFuentes).catch(() => {});
+            if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', alCargarFuentes);
         }
-        return () => { if (observer) observer.disconnect(); };
+        return () => {
+            if (observer) observer.disconnect();
+            if (rafId) cancelAnimationFrame(rafId);
+            temporizadores.forEach(clearTimeout);
+            if (document.fonts && document.fonts.removeEventListener) document.fonts.removeEventListener('loadingdone', alCargarFuentes);
+        };
     }, [images]);
 
     useEffect(() => {
@@ -963,8 +986,17 @@ const App = () => {
     };
 
     const handleDelete = async (id) => {
-        await deleteHistoryItemFromDb(id);
-        setImages(images.filter(img => img.id !== id));
+        // El botón de papelera está siempre a la vista: se confirma antes de borrar
+        // en el servidor, que es la fuente de verdad del historial.
+        if (!window.confirm('¿Eliminar esta imagen del historial? No se puede deshacer.')) return;
+        try {
+            await deleteHistoryItemFromDb(id);
+            setImages(prev => prev.filter(img => img.id !== id));
+            setError(null);
+        } catch (e) {
+            console.warn('Error eliminando del historial:', e);
+            setError('No se pudo eliminar la imagen del historial. Inténtalo de nuevo.');
+        }
     };
 
     const handleClearHistory = async () => {
