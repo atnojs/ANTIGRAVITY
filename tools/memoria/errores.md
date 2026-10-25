@@ -899,3 +899,23 @@ Ampliación con datos de la entrada del 2026-10-16:
   el código 2. Comprobado: sin ventanas de aviso, worker oculto, puerto 8125 y la app lo ve.
 - **Para lanzarlo a mano:** doble clic en `tools\descargador\iniciar-worker.vbs` (oculto) o en el
   `.bat` (muestra consola y puede pedir confirmación: es normal).
+
+## 2026-10-25 — El despliegue de Hostinger NO borra los archivos retirados del repo
+
+- **Síntoma:** se eliminó `webs/curso-ia-2026` del repo (commit `658b881b`), se subió a `main`
+  y, 25 minutos y 4 push después, `https://atnojs.es/webs/curso-ia-2026/index.html` seguía
+  devolviendo 200 con `Last-Modified` 17:13:38 (el del despliegue anterior). El webhook de
+  Hostinger recibía todos los push con HTTP 200 (entregas del hook vistas con `gh api`).
+- **Causa:** el despliegue de Hostinger **replica/actualiza** el árbol de `main` pero **no
+  elimina** los ficheros que ya no están en el repo. Prueba independiente: en el despliegue del
+  25-oct 17:32:44 todos los ficheros públicos presentes se reescribieron (mtime 17:32:44) y la
+  carpeta borrada conservó el suyo (17:13:38); además, `apps/agenda/index.dev.html`, borrado del
+  repo el 2026-10-21, sigue sirviéndose con `Last-Modified` del 21-oct.
+- **Solución:** retirar la carpeta a mano en **hPanel → Administrador de archivos →
+  `public_html/webs/<app>` → Eliminar** (desde el agente no hay FTP/SSH válidos para
+  `atnojs.es`). Después verificar con `?cb=<guid>` nuevo que `index.html`, los assets,
+  `proxy.php` y la raíz de la carpeta dan **404**.
+- **Cómo comprobarlo:** `Invoke-WebRequest` a la URL con `?cb=` nuevo → 404; y
+  `git ls-tree HEAD -- <ruta>` vacío.
+- **Lección:** «publicado en `main`» ≠ «retirado de producción». No dar un borrado por
+  terminado hasta comprobar la URL real.
