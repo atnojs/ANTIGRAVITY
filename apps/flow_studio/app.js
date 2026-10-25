@@ -602,47 +602,47 @@
         els.btnImproveLabel.textContent = busy ? 'Pensando…' : 'Mejorar con IA';
     }
 
+    function applyOption(option, index, button) {
+        els.prompt.value = option.prompt;
+        updateCounter();
+        els.prompt.focus();
+        const end = els.prompt.value.length;
+        try { els.prompt.setSelectionRange(end, end); } catch { /* sin soporte */ }
+        els.btnRestorePrompt.classList.remove('hidden');
+        els.improveList.querySelectorAll('.btn-prompt-option').forEach((other) => {
+            other.classList.toggle('is-active', other === button);
+        });
+        setNote(`Prompt ${index + 1} cargado en el editor. Puedes editarlo antes de generar.`);
+    }
+
     function renderOptions(options, original) {
         els.improveList.innerHTML = '';
+        els.improveList.classList.add('prompt-options');
         options.forEach((option, index) => {
-            const item = document.createElement('article');
-            item.className = 'option';
-            const title = document.createElement('h4');
-            title.textContent = option.titulo || `Propuesta ${index + 1}`;
-            const text = document.createElement('p');
-            text.textContent = option.prompt;
-            const actions = document.createElement('div');
-            actions.className = 'option-actions';
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn-prompt-option';
 
-            const use = document.createElement('button');
-            use.type = 'button';
-            use.className = 'btn-use';
-            use.textContent = 'Usar esta';
-            use.addEventListener('click', () => {
-                els.prompt.value = option.prompt;
-                updateCounter();
-                els.prompt.focus();
-                els.btnRestorePrompt.classList.remove('hidden');
-                setNote('Propuesta aplicada. Puedes editarla antes de generar.');
-            });
+            const number = document.createElement('span');
+            number.className = 'po-num';
+            number.textContent = String(index + 1);
+            const label = document.createElement('span');
+            label.className = 'po-label';
+            label.textContent = `Prompt ${index + 1}`;
+            button.append(number, label);
 
-            const copy = document.createElement('button');
-            copy.type = 'button';
-            copy.className = 'btn-mini';
-            copy.textContent = 'Copiar';
-            copy.addEventListener('click', async () => {
-                const ok = await copyText(option.prompt);
-                setNote(ok ? 'Propuesta copiada.' : 'No se pudo copiar.', !ok);
-            });
-
-            actions.append(use, copy);
-            item.append(title, text, actions);
-            els.improveList.appendChild(item);
+            const title = option.titulo || '';
+            button.title = title ? `${title} — pulsa para editarlo en el prompt` : 'Pulsa para editarlo en el prompt';
+            button.setAttribute('aria-label', title
+                ? `Prompt ${index + 1}: ${title}. Pulsa para llevarlo al editor.`
+                : `Prompt ${index + 1}. Pulsa para llevarlo al editor.`);
+            button.addEventListener('click', () => applyOption(option, index, button));
+            els.improveList.appendChild(button);
         });
 
         state.originalPrompt = original || '';
         els.btnRestorePrompt.classList.toggle('hidden', !state.originalPrompt);
-        els.improveHint.textContent = `${options.length} propuestas listas`;
+        els.improveHint.textContent = `${options.length} prompts listos`;
     }
 
     async function improvePrompt() {
@@ -658,6 +658,7 @@
         setImproveBusy(true);
         els.improvePanel.classList.remove('hidden');
         els.improveHint.textContent = 'Pensando…';
+        els.improveList.classList.remove('prompt-options');
         els.improveList.innerHTML = '<p class="improve-msg" style="color:#9aa3ad">Buscando 4 enfoques distintos…</p>';
 
         try {
@@ -677,8 +678,9 @@
                 throw new Error('Sin propuestas. Prueba otra vez.');
             }
             renderOptions(data.options, prompt);
-            setNote('Elige una propuesta: cada una tiene su botón.');
+            setNote('Pulsa un prompt para llevarlo al editor.');
         } catch (err) {
+            els.improveList.classList.remove('prompt-options');
             els.improveList.innerHTML = `<p class="improve-msg">${escapeHtml(err.message)}</p>`;
             els.improveHint.textContent = 'Error';
         } finally {

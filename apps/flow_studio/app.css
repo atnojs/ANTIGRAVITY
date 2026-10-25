@@ -205,25 +205,32 @@ body {
     font-size: 10.5px; letter-spacing: 1.8px; text-transform: uppercase; color: #cfd8e0;
 }
 .improve-list { display: grid; gap: 8px; }
-.option {
-    border: 1px solid var(--line); border-radius: 11px;
-    padding: 10px 11px; background: rgba(255, 255, 255, 0.025);
+.improve-list.prompt-options { grid-template-columns: 1fr 1fr; }
+
+/* Un botón por propuesta: al pulsarlo, el prompt va al editor principal. */
+.btn-prompt-option {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: var(--font-display); font-size: 11.5px; letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: #d6fbf7; background: rgba(0, 208, 208, 0.09);
+    border: 1px solid rgba(0, 208, 208, 0.34);
+    border-radius: 10px; padding: 11px 10px; cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
 }
-.option h4 { margin: 0 0 5px; font-size: 12.5px; font-weight: 600; color: #eaf3f6; }
-.option p { margin: 0 0 9px; font-size: 12px; line-height: 1.5; color: #b7c1cb; }
-.option-actions { display: flex; gap: 7px; }
-.btn-use {
-    font-family: var(--font-body); font-size: 11.5px; font-weight: 600;
+.btn-prompt-option:hover {
+    background: rgba(0, 208, 208, 0.17); border-color: rgba(0, 208, 208, 0.6); color: #eaffff;
+}
+.btn-prompt-option:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.btn-prompt-option.is-active {
     color: #04201c; background: linear-gradient(135deg, var(--cyan), var(--green));
-    border: 0; border-radius: 8px; padding: 6px 11px; cursor: pointer;
-    transition: filter .18s ease;
+    border-color: transparent; font-weight: 600;
 }
-.btn-use:hover { filter: brightness(1.08); }
-.btn-mini {
-    font-size: 11.5px; color: #c7ced6; background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer;
+.po-num {
+    width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 10px; letter-spacing: 0;
+    background: rgba(255, 255, 255, 0.16);
 }
-.btn-mini:hover { border-color: var(--line-strong); color: #fff; }
+.btn-prompt-option.is-active .po-num { background: rgba(0, 0, 0, 0.18); }
 .link-btn {
     background: none; border: 0; padding: 9px 0 0;
     color: var(--cyan); font-size: 11.5px; cursor: pointer; text-decoration: underline;
