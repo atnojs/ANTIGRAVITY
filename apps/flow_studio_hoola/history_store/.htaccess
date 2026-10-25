@@ -1,0 +1,10 @@
+# Proteger el almacen del historial: servir solo imagenes, sin listado
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    Require all granted
+</FilesMatch>
+<FilesMatch "\.(json|php|lock)$">
+    Require all denied
+</FilesMatch>
