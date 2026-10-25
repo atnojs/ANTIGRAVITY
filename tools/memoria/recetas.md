@@ -97,6 +97,37 @@ git -C E:\ANTIGRAVITY show --stat HEAD      # lo que acaba de entrar en el últi
 ```
 
 
+## Eliminar una app publicada (verificado 2026-10-25)
+
+Borrar la carpeta del repo **sí** la retira de Hostinger: el despliegue elimina los
+ficheros que salen de `main` (comprobado con `webs/infografias` y
+`webs/pagina_apps_prompts_imagenes`, ambas en 404 después de su borrado, y con
+`webs/curso-ia-2026`, commit `658b881b`).
+
+```powershell
+# 0) referencias ANTES de borrar (nunca editar el estado vivo de nueva_pestana: ver load_state.php)
+git -C E:\ANTIGRAVITY grep -in 'ruta-de-la-app' -- . ':!<carpeta>'
+
+# 1) borrar del índice y del disco
+git -C E:\ANTIGRAVITY rm -r --quiet -- webs/<app>
+
+# 2) commit aislado + push (el webhook despliega)
+git -C E:\ANTIGRAVITY -c user.name='atnojs' -c user.email='atnojs@gmail.com' `
+  commit -m "chore(webs): eliminar app <app>" -- webs/<app>
+git -C E:\ANTIGRAVITY push origin main
+
+# 3) esperar a que producción deje de servirla (parámetro nuevo en cada intento)
+Invoke-WebRequest "https://atnojs.es/webs/<app>/index.html?cb=$([guid]::NewGuid().ToString('N'))" -UseBasicParsing
+# debe dar 404; repetir también para app.js, proxy.php, etc.
+```
+
+- Los **untracked** del servidor (p. ej. `history_data/` de una app PHP) no los borra el `pull`
+  del despliegue: comprobar `https://atnojs.es/webs/<app>/history_data/history.json` y, si
+  responde 200, eliminarlo a mano por el administrador de archivos de hPanel.
+- Un enlace externo que apunte a la app (p. ej. un marcador del panel de `nueva_pestana`) no
+  está en el repo: vive en `estado_nueva_pestaña.json`, que es **estado vivo del usuario** y
+  `load_state.php` prohíbe versionar; se avisa y se deja que el usuario lo borre desde la app.
+
 ## Git: ¿está un fichero ignorado? (importante antes de meter secretos)
 
 ```powershell
