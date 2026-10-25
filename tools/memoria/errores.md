@@ -5,6 +5,33 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-25] El despliegue de Hostinger revirtió la app a un commit anterior y los `?v=` no bastaron
+
+- **Síntoma:** tras publicar los botones del historial de `apps/infografia-referencia` (commit
+  `85ee9983`) y comprobarlos en producción, minutos después la URL servía otra vez la versión
+  anterior: `index.html` citaba `app.css?v=9`/`app.js?v=11`, `app.js` medía 14.557 B sin
+  `history-action-btn` y el `Last-Modified` era 16:56:21. Antonio lo vio como «no veo los botones ni
+  refrescando ni en incógnito».
+- **Causa:** la cola de despliegue de Hostinger aplica webhooks atrasados/fuera de orden y cada
+  entrega sincroniza el árbol completo; una entrega de un commit anterior (docs `9fe4b110`) se
+  ejecutó después de la del commit nuevo y revirtió los ficheros en el origen. No era caché del
+  navegador (el HTML se sirve `x-hcdn-cache-status: DYNAMIC`) ni error de la app: GitHub tenía la
+  versión nueva. Además la CDN cachea estáticos **por ruta** e ignora `?v=`, así que aunque el HTML
+  se refresque, `app.css`/`app.js` pueden llegar viejos.
+- **Solución:** (1) assets con fecha nueva (`app.20261025a.css` y `app.20261025a.js`, copias
+  exactas) y `index.html` apuntando a ellos; (2) commit aislado + push (`415132d7`) para re-disparar
+  el despliegue. En ~1 min el origen sirvió los assets nuevos (rutas nunca cacheadas).
+- **Verificación:** `GET` a la URL **sin parámetros** → cita `app.20261025a.css/js`;
+  `app.20261025a.js` 19.123 B con `history-action-btn`; en Chrome limpio sobre la URL normal: 12
+  tarjetas con 3 acciones, descarga real (1.474.295 B, PNG 768×1376, SHA-256 = fichero servido) y
+  «Referencia cargada». Si un usuario aún viera lo viejo, `Ctrl+F5` (el HTML no está cacheado en CDN,
+  pero su navegador puede conservarlo).
+- **Lección:** no dar por publicado hasta comprobar el **origen sin query** y varios minutos después
+  (`Last-Modified` + contenido), y usar assets renombrados con fecha en cada publicación de app:
+  `?v=` no protege de la CDN de Hostinger.
+
+---
+
 ### [2026-10-25] El ojo no se podía alcanzar con Tab en un modal que atrapa el foco
 
 - **Síntoma:** el verificador independiente (defecto D1) comprobó en producción que en
