@@ -5,6 +5,23 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-25 — Auditoría semanal de atnojs.es: 164 páginas, 0 5xx, 44 enlaces/recursos 404
+
+- Cobertura: `/` + todas las `webs/*` y `apps/*` versionadas (164 entry points) y 142 enlaces del
+  directorio. Todas las páginas propias responden **200**; ninguna 5xx; sin contenido mixto.
+- 44 recursos/enlaces internos con **404** en 32 páginas de origen (15 grupos) + 2 CDN externos.
+  Dos hallazgos graves: la página de Verónica (`pagina_camisetas`, 3 copias) sirve **8/8 imágenes
+  rotas** y 11 enlaces 404 por rutas `/Paginas/...` inexistentes; `apps/transferir_estilo` no
+  arranca (`SyntaxError` de Babel en `useState < HistoryItem[] >`, TS sin compilar).
+- Peso: `webs/relatos` 6,0 MB (data.js 4,0 MB br), `webs/limpiador-windows` 2,5 MB (PNG),
+  `apps/prompt` 1,2 MB (0,27 MB br), `apps/trickvault` 1,0 MB (0,19 MB br).
+- Herramienta: `tools/_audit_atnojs.py` (no versionada, `tools/_*` en `.gitignore`) →
+  `tools/_audit_result.json`; evidencias en `tools/evidencias/2026-10-25-auditoria/`.
+- Detalle y siguientes pasos: `pendientes.md` (entrada 2026-10-25).
+- **Commit:** el de esta entrada (solo docs).
+
+---
+
 ## 2026-10-24 (despliegue) — Webhook perdido: producción parada en `e12e1cc5`, re-disparada y verificada
 
 - **Síntoma (chequeo diario):** `origin/main..HEAD` vacío y árbol sin ficheros versionados

@@ -5,6 +5,40 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
+## 🔍 Auditoría semanal 2026-10-25 — hallazgos abiertos
+
+- **Estado:** auditoría automática de las 164 páginas propias (`/`, `webs/*`, `apps/*`): todas
+  responden **200**, **0 respuestas 5xx**, 0 contenido mixto. **44 recursos/enlaces internos dan
+  404** (32 páginas de origen) y 2 CDN externos 404. Informe completo: `tools/_audit_result.json`
+  (generado por `tools/_audit_atnojs.py`).
+- **🔴 Alta — página de Verónica rota en las 3 copias** (`apps/pagina_camisetas/`,
+  `apps/paginas/pagina_camisetas/`, `webs/pagina_camisetas/`): las **8 imágenes de producto no
+  cargan** y 11 enlaces (camisetas, gorras, tazas, platos, presupuesto) dan 404. Causa: 31
+  referencias absolutas `/Paginas/pagina_camisetas/...` que no existen en el servidor; el
+  contenido real está en `/apps/paginas/pagina_camisetas/` y `/webs/pagina_camisetas/` (cada
+  copia con su propia carpeta `imagenes/`; la de `apps/pagina_camisetas` no tiene ninguna).
+  Verificado en Chrome: 8/8 imágenes con `naturalWidth=0`.
+- **🟠 Alta — `apps/transferir_estilo/` no arranca** («FusionAI Studio»): pinta «Error Crítico de
+  Interfaz». Causa exacta en consola: `SyntaxError: Unexpected token (32:65)` en
+  `useState < HistoryItem[] > ([])`; el preset `typescript` de Babel no se aplica al script
+  inline, así que la sintaxis TS no compila. Además el `<script>` de
+  `lucide-react@0.294.0/.../lucide-react.development.js` da 404 (solo existe `.min.js`), aunque
+  el código no usa `lucide`.
+- **🟡 Media — peso:** `/webs/relatos/` 6,0 MB (data.js 8,3 MB sin comprimir / 4,0 MB con brotli)
+  y `/webs/limpiador-windows/` 2,5 MB (PNG hero de 2,6 MB). Partir el JSON de relatos por
+  categoría y pasar el PNG a WebP.
+- **🟡 Media —** `ia_workflow` (apps/paginas y webs): 4 páginas de detalle +
+  `gpt_personalizado.html` dan 404. `chatgpt/c/descargables`: faltan `mc-addon.css` y
+  `mc-addon.js` en las 3 copias.
+- **🟢 Baja —** restos de plantilla (`/index.css`, `/index.tsx`, `/vite.svg`, `/src/main.*`,
+  `assets/*` de `apps/compilar/temp-*`), favicons (`primera_pagina_principal`,
+  `carpetas_nuevas`) y 10 enlaces del directorio (2 con 404; 8 dominios sin respuesta).
+- **Siguiente paso:** decidir si se corrige ya la página de Verónica (sustituir `/Paginas/` por la
+  ruta correcta en las 3 copias; 31 referencias por fichero) y la app FusionAI. El resto, en la
+  próxima pasada de limpieza.
+- **Verificación:** repetir `python tools/_audit_atnojs.py` → 0 problemas en esas rutas; abrir las
+  3 URLs en Chrome y contar `document.images` con `naturalWidth>0`.
+
 ## 🃏 TrickVault: cambios de «Doble exposición» sin commitear (2026-10-24)
 
 - **Estado:** en el árbol de trabajo hay cambios de una sesión anterior en
