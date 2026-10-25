@@ -157,6 +157,12 @@ body{max-width:1250px;margin:0 auto;padding:16px;background:transparent}
 .batch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 10px;padding:9px 11px;border:1px solid var(--border-cyan);border-radius:var(--radius-sm);background:rgba(0,16,24,.5)}.batch-select-all,.batch-actions{display:flex;align-items:center;gap:7px}.batch-select-all{color:var(--cyan);font-weight:700;cursor:pointer}.batch-actions{justify-content:flex-end;flex-wrap:wrap}.batch-select-all input,.audio-check{width:18px;height:18px;accent-color:var(--green);cursor:pointer}.batch-delete-btn{background:rgba(255,107,107,.14);color:#ffd7d7;border:1px solid #ff7b7b}.batch-delete-btn:hover:not(:disabled){background:var(--red);color:#001018}.batch-delete-btn:disabled{opacity:.45;cursor:not-allowed}.audio-row.is-checked{background:rgba(0,208,208,.1)!important}.audio-row.has-error{border-color:#ff7b7b!important;background:rgba(180,35,35,.2)!important}.audio-error{color:#ffd0d0;font-size:11px;line-height:1.25;flex:1 1 100%;padding-left:26px}.audio-check{flex:0 0 auto}#audio-selection-count{color:var(--text-dim);font-size:12px}button:focus-visible,select:focus-visible,input:focus-visible,.upload-zone:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .img-select-check{position:absolute;top:7px;left:7px;z-index:3;width:19px;height:19px;accent-color:var(--green);cursor:pointer}.img-grid-item.is-selected{box-shadow:0 0 0 2px var(--green),0 0 12px rgba(38,198,38,.35)!important}.video-row.is-selected{background:rgba(0,208,208,.1)!important}.video-row.is-active{border-color:var(--pink)!important;box-shadow:0 0 10px var(--pink-glow)}
 .history-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 8px}.history-heading .card-title{margin:0;text-align:left}.history-clear-btn{background:transparent;color:var(--cyan);border:1px solid var(--border-cyan);border-radius:var(--radius-sm);padding:5px 9px;font:600 11px var(--font);cursor:pointer}.history-clear-btn:hover:not(:disabled){background:var(--pink-light)}.history-clear-btn:disabled{opacity:.45;cursor:not-allowed}.history-empty{margin:0;padding:12px;border:1px dashed var(--border-cyan);border-radius:var(--radius-sm);color:var(--text-dim);font-size:12px;text-align:center}.video-history-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.history-media-item{position:relative;overflow:hidden;border:1px solid var(--border-cyan);border-radius:var(--radius-sm);background:rgba(0,16,24,.5);padding:8px}.history-media-item video,.history-media-item img{display:block;width:100%;height:126px;object-fit:contain;background:#001018;border-radius:6px}.history-media-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:7px 0 5px;color:var(--text-dim);font-size:11px}.history-item-actions{display:flex;gap:6px;justify-content:flex-end}.history-item-actions .btn-xs{padding:4px 8px;font-size:10px;border-radius:var(--radius-sm);cursor:pointer;font-weight:600}.history-delete-btn{border:1px solid #ff7b7b;background:rgba(255,107,107,.14);color:#ffd7d7}.history-delete-btn:hover{background:var(--red);color:#001018}@media(max-width:520px){.video-history-list{grid-template-columns:1fr}.history-heading{align-items:flex-start;flex-direction:column}}
+/* Historial: la primera fila se ve entera y a partir de la segunda hay scroll */
+#image-history-grid,#video-history-list{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--cyan) rgba(0,16,24,.45);border-radius:var(--radius-sm)}
+#image-history-grid::-webkit-scrollbar,#video-history-list::-webkit-scrollbar{width:8px}
+#image-history-grid::-webkit-scrollbar-track,#video-history-list::-webkit-scrollbar-track{background:rgba(0,16,24,.45);border-radius:999px}
+#image-history-grid::-webkit-scrollbar-thumb,#video-history-list::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:999px;border:2px solid rgba(0,16,24,.45)}
+#image-history-grid:focus-visible,#video-history-list:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
 </style>
 </head>
 <body>
@@ -235,7 +241,7 @@ body{max-width:1250px;margin:0 auto;padding:16px;background:transparent}
         <div class="card-title">Historial persistente de imágenes</div>
         <button type="button" class="history-clear-btn" id="clear-image-history-btn" disabled>Limpiar historial</button>
       </div>
-      <div class="img-grid" id="image-history-grid" aria-live="polite"></div>
+      <div class="img-grid" id="image-history-grid" aria-live="polite" aria-label="Historial de imágenes convertidas"></div>
     </div>
   </div>
 </div>
@@ -280,7 +286,7 @@ body{max-width:1250px;margin:0 auto;padding:16px;background:transparent}
       <div class="card-title" id="video-history-title">Historial persistente de vídeos</div>
       <button type="button" class="history-clear-btn" id="clear-video-history-btn" disabled>Limpiar historial</button>
     </div>
-    <div class="video-history-list" id="video-history-list" aria-live="polite"></div>
+    <div class="video-history-list" id="video-history-list" aria-live="polite" aria-label="Historial de vídeos convertidos"></div>
   </section>
 </div>
 
@@ -415,6 +421,36 @@ function wireHistoryButtons(container) {
   }));
 }
 
+/* El historial deja ver la primera fila y desplaza lo demás (empieza en la segunda fila). */
+function syncHistoryScrollHeight(container) {
+  if (!container) return;
+  const items = Array.from(container.children).filter(node => node.nodeType === 1 && !node.classList.contains('history-empty'));
+  let cap = 0;
+  if (items.length) {
+    const firstTop = Math.round(items[0].getBoundingClientRect().top);
+    const firstRow = items.filter(node => Math.abs(Math.round(node.getBoundingClientRect().top) - firstTop) <= 1);
+    if (items.length > firstRow.length) {
+      cap = Math.round(Math.max(...firstRow.map(node => node.getBoundingClientRect().height)));
+    }
+  }
+  const next = cap > 0 ? cap + 'px' : '';
+  if (container.style.maxHeight !== next) container.style.maxHeight = next;
+  if (cap > 0) {
+    if (container.tabIndex !== 0) container.tabIndex = 0;
+    container.dataset.scrollable = 'true';
+  } else {
+    container.removeAttribute('tabindex');
+    delete container.dataset.scrollable;
+  }
+}
+
+function scheduleHistoryScrollSync() {
+  requestAnimationFrame(() => {
+    syncHistoryScrollHeight($('#image-history-grid'));
+    syncHistoryScrollHeight($('#video-history-list'));
+  });
+}
+
 function renderImageHistory() {
   const grid = $('#image-history-grid');
   const clear = $('#clear-image-history-btn');
@@ -423,6 +459,7 @@ function renderImageHistory() {
   clear.disabled = entries.length === 0;
   if (!entries.length) {
     grid.innerHTML = historyPlaceholder('Las imágenes convertidas aparecerán aquí incluso después de recargar.');
+    scheduleHistoryScrollSync();
     return;
   }
   grid.innerHTML = entries.map(entry => {
@@ -435,6 +472,7 @@ function renderImageHistory() {
       '</div></div>';
   }).join('');
   wireHistoryButtons(grid);
+  scheduleHistoryScrollSync();
 }
 
 function renderVideoHistory() {
@@ -445,6 +483,7 @@ function renderVideoHistory() {
   clear.disabled = entries.length === 0;
   if (!entries.length) {
     list.innerHTML = historyPlaceholder('Los vídeos convertidos aparecerán aquí incluso después de recargar.');
+    scheduleHistoryScrollSync();
     return;
   }
   list.innerHTML = entries.map(entry => {
@@ -461,6 +500,7 @@ function renderVideoHistory() {
       '</div></article>';
   }).join('');
   wireHistoryButtons(list);
+  scheduleHistoryScrollSync();
 }
 
 async function clearHistoryType(type) {
@@ -519,6 +559,19 @@ async function initializeMediaHistory() {
 
 $('#clear-image-history-btn').addEventListener('click', () => clearHistoryType('image'));
 $('#clear-video-history-btn').addEventListener('click', () => clearHistoryType('video'));
+
+/* La altura del historial se recalcula cuando cambia su tamaño, al cambiar de pestaña,
+   al girar o redimensionar la ventana y cuando la tipografía termina de cargar. */
+if (typeof ResizeObserver === 'function') {
+  const historyResizeObserver = new ResizeObserver(() => scheduleHistoryScrollSync());
+  ['#image-history-grid', '#video-history-list'].forEach(selector => {
+    const container = $(selector);
+    if (container) historyResizeObserver.observe(container);
+  });
+}
+window.addEventListener('resize', scheduleHistoryScrollSync);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleHistoryScrollSync);
+scheduleHistoryScrollSync();
 
 /* ============================================================ */
 /*  MODE SWITCHING                                               */
