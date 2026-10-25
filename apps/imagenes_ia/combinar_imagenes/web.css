@@ -45,20 +45,27 @@
     color-scheme: dark;
 }
 
-/* Disposición canónica del selector de modelos por proveedor. */
+/* Disposición del selector de modelos por proveedor.
+   Variante de panel estrecho del CSS canónico (skill maestra): el contenedor
+   reparte los grupos en líneas en vez de forzar una sola fila de 1334 px que
+   estiraba el panel y desbordaba la página. */
 .model-provider-layout {
   display: flex;
+  flex-flow: row wrap;
   justify-content: center;
   align-items: flex-start;
-  gap: 1rem;
+  gap: .55rem 1rem;
   width: 100%;
+  min-width: 0;
 }
 .model-provider-column {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: .35rem;
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: 100%;
 }
 .model-provider-title {
   color: var(--muted, #99CCCC);
@@ -66,10 +73,13 @@
   letter-spacing: .08em;
   text-transform: uppercase;
 }
-@media (max-width: 700px) {
-  .model-provider-layout { gap: .5rem; }
-  .model-toggle-group { gap: .2rem; }
-  .model-toggle { font-size: .76rem; padding: .5rem .65rem; }
+/* Los avisos invisibles solo alinean en vertical: no deben reservar ancho
+   (~250 px cada uno empujaban la fila fuera del panel). Altura intacta, ancho cero. */
+.model-quality-hint[aria-hidden="true"] {
+  width: 0;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 *,
@@ -164,7 +174,9 @@ h3 {
 
 .two-column-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* minmax(0, …) impide que el contenido de una columna ensanche la pista
+       por encima de la página (blowout del grid). */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 1.5rem;
     align-items: start;
 }
@@ -180,6 +192,7 @@ h3 {
 
 .control-panel {
     padding: 1.5rem;
+    min-width: 0;
 }
 
 .section-block {
@@ -304,7 +317,9 @@ h3 {
     top: 50%;
     bottom: auto;
     transform: translateY(-50%);
-    font-size: 1.2rem;
+    /* Escala con el ancho del slot: en móvil estrecho (320-390 px) la cápsula
+       mide ~70 px y «FONDO» a 1.2rem se cortaba. */
+    font-size: clamp(0.85rem, 4.5vw, 1.2rem);
     font-weight: 800;
     letter-spacing: 0.1em;
     color: var(--color-purple);
@@ -753,6 +768,7 @@ h3 {
 .results-panel {
     padding: 1.5rem;
     min-height: 400px;
+    min-width: 0;
     position: sticky;
     top: 1.5rem;
 }
@@ -1131,19 +1147,22 @@ h3 {
 /* ═══ Selector de Modelo IA (toggles pill hoola canónico, skill maestra) ═══ */
 .model-selector {
   display:flex; flex-direction:column; align-items:center; gap:.6rem;
-  margin:1.8rem 0 1.2rem; width:100%;
+  margin:1.8rem 0 1.2rem; width:100%; min-width:0;
 }
 .model-selector-label {
   color:var(--muted); font-size:.8rem; letter-spacing:0.08em; text-transform:uppercase;
 }
+/* La cápsula envuelve sus píldoras: nunca scroll horizontal ni píldoras cortadas. */
 .model-toggle-group {
-  display:inline-flex; gap:.5rem; padding:.3rem; border-radius:999px;
+  display:inline-flex; flex-wrap:wrap; justify-content:center;
+  gap:.35rem; padding:.25rem; border-radius:999px; max-width:100%;
   background:var(--card-bg); border:1px solid var(--border);
   box-shadow:0 0 12px var(--glow-soft);
 }
 .model-toggle {
+  flex:0 0 auto; max-width:100%;
   font-family:var(--font-ui); font-size:.9rem; letter-spacing:0.04em;
-  padding:.55rem 1rem; border-radius:999px; border:1px solid transparent;
+  padding:.5rem .85rem; border-radius:999px; border:1px solid transparent;
   background:transparent; color:var(--muted); cursor:pointer;
   transition:all .25s ease; text-transform:uppercase; white-space:nowrap;
 }
@@ -1156,6 +1175,16 @@ h3 {
   background:linear-gradient(135deg,var(--contenedor),var(--acc));
   color:#CCFFFF; text-shadow:0 0 8px var(--glow);
   border-color:var(--border-strong); box-shadow:0 0 18px var(--glow);
+}
+/* Responsive DESPUÉS de las reglas base (si va antes, la base lo sobreescribe). */
+@media (max-width: 700px) {
+  .model-provider-layout { gap: .5rem; }
+  .model-toggle-group { gap: .25rem; padding: .25rem; border-radius: 16px; }
+  .model-toggle { font-size: .76rem; padding: .5rem .6rem; }
+}
+@media (max-width: 600px) {
+  /* Cada grupo conserva su ancho de contenido, centrado, y envuelve dentro. */
+  .model-toggle-group { width: auto; }
 }
 
 /* Foco visible accesible (auditor WCAG) */
