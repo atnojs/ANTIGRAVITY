@@ -1,6 +1,6 @@
 /*!
  * password-eye.js — visor de contraseña para las apps y webs de Antigravity
- * Versión: 20261025a
+ * Versión: 20261025b
  *
  * Añade un botón de ojo a cada campo <input type="password"> para poder ver
  * lo escrito y volver a ocultarlo. No cambia la estructura del formulario:
@@ -16,7 +16,7 @@
  *  - Se oculta solo cuando el campo no es visible (modal cerrado, tapado,
  *    fuera de pantalla...), sin dejar huecos ni botones fantasma.
  *
- * Uso: <script src="/apps/_shared/password-eye.js?v=20261025a" defer></script>
+ * Uso: <script src="/apps/_shared/password-eye.js?v=20261025b" defer></script>
  * API pública (para diagnósticos): window.AGPasswordEye
  *   .version  -> versión cargada
  *   .refresh()-> fuerza una resincronización
@@ -25,7 +25,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '20261025a';
+  var VERSION = '20261025b';
   var ATTR = 'data-agp-eye';
   var PAD_ATTR = 'data-agp-pad';
   var STYLE_ID = 'agp-eye-style';
@@ -69,6 +69,15 @@
     '.agp-eye .agp-eye-hide{display:none;}',
     '.agp-eye[aria-pressed="true"] .agp-eye-show{display:none;}',
     '.agp-eye[aria-pressed="true"] .agp-eye-hide{display:block;}',
+    /* Botón puente para modales con trampa de foco: invisible, pero con el
+       foco del teclado y el nombre accesible del ojo. */
+    '.agp-eye-proxy{position:absolute!important;width:1px!important;height:1px!important;',
+    'padding:0!important;margin:-1px!important;overflow:hidden!important;border:0!important;',
+    'clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;',
+    'opacity:0!important;pointer-events:none!important;}',
+    '.agp-eye.agp-eye--focus{opacity:1!important;outline:2px solid var(--agp-accent,#00D0D0)!important;',
+    'outline-offset:2px!important;background-color:rgba(0,208,208,.2)!important;',
+    'color:var(--agp-accent,#00D0D0)!important;}',
     '@media (prefers-reduced-motion:reduce){.agp-eye{transition:none!important;}}',
     '@media print{.agp-eye{display:none!important;}}'
   ].join('');
@@ -230,14 +239,29 @@
     var rec = recs.get(input);
     if (rec) return rec;
 
-    var btn = doc.createElement('button');
-    btn.type = 'button';
+    // El montaje se decide antes de crear el control: si el campo vive en un
+    // modal con un ancestro que rompe position:fixed (transform, filter,
+    // backdrop-filter...), el botón visible va a <body> y el teclado se
+    // resuelve con un botón puente invisible dentro del modal, para que entre
+    // en su trampa de foco y en el orden de tabulación.
+    var host = chooseHost(input);
+    var needsProxy = host.mode === 'append' && host.node === doc.body;
+
+    var btn;
+    if (needsProxy) {
+      // Solo visual: sin foco ni semántica propia (la semántica es el puente).
+      btn = doc.createElement('span');
+      btn.setAttribute('aria-hidden', 'true');
+    } else {
+      btn = doc.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('aria-label', 'Mostrar contraseña');
+      btn.setAttribute('aria-keyshortcuts', 'Alt+Shift+P');
+      btn.setAttribute('tabindex', '0');
+    }
     btn.className = 'agp-eye';
     btn.setAttribute('aria-pressed', 'false');
-    btn.setAttribute('aria-label', 'Mostrar contraseña');
     btn.setAttribute('title', 'Mostrar contraseña (Alt+Shift+P)');
-    btn.setAttribute('aria-keyshortcuts', 'Alt+Shift+P');
-    btn.setAttribute('tabindex', '0');
     btn.innerHTML = SVG_EYE + SVG_EYE_OFF;
     btn.style.visibility = 'hidden';
     btn.style.left = '-9999px';
@@ -256,7 +280,7 @@
     btn.addEventListener('click', function (ev) {
       ev.preventDefault();
       ev.stopPropagation();
-      toggle(input, ev.detail === 0);
+      toggle(input, ev.detail === 0 && !needsProxy);
     }, false);
 
     input.addEventListener('keydown', onKeydown, false);
@@ -267,14 +291,35 @@
       input.setAttribute('aria-keyshortcuts', shortcuts ? shortcuts + ' Alt+Shift+P' : 'Alt+Shift+P');
     }
 
-    var host = chooseHost(input);
+    var proxy = null;
     if (host.mode === 'after' && input.parentNode) {
+      // Sin contenedor problemático: el botón visible va detrás del campo.
       input.insertAdjacentElement('afterend', btn);
+    } else if (!needsProxy && host.node) {
+      // <dialog> abierto: dentro del propio diálogo (top layer).
+      host.node.appendChild(btn);
     } else {
-      (host.node || doc.body).appendChild(btn);
+      doc.body.appendChild(btn);
+      proxy = doc.createElement('button');
+      proxy.type = 'button';
+      proxy.className = 'agp-eye-proxy';
+      proxy.setAttribute('tabindex', '0');
+      proxy.setAttribute('aria-label', 'Mostrar contraseña');
+      proxy.setAttribute('aria-pressed', 'false');
+      proxy.setAttribute('aria-keyshortcuts', 'Alt+Shift+P');
+      proxy.setAttribute('title', 'Mostrar contraseña (Alt+Shift+P)');
+      proxy.addEventListener('focus', function () { btn.classList.add('agp-eye--focus'); }, false);
+      proxy.addEventListener('blur', function () { btn.classList.remove('agp-eye--focus'); }, false);
+      proxy.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        toggle(input, true);
+      }, false);
+      if (input.parentNode) input.insertAdjacentElement('afterend', proxy);
+      else doc.body.appendChild(proxy);
     }
 
-    rec = { input: input, btn: btn, onKeydown: onKeydown, palette: null, padded: false };
+    rec = { input: input, btn: btn, proxy: proxy, onKeydown: onKeydown, palette: null, padded: false };
     recs.set(input, rec);
     return rec;
   }
@@ -282,6 +327,7 @@
   function detach(rec) {
     try { rec.input.removeEventListener('keydown', rec.onKeydown, false); } catch (e) {}
     try { if (rec.btn.parentNode) rec.btn.parentNode.removeChild(rec.btn); } catch (e) {}
+    try { if (rec.proxy && rec.proxy.parentNode) rec.proxy.parentNode.removeChild(rec.proxy); } catch (e) {}
     recs.delete(rec.input);
   }
 
@@ -377,13 +423,20 @@
     var top = visTop + (visBottom - visTop - size) / 2;
     if (left < visLeft + 2) { hidden(); return false; }
 
-    // Estado del botón según el tipo real del campo.
+    // Estado del botón según el tipo real del campo (visible y puente accesible).
     var shown = input.type === 'text';
+    var label = shown ? 'Ocultar contraseña' : 'Mostrar contraseña';
     if (rec.btn.getAttribute('aria-pressed') !== String(shown)) {
       rec.btn.setAttribute('aria-pressed', String(shown));
-      var label = shown ? 'Ocultar contraseña' : 'Mostrar contraseña';
-      rec.btn.setAttribute('aria-label', label);
       rec.btn.setAttribute('title', label + ' (Alt+Shift+P)');
+      if (!rec.proxy) {
+        rec.btn.setAttribute('aria-label', label);
+      }
+    }
+    if (rec.proxy && rec.proxy.getAttribute('aria-pressed') !== String(shown)) {
+      rec.proxy.setAttribute('aria-pressed', String(shown));
+      rec.proxy.setAttribute('aria-label', label);
+      rec.proxy.setAttribute('title', label + ' (Alt+Shift+P)');
     }
 
     var palette = paletteFor(input);

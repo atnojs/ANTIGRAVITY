@@ -21,7 +21,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { ROOT, targetList, latin1 } from './lib/password-eye-targets.mjs';
 
-const VERSION = '20261025a';
+const VERSION = '20261025b';
 const TAG = `<script src="/apps/_shared/password-eye.js?v=${VERSION}" defer></script>`;
 const MARK = 'password-eye.js';
 const ATTR_MARK = 'data-agp-eye';
