@@ -153,7 +153,65 @@
   async function api(body){const r=await fetch('proxy.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});let p;try{p=await r.json()}catch{throw new Error(`El servidor devolvió una respuesta inválida (HTTP ${r.status}).`)}if(!r.ok||!p.success)throw new Error(p.error+(p.detail?`: ${typeof p.detail==='string'?p.detail:'detalle del proveedor'}`:''));return p}
   async function localImageFacts(dataUrl){const img=await loadImage(dataUrl),canvas=document.createElement('canvas'),size=96;canvas.width=size;canvas.height=size;const c=canvas.getContext('2d',{willReadFrequently:true});c.drawImage(img,0,0,size,size);const d=c.getImageData(0,0,size,size).data,bins=new Map();for(let i=0;i<d.length;i+=16){if(d[i+3]<180)continue;const rgb=[d[i],d[i+1],d[i+2]].map(x=>Math.round(x/32)*32);const key=rgb.join(',');bins.set(key,(bins.get(key)||0)+1)}const palette=[...bins.entries()].sort((a,b)=>b[1]-a[1]).slice(0,7).map(([k])=>'#'+k.split(',').map(x=>Math.min(255,+x).toString(16).padStart(2,'0')).join(''));return{dimensions:{width:img.naturalWidth,height:img.naturalHeight,aspectRatio:(img.naturalWidth/img.naturalHeight).toFixed(3)},palette}}
   function ratioFromDimensions(d){const r=d.width/d.height;if(r>2.0)return'21:9';if(r>1.55)return'16:9';if(r<.68)return'9:16';if(r<.84)return'9:16';return'1:1'}
-  function renderHistory(items){const grid=$('history-grid'),has=items&&items.length;$('history-title').style.display=has?'block':'none';$('history-clear-btn').style.display=has?'block':'none';grid.innerHTML=has?items.map(item=>{const url=item.imageData||item.imageUrl||(item.data&&item.data.url)||'';return `<div class=\"history-item-wrap\"><img src=\"${escapeAttr(url)}\" alt=\"Infografía del historial\" loading=\"lazy\" data-open=\"${escapeAttr(url)}\"><button class=\"btn-square\" data-delete=\"${escapeAttr(item.id)}\" aria-label=\"Eliminar\">✕</button><span class=\"history-date\">${new Date(item.createdAt).toLocaleString()}</span></div>`}).join(''):'';grid.querySelectorAll('[data-open]').forEach(x=>x.addEventListener('click',()=>openLightbox(x.dataset.open)));grid.querySelectorAll('[data-delete]').forEach(x=>x.addEventListener('click',async()=>{if(confirm('¿Eliminar del historial?'))try{await state.history.delete(x.dataset.delete)}catch(e){showHistoryError(e.message)}}))}
+  // Acciones de cada tarjeta del historial: descargar, usar como referencia y eliminar.
+  function historyItemUrl(item){return item.imageData||item.imageUrl||(item.data&&item.data.url)||''}
+  function historyFileName(id,type){const ext=/^image\/jpe?g$/i.test(type||'')?'jpg':/^image\/webp$/i.test(type||'')?'webp':'png';const safe=String(id||'historial').replace(/[^a-zA-Z0-9_-]/g,'')||'historial';return `infografia-historial-${safe}.${ext}`}
+  async function fetchHistoryBlob(url){if(!url)throw new Error('La imagen del historial no tiene URL.');const response=await fetch(url,{cache:'no-store',credentials:'same-origin'});if(!response.ok)throw new Error(`No se pudo leer la imagen (HTTP ${response.status}).`);const blob=await response.blob();if(!/^image\//.test(blob.type||''))throw new Error('El archivo del historial no es una imagen válida.');return blob}
+  async function imageFileFromBlob(blob,name){
+    if(/^image\/(png|jpeg|webp)$/i.test(blob.type||''))return new File([blob],name,{type:blob.type});
+    const objectUrl=URL.createObjectURL(blob);
+    try{
+      const img=await loadImage(objectUrl),canvas=document.createElement('canvas');
+      canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+      canvas.getContext('2d').drawImage(img,0,0);
+      const png=await new Promise((resolve,reject)=>canvas.toBlob(out=>out?resolve(out):reject(new Error('No se pudo convertir la imagen.')),'image/png'));
+      return new File([png],name.replace(/\.[^.]+$/,'')+'.png',{type:'image/png'});
+    }finally{URL.revokeObjectURL(objectUrl)}
+  }
+  async function downloadHistoryItem(url,id){
+    try{
+      const blob=await fetchHistoryBlob(url),objectUrl=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=objectUrl;a.download=historyFileName(id,blob.type);
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(objectUrl),2000);
+      setStatus('Imagen del historial descargada.','success');
+    }catch(e){showHistoryError(e.message)}
+  }
+  async function useHistoryAsReference(url,id){
+    try{
+      const blob=await fetchHistoryBlob(url),file=await imageFileFromBlob(blob,historyFileName(id,blob.type));
+      await loadFile(file);
+      document.getElementById('reference-title')?.scrollIntoView({behavior:'smooth',block:'start'});
+    }catch(e){setStatus(`No se pudo usar como referencia: ${e.message}`,'error')}
+  }
+  function renderHistory(items){
+    const grid=$('history-grid'),has=items&&items.length;
+    $('history-title').style.display=has?'block':'none';
+    $('history-clear-btn').style.display=has?'block':'none';
+    if(!has){grid.innerHTML='';return}
+    grid.innerHTML=items.map(item=>{const url=historyItemUrl(item),id=escapeAttr(item.id);return `<div class="history-item-wrap">
+      <img src="${escapeAttr(url)}" alt="Infografía del historial" loading="lazy" data-open="${escapeAttr(url)}">
+      <div class="history-actions">
+        <button type="button" class="history-action-btn history-download-btn" data-download-hist="${escapeAttr(url)}" data-hist-id="${id}" aria-label="Descargar imagen" title="Descargar imagen">
+          <span class="history-action-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+          <span class="history-action-label">Descargar</span>
+        </button>
+        <button type="button" class="history-action-btn history-reference-btn" data-use-hist="${escapeAttr(url)}" data-hist-id="${id}" aria-label="Usar como imagen de referencia" title="Usar como imagen de referencia">
+          <span class="history-action-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
+          <span class="history-action-label">Referencia</span>
+        </button>
+        <button type="button" class="history-action-btn history-delete-btn" data-delete="${id}" aria-label="Eliminar del historial" title="Eliminar del historial">
+          <span class="history-action-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+          <span class="history-action-label">Eliminar</span>
+        </button>
+      </div>
+      <span class="history-date">${new Date(item.createdAt).toLocaleString()}</span>
+    </div>`}).join('');
+    grid.querySelectorAll('[data-open]').forEach(x=>x.addEventListener('click',()=>openLightbox(x.dataset.open)));
+    grid.querySelectorAll('[data-download-hist]').forEach(x=>x.addEventListener('click',(e)=>{e.stopPropagation();downloadHistoryItem(x.dataset.downloadHist,x.dataset.histId)}));
+    grid.querySelectorAll('[data-use-hist]').forEach(x=>x.addEventListener('click',(e)=>{e.stopPropagation();useHistoryAsReference(x.dataset.useHist,x.dataset.histId)}));
+    grid.querySelectorAll('[data-delete]').forEach(x=>x.addEventListener('click',async(e)=>{e.stopPropagation();if(confirm('¿Eliminar del historial?'))try{await state.history.delete(x.dataset.delete)}catch(err){showHistoryError(err.message)}}));
+  }
   function openLightbox(url){$('lightbox').querySelector('img').src=url;$('lightbox').hidden=false}
   function downloadJson(){const blob=new Blob([JSON.stringify(state.analysis,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);downloadDataUrl(url,'referencia-infografia.json');setTimeout(()=>URL.revokeObjectURL(url),1000)}
   function downloadDataUrl(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.click()}
