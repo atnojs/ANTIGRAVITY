@@ -15,6 +15,8 @@ declare(strict_types=1);
 const QUEUE_TOKEN = 'fs7-Qm4xV2tP9kR6wL1z';
 const MAX_PROMPT = 1200;
 const MAX_QUEUE = 12;
+const MAX_REFS = 2;                 // imágenes de referencia por trabajo
+const MAX_REF_BYTES = 6 * 1024 * 1024;  // 6 MB por referencia ya decodificada
 const STALE_RUNNING = 0;        // 0 = nunca reencolar: sin límite de tiempo (2026-10-22)
 const WORKER_FRESH = 600;       // 10 min sin señales = worker desconectado
 
@@ -31,6 +33,10 @@ $queueFile = $store . '/queue.json';
 $imgDir = $store . '/img';
 if (!is_dir($imgDir)) {
     @mkdir($imgDir, 0775, true);
+}
+$refsDir = $store . '/ref';
+if (!is_dir($refsDir)) {
+    @mkdir($refsDir, 0775, true);
 }
 
 function respond(array $payload, int $code = 200): void
@@ -121,6 +127,65 @@ function sniff_ext(string $bytes): ?string
     return null;
 }
 
+/**
+ * Valida las referencias que llegan del navegador (data URL o base64 puro).
+ * Devuelve ['refs' => [['bytes' => ..., 'ext' => ...]], 'error' => ''].
+ */
+function parse_refs($raw): array
+{
+    if (!is_array($raw)) {
+        return ['refs' => [], 'error' => ''];
+    }
+    $out = [];
+    foreach (array_slice(array_values($raw), 0, MAX_REFS) as $item) {
+        if (!is_string($item) || trim($item) === '') {
+            continue;
+        }
+        $b64 = trim($item);
+        $type = '';
+        if (str_starts_with($b64, 'data:')) {
+            $comma = strpos($b64, ',');
+            if ($comma === false) {
+                return ['refs' => [], 'error' => 'Una referencia llegó dañada'];
+            }
+            $header = substr($b64, 5, $comma - 5);
+            $semi = strpos($header, ';');
+            $type = strtolower($semi === false ? $header : substr($header, 0, $semi));
+            $b64 = substr($b64, $comma + 1);
+        }
+        if ($type !== '' && !in_array($type, ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'], true)) {
+            return ['refs' => [], 'error' => 'Formato de referencia no admitido'];
+        }
+        if (strlen($b64) > MAX_REF_BYTES * 2) {
+            return ['refs' => [], 'error' => 'Cada referencia debe pesar menos de 6 MB'];
+        }
+        $bytes = base64_decode($b64, true);
+        if ($bytes === false || $bytes === '') {
+            return ['refs' => [], 'error' => 'Una referencia llegó dañada'];
+        }
+        if (strlen($bytes) > MAX_REF_BYTES) {
+            return ['refs' => [], 'error' => 'Cada referencia debe pesar menos de 6 MB'];
+        }
+        $ext = sniff_ext($bytes);
+        if ($ext === null) {
+            return ['refs' => [], 'error' => 'Las referencias deben ser PNG, JPG, WEBP o GIF'];
+        }
+        $out[] = ['bytes' => $bytes, 'ext' => $ext];
+    }
+    return ['refs' => $out, 'error' => ''];
+}
+
+/** Borra del disco las referencias de un trabajo que ya no se necesita. */
+function purge_refs(string $refsDir, array $refs): void
+{
+    foreach ($refs as $ref) {
+        $name = basename((string) ($ref['file'] ?? ''));
+        if ($name !== '' && is_file($refsDir . '/' . $name)) {
+            @unlink($refsDir . '/' . $name);
+        }
+    }
+}
+
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $action = $_GET['action'] ?? '';
 
@@ -167,6 +232,10 @@ if ($method !== 'POST') {
 }
 
 $raw = file_get_contents('php://input') ?: '';
+if ($raw === '' && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+    // PHP descarta el cuerpo cuando supera post_max_size: mejor decirlo claro.
+    respond(['ok' => false, 'error' => 'La petición es demasiado grande. Usa referencias más ligeras.'], 413);
+}
 $body = json_decode($raw, true);
 if (!is_array($body)) {
     respond(['ok' => false, 'error' => 'JSON no válido'], 400);
@@ -194,7 +263,14 @@ if ($reqAction === 'request') {
     $count = (int) ($body['count'] ?? 1);
     $count = max(1, min(4, $count));
 
-    $result = with_lock(function () use ($queueFile, $prompt, $ratio, $model, $count) {
+    // Referencias de imagen: se validan y decodifican ANTES de tocar la cola.
+    $parsedRefs = parse_refs($body['refs'] ?? []);
+    if ($parsedRefs['error'] !== '') {
+        respond(['ok' => false, 'error' => $parsedRefs['error']], 400);
+    }
+    $refsIn = $parsedRefs['refs'];
+
+    $result = with_lock(function () use ($queueFile, $prompt, $ratio, $model, $count, $refsIn, $refsDir) {
         $q = read_queue($queueFile);
         $pending = 0;
         foreach ($q['jobs'] as $j) {
@@ -208,6 +284,18 @@ if ($reqAction === 'request') {
         $ids = [];
         for ($i = 0; $i < $count; $i++) {
             $id = bin2hex(random_bytes(8));
+            // Cada trabajo guarda su propia copia: el worker las descarga al reclamar.
+            $refsMeta = [];
+            foreach ($refsIn as $n => $ref) {
+                $refFile = $id . '_' . ($n + 1) . '.' . $ref['ext'];
+                if (file_put_contents($refsDir . '/' . $refFile, $ref['bytes']) === false) {
+                    return ['ok' => false, 'error' => 'No se pudieron guardar las referencias'];
+                }
+                $refsMeta[] = [
+                    'file' => $refFile,
+                    'mime' => $ref['ext'] === 'jpg' ? 'image/jpeg' : 'image/' . $ref['ext'],
+                ];
+            }
             $q['jobs'][] = [
                 'id' => $id,
                 'prompt' => $prompt,
@@ -219,15 +307,21 @@ if ($reqAction === 'request') {
                 'finished' => 0,
                 'error' => '',
                 'file' => '',
+                'refs' => $refsMeta,
             ];
             $ids[] = $id;
         }
-        // Retención: fuera los terminados de más de 3 días.
+        // Retención: fuera los terminados de más de 3 días (y sus referencias).
         $cut = time() - 3 * 86400;
-        $q['jobs'] = array_values(array_filter($q['jobs'], function ($j) use ($cut) {
-            $st = $j['status'] ?? '';
-            return !($st === 'done' && ((int) ($j['finished'] ?? 0)) < $cut);
-        }));
+        $keep = [];
+        foreach ($q['jobs'] as $j) {
+            if (($j['status'] ?? '') === 'done' && ((int) ($j['finished'] ?? 0)) < $cut) {
+                purge_refs($refsDir, $j['refs'] ?? []);
+                continue;
+            }
+            $keep[] = $j;
+        }
+        $q['jobs'] = $keep;
         write_queue($queueFile, $q);
         return ['ok' => true, 'ids' => $ids];
     });
@@ -272,7 +366,7 @@ if ($reqAction === 'claim') {
     if (!hash_equals(QUEUE_TOKEN, $token)) {
         respond(['ok' => false, 'error' => 'Token no válido'], 403);
     }
-    $result = with_lock(function () use ($queueFile) {
+    $result = with_lock(function () use ($queueFile, $refsDir) {
         $q = read_queue($queueFile);
         $q['worker_seen'] = time();
         $now = time();
@@ -288,7 +382,32 @@ if ($reqAction === 'claim') {
             if ($j['status'] === 'queued') {
                 $j['status'] = 'running';
                 $j['started'] = $now;
-                $job = ['id' => $j['id'], 'prompt' => $j['prompt'], 'ratio' => $j['ratio'], 'model' => $j['model']];
+                // Las referencias viajan en la respuesta (base64) para que el
+                // worker no necesite otro endpoint ni exponerlas por URL.
+                $refs = [];
+                foreach ($j['refs'] ?? [] as $ref) {
+                    $name = basename((string) ($ref['file'] ?? ''));
+                    $path = $refsDir . '/' . $name;
+                    if ($name === '' || !is_file($path)) {
+                        continue;
+                    }
+                    $bytes = file_get_contents($path);
+                    if ($bytes === false || $bytes === '') {
+                        continue;
+                    }
+                    $refs[] = [
+                        'mime' => (string) ($ref['mime'] ?? 'image/jpeg'),
+                        'ext' => strtolower((string) pathinfo($name, PATHINFO_EXTENSION)),
+                        'data' => base64_encode($bytes),
+                    ];
+                }
+                $job = [
+                    'id' => $j['id'],
+                    'prompt' => $j['prompt'],
+                    'ratio' => $j['ratio'],
+                    'model' => $j['model'],
+                    'refs' => $refs,
+                ];
                 break;
             }
         }
@@ -327,7 +446,7 @@ if ($reqAction === 'complete') {
     if (file_put_contents($path, $bytes) === false) {
         respond(['ok' => false, 'error' => 'No se pudo guardar la imagen'], 500);
     }
-    $result = with_lock(function () use ($queueFile, $id, $ext) {
+    $result = with_lock(function () use ($queueFile, $id, $ext, $refsDir) {
         $q = read_queue($queueFile);
         $q['worker_seen'] = time();
         foreach ($q['jobs'] as &$j) {
@@ -336,6 +455,8 @@ if ($reqAction === 'complete') {
                 $j['file'] = $id . '.' . $ext;
                 $j['finished'] = time();
                 $j['error'] = '';
+                purge_refs($refsDir, $j['refs'] ?? []);
+                $j['refs'] = [];
                 break;
             }
         }
@@ -353,7 +474,7 @@ if ($reqAction === 'fail') {
     }
     $id = preg_replace('/[^a-f0-9]/', '', strtolower((string) ($body['id'] ?? '')));
     $error = text_cut((string) ($body['error'] ?? 'Error desconocido'), 300);
-    $result = with_lock(function () use ($queueFile, $id, $error) {
+    $result = with_lock(function () use ($queueFile, $id, $error, $refsDir) {
         $q = read_queue($queueFile);
         $q['worker_seen'] = time();
         foreach ($q['jobs'] as &$j) {
@@ -361,6 +482,8 @@ if ($reqAction === 'fail') {
                 $j['status'] = 'error';
                 $j['error'] = $error;
                 $j['finished'] = time();
+                purge_refs($refsDir, $j['refs'] ?? []);
+                $j['refs'] = [];
                 break;
             }
         }

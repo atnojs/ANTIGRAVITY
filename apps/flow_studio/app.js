@@ -9,6 +9,12 @@
     const PENDING_KEY = 'flowStudioPending';
     const POLL_MS = 2500;
     const HISTORY_ON_CANVAS = 8;
+    // Referencias: como máximo 2. El navegador las reescala a 1280 px para que
+    // la petición a la cola no se dispare y Flow reciba un JPEG ligero.
+    const REF_MAX_FILES = 2;
+    const REF_MAX_SIDE = 1280;
+    const REF_MAX_BYTES = 8 * 1024 * 1024;
+    const REF_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 
     const $ = (sel) => document.querySelector(sel);
 
@@ -46,6 +52,9 @@
         improveList: $('#improveList'),
         btnImproveClose: $('#btnImproveClose'),
         btnRestorePrompt: $('#btnRestorePrompt'),
+        refSlots: Array.from(document.querySelectorAll('.ref-slot')),
+        refInput: $('#refInput'),
+        refsNote: $('#refsNote'),
     };
 
     const state = {
@@ -55,6 +64,7 @@
         busy: false,
         improveBusy: false,
         originalPrompt: '',
+        refs: [null, null],  // 0..2 referencias: { dataUrl, name }
         jobs: new Map(),   // id -> { id, prompt, ratio, model, status, url, error, el }
         pollTimer: null,
         pingTimer: null,
@@ -181,8 +191,25 @@
 
         const meta = document.createElement('div');
         meta.className = 'card-meta';
-        meta.innerHTML = `<span>${job.ratio}</span>${job.model ? `<span>${job.model}</span>` : ''}`;
-        body.append(p, meta);
+        const refUrls = Array.isArray(job.refs) ? job.refs.filter(Boolean) : [];
+        const refCount = refUrls.length || (Number(job.refCount) || 0);
+        meta.innerHTML = `<span>${job.ratio}</span>${job.model ? `<span>${job.model}</span>` : ''}`
+            + (refCount ? `<span>${refCount} referencia${refCount > 1 ? 's' : ''}</span>` : '');
+
+        if (refUrls.length) {
+            const strip = document.createElement('div');
+            strip.className = 'card-refs';
+            strip.title = 'Referencias usadas para esta imagen';
+            refUrls.slice(0, REF_MAX_FILES).forEach((src) => {
+                const thumb = document.createElement('img');
+                thumb.src = src;
+                thumb.alt = 'Referencia';
+                strip.appendChild(thumb);
+            });
+            body.append(p, meta, strip);
+        } else {
+            body.append(p, meta);
+        }
 
         card.append(media, body);
 
@@ -455,7 +482,13 @@
     function persistPending() {
         const list = Array.from(state.jobs.values())
             .filter((j) => !j.fromHistory && (j.status === 'queued' || j.status === 'running'))
-            .map((j) => ({ id: j.id, prompt: j.prompt, ratio: j.ratio, model: j.model }));
+            .map((j) => ({
+                id: j.id,
+                prompt: j.prompt,
+                ratio: j.ratio,
+                model: j.model,
+                refCount: Array.isArray(j.refs) ? j.refs.length : 0,
+            }));
         try {
             localStorage.setItem(PENDING_KEY, JSON.stringify(list));
         } catch { /* sin almacenamiento: da igual */ }
@@ -650,6 +683,111 @@
         }
     }
 
+    /* ------------------------------ referencias ------------------------------ */
+
+    let refTarget = 0;
+
+    function setRefsNote(text, isError = false) {
+        if (!els.refsNote) return;
+        els.refsNote.textContent = text || '';
+        els.refsNote.classList.toggle('is-error', Boolean(isError));
+    }
+
+    function refsCount() {
+        return state.refs.filter(Boolean).length;
+    }
+
+    function refsPayload() {
+        return state.refs.filter(Boolean).map((ref) => ref.dataUrl);
+    }
+
+    function updateRefsUI() {
+        els.refSlots.forEach((slot, index) => {
+            const ref = state.refs[index];
+            const img = slot.querySelector('.ref-thumb');
+            const remove = slot.querySelector('.ref-remove');
+            const empty = slot.querySelector('.ref-empty');
+            slot.classList.toggle('has-image', Boolean(ref));
+            if (img) {
+                if (ref) {
+                    img.src = ref.dataUrl;
+                    img.hidden = false;
+                } else {
+                    img.removeAttribute('src');
+                    img.hidden = true;
+                }
+            }
+            if (remove) remove.hidden = !ref;
+            if (empty) empty.hidden = Boolean(ref);
+            slot.setAttribute('aria-label', ref
+                ? `Referencia ${index + 1} cargada. Pulsa para cambiarla.`
+                : `Añadir imagen de referencia ${index + 1}`);
+        });
+        const count = refsCount();
+        setRefsNote(count === 0
+            ? 'Opcional: hasta 2 imágenes. Flow las usará como referencia de estilo, personaje u objeto.'
+            : count === 1
+                ? '1 referencia lista. Puedes añadir otra.'
+                : '2 referencias listas (máximo).');
+    }
+
+    function loadImageSource(file) {
+        if (typeof createImageBitmap === 'function') {
+            return createImageBitmap(file);
+        }
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('No se pudo leer la imagen.')); };
+            img.src = url;
+        });
+    }
+
+    /** Reescala y convierte a JPEG para que la cola reciba un archivo manejable. */
+    async function prepareRef(file) {
+        const type = (file.type || '').toLowerCase();
+        if (!REF_TYPES.includes(type)) {
+            throw new Error('Formato no admitido. Usa PNG, JPG, WEBP o GIF.');
+        }
+        if (file.size > REF_MAX_BYTES) {
+            throw new Error('La imagen pesa más de 8 MB. Usa una más ligera.');
+        }
+        const source = await loadImageSource(file);
+        const width = source.width || 1;
+        const height = source.height || 1;
+        const scale = Math.min(1, REF_MAX_SIDE / Math.max(width, height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(width * scale));
+        canvas.height = Math.max(1, Math.round(height * scale));
+        const ctx = canvas.getContext('2d');
+        // PNG/GIF con transparencia: sobre blanco, como lo vería Flow.
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+        if (typeof source.close === 'function') source.close();
+        return canvas.toDataURL('image/jpeg', 0.86);
+    }
+
+    async function addRefFile(file, index) {
+        if (!file || index < 0 || index >= REF_MAX_FILES) return;
+        setRefsNote('Preparando la imagen…');
+        try {
+            const dataUrl = await prepareRef(file);
+            state.refs[index] = { dataUrl, name: file.name || '' };
+            updateRefsUI();
+        } catch (err) {
+            setRefsNote(err.message, true);
+        }
+    }
+
+    function openRefPicker(index) {
+        if (!els.refInput) return;
+        refTarget = index;
+        els.refInput.value = '';
+        els.refInput.click();
+    }
+
     /* ------------------------------ generar ------------------------------ */
 
     async function generate() {
@@ -659,8 +797,11 @@
             els.prompt.focus();
             return;
         }
+        const refs = refsPayload();
         setBusy(true);
-        setNote('Enviando a la cola…');
+        setNote(refs.length
+            ? `Enviando ${refs.length} referencia${refs.length > 1 ? 's' : ''} a la cola…`
+            : 'Enviando a la cola…');
 
         try {
             const data = await post({
@@ -669,8 +810,9 @@
                 ratio: state.ratio,
                 model: state.model,
                 count: state.count,
+                refs,
             });
-            const base = { prompt, ratio: state.ratio, model: state.model };
+            const base = { prompt, ratio: state.ratio, model: state.model, refs: refs.slice() };
             const cards = [];
             data.ids.forEach((id) => {
                 const job = { id, ...base, status: 'queued', url: '', error: '' };
@@ -712,6 +854,48 @@
         updateCounter();
         setNote('Idea original recuperada.');
     });
+
+    if (els.refInput && els.refSlots.length) {
+        els.refInput.addEventListener('change', () => {
+            const file = els.refInput.files && els.refInput.files[0];
+            if (file) addRefFile(file, refTarget);
+        });
+
+        els.refSlots.forEach((slot, index) => {
+            const remove = slot.querySelector('.ref-remove');
+            slot.addEventListener('click', (event) => {
+                if (event.target.closest('.ref-remove')) return;
+                openRefPicker(index);
+            });
+            slot.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openRefPicker(index);
+                }
+            });
+            ['dragenter', 'dragover'].forEach((type) => {
+                slot.addEventListener(type, (event) => {
+                    event.preventDefault();
+                    slot.classList.add('is-drop');
+                });
+            });
+            ['dragleave', 'dragend', 'drop'].forEach((type) => {
+                slot.addEventListener(type, () => slot.classList.remove('is-drop'));
+            });
+            slot.addEventListener('drop', (event) => {
+                event.preventDefault();
+                const files = event.dataTransfer ? event.dataTransfer.files : null;
+                if (files && files[0]) addRefFile(files[0], index);
+            });
+            if (remove) {
+                remove.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    state.refs[index] = null;
+                    updateRefsUI();
+                });
+            }
+        });
+    }
 
     els.prompt.addEventListener('keydown', (event) => {
         if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
@@ -775,6 +959,7 @@
                 prompt: item.prompt || '',
                 ratio: item.ratio || '1:1',
                 model: item.model || 'Nano Banana 2',
+                refCount: Number(item.refCount) || 0,
                 status: 'queued',
                 url: '',
                 error: '',
@@ -796,6 +981,7 @@
     async function boot() {
         updateCounter();
         updateStudioCount();
+        updateRefsUI();
         await initHistory();
         paintRecentHistory();
         restorePending();

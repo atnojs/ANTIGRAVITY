@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Flow Studio · Imágenes gratis con Google Flow</title>
-<meta name="description" content="Genera imágenes gratis con Google Flow desde el navegador. Tu PC hace el trabajo: sin claves, sin suscripciones y con historial guardado.">
+<meta name="description" content="Genera imágenes gratis con Google Flow desde el navegador. Añade hasta 2 imágenes de referencia. Tu PC hace el trabajo: sin claves y con historial guardado.">
 <meta name="theme-color" content="#08090b">
 <meta property="og:title" content="Flow Studio · Imágenes gratis con Google Flow">
-<meta property="og:description" content="Describe la imagen, elige formato y modelo. Tu PC la genera con Google Flow y la descarga en segundos.">
+<meta property="og:description" content="Describe la imagen, añade hasta 2 referencias, elige formato y modelo. Tu PC la genera con Google Flow y la descarga en segundos.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300D0D0'/%3E%3Cstop offset='1' stop-color='%2326C626'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%230a0b0d'/%3E%3Cpath d='M20 44V20h22v7H28v5h11v7H28v5z' fill='url(%23g)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=20261022a">
+<link rel="stylesheet" href="app.20261025a.css">
 </head>
 <body>
 
@@ -39,7 +39,7 @@
     <section class="composer" aria-labelledby="composerTitle">
         <div class="composer-head">
             <h2 id="composerTitle">Describe la imagen</h2>
-            <p>Se genera en tu PC con Google Flow. Sin claves y sin coste por imagen.</p>
+            <p>Añade hasta 2 imágenes de referencia. Se genera en tu PC con Google Flow, sin claves y sin coste por imagen.</p>
         </div>
 
         <label class="sr-only" for="prompt">Prompt de la imagen</label>
@@ -66,6 +66,40 @@
             <div id="improveList" class="improve-list"></div>
             <button type="button" id="btnRestorePrompt" class="link-btn hidden">Volver a mi idea original</button>
         </section>
+
+        <fieldset class="control refs-control">
+            <legend>Referencias <span class="legend-hint">opcional · hasta 2</span></legend>
+            <div class="refs" id="refs">
+                <div class="ref-slot" data-slot="0" role="button" tabindex="0" aria-label="Añadir imagen de referencia 1">
+                    <span class="ref-empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="16" rx="3"/>
+                            <circle cx="8.6" cy="9.4" r="1.5"/>
+                            <path d="m4.5 17.5 4.2-4.2 3.1 3.1 2.4-2.4 5.3 5.3"/>
+                        </svg>
+                        <span class="ref-plus">+</span>
+                        <span class="ref-label">Referencia 1</span>
+                    </span>
+                    <img class="ref-thumb" alt="" hidden>
+                    <button type="button" class="ref-remove" aria-label="Quitar referencia 1" hidden>×</button>
+                </div>
+                <div class="ref-slot" data-slot="1" role="button" tabindex="0" aria-label="Añadir imagen de referencia 2">
+                    <span class="ref-empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="16" rx="3"/>
+                            <circle cx="8.6" cy="9.4" r="1.5"/>
+                            <path d="m4.5 17.5 4.2-4.2 3.1 3.1 2.4-2.4 5.3 5.3"/>
+                        </svg>
+                        <span class="ref-plus">+</span>
+                        <span class="ref-label">Referencia 2</span>
+                    </span>
+                    <img class="ref-thumb" alt="" hidden>
+                    <button type="button" class="ref-remove" aria-label="Quitar referencia 2" hidden>×</button>
+                </div>
+            </div>
+            <p class="refs-note" id="refsNote" aria-live="polite">Opcional: hasta 2 imágenes. Flow las usará como referencia de estilo, personaje u objeto.</p>
+            <input type="file" id="refInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+        </fieldset>
 
         <fieldset class="control">
             <legend>Modelo</legend>
@@ -165,6 +199,6 @@
 </noscript>
 
 <script src="history-manager.js"></script>
-<script src="app.js?v=20261022a"></script>
+<script src="app.20261025a.js"></script>
 </body>
 </html>

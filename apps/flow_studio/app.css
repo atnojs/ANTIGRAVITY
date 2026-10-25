@@ -405,6 +405,76 @@ body {
 }
 .example:hover { border-color: rgba(0, 208, 208, 0.45); color: #d9fffb; }
 
+/* ------------------------------ referencias ------------------------------ */
+.refs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.ref-slot {
+    position: relative; aspect-ratio: 4 / 3;
+    display: grid; place-items: center;
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 13px;
+    background: rgba(8, 9, 11, 0.55);
+    color: #8f9aa5; cursor: pointer; overflow: hidden;
+    transition: border-color .18s ease, background .18s ease, transform .15s ease;
+}
+.ref-slot:hover, .ref-slot:focus-visible {
+    border-color: rgba(0, 208, 208, 0.55);
+    background: rgba(0, 208, 208, 0.06);
+    outline: none;
+}
+.ref-slot.is-drop {
+    border-color: var(--cyan);
+    background: rgba(0, 208, 208, 0.14);
+    transform: scale(0.99);
+}
+.ref-slot.has-image { border-style: solid; border-color: rgba(255, 255, 255, 0.18); }
+
+.ref-empty {
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    padding: 8px; text-align: center;
+}
+.ref-empty svg { width: 22px; height: 22px; opacity: .8; }
+.ref-plus {
+    font-family: var(--font-display); font-size: 17px; line-height: 1;
+    color: var(--cyan); opacity: .85;
+}
+.ref-label { font-size: 11px; letter-spacing: .5px; }
+
+.ref-thumb {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; display: block;
+}
+.ref-thumb[hidden] { display: none; }
+
+.ref-remove {
+    position: absolute; top: 6px; right: 6px; z-index: 2;
+    width: 25px; height: 25px; border-radius: 50%;
+    display: grid; place-items: center; cursor: pointer;
+    background: rgba(8, 9, 11, 0.82); color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    font-size: 16px; line-height: 1;
+    backdrop-filter: blur(6px);
+    transition: background .18s ease, border-color .18s ease;
+}
+.ref-remove:hover { background: rgba(255, 80, 80, 0.9); border-color: transparent; }
+.ref-remove[hidden] { display: none; }
+
+.refs-note {
+    margin: 8px 2px 0; min-height: 14px;
+    font-size: 11px; line-height: 1.45; color: #7f8994;
+}
+.refs-note.is-error { color: #ffb4b4; }
+.legend-hint {
+    margin-left: 5px; font-family: var(--font-body); font-size: 9.5px;
+    letter-spacing: .6px; text-transform: none; color: #6d7681;
+}
+
+.card-refs { display: flex; gap: 5px; margin-top: 8px; }
+.card-refs img {
+    width: 34px; height: 34px; border-radius: 7px; object-fit: cover;
+    border: 1px solid var(--line); background: #101317;
+}
+
 /* ------------------------------ historial ------------------------------ */
 .history-panel {
     position: fixed; top: 0; right: 0; bottom: 0; z-index: 60;
