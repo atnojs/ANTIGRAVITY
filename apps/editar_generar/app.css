@@ -881,3 +881,10 @@ textarea:focus-visible {
   outline-offset:4px;
 }
 /* La rejilla del historial no necesita estilos propios: conserva Tailwind. */
+
+/* En pantallas táctiles no existe el hover: las acciones de cada tarjeta del
+   historial (Nuevas, Variar, Bajar y Quitar) se quedan visibles para que la
+   papelera no sea inalcanzable. En escritorio no cambia nada. */
+@media (hover: none) {
+  .history-card-actions { opacity: 1 !important; }
+}

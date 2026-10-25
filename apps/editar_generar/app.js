@@ -593,8 +593,8 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
                 />
 
-                <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-start justify-center pt-8 backdrop-blur-[2px] z-20">
-                    <div className="flex items-center justify-center gap-4 w-full">
+                <div className="history-card-actions absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-start justify-center pt-8 backdrop-blur-[2px] z-20">
+                    <div className="flex items-center justify-center gap-3 w-full px-2">
                         <button onClick={(e) => { e.stopPropagation(); onRegenerate(image); }} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center group-hover/btn:bg-cyan-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <RefreshCw className="text-cyan-400" size={16} />
@@ -615,21 +615,22 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
                             </div>
                             <span className="btn-canon text-[8px] text-slate-300">Bajar</span>
                         </button>
+
+                        <button
+                            type="button"
+                            data-accion="eliminar-historial"
+                            onClick={(e) => { e.stopPropagation(); onDelete(image.id); }}
+                            title="Eliminar del historial"
+                            aria-label="Eliminar esta imagen del historial"
+                            className="flex flex-col items-center gap-1.5 group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded-lg"
+                        >
+                            <div className="w-9 h-9 rounded-full bg-red-900/40 border border-red-500/50 flex items-center justify-center group-hover/btn:bg-red-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
+                                <Trash2 className="text-red-400" size={16} />
+                            </div>
+                            <span className="btn-canon text-[8px] text-red-300">Quitar</span>
+                        </button>
                     </div>
                 </div>
-
-                {/* Eliminar: siempre visible, también en móvil (donde no hay hover).
-                    Va sobre la esquina de la imagen para no tapar la etiqueta del modelo. */}
-                <button
-                    type="button"
-                    data-accion="eliminar-historial"
-                    onClick={(e) => { e.stopPropagation(); onDelete(image.id); }}
-                    title="Eliminar del historial"
-                    aria-label="Eliminar esta imagen del historial"
-                    className="absolute bottom-3 right-3 z-30 w-9 h-9 rounded-full bg-slate-950/80 border border-red-500/50 text-red-300 flex items-center justify-center backdrop-blur-sm shadow-lg transition-all hover:bg-red-500/90 hover:text-white hover:border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-                >
-                    <Trash2 size={16} />
-                </button>
             </div>
 
             <div className="p-4 bg-slate-900/80 backdrop-blur-md flex flex-col gap-1 border-t border-white/5">
