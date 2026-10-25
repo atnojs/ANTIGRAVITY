@@ -23,7 +23,11 @@ const WORKER_FRESH = 600;       // 10 min sin señales = worker desconectado
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-$store = __DIR__ . '/flow_store';
+// Cola compartida con la app original: el worker que ya corre en el PC sondea
+// siempre /apps/flow_studio/flow_queue.php, así que esta copia escribe y lee en
+// el mismo flow_store. Sin esto, los trabajos enviados desde la copia quedarían
+// en su propia cola sin ningún worker que los recoja.
+$store = __DIR__ . '/../flow_studio/flow_store';
 if (!is_dir($store) && !@mkdir($store, 0775, true) && !is_dir($store)) {
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => 'No se pudo crear flow_store']);
