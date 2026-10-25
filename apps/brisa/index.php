@@ -19,5 +19,6 @@ header('Permissions-Policy: microphone=(self), camera=()');
   <div id="recorder" hidden></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <noscript>Activa JavaScript para utilizar tu agenda.</noscript>
+<script src="/apps/_shared/password-eye.js?v=20261025a" defer></script>
 </body>
 </html>

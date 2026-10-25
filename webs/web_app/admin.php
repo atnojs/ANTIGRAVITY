@@ -199,6 +199,7 @@ if (!isset($_SESSION['admin_logged'])) {
             <button type="submit" name="login">Entrar</button>
         </form>
     </div>
+<script src="/apps/_shared/password-eye.js?v=20261025a" defer></script>
 </body>
 </html>
 <?php
@@ -988,5 +989,6 @@ exit;
             });
         });
     </script>
+<script src="/apps/_shared/password-eye.js?v=20261025a" defer></script>
 </body>
 </html>
