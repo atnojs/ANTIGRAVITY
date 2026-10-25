@@ -1984,3 +1984,11 @@ Antonio: «edita esta app: apps/flow_studio y añade la opción de añadir 2 im�
 - **Verificado en producción:** `flow_queue.php?action=ping` OK; `claim` con el token devolvió las 2 referencias (PNG válidos de prueba); dos generaciones reales con 2 referencias (81 s y 76 s; la segunda, ya con el fix, dejó la imagen 1024×1024 en la tarjeta y en el historial); UI sin errores de consola; 0 desbordes a 1440/768/390.
 - **Commits:** `4fe351ed` (feat), `b742f8ae` (re-disparar despliegue: el primer push no desplegó), `4120b1a9` (fix de la tarjeta y del scroll del panel) y `f6ddfff8` (ranuras sin interactivos anidados y foco visible). Evidencias y comparativa antes/después en `tools/evidencias/2026-10-25-flow-studio-referencias/`.
 - **Limitación:** el worker de PC corre con `pythonw` y no deja log, así que la recepción de las 2 referencias en Flow se infiere: `claim` las entrega verificadas y cualquier fallo de subida en `flow.py` habría marcado el trabajo como error. La imagen de prueba no evidencia visualmente los círculos sintéticos usados como referencia.
+
+## 2026-10-25 (noche) — Flow Studio: propuestas de IA en 4 botones que van al editor
+Antonio: «cuando clico en mejorar prompt aparecen 4 campos con los prompts. Lo que debe pasar es que aparezcan 4 botones (prompt 1, etc.) y que al clicar en alguno de ellos el prompt se vea en el campo del prompt principal siendo editable».
+- El panel pasa a «Elige un prompt»: 4 botones (`Prompt 1`..`Prompt 4`) con el título de la propuesta en tooltip y `aria-label`. Al pulsar uno, el texto se carga en el textarea principal, el botón queda activo, el campo se enfoca con el cursor al final y sale el aviso «Prompt N cargado en el editor…».
+- Se conserva «Volver a mi idea original»; el contador y la edición manual del texto siguen funcionando.
+- Assets fechados `app.20261025e.css/js` (la CDN cachea por ruta) y `version.txt` actualizado.
+- Verificado en producción con el modelo real: 4 títulos distintos y prompt de 336 caracteres en el editor, botón activo y foco correctos, sin errores de consola; a 390 px dos columnas de 144×42 sin desbordes.
+- Commit `4e60e904`. Evidencias en `tools/evidencias/2026-10-25-flow-studio-prompts/`.
