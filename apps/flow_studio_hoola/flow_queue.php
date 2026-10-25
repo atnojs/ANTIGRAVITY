@@ -43,6 +43,41 @@ if (!is_dir($refsDir)) {
     @mkdir($refsDir, 0775, true);
 }
 
+// Migración única: los trabajos que quedaron en la cola propia de esta copia
+// antes de compartirla se pasan a la cola compartida, con sus referencias. Así
+// las tarjetas que ya estaban «En cola…» no se pierden al cambiar la ruta.
+$legacyQueue = __DIR__ . '/flow_store/queue.json';
+if (is_file($legacyQueue)) {
+    with_lock(function () use ($legacyQueue, $queueFile, $refsDir) {
+        if (!is_file($legacyQueue)) {
+            return;
+        }
+        $legacy = read_queue($legacyQueue);
+        $shared = read_queue($queueFile);
+        $moved = 0;
+        foreach ($legacy['jobs'] as $job) {
+            if (!in_array($job['status'] ?? '', ['queued', 'running'], true)) {
+                continue;
+            }
+            foreach ($job['refs'] ?? [] as $ref) {
+                $name = basename((string) ($ref['file'] ?? ''));
+                $from = __DIR__ . '/flow_store/ref/' . $name;
+                if ($name !== '' && is_file($from)) {
+                    @copy($from, $refsDir . '/' . $name);
+                }
+            }
+            $job['status'] = 'queued';
+            $job['started'] = 0;
+            $shared['jobs'][] = $job;
+            $moved++;
+        }
+        if ($moved > 0) {
+            write_queue($queueFile, $shared);
+        }
+        @rename($legacyQueue, $legacyQueue . '.merged');
+    });
+}
+
 function respond(array $payload, int $code = 200): void
 {
     http_response_code($code);
