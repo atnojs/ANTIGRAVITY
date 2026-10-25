@@ -22,8 +22,9 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
   exactas) y `index.html` apuntando a ellos; (2) commit aislado + push (`415132d7`) para re-disparar
   el despliegue. En ~1 min el origen sirvió los assets nuevos (rutas nunca cacheadas).
 - **Verificación:** `GET` a la URL **sin parámetros** → cita `app.20261025a.css/js`;
-  `app.20261025a.js` 19.123 B con `history-action-btn`; en Chrome limpio sobre la URL normal: 12
-  tarjetas con 3 acciones, descarga real (1.474.295 B, PNG 768×1376, SHA-256 = fichero servido) y
+  `app.20261025a.js` 19.169 B (26.491 B el CSS; ojo: 19.123 y 26.457 son longitudes de cadena,
+  no bytes, por los acentos UTF-8) con `history-action-btn`; en Chrome limpio sobre la URL normal:
+  12 tarjetas con 3 acciones, descarga real (1.474.295 B, PNG 768×1376, SHA-256 = fichero servido) y
   «Referencia cargada». Si un usuario aún viera lo viejo, `Ctrl+F5` (el HTML no está cacheado en CDN,
   pero su navegador puede conservarlo).
 - **Lección:** no dar por publicado hasta comprobar el **origen sin query** y varios minutos después
