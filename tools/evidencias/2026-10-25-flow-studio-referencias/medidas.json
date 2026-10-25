@@ -1,0 +1,146 @@
+[
+  {
+    "variant": "before",
+    "width": 1440,
+    "metrics": {
+      "viewport": [
+        1440,
+        1100
+      ],
+      "composer": {
+        "w": 390,
+        "h": 635,
+        "top": 99
+      },
+      "slots": [],
+      "slotGap": null,
+      "note": null,
+      "button": {
+        "w": 344,
+        "h": 47,
+        "top": 635
+      },
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "overflowX": false,
+      "docHeight": 804
+    },
+    "shot": "C:\\Users\\atnoj\\AppData\\Local\\Temp\\flowcheck\\cmp-before-1440.png"
+  },
+  {
+    "variant": "before",
+    "width": 390,
+    "metrics": {
+      "viewport": [
+        390,
+        844
+      ],
+      "composer": {
+        "w": 358,
+        "h": 616,
+        "top": 74
+      },
+      "slots": [],
+      "slotGap": null,
+      "note": null,
+      "button": {
+        "w": 322,
+        "h": 47,
+        "top": 579
+      },
+      "docScrollW": 390,
+      "docClientW": 390,
+      "overflowX": false,
+      "docHeight": 1031
+    },
+    "shot": "C:\\Users\\atnoj\\AppData\\Local\\Temp\\flowcheck\\cmp-before-390.png"
+  },
+  {
+    "variant": "after",
+    "width": 1440,
+    "metrics": {
+      "viewport": [
+        1440,
+        1100
+      ],
+      "composer": {
+        "w": 390,
+        "h": 820,
+        "top": 99
+      },
+      "slots": [
+        {
+          "w": 168,
+          "h": 126,
+          "top": 444
+        },
+        {
+          "w": 168,
+          "h": 126,
+          "top": 444
+        }
+      ],
+      "slotGap": 8,
+      "note": {
+        "w": 340,
+        "h": 16,
+        "top": 578,
+        "text": "2 referencias listas (máximo)."
+      },
+      "button": {
+        "w": 344,
+        "h": 47,
+        "top": 819
+      },
+      "docScrollW": 1440,
+      "docClientW": 1440,
+      "overflowX": false,
+      "docHeight": 989
+    },
+    "shot": "C:\\Users\\atnoj\\AppData\\Local\\Temp\\flowcheck\\cmp-after-1440.png"
+  },
+  {
+    "variant": "after",
+    "width": 390,
+    "metrics": {
+      "viewport": [
+        390,
+        844
+      ],
+      "composer": {
+        "w": 358,
+        "h": 811,
+        "top": 74
+      },
+      "slots": [
+        {
+          "w": 157,
+          "h": 118,
+          "top": 412
+        },
+        {
+          "w": 157,
+          "h": 118,
+          "top": 412
+        }
+      ],
+      "slotGap": 8,
+      "note": {
+        "w": 318,
+        "h": 16,
+        "top": 538,
+        "text": "2 referencias listas (máximo)."
+      },
+      "button": {
+        "w": 322,
+        "h": 47,
+        "top": 774
+      },
+      "docScrollW": 390,
+      "docClientW": 390,
+      "overflowX": false,
+      "docHeight": 1227
+    },
+    "shot": "C:\\Users\\atnoj\\AppData\\Local\\Temp\\flowcheck\\cmp-after-390.png"
+  }
+]
