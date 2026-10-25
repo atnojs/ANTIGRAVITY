@@ -125,6 +125,12 @@ body {
     box-shadow: var(--shadow);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+    /* Con el bloque de referencias el panel crece: en pantallas bajas se
+       desplaza dentro de si mismo para que GENERAR siga siendo alcanzable. */
+    max-height: calc(100vh - 104px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
 }
 
 .composer-head h2 {
@@ -587,7 +593,7 @@ body {
 
 @media (max-width: 920px) {
     .layout { grid-template-columns: minmax(0, 1fr); padding-bottom: 40px; }
-    .composer { position: static; }
+    .composer { position: static; max-height: none; overflow: visible; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 }
 

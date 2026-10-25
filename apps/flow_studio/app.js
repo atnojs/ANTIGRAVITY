@@ -249,9 +249,12 @@
         const card = job.el;
         if (!card) return;
         const media = card.querySelector('.card-media');
+        if (!media) return;
         const wait = card.querySelector('.card-wait');
         if (wait) wait.remove();
-        let img = card.querySelector('img');
+        // Buscar SOLO dentro de .card-media: las miniaturas de referencia de la
+        // tarjeta también son <img> y no deben recibir la imagen generada.
+        let img = media.querySelector('img');
         if (!img) {
             img = document.createElement('img');
             img.loading = 'lazy';
