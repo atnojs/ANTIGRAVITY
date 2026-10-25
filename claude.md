@@ -1,5 +1,18 @@
 # Instrucciones del proyecto para Claude Code
 
+## Reglas fijas del usuario (2026-10-25)
+
+1. **Buscar siempre en el PC de red.** Si el usuario pide buscar algo «en el PC» (o
+   «en el ordenador», «dónde está», «encuentra», «mira a ver»), la búsqueda se hace en
+   `\\Principal` y en sus rutas de trabajo: `\\Principal\e\ANTIGRAVITY`,
+   `\\Principal\e\ANTIGRAVITY\apps`, `\\Principal\e\ANTIGRAVITY\webs`, `…\skills`,
+   etc. No empezar por el disco local (`C:\...`) salvo que el usuario lo pida.
+2. **Leer todas las skills antes de tocar cualquier archivo.** Antes de crear,
+   editar, mover, renombrar o borrar un archivo —aquí o en el equipo local— hay que
+   haber leído **todas** las skills de `skills/` (los 26 `SKILL_*.md`), no solo la que
+   parezca aplicable. Solo después se toca el archivo. Vale también para cambios de
+   memoria y documentación.
+
 ## Memoria del proyecto (leer al empezar)
 
 La memoria operativa vive en `tools/memoria/` (versionada, protegida por `.htaccess`):
@@ -31,7 +44,9 @@ skills/
 que se descubran por su descripción): al abrir uno, lee el archivo `skills/<archivo>.md`
 que indica y aplícalo tal cual. No dupliques el contenido en el puntero.
 
-Cuando la tarea coincida con una de las skills disponibles, carga y aplica la skill correspondiente.
+**Antes de tocar cualquier archivo, lee TODAS las skills de `skills/`** (regla 2 del
+usuario, arriba) y después aplica al encargo las que correspondan, además de
+`autocalidad-90`.
 
 ## Gate de calidad obligatorio: `autocalidad-90`
 
