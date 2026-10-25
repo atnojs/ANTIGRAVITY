@@ -1,0 +1,10 @@
+# Datos generados en producción: no se versionan
+flow_store/queue.json
+flow_store/queue.json.tmp
+flow_store/queue.lock
+flow_store/img/
+flow_store/ref/
+flow_store/ai_rate_*.json
+history_store/
+history_data/
+*.log
