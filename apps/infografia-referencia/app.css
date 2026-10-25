@@ -31,31 +31,39 @@
   --font-ui:'Electrolize',system-ui,sans-serif;
 }
 
-/* Disposición canónica del selector de modelos por proveedor. */
+/* Disposición canónica del selector de modelos: OPENAI 2.5 en la primera línea y
+   GEMINI + QWEN + IMAGE 2 dentro de .model-provider-row, en el mínimo de líneas. */
 .model-provider-layout {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
   width: 100%;
 }
+/* Fila de grupos: se reparte en el mínimo de líneas posible. */
+.model-provider-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: .55rem 1.4rem;
+  max-width: 100%;
+}
+/* Cada grupo conserva su ancho de contenido: nunca se comprime hasta apilar los botones. */
 .model-provider-column {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: .35rem;
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: 100%;
 }
 .model-provider-title {
   color: var(--muted, #99CCCC);
   font-size: 1.05rem;
   letter-spacing: .08em;
   text-transform: uppercase;
-}
-@media (max-width: 700px) {
-  .model-provider-layout { gap: .5rem; }
-  .model-toggle-group { gap: .2rem; }
-  .model-toggle { font-size: .76rem; padding: .5rem .65rem; }
 }
 
 /* ---- Reset ---- */
@@ -365,7 +373,7 @@ h1 {
   flex-direction: column;
   align-items: center;
   gap: 0.6rem;
-  margin: 1.4rem 0 1rem;
+  margin: 1.8rem 0 1.2rem;
   width: 100%;
 }
 .model-selector-label {
@@ -378,18 +386,21 @@ h1 {
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.3rem;
+  max-width: 100%;
+  gap: 0.35rem;
+  padding: 0.25rem;
   border-radius: 999px;
   background: var(--card-bg);
   border: 1px solid var(--border);
   box-shadow: 0 0 12px var(--glow-soft);
 }
 .model-toggle {
+  flex: 0 0 auto;
+  max-width: 100%;
   font-family: var(--font);
   font-size: 0.9rem;
   letter-spacing: 0.04em;
-  padding: 0.55rem 1rem;
+  padding: 0.5rem 0.85rem;
   border-radius: 999px;
   border: 1px solid transparent;
   background: transparent;
@@ -412,6 +423,18 @@ h1 {
   text-shadow: 0 0 8px var(--glow);
   border-color: var(--border-strong);
   box-shadow: 0 0 18px var(--glow);
+}
+/* Responsive DESPUÉS de las reglas base: con menos especificidad y antes, la base
+   las sobreescribe y la compactación de móvil no se aplica (error ya cometido). */
+@media (max-width: 700px) {
+  .model-provider-layout { gap: .5rem; }
+  .model-provider-row { gap: .45rem .5rem; }
+  .model-toggle-group { gap: .25rem; padding: .25rem; border-radius: 16px; }
+  .model-toggle { font-size: .76rem; padding: .5rem .6rem; }
+}
+@media (max-width: 600px) {
+  /* Cada grupo ocupa su propia línea con su ancho de contenido, centrado. */
+  .model-toggle-group { width: auto; }
 }
 
 /* ============================================================
@@ -943,4 +966,9 @@ h1 {
 .model-quality-hint{
   color:var(--faint);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;
   text-shadow:0 0 8px var(--glow-soft);
+}
+/* Los avisos invisibles solo alinean en vertical: no deben reservar ancho (forzaban
+   líneas de más). Altura intacta, ancho cero. */
+.model-quality-hint[aria-hidden="true"]{
+  width:0;min-width:0;white-space:nowrap;overflow:hidden;
 }
