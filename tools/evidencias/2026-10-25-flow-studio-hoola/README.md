@@ -11,7 +11,8 @@ Copia publicada en **https://atnojs.es/apps/flow_studio_hoola/**. La app origina
 |---|---|
 | `apps/flow_studio_hoola/index.html` | solo cambian `theme-color` (`#001018`) y el `<link>` a `app.hoola.css` |
 | `apps/flow_studio_hoola/app.hoola.css` | **nuevo**: hoja de estilos Hoola completa |
-| `app.20261025e.js`, `flow_queue.php`, `proxy.php`, `history.php`, `history-manager.js` | **byte a byte idénticos** a la app original (verificado con SHA-256) |
+| `app.20261025e.js`, `proxy.php`, `history.php`, `history-manager.js` | **byte a byte idénticos** a la app original (verificado con SHA-256) |
+| `flow_queue.php` | idéntico salvo la ruta al `flow_store` compartido y la migración única de la cola propia (petición posterior: «hazlo») |
 | `.gitignore` y los dos `.htaccess` de datos | idénticos (protegen `flow_store/` y `history_store/`) |
 
 No se ha cambiado ninguna función, texto, flujo ni contrato de datos.
@@ -43,15 +44,27 @@ No se ha cambiado ninguna función, texto, flujo ni contrato de datos.
   - Datos protegidos: `flow_store/queue.json`, `flow_store/ref/`, `history_store/` → **403**.
   - Sin errores de consola; sin desborde horizontal a 1440 y 390.
 
-## Limitación importante (consecuencia de «solo estilo»)
+## Cola compartida (petición posterior: «hazlo»)
 
-La copia usa su **propia cola** (`flow_studio_hoola/flow_store/`) y ningún worker la
-sondea: el indicador sale «PC dormido» y un trabajo enviado desde la copia queda en
-cola sin avanzar. Es lo esperado al no tocar nada fuera del estilo. Para que genere de
-verdad hay dos opciones (una línea, cuando se pida): apuntar el worker a la cola de la
-copia, o hacer que la copia comparta la cola de la app original.
+La copia usa el **mismo `flow_store` que la app original** (`../flow_studio/flow_store`),
+así que el worker que ya corre en el PC procesa también sus trabajos. Al cambiar la ruta,
+`flow_queue.php` migra **una sola vez** los trabajos que hubieran quedado en la cola propia
+de la copia (con sus imágenes de referencia) y renombra `queue.json` a `queue.json.merged`.
+
+Verificado en producción:
+
+- `ping` de la copia y de la original devuelven el mismo `lastSeen` y el mismo `pending`.
+- Los 4 trabajos que estaban atrapados en la cola propia se migraron y procesaron
+  (pendientes 4 → 2 → 0) y aparecen en el lienzo/historial de la copia.
+- `?action=img&id=…` sirve desde la copia las mismas imágenes que la original
+  (91.704 B y 101.466 B, byte a byte).
+- Una generación lanzada desde la UI de la copia terminó en 51 s con la tarjeta completa
+  (1024×1024, 162.944 B JPEG por el endpoint de la copia) y «PC conectado», sin errores de
+  consola. Captura: `09-produccion-generada.png`.
 
 ## Commits
 
 `b55a3877` (copia + CSS), `10f622a6` (protección `.htaccess`), `c3a58306` (finales de
-línea) y `9bdd5477` (re-disparo del despliegue).
+línea), `9bdd5477` (re-disparo), `73a748ae` (cola compartida), `ed6902e8` (migración de la
+cola propia) y el de estas evidencias.
+
