@@ -722,9 +722,12 @@
             }
             if (remove) remove.hidden = !ref;
             if (empty) empty.hidden = Boolean(ref);
-            slot.setAttribute('aria-label', ref
-                ? `Referencia ${index + 1} cargada. Pulsa para cambiarla.`
-                : `Añadir imagen de referencia ${index + 1}`);
+            const pick = slot.querySelector('.ref-pick');
+            if (pick) {
+                pick.setAttribute('aria-label', ref
+                    ? `Referencia ${index + 1} cargada. Pulsa para cambiarla.`
+                    : `Añadir imagen de referencia ${index + 1}`);
+            }
         });
         const count = refsCount();
         setRefsNote(count === 0
@@ -865,17 +868,9 @@
         });
 
         els.refSlots.forEach((slot, index) => {
+            const pick = slot.querySelector('.ref-pick');
             const remove = slot.querySelector('.ref-remove');
-            slot.addEventListener('click', (event) => {
-                if (event.target.closest('.ref-remove')) return;
-                openRefPicker(index);
-            });
-            slot.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openRefPicker(index);
-                }
-            });
+            if (pick) pick.addEventListener('click', () => openRefPicker(index));
             ['dragenter', 'dragover'].forEach((type) => {
                 slot.addEventListener(type, (event) => {
                     event.preventDefault();
@@ -891,8 +886,7 @@
                 if (files && files[0]) addRefFile(files[0], index);
             });
             if (remove) {
-                remove.addEventListener('click', (event) => {
-                    event.stopPropagation();
+                remove.addEventListener('click', () => {
                     state.refs[index] = null;
                     updateRefsUI();
                 });
