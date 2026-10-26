@@ -896,6 +896,9 @@ const App = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [isUpscaling, setIsUpscaling] = useState(false);
     const [lastUpscale, setLastUpscale] = useState(null);
+    // Última imagen producida en esta sesión (edición o ampliación). El upscaler
+    // la prefiere sobre el historial; si aún no hay resultado, usa la imagen subida.
+    const [lastResultId, setLastResultId] = useState(null);
     const [editImage, setEditImage] = useState(null);
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
@@ -1010,6 +1013,7 @@ const App = () => {
         setActivePromptStyle(null);
         setEnhancingStyle(null);
         setLastUpscale(null);
+        setLastResultId(null);
         // Cada modo conserva su propia imagen: al entrar en uno se libera la del otro.
         if (m === 'text-to-image') { setRemixSource(null); setRemixRef(null); }
         if (m === 'remix') { setGenSource(null); setGenSource2(null); }
@@ -1038,6 +1042,8 @@ const App = () => {
             const img = new Image();
             img.onload = () => {
                 if (isFirstSource) setSelectedAR(getClosestAspectRatio(img.width, img.height));
+                // Una base nueva pasa a ser el objetivo del upscaler hasta que se genere.
+                if (mode === 'remix' && slot !== 'refedit') setLastResultId(null);
                 applySource(f.target.result);
                 // Cambiar de imagen invalida los prompts generados para la anterior.
                 setPromptDrafts({});
@@ -1066,9 +1072,12 @@ const App = () => {
     // (con la segunda como respaldo si solo se subio esa).
     const activeSource = mode === 'remix' ? remixSource : (genSource || genSource2);
 
-    // Imagen que amplía el upscaler: la última del historial del modo o, si aún
-    // no hay ninguna, la imagen subida como base.
-    const upscaleSource = (images[0] && images[0].url) || remixSource || genSource || genSource2 || null;
+    // Objetivo del upscaler: el último resultado de esta sesión; si aún no hay,
+    // la imagen subida; y si tampoco, la última del historial del modo.
+    const lastResult = images.find(img => img.id === lastResultId) || null;
+    const upscaleSource = remixSource
+        ? ((lastResult && lastResult.url) || remixSource)
+        : ((images[0] && images[0].url) || genSource || genSource2 || null);
 
     // Genera UNA variante del prompt para el enfoque pulsado y la deja visible y
     // editable. Si ya existe un borrador de ese enfoque se reutiliza al instante
@@ -1160,6 +1169,7 @@ const App = () => {
                 setError('La imagen se amplió, pero no se pudo guardar en el historial.');
             }
             setImages(prev => [item, ...prev]);
+            setLastResultId(item.id);
             setLastUpscale(target.id);
         } catch (err) {
             console.error(err);
@@ -1235,6 +1245,7 @@ const App = () => {
 
             setProgress(100);
             setImages(prev => [newImage, ...prev]);
+            setLastResultId(newImage.id);
         } catch (err) {
             setError(err.message || "Error de generación");
         } finally {
