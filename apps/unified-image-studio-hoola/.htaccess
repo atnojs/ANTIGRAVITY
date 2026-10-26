@@ -1,4 +1,4 @@
-# Unified Image Studio — caché y tipos MIME.
+# Unified Image Studio · Hoola — caché, tipos MIME y CSP de la app.
 # Los módulos ES se piden con ?v=N, pero un despliegue puede dejar un módulo
 # viejo en caché: se fuerza revalidación para que HTML y JS sean siempre de la
 # misma versión.
@@ -8,6 +8,16 @@
         Header set Cache-Control "no-cache, must-revalidate, max-age=0"
     </FilesMatch>
     Header set X-Content-Type-Options "nosniff"
+
+    # ── CSP propia ─────────────────────────────────────────────────────────
+    # La política heredada (img-src 'self' data: https:) bloquea las imágenes
+    # `blob:` con las que el estudio muestra los recursos guardados en
+    # IndexedDB cuando trabaja en modo local (sin sesión). Se sustituye por
+    # una política del mismo estilo pero con blob: permitido para imágenes y
+    # medios, y sin abrir scripts ni conexiones a orígenes externos.
+    Header unset Content-Security-Policy
+    Header always unset Content-Security-Policy
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:;"
 </IfModule>
 
 <IfModule mod_mime.c>
