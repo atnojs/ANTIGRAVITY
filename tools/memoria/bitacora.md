@@ -5,6 +5,36 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-26 (noche) — Agente de Flow: entorno propio, credencial y resiliencia
+
+- **Encargo:** «cómo configuro el agente». Acabó en configuración real + tres correcciones.
+- **Montado en el PC:** entorno dedicado `tools/flow-agent/.venv` (uv, Python 3.11 + Playwright + Pillow),
+  `agente.json` (ignorado por Git) con `tmp_dir` propio porque Chrome necesitaba temporales escribibles,
+  lanzadores `iniciar-agente.bat` / `iniciar-agente-oculto.vbs` y `comprobar-token.bat`.
+- **Credencial:** token de 43 caracteres generado y puesto en el `.htaccess` raíz de Hostinger por
+  Antonio. Verificado: `HTTP 200: el servidor ACEPTA este token`.
+- **Errores propios corregidos en el camino:**
+  1. La guarda del perfil comparaba `E:/…` (agente.json) con `E:\…` (línea de Chrome): nunca detectaba
+     el perfil ocupado. Ahora normaliza con `os.path.normpath/normcase`.
+  2. El agente reclamaba trabajo y luego fallaba si el perfil estaba ocupado. Ahora comprueba **antes**
+     de reclamar y espera; si se ocupa después, **aplaza** (`agent.release`) hasta 4 veces en lugar de
+     marcar el trabajo como fallido.
+  3. El error real (`Failed to create a ProcessSingleton`) quedaba tapado por el ruido
+     `RuntimeError: Event loop is closed`. `summarize_error` ahora filtra el ruido de asyncio y cada
+     trabajo guarda su salida completa en `logs/<id>.log`.
+  4. El `.bat` se escribió con LF y `cmd` lo parseaba mal: reescrito con CRLF.
+  5. `comprobar-token` usaba `agent.heartbeat`, que marcaba el PC como conectado sin estarlo. Nuevo
+     `agent.ping` de solo lectura.
+- **UX añadida:** los trabajos fallidos ahora tienen **Reintentar** en Biblioteca (antes solo los
+  «pendiente de comprobar») y el reintento reinicia el contador de intentos.
+- **Verificación:** servidor local con el entorno real del agente (credencial OK, perfil libre, sesión
+  de Flow presente), 5 casos de aplazamiento/reintento, reintento desde la interfaz, regresión de
+  navegador y comprobación automática del entregable (32 invariantes). Detalle en
+  `apps/unified-image-studio/docs/VERIFICACION.md` §19.
+- **Pendiente:** la generación real la hace Antonio en su equipo; desde el entorno del agente DSH,
+  Chrome no puede escribir en `E:\herramientas\…` (sandbox).
+
+---
 ## 2026-10-26 (tarde) — Hasta 4 imágenes por encolado en Unified Image Studio
 
 - **Encargo:** «añadir la opción de generar hasta 4 imágenes al mismo tiempo».
