@@ -162,7 +162,8 @@ de lado». Con archivos muy grandes, reducir antes de subir.
 2. Escribir en **«Descripción de la imagen»** (máx. **12.000** caracteres). Estructura recomendada:
    sujeto + acción + escena + luz + estilo, y qué texto debe llevar (en español).
 3. Elegir **Modelo** con las píldoras. Camino simple si no hay PC de Flow: **IMAGE 2 · «LOW»**
-   (libre, no pide contraseña). Camino con PC encendido: **FLOW · GOOGLE · «NANO BANANA 2»**.
+   (sin compuerta; la sesión sigue siendo necesaria). Camino con PC encendido:
+   **FLOW · GOOGLE · «NANO BANANA 2»**.
 4. **Proporción**: `1:1`, `4:5`, `3:4`, `2:3`, `16:9`, `9:16`, `3:2`, `4:3`, `21:9`. **Con Flow**, las
    que no admite (`4:5`, `2:3`, `3:2`, `21:9`) aparecen **desactivadas** en la lista: no se pueden
    elegir. Si alguna llegara al servidor con Flow, cae a `1:1`.
@@ -322,11 +323,11 @@ anterior. La lista oficial siempre está en **«Ayuda»** (modal «Atajos y ayud
 ### F17 · Recuperar un trabajo que quedó a medias
 
 1. Si se cerró la pestaña o se cortó la red con una generación en curso, al volver a abrir sale
-   «Hay un trabajo en curso en el servidor (…). Se recupera sin volver a enviarlo.».
+   «Hay un trabajo en curso en el servidor (…). Se recupera sin volver a enviarlo.»
 2. La app retoma el trabajo sola y muestra la vista previa: se acepta o se descarta como cualquier
    otro resultado.
-3. Si no se puede recuperar («No se pudo recuperar el trabajo: …»), mirar antes en **Biblioteca**
-   antes de volver a generar: no se ha reenviado ni se ha vuelto a cobrar.
+3. Si no se puede recuperar («No se pudo recuperar el trabajo: …»), mirar en **Biblioteca** antes de
+   volver a generar: no se ha reenviado ni se ha vuelto a cobrar.
 
 ### F18 · Móvil y paneles
 
