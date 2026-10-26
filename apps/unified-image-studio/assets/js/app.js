@@ -1978,8 +1978,6 @@ function renderFlowJobs(jobs) {
       if (job.type === 'image') {
         actions.push(`<button class="btn btn-sm btn-primary" data-flow-apply="${job.id}">Al lienzo</button>`);
         actions.push(`<button class="btn btn-sm btn-ghost" data-flow-animate="${job.id}">Animar</button>`);
-      } else {
-        actions.push(`<button class="btn btn-sm btn-ghost" data-flow-frames="${job.id}">Usar como inicio</button>`);
       }
     }
     if (job.status === 'unknown') {
@@ -2017,7 +2015,8 @@ function openFlowViewer(job) {
   const img = $('flowLightboxImg');
   const video = $('flowLightboxVideo');
   if (!job?.url) return;
-  $('flowLightboxMeta').textContent = `${job.type === 'video' ? 'Vídeo' : 'Imagen'} · ${job.ratio || ''} · ${job.width || '?'}×${job.height || '?'}`;
+  const medidas = job.width > 0 && job.height > 0 ? ` · ${job.width}×${job.height}` : '';
+  $('flowLightboxMeta').textContent = `${job.type === 'video' ? 'Vídeo' : 'Imagen'} · ${job.ratio || ''}${medidas}`;
   $('flowLightboxDownload').href = `${job.url}${job.url.includes('?') ? '&' : '?'}download=1`;
   $('flowLightboxDownload').setAttribute('download', '');
   if (job.type === 'video') {

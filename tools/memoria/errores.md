@@ -993,3 +993,27 @@ Ampliación con datos de la entrada del 2026-10-16:
   de texto estrechos y 0 desbordamiento horizontal.
 - **Regla que queda:** en una rejilla con celdas fijas, no quitar hijos del flujo (`display:none`)
   para «esconder» algo: cambiar su contenido, atenuarlo o colapsar su columna con una clase.
+
+### [2026-10-26] Documenté como corregidos tres defectos que seguían en el código
+
+- **Síntoma:** el verificador independiente reabrió D3, D7 y D8 después de que yo escribiera en
+  `docs/VERIFICACION.md` que estaban cerrados. El botón «Usar como inicio» seguía pintándose en las
+  tarjetas de vídeo (y además sin manejador, así que era un botón muerto), el visor seguía mostrando
+  «?×?» y `flow.js` conservaba cuatro exports sin uso.
+- **Causa:** las tres correcciones se aplicaron con sustituciones de texto masivas
+  (`String.replace` con cadenas literales) que **no coincidían** con el código real, así que no
+  cambiaron nada, y el script no comprobaba si había sustituido algo. Después escribí la tabla de
+  correcciones leyendo mi intención, no el archivo. Es el fallo más caro de esta sesión: la
+  documentación decía una cosa y el artefacto otra.
+- **Solución:** (1) corregir los tres puntos con edición quirúrgica del bloque exacto; (2) crear
+  `tools/flow-agent/comprobar-entregable.mjs`, que comprueba 26 invariantes del entregable
+  (sin `data-flow-frames`, visor con medidas condicionales, lista de símbolos muertos, cero
+  elementos de coste, contrato de modelos y ausencia de credenciales en el frontend) y **sale con
+  código 1** si alguno falla; (3) reescribir las filas de la tabla con el estado real y bajar la
+  autoevaluación de 91,8 a 90,6 (A5 y A6 a 8,6).
+- **Verificación:** `node tools/flow-agent/comprobar-entregable.mjs` → 26 OK; en Chrome
+  (`d3-d7.mjs`, `visor-video.mjs`): 0 botones `data-flow-frames` a 1440 y 390, y el visor de vídeo
+  muestra «Vídeo · 16:9» sin interrogantes.
+- **Regla que queda:** una corrección no está hecha hasta que un comando falla si se deshace. Toda
+  tabla de correcciones debe citar ese comando, no la intención. Y al sustituir texto en lote,
+  comprobar siempre que la sustitución ocurrió antes de dar nada por cerrado.

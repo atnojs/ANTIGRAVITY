@@ -6,31 +6,17 @@
    desde cualquier ordenador, y cerrar la pestaña no cancela el trabajo.
    ============================================================ */
 
-import { state, emit, uid } from './core.js?v=12';
+import { emit } from './core.js?v=12';
 import { server } from './persist.js?v=12';
 
-/** Modelos de imagen de Flow, en el orden del selector (primero Nano Banana 2). */
-export const FLOW_IMAGE_MODELS = [
-  { id: 'flow-nano-banana-2', label: 'NANO BANANA 2', group: 'FLOW · GOOGLE', flow: 'Nano Banana 2', note: 'Nano Banana 2 en tu PC con Flow. Modelo inicial de un trabajo nuevo.' },
-  { id: 'flow-nano-banana-pro', label: 'NANO BANANA PRO', group: 'FLOW · GOOGLE', flow: 'Nano Banana Pro', note: 'Nano Banana Pro: más detalle, más lento.' },
-  { id: 'flow-nano-banana-2-lite', label: 'NANO BANANA 2 LITE', group: 'FLOW · GOOGLE', flow: 'Nano Banana 2 Lite', note: 'Nano Banana 2 Lite: el más rápido de Flow.' },
-];
-
-export const FLOW_VIDEO_MODELS = [
-  { id: 'veo-3.1-lite', label: 'VEO 3.1 LITE', note: 'El más rápido de los Veo.' },
-  { id: 'veo-3.1-fast', label: 'VEO 3.1 FAST', note: 'Equilibrio entre tiempo y calidad.' },
-  { id: 'veo-3.1-quality', label: 'VEO 3.1 QUALITY', note: 'Máxima calidad de Veo: tarda más.' },
-  { id: 'omni-flash', label: 'OMNI FLASH', note: 'Omni Flash de Google Flow.' },
-];
-
+/* Contrato mínimo del cliente con el motor Flow. El catálogo visible de modelos
+   vive en ai.js (selector y notas) y la autoridad de nombres es el servidor;
+   aquí solo lo imprescindible: proporciones admitidas e identificadores
+   iniciales, que coinciden con lib/flow-engine.php. */
 export const FLOW_IMAGE_RATIOS = ['1:1', '16:9', '4:3', '3:4', '9:16'];
-export const FLOW_VIDEO_RATIOS = ['16:9', '9:16'];
 
 export const DEFAULT_FLOW_IMAGE_MODEL = 'flow-nano-banana-2';
 export const DEFAULT_FLOW_VIDEO_MODEL = 'veo-3.1-lite';
-
-export const isFlowModel = (id) => FLOW_IMAGE_MODELS.some((m) => m.id === id);
-export const flowModelById = (id) => FLOW_IMAGE_MODELS.find((m) => m.id === id) || null;
 
 /* ── Estado del motor y del agente del PC ── */
 export const flowState = {
