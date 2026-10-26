@@ -84,6 +84,20 @@ Cubre: editar sin imagen → 400; editar con imagen → 1 trabajo; `claim` con `
 
 Prueba ligera posterior (`prodlight.mjs`) → **5/5 PASS**: versión d, escalado 1600×1200, descarga JPEG de 78.710 B, 393 px y consola limpia.
 
+## Autoevaluación del autor
+
+Versión evaluada: `be0a0d65` · JS `E6730B5A…DC30` · CSS `BABDEA33…721E` · `index.html` `6A4D7E2F…C303`.
+
+| A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9 | A10 | Total truncado |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 9,6 | 9,5 | 9,5 | 9,4 | 9,2 | 9,1 | 9,2 | 9,3 | 9,1 | 9,3 | **93,7** |
+
+Cálculo: 172,8 + 142,5 + 123,5 + 94,0 + 110,4 + 91,0 + 73,6 + 55,8 + 45,5 + 27,9 = 937,0 → 93,7 (truncado).
+Evidencia: tablas de pruebas de este documento, `resultados.json`, `prod-resultados.json`, `prod-light-resultados.json`, hashes y capturas.
+Mejoras residuales: D2 (aria-live de `#queueNote`, mitigado por `#grid`) y D3 (foco al cerrar el menú de escalado), ambas Menor y aceptadas. Documentación: D7 y captura insignia corregidos en este mismo documento.
+Gate D1–D7: cumple (total 93,7 ≥ 90,0; mínimo 9,1 ≥ 7,0; A1–A6 ≥ 9,0; cero B/M/Med; 2 menores; evidencias reproducibles; PASS independiente 94,3).
+**DECISIÓN: ENTREGO.**
+
 ## Verificación independiente
 
 Subagente verificador con contexto separado y sin editar archivos, sobre el código `be0a0d65` y esta evidencia:
@@ -105,6 +119,7 @@ Defectos menores declarados y aceptados:
 
 - `local-01…11`: escritorio generar/editar/resultado, menú de escalado, 2×, 8×, editar desde tarjeta, portátil 1440×768, tablet 820 y móvil 393 (generar y editar).
 - `produccion-01…09`: flujo real (generar, editar, mejorador, resultado de Flow, escalado, móvil) y pasada final de la versión d.
+- `produccion-04b-edicion-valida.png`: recorte de la primera tarjeta de `produccion-04`, la edición válida sin el marcador de prueba. La captura completa `produccion-04-editada-1440.png` conserva una tarjeta antigua con «PRUEBA DSH.» pintado por Flow (artefacto declarado en Limitaciones); se mantiene como evidencia de la prueba, no como imagen de portada.
 - `fixture-800x600.png`: imagen sintética usada en las pruebas.
 
 ## Limitaciones declaradas
