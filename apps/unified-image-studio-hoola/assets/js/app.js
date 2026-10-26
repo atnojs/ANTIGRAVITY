@@ -34,7 +34,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v2.0.0-hoola · 2026-10-26 · copia con estilo Hoola';
+const BUILD = 'v2.0.2-hoola · 2026-10-26 · copia con estilo Hoola verificada';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -1798,7 +1798,10 @@ async function submitLogin() {
     $('loginPassword').value = '';
     await loadCatalog();
     await refreshBudget();
+    await refreshProjectLists();
+    paintStorageInfo(await storageInfo());
     updateTopbar();
+    updateUtilities();
     toast('Sesión iniciada: guardado y generación disponibles en el servidor.', 'ok');
   } catch (error) {
     $('loginError').textContent = error.status === 401 ? 'Contraseña incorrecta.' : error.message;

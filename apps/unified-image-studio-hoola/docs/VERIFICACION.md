@@ -75,3 +75,15 @@ El primer push se desplegó a los ~40 s. Los siguientes (fix CSP y marcador) no 
 durante ~15 min pese a que GitHub entregó todos los hooks con HTTP 200; se re-disparó con commits
 vacíos (`baaaace1`, `29569591`) y el despliegue llegó a las 15:36:43 UTC. Verificado con
 `version.txt`, cabecera CSP y prueba de import/export en la URL real.
+
+## 6. Correcciones menores de la ronda final (build 2.0.2)
+
+Dos defectos menores detectados por la verificación funcional independiente, corregidos antes de
+cerrar:
+
+- **Sello de versión interno desactualizado:** `const BUILD` de `app.js` decía `v2.0.0-hoola`
+  mientras `version.txt` ya era `2.0.2-hoola`. Ahora ambos coinciden (`v2.0.2-hoola`).
+- **Panel de Utilidades/Biblioteca no se refrescaba tras el login:** mostraba «Modo local · sin
+  sesión» hasta recargar. Ahora, al iniciar sesión, se refrescan presupuesto, lista de proyectos,
+  información de almacenamiento y utilidades sin recargar la página.
+
