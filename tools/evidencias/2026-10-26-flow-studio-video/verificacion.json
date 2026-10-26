@@ -1,16 +1,24 @@
-﻿{
+{
   "fecha": "2026-10-26",
   "app": "apps/flow_studio_hoola",
-  "commit": "c2e327ad",
+  "commit_final": "44f00183",
+  "commit_inicial": "c2e327ad",
   "pruebas": {
-    "local_ui_y_cola": "43/43 PASS (Chrome headless + php -S, mp4 real de 15.136.391 B)",
-    "worker_pc_simulado": "12/12 PASS (flow_studio_worker.py real, flow.py simulado)",
-    "cola_compartida_hoola_flow_studio": "PASS (hoola encola, flow_studio reclama/sube, hoola sirve el mp4)",
-    "produccion_ui": "9/9 PASS (1440/768/393, consola limpia)",
-    "produccion_php": "subida 19,2 MB base64 en 1,4 s; sirve video/mp4; Range 206; rechaza no-video"
+    "local_ui_y_cola": "47/47 PASS (Chrome headless + php -S 8.3, mp4 real de 15.136.391 B, descarga verificada en disco)",
+    "worker_pc_simulado": "13/13 PASS (flow_studio_worker.py real, flow.py simulado: --start/--end, mp4, limpieza y guarda de modelo)",
+    "cola_compartida_hoola_flow_studio": "PASS (hoola encola, flow_studio reclama y sube, hoola sirve el mp4)",
+    "produccion_ui": "11/11 PASS (1440/768/393, consola limpia, mejorador de prompts real)",
+    "produccion_php": "subida 19,2 MB base64 en 1,4 s; sirve video/mp4; Range 206; rechaza un archivo que no es vídeo"
+  },
+  "costes": {
+    "verificado_veo_31_lite": "10 puntos por vídeo (consumo real; 50 al día = 5 vídeos)",
+    "verificado_omni_11_flash": "24 puntos con 720p, 8 s y x1 (captura de la UI de Flow del 24/09/2026)",
+    "no_verificado": "Veo 3.1 Fast y Veo 3.1 Quality: sin cifra fiable; la app indica que Flow muestra el importe antes de generar y no inventa el número",
+    "imagenes": "0 puntos"
   },
   "no_verificado": [
-    "Generacion real de un video con Veo en Flow desde el PC (consume 10 puntos y requiere la sesion de Chrome de Flow; no se ha lanzado para no gastar cuota).",
-    "El worker del PC procesa el trabajo con flow.py real (probado con flow.py simulado y la misma cola)."
+    "Generación real de un vídeo con Veo desde el PC: cuesta 10 puntos y exige la sesión de Chrome de Flow; no se lanzó para no gastar cuota.",
+    "Coste exacto de Veo 3.1 Fast y Veo 3.1 Quality en esta cuenta.",
+    "Nombre exacto de «Omni Flash» en la UI actual: la captura del 24/09 dice «Omni 1.1 Flash». El worker falla con error claro si Flow no reconoce el modelo, en vez de generar con otro."
   ]
 }
