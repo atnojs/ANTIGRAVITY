@@ -288,6 +288,17 @@
    las últimas etiquetas del formulario. */
 .panel-left .panel-body { padding-bottom: 8px; }
 body[data-left-tab="generate"] .panel-left .panel-body { padding-bottom: 132px; }
+/* Cantidad de imágenes por encolado: el grupo se apaga cuando el modelo no es
+   de Flow, para no ofrecer un control que no hace nada. */
+.model-toggle-group.is-disabled { opacity: .45; }
+.model-toggle-group.is-disabled .model-toggle { cursor: not-allowed; }
+.model-toggle:disabled { cursor: not-allowed; }
+.model-toggle:disabled:hover {
+  color: var(--muted);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
 .save-state {
   display: inline-flex;
   align-items: center;
@@ -1130,6 +1141,17 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
 .topbar-actions { flex: 0 0 auto; }
 #exportBtn { flex: 0 0 auto; }
 .flow-status { flex: 0 1 auto; min-width: 0; }
+/* Cantidad de imágenes por encolado: el grupo se apaga cuando el modelo no es
+   de Flow, para no ofrecer un control que no hace nada. */
+.model-toggle-group.is-disabled { opacity: .45; }
+.model-toggle-group.is-disabled .model-toggle { cursor: not-allowed; }
+.model-toggle:disabled { cursor: not-allowed; }
+.model-toggle:disabled:hover {
+  color: var(--muted);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
 .save-state { flex: 0 1 auto; min-width: 0; }
 .project-chip { min-width: 0; }
 .project-chip #projectName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
@@ -1253,3 +1275,15 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
 /* En movil, el pie del panel de video no debe quedar bajo la barra de estado. */
 body[data-left-tab="video"] .panel-left .panel-body { padding-bottom: 96px; }
 body[data-left-tab="library"] .panel-left .panel-body { padding-bottom: 24px; }
+
+/* Objetivos táctiles: en pantallas pequeñas o con puntero grueso, los botones de
+   selección (modelo, formato, cantidad) no deben quedarse en 26 px. Se sube el
+   mínimo sin cambiar tipografía ni paleta, así todo el panel mantiene el mismo
+   tamaño de toque. */
+@media (max-width: 700px), (pointer: coarse) {
+  .model-toggle { min-height: 38px; }
+  .model-toggle-group { padding: .3rem; }
+}
+@media (pointer: coarse) {
+  .model-toggle { min-height: 42px; }
+}

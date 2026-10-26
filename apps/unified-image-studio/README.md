@@ -50,6 +50,7 @@ apps/unified-image-studio/
 
 - **Modelos de imagen**: `Nano Banana 2` (inicial), `Nano Banana Pro` y `Nano Banana 2 Lite`.
 - **Vídeo**: Veo 3.1 Lite/Fast/Quality y Omni Flash, en 16:9 o 9:16.
+- **Varias a la vez**: con Flow se pueden pedir hasta **4 imágenes por encolado**; se generan una detrás de otra y cada una cae en Biblioteca. Con los proveedores directos el control se desactiva (una imagen por envío).
 - **Animar**: cualquier imagen (generada o del lienzo) pasa a ser el fotograma inicial del vídeo.
 - **Estados honestos**: en cola, generando, listo, falló y *pendiente de comprobar* (el PC se
   apagó a mitad: no se reenvía solo para no gastar dos veces la generación).

@@ -55,6 +55,14 @@ ok('D6 sin estilos de coste', !/\.cost-meter|\.cost-sub|\.estimate\b/.test(css))
 ok('D6 sin lógica de coste en JS', !patronCoste.test(ui) && !patronCoste.test(ai) && !patronCoste.test(app));
 ok('D6 sin bloque @media vacío de coste', !css.includes('medidor de coste'));
 
+// ── Cantidad de imágenes por encolado (1–4) ──
+const enginePhp = leer('lib/flow-engine.php');
+ok('cantidad: 4 botones en la interfaz', (html.match(/data-count="[1-4]"/g) || []).length === 4);
+ok('cantidad: el cliente envía count', app.includes('count: images.length ? 1 : flowUi.imageCount'));
+ok('cantidad: el servidor limita a 1..4', enginePhp.includes('max(1, min(4, $count))'));
+ok('cantidad: la cola no se desborda al encolar varias', enginePhp.includes('$pending + $count > UIS_FLOW_QUEUE_MAX'));
+ok('cantidad: se desactiva con proveedores directos', app.includes('button.disabled = !isFlow'));
+
 // ── D5: autoevaluación y ronda de rework documentadas ──
 const doc = leer('docs/VERIFICACION.md');
 ok('D5 con autoevaluación A1-A10', doc.includes('Autoevaluación A1–A10'));

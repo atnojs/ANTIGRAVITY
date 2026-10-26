@@ -1115,7 +1115,10 @@ async function runGeneration() {
         model: state.ui.model,
         ratio: $('aspectSelect').value,
         images,
+        // Con una referencia se edita (una sola salida); sin ella se generan
+        // tantas variantes como se hayan pedido.
         mode: images.length ? 'edit' : 'generate',
+        count: images.length ? 1 : flowUi.imageCount,
       });
       return;
     }
@@ -1139,7 +1142,8 @@ async function runGeneration() {
   } finally {
     generationBusy = false;
     btn.disabled = false;
-    text.textContent = 'GENERAR';
+    // La etiqueta la decide el modelo y la cantidad (p. ej. «GENERAR 4»).
+    syncFlowControls();
     hideLoading();
   }
 }
@@ -1751,6 +1755,7 @@ const flowUi = {
   videoRatio: '16:9',
   startFrame: null,      // data URL del fotograma inicial de vídeo
   libraryFilter: 'all',
+  imageCount: 1,         // imágenes por encolado (1–4, solo con Flow)
 };
 
 /** Cambia de sección sin perder el trabajo en curso. */
@@ -2174,6 +2179,43 @@ function syncFlowControls() {
     resolution.disabled = isFlow;
     resolution.title = isFlow ? 'Google Flow genera a su resolución nativa (~1K).' : '';
   }
+  // Varias imágenes por encolado: es una capacidad del motor Flow. Con los
+  // proveedores directos el envío es de una sola imagen, así que el control se
+  // desactiva en vez de fingir que hace algo.
+  const variantGroup = $('variantGroup');
+  const variantsNote = $('variantsNote');
+  if (variantGroup) {
+    for (const button of $$('#variantGroup [data-count]')) {
+      button.disabled = !isFlow;
+      button.setAttribute('aria-disabled', String(!isFlow));
+    }
+    variantGroup.classList.toggle('is-disabled', !isFlow);
+    if (!isFlow && flowUi.imageCount !== 1) {
+      // Al cambiar a un proveedor directo se vuelve a una imagen, sin sorpresas.
+      flowUi.imageCount = 1;
+      paintVariantSelection();
+    }
+  }
+  if (variantsNote) {
+    variantsNote.textContent = isFlow
+      ? (flowUi.imageCount > 1
+        ? `${flowUi.imageCount} imágenes: Flow las genera una detrás de otra en tu PC.`
+        : 'Con Flow, cada imagen es una generación: se hacen una detrás de otra en tu PC.')
+      : 'Solo disponible con los modelos de Flow. Los proveedores directos generan una imagen por envío.';
+  }
+  const btnText = $('generateBtnText');
+  if (btnText) {
+    btnText.textContent = isFlow && flowUi.imageCount > 1 ? `GENERAR ${flowUi.imageCount}` : 'GENERAR';
+  }
+}
+
+/** Marca el botón de cantidad activo según el estado. */
+function paintVariantSelection() {
+  for (const button of $$('#variantGroup [data-count]')) {
+    const active = Number(button.dataset.count) === flowUi.imageCount;
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-pressed', String(active));
+  }
 }
 
 /** Enlaza la interfaz de Flow (navegación, vídeo y biblioteca). */
@@ -2191,6 +2233,19 @@ function bindFlowUI() {
   $('flowAgentRefresh').addEventListener('click', async () => {
     await refreshFlowState();
     paintFlowAgent();
+  });
+  // Cantidad de imágenes por encolado (1–4).
+  $('variantGroup').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-count]');
+    if (!button || button.disabled) return;
+    const value = Math.max(1, Math.min(4, Number(button.dataset.count) || 1));
+    if (value === flowUi.imageCount) return;
+    flowUi.imageCount = value;
+    paintVariantSelection();
+    syncFlowControls();
+    if (value > 1) {
+      toast(`${value} imágenes por encolado: se generarán una detrás de otra en tu PC.`, 'info');
+    }
   });
   $('videoModelGroup').addEventListener('click', (event) => {
     const button = event.target.closest('[data-vmodel]');

@@ -5,6 +5,25 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-26 (tarde) — Hasta 4 imágenes por encolado en Unified Image Studio
+
+- **Encargo:** «añadir la opción de generar hasta 4 imágenes al mismo tiempo».
+- **Qué se hizo:** control `1 · 2 · 3 · 4` en el panel de generación. Con un modelo de Flow se
+  encolan N trabajos (cada uno es una generación real, el PC las hace en serie) y el botón pasa a
+  «GENERAR N». El progreso muestra «(x/N listos)» y cada resultado aparece en Biblioteca.
+- **Decisiones:** el control **solo** se activa con Flow (los proveedores directos generan una
+  imagen por envío: antes que un botón muerto, se desactiva y se explica); con referencias se
+  edita y la cantidad se fuerza a 1; la capacidad de la cola se comprueba **en el servidor** y un
+  encolado que no cabe se rechaza entero (HTTP 429), sin dejar trabajos a medias.
+- **Mejora de accesibilidad incluida:** los botones de selección del panel medían 26 px de alto,
+  incómodos con el dedo. En ≤700 px o puntero grueso suben a 38–42 px, de forma consistente para
+  modelo, formato y cantidad.
+- **Verificación:** backend (4 creadas, 429 al no caber, cola intacta, 12/12 procesadas por el
+  agente), interfaz (4 botones, «GENERAR 3», nota, progreso 0/4→3/4, 4 tarjetas «Listo»),
+  desactivación con proveedor directo, móvil a 390 px y regresión de barra/importar/exportar.
+  Detalle en `apps/unified-image-studio/docs/VERIFICACION.md` §18.
+
+---
 ## 2026-10-26 — Unified Image Studio: Google Flow como motor preferente (imagen y vídeo) y fuera la interfaz de costes
 
 - **Encargo:** integrar las capacidades de `apps/flow_studio_hoola` en `apps/unified-image-studio` con

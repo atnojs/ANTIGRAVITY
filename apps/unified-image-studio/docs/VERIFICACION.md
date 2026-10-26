@@ -435,3 +435,36 @@ midió 80,0 porque tres filas afirmaban correcciones que no se habían aplicado 
 Se corrigió el código, se añadieron `comprobar-entregable.mjs` y `probar-comprobacion.mjs`, y
 A5/A6 bajaron a 9,0. La moraleja queda escrita: una corrección no existe hasta que un comando
 falla si se deshace.
+
+---
+
+## 18. Varias imágenes por encolado (1–4) — 2026-10-26
+
+Añadido después de la integración de Flow: al generar con un modelo de Flow se pueden pedir
+**hasta 4 imágenes de una vez**. Cada una es una generación independiente, así que el PC las
+hace una detrás de otra y cada resultado aparece en Biblioteca con sus acciones.
+
+| Prueba | Cómo se comprueba | Resultado |
+|---|---|---|
+| El servidor crea las que se piden | `flow.create` con `count: 4` | PASS · 4 identificadores |
+| Límite de la capacidad | Motor con 11 pendientes y `count: 2` | PASS · HTTP 429 «No caben 2 imágenes…» y la cola queda intacta (11 → 11) |
+| Nunca se supera el máximo | Rellenar hasta 12 y pedir 1 más | PASS · 12/12 y después 429 |
+| El agente las procesa todas | 12 trabajos encolados (lotes de 4 y 3) | PASS · 12 `done` |
+| Interfaz: 4 opciones | Panel de generación | PASS · 4 botones, «1» activo de inicio |
+| Etiqueta del botón | Elegir 3 | PASS · «GENERAR 3» |
+| Nota explicativa | Elegir 2 o 4 | PASS · «N imágenes: Flow las genera una detrás de otra en tu PC.» |
+| Progreso con varias | Encolar 4 y procesarlas | PASS · «(0/4) → (1/4) → (2/4) → (3/4)» y se oculta al terminar |
+| Biblioteca | Tras las 4 | PASS · 4 tarjetas, 4 «Listo» |
+| Con proveedores directos | Elegir IMAGE 2 LOW | PASS · los 4 botones se desactivan, vuelve a 1 y la nota lo explica |
+| Móvil | 390 px con el cajón abierto | PASS · 4 botones de 42 px, ninguno fuera de pantalla ni tapado |
+| Regresión | Barra en 11 anchos, importar/exportar/guardar, consola | PASS · sin cambios ni errores |
+
+Decisiones de esta función:
+
+- **El control solo se activa con Flow.** Los proveedores directos generan una imagen por envío;
+  se desactiva el grupo con una nota en vez de ofrecer un control que no hace nada.
+- **Con referencias se edita**, y una edición produce una sola salida: la cantidad se fuerza a 1.
+- **La capacidad se comprueba en el servidor** (`uis_flow_create`), no solo en la interfaz, para
+  que ningún camino pueda desbordar la cola. Un encolado que no cabe se rechaza **entero**.
+- **Objetivos táctiles:** en pantallas pequeñas o con puntero grueso los botones de selección
+  suben a 38–42 px de alto; antes eran de 26 px, incómodos con el dedo.

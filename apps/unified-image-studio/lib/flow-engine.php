@@ -255,6 +255,18 @@ function uis_flow_create(PDO $db, array $body): array
         }
     }
 
+    // Capacidad: la cola es finita y un encolado puede pedir hasta 4 imágenes.
+    // La comprobación vive aquí para que ningún camino pueda saltársela.
+    $pending = (int)$db->query("SELECT COUNT(*) FROM flow_jobs WHERE status IN ('queued','running')")->fetchColumn();
+    if ($pending + $count > UIS_FLOW_QUEUE_MAX) {
+        throw new InvalidArgumentException(sprintf(
+            'No caben %d imágenes: hay %d trabajos pendientes y el máximo de la cola es %d. Espera a que termine alguno.',
+            $count,
+            $pending,
+            UIS_FLOW_QUEUE_MAX
+        ), 429);
+    }
+
     $jobIds = [];
     foreach (range(1, $count) as $_) {
         $id = bin2hex(random_bytes(8));

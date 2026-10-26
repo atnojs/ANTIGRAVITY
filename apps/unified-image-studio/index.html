@@ -332,6 +332,17 @@
             </div>
           </div>
 
+          <div class="field" id="variantsField">
+            <span class="field-label">Imágenes por encolado <span class="hint" id="variantsHint">(con Flow)</span></span>
+            <div class="model-toggle-group" id="variantGroup" role="group" aria-label="Cuántas imágenes generar de una vez">
+              <button type="button" class="model-toggle is-active" data-count="1" aria-pressed="true">1</button>
+              <button type="button" class="model-toggle" data-count="2" aria-pressed="false">2</button>
+              <button type="button" class="model-toggle" data-count="3" aria-pressed="false">3</button>
+              <button type="button" class="model-toggle" data-count="4" aria-pressed="false">4</button>
+            </div>
+            <p class="field-note" id="variantsNote">Con Flow, cada imagen es una generación: se hacen una detrás de otra en tu PC.</p>
+          </div>
+
           <div class="field">
             <span class="field-label">Referencias <span class="badge" id="refCount">0</span></span>
             <div class="ref-strip" id="refStrip" aria-live="polite"></div>
