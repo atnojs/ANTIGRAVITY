@@ -93,9 +93,11 @@ Prueba ligera posterior (`prodlight.mjs`) → **5/5 PASS**: versión d, escalado
 ## Limitaciones declaradas
 
 - **El escalado es local** (remuestreo de alta calidad): aumenta píxeles reales, no inventa detalle nuevo. El panel no lo promete.
+- **La edición es una edición del agente de Flow sobre la imagen adjunta**, no una herramienta de máscara/capas: Flow puede reinterpretar algún elemento. En la prueba con la imagen sintética conservó el bloque verde y añadió la casa y los árboles; con fotos reales conviene revisar el resultado antes de darlo por bueno. No se promete fidelidad píxel a píxel.
 - El worker del PC **no se ha tocado** ni reiniciado: la edición reutiliza el canal de referencias. Si en el futuro se quiere que Flow reciba una instrucción específica de edición desde `flow.py`, habría que desplegar el worker.
 - Las imágenes escaladas **no van al historial**; se descargan desde la tarjeta. Es una decisión de producto para no almacenar JPEG de hasta 8 MB por operación.
 - En la primera prueba real se añadió «PRUEBA DSH» al prompt y Flow lo **pintó como texto en la imagen**: confirma que la edición actúa sobre la imagen, pero fue un artefacto de prueba. La verificación final se repitió sin marcador.
+- Se borraron del historial compartido las **3 entradas de prueba** creadas por la verificación; quedan las 4 imágenes reales que había antes.
 - La sesión no ha modificado `tools/memoria/bitacora.md` porque estaba tocado por otra sesión en paralelo; la entrada queda aquí y en el informe de entrega.
 - El despliegue de Hostinger tarda entre 10 y 20 minutos en esta sesión; se comprobó el contenido servido por hash, no solo el HTTP 200.
 
