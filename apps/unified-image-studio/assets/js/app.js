@@ -1985,7 +1985,7 @@ function renderFlowJobs(jobs) {
         actions.push(`<button class="btn btn-sm btn-ghost" data-flow-animate="${job.id}">Animar</button>`);
       }
     }
-    if (job.status === 'unknown') {
+    if (job.status === 'unknown' || job.status === 'failed') {
       actions.push(`<button class="btn btn-sm btn-primary" data-flow-retry="${job.id}">Reintentar</button>`);
     }
     if (!active) {

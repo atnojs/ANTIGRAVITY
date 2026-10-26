@@ -63,6 +63,15 @@ ok('cantidad: el servidor limita a 1..4', enginePhp.includes('max(1, min(4, $cou
 ok('cantidad: la cola no se desborda al encolar varias', enginePhp.includes('$pending + $count > UIS_FLOW_QUEUE_MAX'));
 ok('cantidad: se desactiva con proveedores directos', app.includes('button.disabled = !isFlow'));
 
+// ── Resiliencia ante el perfil de Chrome ocupado ──
+const agentePy = fs.readFileSync('tools/flow-agent/flow_agent.py', 'utf8');
+ok('perfil: no reclama si el perfil está ocupado', agentePy.includes('espero sin reclamar trabajo'));
+ok('perfil: los fallos pasajeros se aplazan', agentePy.includes('class TransientError') && agentePy.includes("'agent.release'"));
+ok('perfil: se guarda el log completo', agentePy.includes('def guardar_log'));
+ok('perfil: el resumen ignora el ruido de asyncio', agentePy.includes('event loop is closed'));
+ok('reintento: el backend aplaza sin fallar', enginePhp.includes('function uis_flow_release'));
+ok('reintento: los fallidos se pueden reintentar', enginePhp.includes("['unknown', 'failed']"));
+ok('reintento: la interfaz ofrece reintentar fallidos', app.includes("job.status === 'unknown' || job.status === 'failed'"));
 // ── D5: autoevaluación y ronda de rework documentadas ──
 const doc = leer('docs/VERIFICACION.md');
 ok('D5 con autoevaluación A1-A10', doc.includes('Autoevaluación A1–A10'));

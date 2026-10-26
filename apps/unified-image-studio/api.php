@@ -571,6 +571,21 @@ switch ($action) {
         uis_json(200, ['ok' => true, 'job' => $job, 'seen' => time()]);
         break;
 
+    case 'agent.release':
+        // Fallo pasajero (perfil de Chrome ocupado): el trabajo vuelve a la cola
+        // sin contar como fallo, salvo que ya se haya aplazado demasiadas veces.
+        uis_flow_require_agent();
+        if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
+        $isMultipart = str_contains(strtolower((string)($_SERVER['CONTENT_TYPE'] ?? '')), 'multipart/form-data');
+        $body = $isMultipart ? $_POST : uis_read_json();
+        try {
+            $resultado = uis_flow_release($db, (string)($body['id'] ?? ''), (string)($body['error'] ?? ''));
+        } catch (InvalidArgumentException $error) {
+            uis_fail((int)($error->getCode() ?: 400), $error->getMessage());
+        }
+        uis_json(200, $resultado);
+        break;
+
     case 'agent.heartbeat':
         uis_flow_require_agent();
         uis_json(200, uis_flow_heartbeat($db, (string)($_REQUEST['note'] ?? '')));

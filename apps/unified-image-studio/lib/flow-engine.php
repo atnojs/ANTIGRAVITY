@@ -534,16 +534,47 @@ function uis_flow_heartbeat(PDO $db, string $note = ''): array
     ];
 }
 
-function uis_flow_schedule(PDO $db, string $id): array{
+/**
+ * Devuelve un trabajo reclamado a la cola sin marcarlo como fallido.
+ *
+ * Se usa cuando el fallo es pasajero (otro Chrome tiene el perfil ocupado unos
+ * segundos). Tras varios aplazamientos seguidos se marca como fallido para no
+ * dejar el trabajo girando para siempre.
+ */
+function uis_flow_release(PDO $db, string $id, string $motivo = ''): array
+{
     if (!uis_safe_id($id)) throw new InvalidArgumentException('Identificador no válido.', 400);
     $stmt = $db->prepare('SELECT * FROM flow_jobs WHERE id = ?');
     $stmt->execute([$id]);
     $row = $stmt->fetch();
     if (!$row) throw new InvalidArgumentException('El trabajo no existe.', 404);
-    if ((string)$row['status'] !== 'unknown') {
-        throw new InvalidArgumentException('Solo se puede reprogramar un trabajo pendiente de comprobación.', 409);
+    if ((string)$row['status'] !== 'running') {
+        return ['ok' => true, 'released' => false, 'job' => uis_flow_public_row($row)];
     }
-    $db->prepare("UPDATE flow_jobs SET status = 'queued', started_at = 0, error = '', updated_at = ? WHERE id = ?")
+    $intentos = (int)$row['attempts'];
+    if ($intentos >= 4) {
+        $detalle = $motivo !== '' ? ' (' . mb_substr($motivo, 0, 160) . ')' : '';
+        uis_flow_fail($db, $id, 'Se aplazó ' . $intentos . ' veces porque el perfil de Chrome estaba ocupado' . $detalle . '.');
+        return ['ok' => true, 'released' => false, 'failed' => true, 'attempts' => $intentos];
+    }
+    $db->prepare("UPDATE flow_jobs SET status = 'queued', started_at = 0, error = '', updated_at = ? WHERE id = ? AND status = 'running'")
+        ->execute([time(), $id]);
+    uis_flow_touch($db);
+    return ['ok' => true, 'released' => true, 'attempts' => $intentos];
+}
+
+function uis_flow_schedule(PDO $db, string $id): array
+{
+    if (!uis_safe_id($id)) throw new InvalidArgumentException('Identificador no válido.', 400);
+    $stmt = $db->prepare('SELECT * FROM flow_jobs WHERE id = ?');
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    if (!$row) throw new InvalidArgumentException('El trabajo no existe.', 404);
+    if (!in_array((string)$row['status'], ['unknown', 'failed'], true)) {
+        throw new InvalidArgumentException('Solo se puede reprogramar un trabajo fallido o pendiente de comprobación.', 409);
+    }
+    // Reintento pedido por la persona: se vuelve a empezar el contador de intentos.
+    $db->prepare("UPDATE flow_jobs SET status = 'queued', started_at = 0, error = '', attempts = 0, updated_at = ? WHERE id = ?")
         ->execute([time(), $id]);
     $stmt = $db->prepare('SELECT * FROM flow_jobs WHERE id = ?');
     $stmt->execute([$id]);

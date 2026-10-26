@@ -290,15 +290,105 @@ def chrome_using_profile(profile: str) -> int:
         return 0
 
 
+class TransientError(RuntimeError):
+    """Fallo pasajero: el trabajo debe volver a la cola, no marcarse como fallido."""
+
+
+def log_dir() -> str:
+    """Carpeta de logs del agente (se crea si falta)."""
+    path = os.path.join(AGENT_DIR, 'logs')
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def guardar_log(jid: str, texto: str) -> str:
+    """Guarda la salida completa de una generación para poder diagnosticar.
+
+    La ventana del agente solo muestra un resumen; cuando algo falla de verdad,
+    el motivo completo está aquí.
+    """
+    try:
+        ruta = os.path.join(log_dir(), '%s.log' % jid)
+        with open(ruta, 'w', encoding='utf-8') as fh:
+            fh.write(texto)
+        # Se conservan los 20 logs más recientes.
+        logs = sorted(
+            (os.path.join(log_dir(), n) for n in os.listdir(log_dir()) if n.endswith('.log')),
+            key=os.path.getmtime,
+            reverse=True,
+        )
+        for viejo in logs[20:]:
+            try:
+                os.remove(viejo)
+            except OSError:
+                pass
+        return ruta
+    except OSError:
+        return ''
+
+
 def summarize_error(out: str) -> str:
-    lines = [line.strip() for line in out.splitlines() if line.strip()]
-    for line in reversed(lines):
-        if re.match(r'^[A-Za-z_.]*(Error|Exception):', line):
-            return line[:280]
-    for line in reversed(lines):
-        if 'playwright' in line.lower() or 'error' in line.lower():
-            return line[:280]
-    return (lines[-1] if lines else 'flow.py falló sin salida')[:280]
+    """Saca la causa real del error, no el ruido de cierre de asyncio.
+
+    flow.py, cuando Chrome falla al arrancar, imprime la excepción de Playwright
+    y DESPUÉS un «RuntimeError: Event loop is closed» del recolector. Si se coge
+    la última línea se informa del ruido y se oculta el motivo.
+    """
+    ruido = (
+        'event loop is closed',
+        'exception ignored in:',
+        '__del__',
+        'base_events',
+        'base_subprocess',
+        'proactor_events',
+        'call_soon',
+        '_check_closed',
+    )
+    lineas = [line.strip() for line in out.splitlines() if line.strip()]
+
+    def es_ruido(linea: str) -> bool:
+        baja = linea.lower()
+        return any(marca in baja for marca in ruido)
+
+    # 1) El error de Playwright trae el motivo de verdad.
+    for linea in lineas:
+        if es_ruido(linea):
+            continue
+        if 'playwright._impl._errors' in linea or 'BrowserType.launch' in linea:
+            return linea[:280]
+    # 2) Errores propios del flujo (modelo, ratio, etc.).
+    for linea in lineas:
+        if es_ruido(linea):
+            continue
+        if re.match(r'^[A-Za-z_.]*(Error|Exception):', linea):
+            return linea[:280]
+    # 3) Cualquier línea con «error» que no sea ruido.
+    for linea in reversed(lineas):
+        if es_ruido(linea):
+            continue
+        if 'error' in linea.lower():
+            return linea[:280]
+    # 4) Última línea con contenido.
+    utiles = [l for l in lineas if not es_ruido(l)]
+    return (utiles[-1] if utiles else 'flow.py falló sin salida legible')[:280]
+
+
+# Fallos que no son culpa del trabajo: otro proceso tiene el perfil de Chrome
+# ocupado un momento. En ese caso el trabajo vuelve a la cola en vez de fallar.
+TRANSIENT_MARKS = (
+    'processsingleton',
+    'lock file can not be created',
+    'failed to create a processsingleton',
+    'profile is already in use',
+    'acceso denegado',
+    'permission denied',
+    'target page, context or browser has been closed',
+)
+
+
+def is_transient(out: str) -> bool:
+    baja = out.lower()
+    return any(marca in baja for marca in TRANSIENT_MARKS)
 
 
 def flow_model(model: str) -> str:
@@ -395,8 +485,15 @@ def generate(cfg: dict, job: dict, refs: list[str]) -> str:
         errors='replace',
     )
     out = (proc.stdout or '') + (proc.stderr or '')
+    ruta_log = guardar_log(jid, out)
     if proc.returncode != 0:
-        raise RuntimeError(summarize_error(out) or ('flow.py terminó con código %d' % proc.returncode))
+        # Se distingue el fallo pasajero (otro Chrome con el perfil) del fallo real.
+        if is_transient(out):
+            raise TransientError(summarize_error(out) or 'perfil de Chrome ocupado')
+        error = RuntimeError(summarize_error(out) or ('flow.py terminó con código %d' % proc.returncode))
+        if ruta_log:
+            print('  detalle completo en %s' % ruta_log)
+        raise error
     try:
         check_model_used(out, job.get('model', ''))
     except RuntimeError:
@@ -471,6 +568,18 @@ def work_once(cfg: dict) -> bool:
             raw = compress_image(path)
             api_upload(cfg, 'agent.complete', jid, 'image', raw)
             print('%s OK imagen %d KB refs=%d' % (jid, len(raw) // 1024, len(refs)))
+    except TransientError as exc:
+        # El perfil lo tenía otro proceso: se devuelve el trabajo a la cola y se
+        # espera. No es un fallo del trabajo ni debe gastar un intento.
+        motivo = ('%s' % exc)[:300]
+        try:
+            salida = api_retry(cfg, 'agent.release', {'id': jid, 'error': motivo}, attempts=4)
+            if salida.get('released', True):
+                print('%s aplazado: %s' % (jid, motivo))
+            else:
+                print('%s aplazado %s veces: se marca como fallido' % (jid, salida.get('attempts', '?')))
+        except Exception as report_exc:  # pylint: disable=broad-except
+            print('%s no se pudo aplazar (%s); se reintentará al caducar' % (jid, type(report_exc).__name__))
     except Exception as exc:  # noqa: BLE001 - el fallo se informa al servidor
         motivo = ('%s: %s' % (type(exc).__name__, exc))[:300]
         try:
@@ -480,6 +589,7 @@ def work_once(cfg: dict) -> bool:
             # comprobación» al caducar la ventana: nunca se reenvía solo.
             print('%s no se pudo informar del fallo (%s)' % (jid, type(report_exc).__name__))
         print('%s FALLÓ %s' % (jid, motivo))
+        print('  log completo: %s' % os.path.join(log_dir(), '%s.log' % jid))
     finally:
         for ref in refs:
             try:

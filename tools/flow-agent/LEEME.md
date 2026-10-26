@@ -135,6 +135,8 @@ Register-ScheduledTask -TaskName "UisFlowAgent" -Action $accion -Trigger $dispar
 | `hay N Chrome con el perfil de Flow abierto` | Chrome abierto a mano con ese perfil | Cerrar esos Chrome |
 | `Flow no reconoce el modelo` | Google renombró el modelo | Revisar `MODEL_ALIASES` en `flow_agent.py` |
 | El trabajo se queda en cola | El agente no corre o no llega al servidor | `--status` y revisar la conexión |
+| `aplazado: …ProcessSingleton` | Otro Chrome tiene el perfil ocupado | Normal: el trabajo vuelve a la cola y se reintenta solo |
+| `Event loop is closed` en el mensaje | Antes tapaba la causa real | Actualizado: ahora se informa del motivo verdadero y se guarda `logs/<id>.log` |
 | `pendiente de comprobar` en la web | El PC se apagó generando | Comprobar en Flow si salió y pulsar «Reintentar» |
 | `Failed to create a ProcessSingleton` | Otro Chrome usa el perfil de Flow (el worker antiguo) | Desactivar `FlowStudioWorker` (ver §0-bis) |
 | `EPERM: operation not permitted, mkdtemp` | La carpeta temporal del sistema está restringida | Rellenar `tmp_dir` en `agente.json` |

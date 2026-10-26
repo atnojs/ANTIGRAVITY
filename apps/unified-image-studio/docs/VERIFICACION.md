@@ -468,3 +468,26 @@ Decisiones de esta función:
   que ningún camino pueda desbordar la cola. Un encolado que no cabe se rechaza **entero**.
 - **Objetivos táctiles:** en pantallas pequeñas o con puntero grueso los botones de selección
   suben a 38–42 px de alto; antes eran de 26 px, incómodos con el dedo.
+
+---
+
+## 19. Resiliencia del agente y reintento de trabajos (2026-10-26)
+
+Los primeros intentos reales del agente fallaron con `RuntimeError: Event loop is closed`. Ese
+mensaje era **ruido del cierre de asyncio** de Playwright: tapaba la causa real, que era otro
+Chrome ocupando el perfil (`Failed to create a ProcessSingleton`). Se corrigieron tres cosas.
+
+| Cambio | Qué resuelve | Prueba |
+|---|---|---|
+| `summarize_error` ignora el ruido de asyncio | El mensaje que ve el usuario es la causa real | Con la salida real del fallo devuelve `playwright._impl._errors.Error: … Failed to create a ProcessSingleton` |
+| Log completo por trabajo (`logs/<id>.log`, 20 últimos) | Permite diagnosticar sin adivinar | Se escribe en cada generación; el agente imprime la ruta al fallar |
+| Aplazamiento (`agent.release`) | Un fallo pasajero **no** marca el trabajo como fallido: vuelve a la cola | 5 casos en `aplazamiento.mjs` |
+| Reintento de fallidos | Antes solo se podía reintentar `unknown`; ahora también `failed`, y reinicia los intentos | `reintento-ui.mjs`: botón visible y estado `queued` tras pulsarlo |
+
+Comportamiento nuevo del agente:
+
+- Si el perfil de Chrome está ocupado **antes** de reclamar, espera sin reclamar trabajo
+  («perfil de Flow ocupado por N Chrome: espero sin reclamar trabajo»).
+- Si se ocupa **después** de reclamar, el trabajo se aplaza (`agent.release`) hasta 4 veces; a
+  partir de ahí se marca como fallido con el motivo escrito.
+- Cada trabajo deja su log completo, así que un fallo real se diagnostica leyendo el archivo.
