@@ -74,6 +74,13 @@ ok('perfil: el resumen ignora el ruido de asyncio', agentePy.includes('event loo
 ok('reintento: el backend aplaza sin fallar', enginePhp.includes('function uis_flow_release'));
 ok('reintento: los fallidos se pueden reintentar', enginePhp.includes("['unknown', 'failed']"));
 ok('reintento: la interfaz ofrece reintentar fallidos', app.includes("job.status === 'unknown' || job.status === 'failed'"));
+// ── Cancelación de una generación en curso ──
+ok('cancelar: el motor borra o marca el trabajo', enginePhp.includes('function uis_flow_cancel') && enginePhp.includes("status = 'cancelled'"));
+ok('cancelar: el agente pregunta mientras genera', agentePy.includes('def cancel_requested') && agentePy.includes('agent.cancelled'));
+ok('cancelar: el agente mata el proceso al cancelar', agentePy.includes('proc.kill()') && agentePy.includes('class CancelledError'));
+ok('cancelar: la biblioteca ofrece Parar/Quitar', app.includes('data-flow-cancel'));
+ok('cancelar: los cancelados no se listan', leer('api.php').includes("WHERE status <> 'cancelled'"));
+ok('cancelar: columna nueva con migración idempotente', leer('lib/bootstrap.php').includes('uis_migrate_flow_cancel'));
 // ── D5: autoevaluación y ronda de rework documentadas ──
 const doc = leer('docs/VERIFICACION.md');
 ok('D5 con autoevaluación A1-A10', doc.includes('Autoevaluación A1–A10'));

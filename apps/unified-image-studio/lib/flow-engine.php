@@ -581,6 +581,54 @@ function uis_flow_schedule(PDO $db, string $id): array
     return uis_flow_public_row($stmt->fetch());
 }
 
+/**
+ * Reintenta, desde el agente, si un trabajo debe cancelarse.
+ *
+ * Devuelve true si el trabajo ya no existe (lo borró la persona) o si su estado
+ * dejó de ser «running». El agente lo consulta mientras genera para cerrar Chrome
+ * en cuanto se pide la cancelación, en vez de terminar y subir un resultado que
+ * nadie quiere.
+ */
+function uis_flow_cancelled(PDO $db, string $id): bool
+{
+    if (!uis_safe_id($id)) return true;
+    $stmt = $db->prepare('SELECT status, cancel_requested FROM flow_jobs WHERE id = ?');
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    if (!$row) return true;
+    return (string)$row['status'] !== 'running' || (int)$row['cancel_requested'] === 1;
+}
+
+/**
+ * Cancela un trabajo: lo borra si aún no había empezado y lo marca para que el
+ * agente pare si está generando. La tarjeta desaparece de la biblioteca.
+ */
+function uis_flow_cancel(PDO $db, string $id): array
+{
+    if (!uis_safe_id($id)) throw new InvalidArgumentException('Identificador no válido.', 400);
+    $stmt = $db->prepare('SELECT * FROM flow_jobs WHERE id = ?');
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        // Ya no está: el resultado es el mismo que se buscaba.
+        return ['ok' => true, 'cancelled' => true, 'removed' => true];
+    }
+    $estado = (string)$row['status'];
+
+    if ($estado === 'running') {
+        // Se marca y se cambia el estado: el agente lo verá y cerrará Chrome.
+        $db->prepare("UPDATE flow_jobs SET status = 'cancelled', cancel_requested = 1, error = 'Cancelado desde la biblioteca.', updated_at = ? WHERE id = ?")
+            ->execute([time(), $id]);
+        uis_flow_touch($db);
+        return ['ok' => true, 'cancelled' => true, 'removed' => false, 'id' => $id];
+    }
+
+    // En cola, fallido o pendiente de comprobar: se borra y su archivo si lo hubiera.
+    if (!empty($row['file'])) @unlink(uis_flow_result_dir() . '/' . basename((string)$row['file']));
+    $db->prepare('DELETE FROM flow_jobs WHERE id = ?')->execute([$id]);
+    uis_flow_touch($db);
+    return ['ok' => true, 'cancelled' => true, 'removed' => true, 'id' => $id];
+}
 function uis_flow_delete(PDO $db, string $id): array
 {
     if (!uis_safe_id($id)) throw new InvalidArgumentException('Identificador no válido.', 400);

@@ -440,10 +440,12 @@ switch ($action) {
         uis_flow_expire($db);
         $limit = max(1, min(60, (int)($_GET['limit'] ?? 24)));
         $type = (string)($_GET['type'] ?? '');
-        $sql = 'SELECT * FROM flow_jobs';
+        // Los trabajos cancelados no se muestran en la biblioteca: la persona ya
+        // ha pedido que desaparezcan.
+        $sql = "SELECT * FROM flow_jobs WHERE status <> 'cancelled'";
         $params = [];
         if ($type === 'image' || $type === 'video') {
-            $sql .= ' WHERE type = ?';
+            $sql .= ' AND type = ?';
             $params[] = $type;
         }
         $sql .= ' ORDER BY created_at DESC LIMIT ' . $limit;
@@ -539,6 +541,26 @@ switch ($action) {
         fclose($handle);
         exit;
 
+    case 'flow.cancel':
+        // Parar una generación: se borra si no había empezado y se marca para que
+        // el agente cierre Chrome si estaba generando.
+        uis_require_auth();
+        if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
+        $body = uis_read_json();
+        try {
+            $cancelado = uis_flow_cancel($db, (string)($body['id'] ?? ''));
+        } catch (InvalidArgumentException $error) {
+            uis_fail((int)($error->getCode() ?: 400), $error->getMessage());
+        }
+        uis_json(200, $cancelado);
+        break;
+
+    case 'agent.cancelled':
+        // El agente pregunta si debe parar. Es barato y no toca el latido.
+        uis_flow_require_agent();
+        $id = (string)($_GET['id'] ?? ($_POST['id'] ?? ''));
+        uis_json(200, ['ok' => true, 'cancel' => uis_flow_cancelled($db, $id)]);
+        break;
     case 'flow.retry':
         uis_require_auth();
         if ($method !== 'POST') uis_fail(405, 'Método no permitido.');

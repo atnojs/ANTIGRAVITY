@@ -153,6 +153,16 @@ export async function retryFlowJob(id) {
 }
 
 /** Elimina un resultado terminado (con su archivo). */
+/**
+ * Para una generación: si está en curso, el agente cierra Chrome en el PC; si
+ * aún está en cola, se borra. En ambos casos la tarjeta desaparece.
+ */
+export async function cancelFlowJob(id) {
+  const data = await callFlow('flow.cancel', { id });
+  flowState.jobs = flowState.jobs.filter((job) => job.id !== id);
+  emit('flow:jobs', flowState.jobs);
+  return data;
+}
 export async function deleteFlowJob(id) {
   await callFlow('flow.delete', { id });
   flowState.jobs = flowState.jobs.filter((job) => job.id !== id);

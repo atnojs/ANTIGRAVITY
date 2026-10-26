@@ -47,7 +47,9 @@ LOCKFILE = os.path.join(AGENT_DIR, 'flow_agent.lock')
 FLOW_PY = os.path.join(AGENT_DIR, 'flow.py')
 LOCK_STALE_SEC = 3 * 60 * 60
 # Sello del build: permite saber qué versión está corriendo cuando hay dudas.
-AGENT_BUILD = 'v1.2.1 · 2026-10-26 · aplazamiento, logs y reintento'
+AGENT_BUILD = 'v1.3.0 · 2026-10-26 · cancelacion, aplazamiento y logs'
+# Cada cuánto se pregunta al servidor si hay que parar (segundos).
+CANCEL_POLL_SEC = 3
 # Se activa cuando el último trabajo se aplazó por el perfil ocupado: conviene
 # esperar más antes de reclamar otro, para no consumir intentos en balde.
 _postponed = False
@@ -303,6 +305,10 @@ class TransientError(RuntimeError):
     """Fallo pasajero: el trabajo debe volver a la cola, no marcarse como fallido."""
 
 
+class CancelledError(RuntimeError):
+    """La persona pidió parar: se cierra Chrome y no se sube nada."""
+
+
 def log_dir() -> str:
     """Carpeta de logs del agente (se crea si falta)."""
     path = os.path.join(AGENT_DIR, 'logs')
@@ -455,6 +461,19 @@ def materialize_refs(cfg: dict, job: dict) -> list[str]:
     return paths
 
 
+def cancel_requested(cfg: dict, jid: str) -> bool:
+    """Pregunta al servidor si hay que parar. Si no contesta, se sigue generando.
+
+    Un fallo de red no debe abortar una generación en curso: solo se para cuando
+    el servidor dice explícitamente que sí.
+    """
+    try:
+        datos = api_retry(cfg, 'agent.cancelled', {'id': jid}, attempts=1, timeout=10)
+        return bool(datos.get('cancel'))
+    except Exception:  # noqa: BLE001 - nunca interrumpir por un fallo de red
+        return False
+
+
 def generate(cfg: dict, job: dict, refs: list[str]) -> str:
     jid = job['id']
     folder = out_dir(cfg)
@@ -484,17 +503,30 @@ def generate(cfg: dict, job: dict, refs: list[str]) -> str:
             extra += ['--image', ref]
         exts = IMAGE_EXT
 
-    proc = subprocess.run(
+    # Se lanza en segundo plano para poder vigilar la cancelación mientras genera.
+    proc = subprocess.Popen(
         [sys.executable, FLOW_PY] + extra,
         cwd=flow_dir(),
         env=child_env(cfg),
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         text=True,
         encoding='utf-8',
         errors='replace',
         creationflags=NO_WINDOW,
     )
-    out = (proc.stdout or '') + (proc.stderr or '')
+    while proc.poll() is None:
+        time.sleep(CANCEL_POLL_SEC)
+        if cancel_requested(cfg, jid):
+            proc.kill()
+            try:
+                proc.communicate(timeout=20)
+            except subprocess.TimeoutExpired:
+                pass
+            drop_output(folder, jid, exts)
+            raise CancelledError('cancelado desde la biblioteca')
+    salida, errores = proc.communicate()
+    out = (salida or '') + (errores or '')
     ruta_log = guardar_log(jid, out)
     if proc.returncode != 0:
         # Se distingue el fallo pasajero (otro Chrome con el perfil) del fallo real.
@@ -578,6 +610,8 @@ def work_once(cfg: dict) -> bool:
             raw = compress_image(path)
             api_upload(cfg, 'agent.complete', jid, 'image', raw)
             print('%s OK imagen %d KB refs=%d' % (jid, len(raw) // 1024, len(refs)))
+    except CancelledError:
+        print('%s cancelado: se cerró la generación y no se subió nada' % jid)
     except TransientError as exc:
         # El perfil lo tenía otro proceso: se devuelve el trabajo a la cola y se
         # espera. No es un fallo del trabajo ni debe gastar un intento.

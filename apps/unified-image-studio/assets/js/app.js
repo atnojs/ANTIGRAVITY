@@ -32,8 +32,8 @@ import {
 import {
   FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
   flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
-  statusFlowJobs, retryFlowJob, deleteFlowJob, downloadFlowJob, fetchFlowBlob,
-} from './flow.js?v=12';
+  statusFlowJobs, retryFlowJob, deleteFlowJob, cancelFlowJob, downloadFlowJob, fetchFlowBlob,
+} from './flow.js?v=13';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
@@ -1988,6 +1988,11 @@ function renderFlowJobs(jobs) {
     if (job.status === 'unknown' || job.status === 'failed') {
       actions.push(`<button class="btn btn-sm btn-primary" data-flow-retry="${job.id}">Reintentar</button>`);
     }
+    // Parar mientras se genera (o retirar de la cola): cierra Chrome en el PC y
+    // quita la tarjeta. Sin esto, un trabajo colgado no tenía salida.
+    if (job.status === 'running' || job.status === 'queued') {
+      actions.push(`<button class="btn btn-sm btn-danger" data-flow-cancel="${job.id}" title="Parar y quitar de la biblioteca">${job.status === 'running' ? 'Parar' : 'Quitar'}</button>`);
+    }
     if (!active) {
       actions.push(`<button class="btn btn-sm btn-danger" data-flow-delete="${job.id}" aria-label="Eliminar resultado">✕</button>`);
     }
@@ -2098,12 +2103,12 @@ async function applyFlowJobToCanvas(job) {
 
 /** Acciones de la biblioteca (delegación de eventos). */
 async function onFlowLibraryClick(event) {
-  const button = event.target.closest('button[data-flow-open], button[data-flow-download], button[data-flow-apply], button[data-flow-animate], button[data-flow-retry], button[data-flow-delete]');
+  const button = event.target.closest('button[data-flow-open], button[data-flow-download], button[data-flow-apply], button[data-flow-animate], button[data-flow-retry], button[data-flow-delete], button[data-flow-cancel]');
   if (!button) return;
   const {
-    flowOpen, flowDownload, flowApply, flowAnimate, flowRetry, flowDelete,
+    flowOpen, flowDownload, flowApply, flowAnimate, flowRetry, flowDelete, flowCancel,
   } = button.dataset;
-  const id = flowOpen || flowDownload || flowApply || flowAnimate || flowRetry || flowDelete;
+  const id = flowOpen || flowDownload || flowApply || flowAnimate || flowRetry || flowDelete || flowCancel;
   const job = findJob(id);
   if (!job) { toast('Ese resultado ya no está disponible: actualiza la lista.', 'warn'); return; }
   button.disabled = true;
@@ -2129,6 +2134,24 @@ async function onFlowLibraryClick(event) {
         : 'El trabajo no se pudo reprogramar.', updated?.status === 'queued' ? 'ok' : 'warn');
       await refreshFlowState().then(paintFlowAgent);
       await refreshLibrary();
+      return;
+    }
+    if (flowCancel) {
+      // Parar una generación en curso: el agente cierra Chrome en el PC y el
+      // trabajo desaparece de la biblioteca.
+      const generando = job.status === 'running';
+      const ok = await confirmDialog({
+        title: generando ? 'Parar la generación' : 'Quitar de la cola',
+        text: generando
+          ? 'Se pedirá al PC que cierre la generación en curso. La imagen no se subirá y desaparecerá de la biblioteca.'
+          : 'Este trabajo aún no ha empezado: se quitará de la cola y desaparecerá de la biblioteca.',
+        okLabel: generando ? 'Parar' : 'Quitar',
+        danger: true,
+      });
+      if (!ok) return;
+      await cancelFlowJob(job.id);
+      await refreshLibrary();
+      toast(generando ? 'Generación detenida. Puede tardar unos segundos en cerrarse en el PC.' : 'Trabajo quitado de la cola.', 'ok');
       return;
     }
     if (flowDelete) {

@@ -116,6 +116,9 @@ function uis_db(): PDO
     } elseif ((int)$db->query('PRAGMA user_version')->fetchColumn() < 2) {
         uis_migrate($db);
     }
+    // Migración 3: se aplica siempre (es idempotente y cuesta un PRAGMA), para que
+    // una base ya existente gane la columna de cancelación sin recrear nada.
+    uis_migrate_flow_cancel($db);
     return $db;
 }
 
@@ -246,6 +249,28 @@ SQL);
     $columns = array_map(static fn(array $row): string => (string)$row['name'], $db->query('PRAGMA table_info(flow_jobs)')->fetchAll());
     if (!in_array('updated_at', $columns, true)) {
         $db->exec('ALTER TABLE flow_jobs ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0');
+    }
+    // Permite pedir la cancelación de un trabajo en curso: el agente lo consulta
+    // mientras genera y, si está marcado, cierra Chrome y no sube nada.
+    if (!in_array('cancel_requested', $columns, true)) {
+        $db->exec('ALTER TABLE flow_jobs ADD COLUMN cancel_requested INTEGER NOT NULL DEFAULT 0');
+    }
+}
+
+/**
+ * Migración 3: cancelación de trabajos.
+ *
+ * Se aplica sobre bases que ya están en la versión 2, que es el caso de la
+ * instalación en producción: sin esto, la columna `cancel_requested` no existiría
+ * y la biblioteca no podría parar una generación en curso.
+ */
+function uis_migrate_flow_cancel(PDO $db): void
+{
+    $tablas = $db->query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'flow_jobs'")->fetchAll();
+    if ($tablas === []) return;
+    $columns = array_map(static fn(array $row): string => (string)$row['name'], $db->query('PRAGMA table_info(flow_jobs)')->fetchAll());
+    if (!in_array('cancel_requested', $columns, true)) {
+        $db->exec('ALTER TABLE flow_jobs ADD COLUMN cancel_requested INTEGER NOT NULL DEFAULT 0');
     }
 }
 

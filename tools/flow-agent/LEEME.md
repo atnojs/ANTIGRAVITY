@@ -123,6 +123,9 @@ está libre y el estado de la sesión de Flow.
 - Sin ventana, al encender el PC: acceso directo a `iniciar-agente-oculto.vbs` en
   `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup` (el propio VBS evita duplicados).
 
+Mientras genera, el agente pregunta al servidor cada 3 s si hay que parar: si en la biblioteca se
+pulsa **Parar**, cierra Chrome, borra los archivos parciales y no sube nada.
+
 El agente toma **un trabajo cada vez**, lo genera con `flow.py`, comprime la
 imagen a JPEG (~1400 px) o sube el MP4, y avisa al servidor. Si el PC se apaga a
 mitad, el servidor marca el trabajo como **pendiente de comprobar**: no se

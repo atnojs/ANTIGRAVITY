@@ -4,6 +4,24 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-26 (noche) — Parar una generación en curso desde la biblioteca
+
+- **Encargo:** «se quedó colgada; quiero poder eliminar una solicitud cuando pone generando».
+- **Qué se hizo:** botón **Parar** en las tarjetas en curso y **Quitar** en las que están en cola.
+  Cancelación real, no cosmética: el servidor marca el trabajo (`flow.cancel` → `cancelled`), el
+  agente pregunta cada 3 s (`agent.cancelled`) y al recibir la orden **mata el proceso de flow.py**
+  (con su Chrome), borra los parciales y no sube nada. Si seguía en cola, se borra directamente.
+- **Migración:** `cancel_requested` se añade con una migración idempotente que se ejecuta siempre
+  (`uis_migrate_flow_cancel`); el bloque anterior solo corría con `user_version < 2` y la base de
+  producción ya estaba en 2, así que la columna no se habría creado.
+- **Pruebas:** 6 casos de motor, prueba con el agente real (mata Chrome y no sube nada) y prueba de
+  interfaz en Chrome (botones, diálogos, la tarjeta desaparece). Detalle en
+  `apps/unified-image-studio/docs/VERIFICACION.md` §22.
+- **Lección:** una tarjeta en `running` sin botón de parar es un callejón sin salida. Todo estado
+  que pueda quedarse atascado necesita una salida manual.
+
+---
+
 
 ## 2026-10-26 (noche) — Agente de Flow: entorno propio, credencial y resiliencia
 

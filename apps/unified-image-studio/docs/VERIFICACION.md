@@ -557,3 +557,34 @@ credencial del agente (`HTTP 200`, `image/jpeg`, JPEG válido). Evidencia:
 **Efecto colateral corregido:** las ventanas de consola que se abrían y cerraban solas eran de
 `chrome_using_profile()` (lanza PowerShell) y de `flow.py`, ejecutados desde `pythonw`. Ahora ambos
 usan `CREATE_NO_WINDOW`.
+
+---
+
+## 22. Parar una generación en curso desde la biblioteca (2026-10-26)
+
+Antes no había salida: si un trabajo se quedaba en «Generando», solo cabía esperar a que caducara
+el arriendo (3 h). Ahora cada tarjeta en curso ofrece **Parar** y cada trabajo en cola **Quitar**.
+
+| Qué se comprobó | Resultado |
+|---|---|
+| Trabajo en curso → botón **Parar** | PASS · se abre el diálogo «Parar la generación» |
+| Trabajo en cola → botón **Quitar** | PASS · texto y diálogo propios |
+| Al confirmar, la tarjeta desaparece | PASS · 2 tarjetas → 1 |
+| Estado en el servidor | PASS · `cancelled` |
+| El agente **cierra Chrome** y no sube nada | PASS · «cancelado: se cerró la generación y no se subió nada» y `url` vacía |
+| Un trabajo cancelado no admite resultado | PASS · `agent.complete` → 400 |
+| Cancelar algo que ya no está | PASS · 200, idempotente |
+| Los cancelados no aparecen en la biblioteca | PASS · `flow.list` los excluye |
+
+Cómo funciona:
+
+1. La persona pulsa **Parar**. `flow.cancel` marca el trabajo como `cancelled` y pone
+   `cancel_requested = 1`.
+2. El agente, mientras genera, pregunta cada 3 s a `agent.cancelled`. En cuanto recibe `cancel: true`,
+   **mata el proceso** de `flow.py` (y con él Chrome), borra los archivos parciales y sale sin subir
+   nada.
+3. Si el trabajo aún estaba en cola, se borra directamente: nunca llegó a empezar.
+
+Detalle técnico: la columna `cancel_requested` se añade con una migración **idempotente** que se
+ejecuta siempre (`uis_migrate_flow_cancel`), porque la base de producción ya estaba en la versión 2
+y el bloque de migración antiguo no se volvía a ejecutar.
