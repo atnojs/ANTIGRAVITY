@@ -364,9 +364,6 @@
         const card = (job && job.el) || [...els.grid.querySelectorAll('.card')]
             .find((el) => el.dataset.id === key);
         if (card) card.remove();
-        if (job && job.blobUrl) {
-            URL.revokeObjectURL(job.blobUrl);
-        }
         state.jobs.delete(key);
         updateStudioCount();
     }
@@ -405,18 +402,29 @@
 
     async function downloadImage(job) {
         try {
-            const resp = await fetch(job.url, { cache: 'force-cache' });
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const blob = await resp.blob();
-            const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-            const url = URL.createObjectURL(blob);
+            let href = job.url;
+            let objectUrl = '';
+            let ext = 'jpg';
+            if (href.startsWith('data:')) {
+                const match = /^data:image\/([a-z0-9]+)[;,]/i.exec(href);
+                if (match) ext = match[1].toLowerCase().replace('jpeg', 'jpg');
+            } else {
+                const resp = await fetch(href, { cache: 'force-cache' });
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const blob = await resp.blob();
+                ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+                objectUrl = URL.createObjectURL(blob);
+                href = objectUrl;
+            }
             const a = document.createElement('a');
-            a.href = url;
+            a.href = href;
             a.download = `flow-studio-${job.id.slice(0, 8)}.${ext}`;
             document.body.appendChild(a);
             a.click();
             a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 4000);
+            if (objectUrl) {
+                setTimeout(() => URL.revokeObjectURL(objectUrl), 4000);
+            }
             setNote('Imagen descargada.');
         } catch (err) {
             setNote('No se pudo descargar: ' + err.message, true);
@@ -564,8 +572,7 @@
     async function saveToHistory(job) {
         if (!history) return;
         try {
-            const resp = await fetch(job.url, { cache: 'force-cache' });
-            const blob = await resp.blob();
+            const blob = await blobFromUrl(job.url);
             const dataUrl = await blobToDataUrl(blob);
             const entry = await history.save({
                 type: 'image',
@@ -592,6 +599,30 @@
             reader.onerror = () => reject(reader.error || new Error('lectura fallida'));
             reader.readAsDataURL(blob);
         });
+    }
+
+    /** Data URL -> Blob sin fetch: la CSP del sitio no permite connect-src data:. */
+    function dataUrlToBlob(dataUrl) {
+        const comma = dataUrl.indexOf(',');
+        if (comma < 0) throw new Error('Imagen incrustada no válida.');
+        const header = dataUrl.slice(0, comma);
+        const mimeMatch = /data:([^;]+)/i.exec(header);
+        const binary = atob(dataUrl.slice(comma + 1));
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return new Blob([bytes], { type: mimeMatch ? mimeMatch[1] : 'image/jpeg' });
+    }
+
+    /** Igual que fetch(url).blob(), pero tolera las imágenes ya incrustadas. */
+    async function blobFromUrl(url) {
+        if (String(url).startsWith('data:')) {
+            return dataUrlToBlob(url);
+        }
+        const resp = await fetch(url, { cache: 'force-cache' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return resp.blob();
     }
 
     /* ------------------------------ cola ------------------------------ */
@@ -1137,9 +1168,7 @@
     async function editFromCard(job) {
         if (state.busy || !job || !job.url) return;
         try {
-            const resp = await fetch(job.url, { cache: 'force-cache' });
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const blob = await resp.blob();
+            const blob = await blobFromUrl(job.url);
             const prepared = await prepareImage(blob, SOURCE_MAX_SIDE, SOURCE_QUALITY);
             state.source = { ...prepared, name: 'imagen-de-la-tarjeta.jpg' };
             state.ratio = nearestRatio(prepared.width, prepared.height);
@@ -1208,16 +1237,6 @@
         setTimeout(() => document.addEventListener('click', onDocumentClick, true), 0);
     }
 
-    function canvasToBlob(canvas, type, quality) {
-        return new Promise((resolve) => {
-            if (typeof canvas.toBlob !== 'function') {
-                resolve(null);
-                return;
-            }
-            canvas.toBlob((blob) => resolve(blob), type, quality);
-        });
-    }
-
     /** Escala por pasos de 2× con suavizado alto: mejor que un salto único. */
     async function scaleCanvas(source, targetW, targetH) {
         let current = source;
@@ -1265,9 +1284,7 @@
         state.upscaleBusy = true;
         setNote(`Escalando ${factor}× en este navegador…`);
         try {
-            const resp = await fetch(job.url, { cache: 'force-cache' });
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const blob = await resp.blob();
+            const blob = await blobFromUrl(job.url);
             const bitmap = await loadImageSource(blob);
             const width = bitmap.width;
             const height = bitmap.height;
@@ -1279,11 +1296,13 @@
             const targetH = Math.max(1, Math.round(height * scale));
             const canvas = await scaleCanvas(bitmap, targetW, targetH);
             if (typeof bitmap.close === 'function') bitmap.close();
-            const outBlob = await canvasToBlob(canvas, 'image/jpeg', 0.94);
+            // Data URL, no blob: la CSP del sitio solo permite img-src data:.
+            const outUrl = canvas.toDataURL('image/jpeg', 0.94);
             canvas.width = 0;
             canvas.height = 0;
-            if (!outBlob) throw new Error('El navegador no pudo generar la imagen escalada.');
-            const outUrl = URL.createObjectURL(outBlob);
+            if (!outUrl || outUrl.length < 100) {
+                throw new Error('El navegador no pudo generar la imagen escalada.');
+            }
             const upJob = {
                 id: 'up_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
                 prompt: job.prompt || 'Imagen escalada',
@@ -1291,7 +1310,6 @@
                 model: `Escalado ${factor}×`,
                 status: 'done',
                 url: outUrl,
-                blobUrl: outUrl,
                 error: '',
                 extraMeta: `${targetW} × ${targetH}`,
                 upscaled: true,
@@ -1512,9 +1530,6 @@
     });
 
     els.btnClear.addEventListener('click', () => {
-        [...state.jobs.values()].forEach((job) => {
-            if (job.blobUrl) URL.revokeObjectURL(job.blobUrl);
-        });
         state.jobs.clear();
         localStorage.removeItem(PENDING_KEY);
         stopPolling();
