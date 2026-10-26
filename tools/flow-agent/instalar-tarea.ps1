@@ -4,6 +4,10 @@
 
 $ErrorActionPreference = 'Stop'
 $dir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+if ($dir -like '\\*') {
+  throw "Esto se ha abierto desde la ruta de red $dir. Ejecútalo en el PC de Flow, en E:\ANTIGRAVITY\tools\flow-agent."
+}
 $py = Join-Path $dir '.venv\Scripts\pythonw.exe'
 $script = Join-Path $dir 'flow_agent.py'
 

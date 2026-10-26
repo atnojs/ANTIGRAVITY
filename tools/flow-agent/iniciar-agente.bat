@@ -6,6 +6,13 @@ rem   iniciar-agente.bat --once      -> una sola pasada
 rem   iniciar-agente.bat --status    -> comprobar credencial y sesion de Flow
 
 setlocal
+set "AQUI=%~dp0"
+if "%AQUI:~0,2%"=="\\" (
+  echo Este archivo se ha abierto desde una ruta de red ^(%AQUI%^).
+  echo Ejecutalo en el PC de Flow, en su disco E:\ANTIGRAVITY\tools\flow-agent.
+  pause
+  exit /b 1
+)
 cd /d "%~dp0"
 
 if not exist ".venv\Scripts\python.exe" (

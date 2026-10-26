@@ -3,6 +3,24 @@ rem Arranca el agente de Flow con la ventana visible para poder leer cualquier e
 rem Pensado para doble clic en el PC donde esta la carpeta E:\ANTIGRAVITY.
 setlocal
 chcp 65001 >nul
+
+rem CMD no puede usar una ruta UNC como directorio actual. Si se abre desde
+rem \\Principal\e\..., el agente correría en el PC equivocado (sin el perfil de
+rem Chrome de Flow). Se avisa y se sale.
+set "AQUI=%~dp0"
+if "%AQUI:~0,2%"=="\\" (
+  echo ============================================================
+  echo  Este archivo se ha abierto desde una ruta de red:
+  echo    %AQUI%
+  echo.
+  echo  El agente tiene que ejecutarse EN EL PC DE FLOW, en su disco E:
+  echo    E:\ANTIGRAVITY\tools\flow-agent\conectar.bat
+  echo  Chrome no puede usar su perfil de Flow desde una carpeta de red.
+  echo ============================================================
+  pause
+  exit /b 1
+)
+
 cd /d "%~dp0"
 title Agente de Flow - Unified Image Studio
 
