@@ -298,6 +298,10 @@ const ASPECT_RATIOS = [
 // píxeles (mínimo 1 MP, tope 4 MP), así que 512 acaba en 1 MP y 4096 en el tope.
 const RESOLUTIONS = [512, 1024, 2048, 4096];
 
+// Cantidad de imágenes por generación. El proxy devuelve una imagen por
+// llamada, así que N imágenes son N generaciones consecutivas.
+const IMAGE_COUNTS = [1, 2, 3, 4];
+
 // Upscaler: lado largo real de salida. 2K/4K/8K son ampliaciones locales de alta
 // calidad (remuestreo progresivo + enfoque); no añaden detalle que no exista en
 // el origen, pero el archivo resultante sí tiene esas dimensiones.
@@ -882,6 +886,9 @@ const App = () => {
     const [selectedEra, setSelectedEra] = useState(HISTORICAL_ERAS[0]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
     const [selectedRes, setSelectedRes] = useState(1024);
+    // Cuántas imágenes genera cada pulsación (1-4). Cada una es una generación
+    // independiente y se guarda como entrada propia del historial.
+    const [imageCount, setImageCount] = useState(1);
     const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
     // Imagen de referencia opcional del modo Editar: no se transforma, guía la
@@ -1211,41 +1218,62 @@ const App = () => {
             finalSources = await Promise.all(finalSources.map(img => resizeImage(img, 1024, 0.85)));
 
             setProgress(10);
-            setProgressStatus('Generando imagen...');
+            const total = Math.max(1, Math.min(4, Number(imageCount) || 1));
+            const created = [];
+            let failure = null;
+            for (let index = 0; index < total; index++) {
+                setProgressStatus(total > 1
+                    ? `Generando imagen ${index + 1} de ${total}...`
+                    : 'Generando imagen...');
+                try {
+                    const imageUrl = await generateImage({
+                        prompt: effectivePrompt,
+                        styleSuffix,
+                        aspectRatio: selectedAR,
+                        resolution: selectedRes,
+                        sourceImages: finalSources,
+                        sourceRole: sourceRole
+                    });
 
-            const imageUrl = await generateImage({
-                prompt: effectivePrompt,
-                styleSuffix,
-                aspectRatio: selectedAR,
-                resolution: selectedRes,
-                sourceImages: finalSources,
-                sourceRole: sourceRole
-            });
+                    setProgressStatus(total > 1
+                        ? `Guardando imagen ${index + 1} de ${total}...`
+                        : 'Guardando...');
 
-            setProgress(70);
-            setProgressStatus('Finalizando...');
+                    const newImage = {
+                        id: Math.random().toString(36).substring(7),
+                        url: imageUrl,
+                        prompt: effectivePrompt || (mode === 'remix' ? 'Edición de imagen' : 'Generación desde imagen de referencia'),
+                        style: selectedStyle,
+                        era: selectedEra,
+                        aspectRatio: selectedAR,
+                        model: selectedModel,
+                        size: selectedRes,
+                        mode: mode,
+                        createdAt: Date.now()
+                    };
 
-            setProgress(90);
-            setProgressStatus('Guardando...');
+                    await saveHistoryItemToDb(newImage);
+                    created.push(newImage);
+                    setProgress(10 + Math.round(((index + 1) / total) * 85));
+                } catch (err) {
+                    failure = err;
+                    break;
+                }
+            }
 
-            const newImage = {
-                id: Math.random().toString(36).substring(7),
-                url: imageUrl,
-                prompt: effectivePrompt || (mode === 'remix' ? 'Edición de imagen' : 'Generación desde imagen de referencia'),
-                style: selectedStyle,
-                era: selectedEra,
-                aspectRatio: selectedAR,
-                model: selectedModel,
-                size: selectedRes,
-                mode: mode,
-                createdAt: Date.now()
-            };
-
-            await saveHistoryItemToDb(newImage);
+            if (created.length > 0) {
+                // La última generada es la más reciente: primera en la rejilla.
+                setImages(prev => [...created.slice().reverse(), ...prev]);
+                setLastResultId(created[created.length - 1].id);
+            }
+            if (failure) {
+                const detail = failure.message || "Error de generación";
+                setError(created.length > 0
+                    ? `Se generaron ${created.length} de ${total} imágenes. ${detail}`
+                    : detail);
+            }
 
             setProgress(100);
-            setImages(prev => [newImage, ...prev]);
-            setLastResultId(newImage.id);
         } catch (err) {
             setError(err.message || "Error de generación");
         } finally {
@@ -1681,6 +1709,28 @@ const App = () => {
                                 </div>
                                 <span className="model-quality-hint">
                                     {resolutionApplies ? 'Lado largo · OpenAI ajusta a 1-4 MP' : 'No aplica: Gemini y Qwen fijan 1K'}
+                                </span>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="btn-canon text-[11px] text-cyan-400">Cantidad de Imágenes</label>
+                                <div className="model-toggle-group count-group" role="group" aria-label="Seleccionar cantidad de imágenes">
+                                    {IMAGE_COUNTS.map((count) => (
+                                        <button
+                                            key={count}
+                                            type="button"
+                                            onClick={() => setImageCount(count)}
+                                            disabled={isGenerating}
+                                            aria-pressed={imageCount === count}
+                                            className={`model-toggle ${imageCount === count ? 'active' : ''}`}
+                                            title={count === 1 ? 'Generar 1 imagen' : `Generar ${count} imágenes`}
+                                        >
+                                            {count}
+                                        </button>
+                                    ))}
+                                </div>
+                                <span className="model-quality-hint count-hint">
+                                    {imageCount === 1 ? '1 imagen por generación' : `${imageCount} imágenes · una generación por imagen`}
                                 </span>
                             </div>
 

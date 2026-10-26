@@ -976,6 +976,11 @@ textarea:focus-visible {
   border:1px solid rgba(0,208,208,.4);box-shadow:0 0 10px var(--glow-soft);
 }
 .upscale-hint{display:block;margin-top:.35rem;line-height:1.35}
+
+/* Cantidad de imágenes (1-4): mismas pills que el selector de modelos. */
+.count-group{display:flex;width:100%}
+.count-group .model-toggle{flex:1 1 0;text-align:center}
+.count-hint{display:block;margin-top:.3rem;line-height:1.35}
 @media (prefers-reduced-motion: reduce){
   .prompt-enhance-option,.prompt-refresh,.edit-ref-card{transition:none}
 }
