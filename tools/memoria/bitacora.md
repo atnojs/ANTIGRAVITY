@@ -2011,3 +2011,24 @@ Antonio: «hazlo» (activar la generación en la copia Hoola).
 - Migración única: al arrancar, los trabajos `queued`/`running` que quedaran en la cola propia se pasan a la compartida (copiando sus referencias) y `queue.json` se renombra a `queue.json.merged`.
 - Verificado en producción: `ping` de copia y original con el mismo `lastSeen`/`pending`; los 4 trabajos atrapados pasaron de 4 a 0 y aparecieron en el lienzo; `?action=img` sirve desde la copia las mismas imágenes; generación real desde la UI de la copia en 51 s (1024×1024, 162.944 B) con «PC conectado».
 - Commits `73a748ae`, `ed6902e8` y el de evidencias. La app original no se ha tocado.
+
+
+## 2026-10-26 (tarde) — Flow Studio: arreglado el vídeo con fotogramas (Timeout 8000 ms)
+
+Antonio: «esta app: apps/flow_studio_hoola me ha dado este error: `RuntimeError: playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 8000ms exceeded` generando un video. corrige lo necesario.»
+
+**Diagnóstico (captura del propio fallo):** Google cambió la UI de Flow ese día. En **Vídeo → Fotogramas** el compositor ya no tiene el botón «Crear»; tiene los huecos **«Inicio»/«Fin»** y el panel **«Selecciona una imagen de encuadre»**. `flow_provider/canvas.py::upload_frame` seguía esperando «Crear» con `timeout=8_000` → de ahí el error exacto. En el mismo cambio, el menú de modelos pasó de **«Nano Banana 2» a «Nano Banana 2.1»** (y «Omni Flash» ya era «Omni 1.1 Flash»), lo que habría roto también las imágenes del catálogo.
+
+**Qué se cambió** (herramienta local `E:\herramientas\google-flow`; **ningún fichero de la app**):
+
+| Fichero | Cambio |
+|---|---|
+| `flow_provider/canvas.py` | `_attach_frame_via_picker`: pulsa el hueco real, abre «Selecciona una imagen de encuadre», sube con «Subir archivo», **espera a que «Añadir a petición» se habilite** (durante la subida está deshabilitado), confirma y comprueba el chip; `upload_frame` usa esa ruta y deja la antigua como último recurso. |
+| `flow_provider/configure.py` | `MODEL_ALIASES` (Nano Banana 2→2.1, Omni Flash→Omni 1.1 Flash) y `_select_model` con alias; nunca genera con otro modelo del pedido. |
+| `flow_studio_worker.py` | Guarda de intérprete: sin Playwright no reclama trabajos (se detectó una segunda instancia del worker con otro Python). |
+
+**Verificación:** Chrome real headless sobre el perfil persistente (tarea `FlowStudioWorker` deshabilitada durante las pruebas y **restaurada al terminar**): `verify_fix_result.json` **PASS 11/11** (chips de fotograma 1 y 2, huecos vacíos desaparecen, generar habilitado), alias 2.1 aplicado, referencia de imagen OK y **vídeo real generado** `e2e_fix_20261026.mp4` (2.232.476 B, 8,00 s, 1280×720, H.264+AAC). No se pulsó «Iniciar generación» en las pruebas que no exigían gastar puntos. Verificador independiente: informe en `tools/evidencias/2026-10-26-flow-studio-video-fotogramas/verificador/INFORME.md`.
+
+**Limitación:** no se repitió una segunda generación por la cola de producción para no gastar otros 10 puntos de Flow; la app/cola no cambiaron y el comando real del worker es el mismo que se probó.
+
+**Commits:** el de esta entrada (memoria + skill `SKILL_GOOGLE_FLOW.md`); la herramienta local queda aplicada en disco, sin publicar a su repo remoto (arrastra adaptaciones previas sin commitear, como las sesiones anteriores). Evidencias en `tools/evidencias/2026-10-26-flow-studio-video-fotogramas/`.

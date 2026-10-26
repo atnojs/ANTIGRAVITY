@@ -919,3 +919,37 @@ Ampliación con datos de la entrada del 2026-10-16:
   `git ls-tree HEAD -- <ruta>` vacío.
 - **Lección:** «publicado en `main`» ≠ «retirado de producción». No dar un borrado por
   terminado hasta comprobar la URL real.
+
+## 2026-10-26 — Flow Studio: el vídeo con fotogramas moría con `Page.wait_for_selector: Timeout 8000ms exceeded`
+
+- **Síntoma:** al generar un vídeo en `apps/flow_studio_hoola` la tarjeta quedaba en error con
+  `RuntimeError: playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 8000ms exceeded`.
+  La captura que dejó el propio fallo (`_debug/upload_frame_error_initial.png`, 26-oct 14:59)
+  mostraba la UI real: pestaña Vídeo > Fotogramas con los huecos **«Inicio»/«Fin»**.
+- **Causa:** Google cambió la UI de Flow ese mismo día. En modo Fotogramas el compositor **ya no
+  tiene el botón «Crear»** que usaba `flow_provider/canvas.py::_upload_and_attach`; su
+  `page.wait_for_selector(..., timeout=8_000)` agotaba los 8 s y el worker resumía el traceback
+  como `RuntimeError`. En el mismo cambio Flow renombró **«Nano Banana 2» → «Nano Banana 2.1»**,
+  así que las imágenes con el modelo por defecto de la app también iban a fallar.
+- **Solución (herramienta local `E:\herramientas\google-flow`, 3 ficheros):**
+  - `flow_provider/canvas.py`: nuevo `_attach_frame_via_picker` (pulsa el hueco Inicio/Fin, abre
+    «Selecciona una imagen de encuadre», sube con «Subir archivo», **espera a que «Añadir a
+    petición» se habilite** — durante la subida está deshabilitado — confirma y verifica el chip)
+    y `upload_frame` lo usa; la ruta antigua queda solo como último recurso.
+  - `flow_provider/configure.py`: `MODEL_ALIASES` (`Nano Banana 2`→`Nano Banana 2.1`,
+    `Omni Flash`→`Omni 1.1 Flash`); `_select_model` prueba el nombre exacto y luego los alias.
+  - `flow_studio_worker.py`: guarda de intérprete (sin Playwright no reclama trabajos; se vio una
+    segunda instancia del worker con otro Python que no podía generar).
+- **Verificación:** sondas con Chrome real sobre el perfil persistente + **generación real** de un
+  vídeo con fotograma inicial y final: `e2e_fix_20261026.mp4` (2.232.476 B, 8,00 s, 1280×720,
+  H.264+AAC) y `verify_fix_result.json` PASS 11/11. Evidencias en
+  `tools/evidencias/2026-10-26-flow-studio-video-fotogramas/`. El verificador independiente emitió
+  el informe en `…/verificador/INFORME.md`.
+- **Cómo comprobarlo:** `python _debug\verify_fix.py` con el Python del venv de Hermes
+  (`C:\Users\atnojs\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe`, `FLOW_HEADLESS=true`,
+  cwd `E:\herramientas\google-flow`); no pulsa «Iniciar generación» (no gasta puntos).
+- **Lección:** cuando una app que automatiza una web de terceros falla con un timeout de selector,
+  la captura del fallo vale más que el traceback: aquí mostró el compositor nuevo. Y un cambio de
+  UI de Google puede romper **dos** rutas a la vez (fotogramas y nombre de modelo): probar las dos.
+- **Commit:** herramienta local sin publicar (repo aparte con adaptaciones previas sin commitear);
+  documentación y memoria en el commit de esta entrada en `ANTIGRAVITY`.
