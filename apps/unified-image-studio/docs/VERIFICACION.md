@@ -491,3 +491,30 @@ Comportamiento nuevo del agente:
 - Si se ocupa **después** de reclamar, el trabajo se aplaza (`agent.release`) hasta 4 veces; a
   partir de ahí se marca como fallido con el motivo escrito.
 - Cada trabajo deja su log completo, así que un fallo real se diagnostica leyendo el archivo.
+
+---
+
+## 20. Prueba real con Google Flow (2026-10-26)
+
+Primera generación **real** completada de punta a punta: cola → agente → Flow → subida → descarga.
+
+| Paso | Resultado |
+|---|---|
+| Trabajo encolado (Nano Banana 2, 1:1) | `a22ae8b1a59bb5a4` |
+| El agente lo reclama | agente `v1.2.0` |
+| Flow genera de verdad | PASS · Google renombró el modelo a «Nano Banana 2.1» y `MODEL_ALIASES` lo resolvió solo |
+| Subida al servidor | PASS · 162.294 B |
+| Estado en la cola | `done`, 1024×1024 |
+| Descarga con sesión | PASS · HTTP 200 `image/jpeg`, JPEG válido (FFD8 … FFD9) |
+
+Evidencia: `tools/evidencias/2026-10-26-uis-flow/20-flow-real-generada.jpg` (resultado descargado
+del servidor) y `21-flow-real-directa.jpg` (generación directa con `flow.py`).
+
+**Por qué falló el primer intento del usuario:** la ventana que tenía abierta era del build
+anterior (`Event loop is closed` tapaba `Failed to create a ProcessSingleton`, porque otro Chrome
+usaba el perfil). El build nuevo imprime su versión al arrancar, aplaza el trabajo si el perfil está
+ocupado en lugar de fallarlo, y guarda `logs/<id>.log`.
+
+**Nota de método:** esta prueba se ejecutó con una **copia filtrada del perfil** dentro del espacio
+de trabajo, porque el entorno del agente no puede hacer que Chrome escriba en `E:\herramientas`.
+La copia se borró al terminar (contenía cookies de sesión).
