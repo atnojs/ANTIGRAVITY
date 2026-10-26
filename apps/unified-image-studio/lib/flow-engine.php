@@ -552,7 +552,7 @@ function uis_flow_release(PDO $db, string $id, string $motivo = ''): array
         return ['ok' => true, 'released' => false, 'job' => uis_flow_public_row($row)];
     }
     $intentos = (int)$row['attempts'];
-    if ($intentos >= 4) {
+    if ($intentos >= 10) {
         $detalle = $motivo !== '' ? ' (' . mb_substr($motivo, 0, 160) . ')' : '';
         uis_flow_fail($db, $id, 'Se aplazó ' . $intentos . ' veces porque el perfil de Chrome estaba ocupado' . $detalle . '.');
         return ['ok' => true, 'released' => false, 'failed' => true, 'attempts' => $intentos];

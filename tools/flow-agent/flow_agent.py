@@ -47,7 +47,10 @@ LOCKFILE = os.path.join(AGENT_DIR, 'flow_agent.lock')
 FLOW_PY = os.path.join(AGENT_DIR, 'flow.py')
 LOCK_STALE_SEC = 3 * 60 * 60
 # Sello del build: permite saber qué versión está corriendo cuando hay dudas.
-AGENT_BUILD = 'v1.2.0 · 2026-10-26 · aplazamiento, logs y reintento'
+AGENT_BUILD = 'v1.2.1 · 2026-10-26 · aplazamiento, logs y reintento'
+# Se activa cuando el último trabajo se aplazó por el perfil ocupado: conviene
+# esperar más antes de reclamar otro, para no consumir intentos en balde.
+_postponed = False
 MAX_SIDE = 1400
 JPEG_QUALITY = 88
 MAX_REFS = 2
@@ -573,6 +576,8 @@ def work_once(cfg: dict) -> bool:
     except TransientError as exc:
         # El perfil lo tenía otro proceso: se devuelve el trabajo a la cola y se
         # espera. No es un fallo del trabajo ni debe gastar un intento.
+        global _postponed
+        _postponed = True
         motivo = ('%s' % exc)[:300]
         try:
             salida = api_retry(cfg, 'agent.release', {'id': jid, 'error': motivo}, attempts=4)
@@ -656,8 +661,14 @@ def main() -> int:
             work_once(cfg)
             return 0
         while time.time() < deadline:
+            global _postponed
+            _postponed = False
             if work_once(cfg):
                 time.sleep(1)
+            elif _postponed:
+                # El perfil estaba ocupado: se da tiempo a que se libere.
+                print('  espero 15 s antes de reintentar')
+                time.sleep(15)
             else:
                 time.sleep(6)
         return 0
