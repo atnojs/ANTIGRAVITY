@@ -102,6 +102,59 @@
         const total = els.grid.querySelectorAll('.card').length;
         els.studioCount.textContent = total === 1 ? '1 imagen' : `${total} imágenes`;
         els.emptyState.style.display = total === 0 ? '' : 'none';
+        syncGridHeight();
+    }
+
+    // La rejilla del lienzo deja ver dos filas y, a partir de ahí, scrollea
+    // dentro de sí misma para que el compositor y el botón Generar no se
+    // pierdan al acumular imágenes.
+    const GRID_ROWS = 2;
+    let gridMeasureRaf = 0;
+    let gridObserver = null;
+
+    function syncGridHeight() {
+        if (gridMeasureRaf) return;
+        gridMeasureRaf = requestAnimationFrame(() => {
+            gridMeasureRaf = 0;
+            const grid = els.grid;
+            if (!grid) return;
+            const cards = grid.querySelectorAll('.card');
+            if (!cards.length) {
+                grid.style.maxHeight = '';
+                grid.classList.remove('is-scrollable');
+                grid.removeAttribute('tabindex');
+                if (gridObserver) gridObserver.disconnect();
+                return;
+            }
+            // Altura real de las dos primeras filas, no solo de la primera
+            // tarjeta: una tarjeta con el prompt más largo hace más alta su
+            // fila y antes se cortaba por abajo.
+            const base = grid.getBoundingClientRect().top - grid.scrollTop;
+            const rows = new Map();
+            cards.forEach((card) => {
+                const rect = card.getBoundingClientRect();
+                const top = Math.round(rect.top - base);
+                const row = rows.get(top) || { top, bottom: top };
+                row.bottom = Math.max(row.bottom, Math.round(rect.bottom - base));
+                rows.set(top, row);
+            });
+            const ordered = [...rows.values()].sort((a, b) => a.top - b.top);
+            if (!ordered.length) return;
+            const maxHeight = ordered.length >= GRID_ROWS
+                ? ordered[GRID_ROWS - 1].bottom - ordered[0].top
+                : ordered[ordered.length - 1].bottom - ordered[0].top;
+            grid.style.maxHeight = Math.max(120, Math.ceil(maxHeight)) + 'px';
+            grid.classList.add('is-scrollable');
+            grid.tabIndex = 0;
+            // Las tarjetas cambian de alto con el ancho de columna o al cargar
+            // la imagen: se vuelve a medir sin entrar en bucle (solo cambia el
+            // max-height del contenedor, no el tamaño de la tarjeta).
+            if (typeof ResizeObserver === 'function') {
+                if (!gridObserver) gridObserver = new ResizeObserver(syncGridHeight);
+                gridObserver.disconnect();
+                gridObserver.observe(cards[0]);
+            }
+        });
     }
 
     function chipGroup(container, key, attr, cast = (v) => v) {
@@ -1059,7 +1112,14 @@
         pingWorker();
         state.pingTimer = setInterval(pingWorker, 30000);
         setNote('Listo. Tus imágenes se generan gratis con Flow en este PC.');
+        syncGridHeight();
+        setTimeout(syncGridHeight, 300);
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(syncGridHeight).catch(() => {});
+        }
     }
+
+    window.addEventListener('resize', syncGridHeight);
 
     boot();
 })();

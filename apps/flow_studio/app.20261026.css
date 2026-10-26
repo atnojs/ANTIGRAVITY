@@ -320,6 +320,29 @@ body {
     gap: 16px;
 }
 
+/* El lienzo se queda en dos filas y scrollea a partir de la tercera. */
+.grid.is-scrollable {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+    border-radius: var(--radius);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 208, 208, 0.55) transparent;
+}
+.grid.is-scrollable:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 4px;
+}
+.grid.is-scrollable::-webkit-scrollbar { width: 8px; }
+.grid.is-scrollable::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 20px; }
+.grid.is-scrollable::-webkit-scrollbar-thumb {
+    background: linear-gradient(var(--cyan), var(--green));
+    border-radius: 20px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
 .card {
     position: relative;
     background: var(--panel-solid);
@@ -524,7 +547,26 @@ body {
     margin: 0; font-family: var(--font-display); font-weight: 400;
     font-size: 14px; letter-spacing: 2px; text-transform: uppercase;
 }
-.history-list { overflow-y: auto; padding: 14px; display: grid; gap: 10px; }
+.history-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-content: start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 208, 208, 0.55) transparent;
+}
+.history-list::-webkit-scrollbar { width: 8px; }
+.history-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 20px; }
+.history-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(var(--cyan), var(--green));
+    border-radius: 20px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
 .history-item {
     display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; align-items: center;
     padding: 8px; border-radius: 12px;
