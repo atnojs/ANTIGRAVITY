@@ -8,10 +8,10 @@ SQLite. Solo cambia la capa visual (y el espacio de nombres del almacenamiento l
 mezclarse con la app original en el mismo dominio).
 
 > Estado de la entrega: **frontend y flujo verificados en navegador** sobre un servidor PHP local
-> (SQLite + cURL) y **publicado en producción**. La generación real con IA no se ha ejecutado en
-> esta tarea porque el equipo de desarrollo no tiene claves de proveedor: el flujo de carga, el
-> envío del `model` elegido y el error controlado sí están comprobados. Ver
-> [docs/VERIFICACION.md](docs/VERIFICACION.md).
+> (SQLite + cURL) y **publicado y verificado en producción** (arranque, estilo, CSP, modo local,
+> importación y exportación). La generación real con IA no se ha ejecutado en esta tarea porque el
+> equipo de desarrollo no tiene claves de proveedor: el flujo de carga, el envío del `model`
+> elegido y el error controlado sí están comprobados. Ver [docs/VERIFICACION.md](docs/VERIFICACION.md).
 
 - **URL**: `https://atnojs.es/apps/unified-image-studio-hoola/`
 - **Original intacto**: `apps/unified-image-studio/` no se modifica.
@@ -29,6 +29,11 @@ mezclarse con la app original en el mismo dominio).
 | Carga de IA | overlay oscuro con texto variable | overlay canónico Hoola: fondo translúcido con blur 14 px, tres aros de 80 px, título fijo «IA generando lo solicitado...» y barra indeterminada cian→verde |
 | Visor | sin visor ampliado | lightbox Hoola con zoom de rueda 1x–8x, arrastre, pellizco y cierre con clic/Escape (`lightbox-zoom.js` canónico) |
 | Almacenamiento local | `unified-image-studio` / `uis:*` | `unified-image-studio-hoola` / `uis-hoola:*` (mismo dominio, sin colisiones) |
+| CSP | heredada de la raíz (`img-src 'self' data: https:`) | propia en `.htaccess`: permite `blob:` en imágenes/medios (modo local) y mantiene scripts y conexiones en `'self'` |
+
+El **historial** sigue el diseño del original: proyectos + versiones + tabla `jobs`, persistidos en
+SQLite a través de `api.php`. No se añade `history.php`/`history-manager.js` para no duplicar
+almacenamiento ni dos fuentes de verdad; es la misma decisión documentada en el README original.
 
 No cambian ni el modelo de datos, ni los endpoints PHP, ni el pipeline de trabajos/presupuesto,
 ni las rutas de la API, ni la autenticación compartida.
@@ -52,6 +57,8 @@ apps/unified-image-studio-hoola/
 │   ├── ai.js                     Catálogo de modelos, trabajos y costes
 │   └── lightbox.js               Visor ampliado de resultados
 ├── lightbox-zoom.js              Módulo canónico copiado de apps/_shared
+├── .htaccess                     Caché/MIME y CSP propia (blob para modo local)
+├── version.txt                   Marcador de la versión servida
 ├── api.php / proxy.php           API privada y entrada del proveedor (sin cambios)
 ├── lib/                          Configuración, SQLite, auth, presupuesto, trabajos
 ├── storage/                      Datos privados (denegado por web; no versionado)

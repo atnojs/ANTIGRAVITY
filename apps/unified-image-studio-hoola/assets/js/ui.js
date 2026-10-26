@@ -149,13 +149,17 @@ export function showLoading(text = '', secondary = 'Enviando la solicitud al pro
   const operation = /^IA generando/i.test(text) ? '' : text;
   const detail = [operation, secondary].filter(Boolean).join(' · ');
   $('loadingSecondary').textContent = detail || 'Enviando la solicitud al proveedor.';
-  $('loadingOverlay').classList.remove('hidden');
-  $('loadingOverlay').style.display = 'flex';
+  const overlay = $('loadingOverlay');
+  overlay.setAttribute('aria-busy', 'true');
+  overlay.classList.remove('hidden');
+  overlay.style.display = 'flex';
 }
 
 export function hideLoading() {
-  $('loadingOverlay').classList.add('hidden');
-  $('loadingOverlay').style.display = 'none';
+  const overlay = $('loadingOverlay');
+  overlay.setAttribute('aria-busy', 'false');
+  overlay.classList.add('hidden');
+  overlay.style.display = 'none';
 }
 
 /* ══════════════ Barra superior / estado ══════════════ */
