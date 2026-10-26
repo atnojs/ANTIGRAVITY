@@ -45,6 +45,28 @@ antiguo de Flow Studio (`E:\herramientas\google-flow\flow_studio_worker.py`, tar
 2. Convivir con ambos. El agente **no reclama trabajo mientras el perfil esté ocupado**
    (imprime «perfil de Flow ocupado… espero sin reclamar trabajo»), así que la colisión no
    marca trabajos como fallidos: simplemente espera al siguiente ciclo.
+## 0-ter. El perfil de Chrome vive dentro del agente (importante)
+
+El perfil **no** se usa desde `E:\herramientas\google-flow\session\flowbot-profile`: Chrome recibe
+`Acceso denegado (0x5)` al crear su fichero de bloqueo en esa ruta (`Crashpad\settings.dat` y el
+lock de `ProcessSingleton`), aunque el usuario sí pueda escribir ahí desde PowerShell. Pasaba
+igual al ejecutar el agente a mano y desde el Programador de tareas, así que no era una colisión:
+era el proceso de Chrome sin permiso en esa carpeta.
+
+Solución aplicada: el perfil se copió a
+
+```
+E:\ANTIGRAVITY\tools\flow-agent\session\flowbot-profile
+```
+
+y `agente.json` apunta ahí. Esa ruta está ignorada por Git (contiene cookies de sesión) y Chrome
+escribe sin problemas.
+
+- **Renovar la sesión:** si alguna vez caduca, entra con
+  `FLOW_CHROME_PROFILE=E:/ANTIGRAVITY/tools/flow-agent/session/flowbot-profile` y ejecuta
+  `.venv\Scripts\python.exe flow.py login`.
+- **Si vuelve el error `ProcessSingleton`:** comprueba que no haya un Chrome abierto con ese
+  perfil (`--status` lo dice) y que `agente.json` apunta a la ruta de arriba.
 ## 1. Credencial del agente
 
 El token debe coincidir con el del servidor. Se admite de dos formas:

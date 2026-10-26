@@ -518,3 +518,42 @@ ocupado en lugar de fallarlo, y guarda `logs/<id>.log`.
 **Nota de método:** esta prueba se ejecutó con una **copia filtrada del perfil** dentro del espacio
 de trabajo, porque el entorno del agente no puede hacer que Chrome escriba en `E:\herramientas`.
 La copia se borró al terminar (contenía cookies de sesión).
+
+---
+
+## 21. Causa raíz del fallo del agente y solución aplicada (2026-10-26)
+
+El agente fallaba siempre con `RuntimeError: Event loop is closed`. Dentro de `logs/<id>.log` el
+error real era otro:
+
+```
+playwright._impl._errors.Error: BrowserType.launch_persistent_context:
+  Failed to create a ProcessSingleton for your profile directory.
+[pid] Crashpad\settings.dat: Acceso denegado. (0x5)
+[pid] Lock file can not be created: Acceso denegado. (0x5)
+   --user-data-dir=E:\herramientas\google-flow\session\flowbot-profile
+```
+
+**No era una colisión de dos Chrome.** Se comprobó, en este orden:
+
+1. Ningún `chrome.exe` usaba el perfil.
+2. El usuario **sí** podía crear archivos en esa carpeta desde PowerShell.
+3. No había reglas `Deny` en las ACL del perfil ni de `session/`.
+4. Fallaba igual a mano y desde el Programador de tareas (fuera del entorno del agente).
+
+Conclusión: el proceso de Chrome no podía crear su lock en `E:\herramientas\…`.
+
+**Solución:** copiar el perfil a una ruta donde Chrome sí escribe y apuntar `flow_profile` ahí:
+
+```
+E:\ANTIGRAVITY\tools\flow-agent\session\flowbot-profile   (ignorada por Git: contiene cookies)
+```
+
+**Resultado verificado en producción:** 3 generaciones reales completadas y subidas
+(`c5f336d9fb7f4205`, `ec2f87ceb5da21bc`, `ddf85d597dc24b49`), descargadas de vuelta con la
+credencial del agente (`HTTP 200`, `image/jpeg`, JPEG válido). Evidencia:
+`tools/evidencias/2026-10-26-uis-flow/22-produccion-real.jpg`.
+
+**Efecto colateral corregido:** las ventanas de consola que se abrían y cerraban solas eran de
+`chrome_using_profile()` (lanza PowerShell) y de `flow.py`, ejecutados desde `pythonw`. Ahora ambos
+usan `CREATE_NO_WINDOW`.

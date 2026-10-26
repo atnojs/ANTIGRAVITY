@@ -1,7 +1,7 @@
 {
   "base": "https://atnojs.es/apps/unified-image-studio/api.php",
   "token": "PEGA_AQUI_EL_TOKEN_DEL_AGENTE",
-  "flow_profile": "E:/herramientas/google-flow/session/flowbot-profile",
+  "flow_profile": "E:/ANTIGRAVITY/tools/flow-agent/session/flowbot-profile",
   "out_dir": "",
   "tmp_dir": ""
 }

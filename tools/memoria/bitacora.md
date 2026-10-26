@@ -31,8 +31,16 @@ Una entrada por sesión de trabajo relevante.
   de Flow presente), 5 casos de aplazamiento/reintento, reintento desde la interfaz, regresión de
   navegador y comprobación automática del entregable (32 invariantes). Detalle en
   `apps/unified-image-studio/docs/VERIFICACION.md` §19.
-- **Pendiente:** la generación real la hace Antonio en su equipo; desde el entorno del agente DSH,
-  Chrome no puede escribir en `E:\herramientas\…` (sandbox).
+- **Resuelto al final (ver `errores.md`):** Chrome no podía crear su fichero de bloqueo en
+  `E:\herramientas\google-flow\session\flowbot-profile` (`Acceso denegado 0x5`), ni a mano ni desde
+  el Programador de tareas. **No era una colisión**: era permiso del proceso, aunque el usuario sí
+  escribiera ahí desde PowerShell y no hubiera reglas `Deny`. Se copió el perfil a
+  `tools/flow-agent/session/flowbot-profile` (ignorado por Git) y `agente.json` apunta ahí.
+  Resultado: **3 generaciones reales subidas a producción** (`c5f336d9`, `ec2f87ce`, `ddf85d59`).
+- **También corregido:** las ventanas de consola que parpadeaban eran de la comprobación del perfil
+  (PowerShell) y de `flow.py`, lanzados desde `pythonw`. Ahora usan `CREATE_NO_WINDOW`.
+- **Tarea antigua:** `FlowStudioWorker` queda **desactivada** (`Disable-ScheduledTask`); revertible
+  con `Enable-ScheduledTask`.
 
 ---
 ## 2026-10-26 (tarde) — Hasta 4 imágenes por encolado en Unified Image Studio

@@ -1,3 +1,26 @@
+## 2026-10-26 — Chrome no puede escribir el bloqueo del perfil de Flow: «Acceso denegado (0x5)»
+
+- **Síntoma:** el agente falla siempre con `RuntimeError: Event loop is closed`; dentro del log,
+  el error verdadero es `Failed to create a ProcessSingleton for your profile directory`, con
+  `Crashpad\settings.dat: Acceso denegado. (0x5)` y `Lock file can not be created`.
+- **Diagnóstico correcto (lo que costó tiempo):** no era una colisión de dos Chrome. El usuario
+  podía crear archivos en `E:\herramientas\google-flow\session\flowbot-profile` desde PowerShell,
+  no había reglas `Deny` en las ACL y no había ningún Chrome abierto. Aun así, el proceso `chrome.exe`
+  no podía crear su lock en esa carpeta, ni a mano ni desde el Programador de tareas.
+- **Solución:** copiar el perfil a `E:\ANTIGRAVITY\tools\flow-agent\session\flowbot-profile`
+  (ignorada por Git) y apuntar `flow_profile` de `agente.json` a esa ruta. Con la copia dentro del
+  espacio de trabajo, Chrome arranca y Flow genera con normalidad. Verificado con 3 generaciones
+  reales subidas a producción.
+- **Lecciones:**
+  1. `RuntimeError: Event loop is closed` de Playwright es **ruido**: tapaba el error real. Por eso
+     `summarize_error` filtra el cierre de asyncio y cada trabajo guarda `logs/<id>.log`.
+  2. Antes de tocar permisos, reproducir el fallo en una ruta alternativa y comparar.
+  3. El agente debe comprobar el perfil **antes de reclamar** trabajo; si se ocupa después, se
+     **aplaza** (`agent.release`) en vez de marcar el trabajo como fallido.
+- **Efecto colateral corregido:** lanzar PowerShell y `flow.py` desde `pythonw` abría ventanas de
+  consola que se cerraban solas. Ahora ambos usan `CREATE_NO_WINDOW` (`NO_WINDOW` en el código).
+
+---
 # Errores cometidos y cómo se resolvieron
 
 Catálogo vivo. **Consúltalo antes de repetir un camino** que ya falló. Los errores del

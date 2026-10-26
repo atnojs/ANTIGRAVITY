@@ -56,6 +56,9 @@ JPEG_QUALITY = 88
 MAX_REFS = 2
 MAX_VIDEO_BYTES = 32 * 1024 * 1024
 VIDEO_EXT = ('.mp4', '.webm', '.mov')
+# En Windows, lanzar un programa de consola desde pythonw abre una ventana que se
+# cierra sola. Estas banderas lo evitan.
+NO_WINDOW = 0x08000000 if os.name == 'nt' else 0
 IMAGE_EXT = ('.jpg', '.jpeg', '.png', '.webp')
 MODEL_ALIASES = {'Omni Flash': 'Omni 1.1 Flash'}
 # El servidor guarda el nombre del menú de Flow, pero un trabajo antiguo puede
@@ -278,6 +281,7 @@ def chrome_using_profile(profile: str) -> int:
         proc = subprocess.run(
             ['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', script],
             capture_output=True, text=True, timeout=60, encoding='utf-8', errors='replace',
+            creationflags=NO_WINDOW,
         )
         cuenta = 0
         for linea in (proc.stdout or '').splitlines():
@@ -488,6 +492,7 @@ def generate(cfg: dict, job: dict, refs: list[str]) -> str:
         text=True,
         encoding='utf-8',
         errors='replace',
+        creationflags=NO_WINDOW,
     )
     out = (proc.stdout or '') + (proc.stderr or '')
     ruta_log = guardar_log(jid, out)
