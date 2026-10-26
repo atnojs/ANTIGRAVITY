@@ -2238,3 +2238,27 @@ Antonio: «esta app: apps/flow_studio_hoola me ha dado este error: `RuntimeError
 - **Verificación:** QA funcional independiente PASS (local + producción: login, import, texto, export PNG/JPG/WebP, .uis.json, persistencia, model payload, overlay, lightbox, anchos, CSP) y scorecard autocalidad independiente **PASS 92,8/100** (gate D1–D7, 1 menor M-01 declarada). Autoevaluación del autor 93,9.
 - **Publicación:** commits `7f828b31` → `33516df0` → `d6e8d112` → `c4ecb272` → `050ef9ef` → `b2a87152` → `425c8ab2` (HEAD `fe89ee8a`); `origin/main..HEAD` vacío; producción https://atnojs.es/apps/unified-image-studio-hoola/ sirve `2.0.2-hoola` (`version.txt` sha256 2aea7647…).
 - **Evidencias:** `tools/evidencias/2026-10-26-uis-hoola/` (antes/después, capturas, export, MANIFIESTO, AUTOEVALUACION), QA en `…-verif/`, scorecard en `…-autocalidad/` y comparativa `tools/comparativa_hoola_unified_image_studio.png`.
+
+---
+
+## 2026-10-26 — Skill de uso de Unified Image Studio · Hoola
+
+- **Qué se hizo:** skill nueva **`skills/SKILL_unified-image-studio-hoola.md`**, puntero
+  `.claude/skills/unified-image-studio-hoola/SKILL.md` y entrada en `tools/memoria/mapa.md`. Motivo:
+  la app resulta difícil de usar y Antonio quiere preguntar en lenguaje natural y recibir un paso a
+  paso exacto, no una explicación genérica.
+- **Contenido:** mapa de la interfaz (3 modos, 6 pestañas de herramientas, 4 del panel derecho, barra
+  superior, lienzo y barra de estado), 16 flujos numerados con las etiquetas literales de cada
+  control, tabla de modelos con su compuerta, límites reales, 20 errores con su mensaje literal,
+  glosario, formato de respuesta del agente y fuentes de verdad para mantenerla.
+- **Datos tomados de:** `index.html` (ids y etiquetas), `assets/js/app.js` (avisos y errores),
+  `assets/js/ai.js` (`MODELS`, `ASPECTS`), `assets/js/core.js` (`LIMITS`),
+  `apps/_shared/model-gate.20261026b.js` (`FREE_MODELS`, `LABELS`), `lib/flow-engine.php`
+  (proporciones de Flow) y `docs/VERIFICACION.md`.
+- **Hallazgos que la skill documenta:** el modelo inicial de esta app es **FLOW · NANO BANANA 2**
+  (no IMAGE 2 LOW, que sigue siendo el de la política general); con Flow solo existen cinco
+  proporciones y el servidor cae a `1:1` con las demás sin avisar; sin sesión no se genera nada; y
+  los modelos protegidos piden la contraseña otra vez aunque ya haya sesión iniciada.
+- **Límite:** no se grabó un recorrido nuevo en Chrome para esta entrada; los pasos se extrajeron del
+  marcado y del código de la app (build `3.0.0-hoola`). Si cambian etiquetas o flujos, la skill se
+  actualiza en el mismo encargo (tiene su propia sección de mantenimiento).
