@@ -6,7 +6,7 @@ description: "Manual de uso de la app Unified Image Studio · Hoola: convierte u
 # Unified Image Studio · Hoola — puntero
 
 El texto íntegro de esta skill vive en **`skills/SKILL_unified-image-studio-hoola.md`** (relativo a
-la raíz del proyecto). Léelo y aplícalo tal cual: contiene el mapa completo de la interfaz, los 16
+la raíz del proyecto). Léelo y aplícalo tal cual: contiene el mapa completo de la interfaz, los 20
 flujos paso a paso, la tabla de modelos y los errores con su mensaje literal.
 
 Resumen operativo:

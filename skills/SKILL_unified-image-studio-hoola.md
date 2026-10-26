@@ -44,8 +44,9 @@ comprueba eso primero y dilo antes de dar la receta.
 2. **¿Qué motor va a usar?** Flow necesita que el PC con el agente de Flow esté encendido y
    conectado (indicador de Flow en la barra de arriba y «Estado del PC» en la pestaña Vídeo).
    Los modelos directos (IMAGE 2, OPENAI 2.5, GEMINI, QWEN) no necesitan el PC.
-3. **¿El modelo está protegido?** Los modelos caros piden otra vez la contraseña al pulsarlos
-   (ver «Modelos»). Si no la tiene a mano, ofrécele un camino con los modelos libres.
+3. **¿El modelo está protegido?** Los modelos caros piden otra vez la contraseña al pulsarlos. La
+   compuerta mira **la pestaña del navegador**, no la sesión: estar dentro no la desbloquea, y en una
+   pestaña nueva vuelve a pedirla. Si no la tiene a mano, ofrécele un camino con los modelos libres.
 
 ## Mapa de la pantalla
 
@@ -103,8 +104,9 @@ Documento, selección, posición del cursor, modo, zoom y sello de versión.
    en el chat**: si no la recuerda, que la consulte él.
 3. Si el modal no aparece y la app avisa de que trabaja en local, pulsar **«Reintentar conexión»**
    o abrir `api.php?action=state`. **«Seguir en local»** sirve para editar y exportar, nada más.
-4. La compuerta de modelos pide **otra vez** la contraseña al pulsar un modelo protegido, y la
-   recuerda durante la pestaña; en una pestaña nueva vuelve a pedirla.
+4. La compuerta de modelos pide **otra vez** la contraseña al pulsar un modelo protegido y la
+   recuerda mientras dure esa pestaña; en una pestaña nueva vuelve a pedirla. **Escape no cierra**
+   el modal de acceso (el cursor está en el campo de contraseña): se cierra con ✕ o «Seguir en local».
 
 ## Árbol de decisión: lo que pide → flujo
 
@@ -126,6 +128,10 @@ Documento, selección, posición del cursor, modo, zoom y sello de versión.
 | «Mover, ocultar o borrar una parte» | F14 |
 | «Repetir los mismos ajustes» | F15 |
 | «Atajos / comparar antes y después» | F16 |
+| «Se me quedó a medias / cerré la pestaña» | F17 |
+| «En el móvil no veo los paneles» | F18 |
+| «La app no arranca / pantalla de error» | F19 |
+| «Cerrar sesión» | F20 |
 
 ## Flujos paso a paso
 
@@ -157,16 +163,19 @@ de lado». Con archivos muy grandes, reducir antes de subir.
    sujeto + acción + escena + luz + estilo, y qué texto debe llevar (en español).
 3. Elegir **Modelo** con las píldoras. Camino simple si no hay PC de Flow: **IMAGE 2 · «LOW»**
    (libre, no pide contraseña). Camino con PC encendido: **FLOW · GOOGLE · «NANO BANANA 2»**.
-4. **Proporción**: `1:1`, `4:5`, `3:4`, `2:3`, `16:9`, `9:16`, `3:2`, `4:3`, `21:9`.
-   **Ojo:** con Flow solo existen `1:1`, `16:9`, `4:3`, `3:4` y `9:16`; cualquier otra se guarda
-   como `1:1` sin avisar.
-5. **Resolución**: `512`, `1024`, `2048`, `4096`. A más resolución, más tiempo y más coste.
-6. **Referencias** (opcional, hasta **8**): «Añadir referencia» y asignar papel (producto, identidad,
-   estilo, pose o composición). Solo se envían al generar.
+4. **Proporción**: `1:1`, `4:5`, `3:4`, `2:3`, `16:9`, `9:16`, `3:2`, `4:3`, `21:9`. **Con Flow**, las
+   que no admite (`4:5`, `2:3`, `3:2`, `21:9`) aparecen **desactivadas** en la lista: no se pueden
+   elegir. Si alguna llegara al servidor con Flow, cae a `1:1`.
+5. **Resolución**: `512`, `1024`, `2048`, `4096` con los modelos directos. **Con Flow el control está
+   desactivado**: Flow genera a su resolución nativa (~1K).
+6. **Referencias** (opcional): «Añadir referencia» y asignar papel (producto, identidad, estilo, pose
+   o composición). El límite de la interfaz es **8**, pero **con Flow solo viajan las 2 primeras**.
+   Solo se envían al generar.
 7. Si quiere partir de lo que ya hay en el lienzo: **«Usar lienzo como referencia»**.
 8. Pulsar **«GENERAR»**.
-9. Esperar: overlay **«IA generando imagen…»** con barra indeterminada y el aviso «Enviando la
-   solicitud al proveedor. No cierres esta pestaña.». No se puede lanzar otra mientras dura.
+9. Esperar: overlay **«IA generando imagen…»** con barra indeterminada y el aviso
+   «Enviando la solicitud al proveedor. No cierres esta pestaña.». No se puede lanzar otra mientras
+   dura.
 10. En **«Resultado de IA»**: **«Aceptar»** (entra como capa nueva), **«Regenerar»**,
     **«Guardar variante»** o **«Descartar»**.
 
@@ -275,9 +284,12 @@ Después hay que **«Aceptar»** el resultado. Los textos y logos se mantienen c
 
 1. Panel derecho **«Capas»**: seleccionar en la lista.
 2. Ajustar **Opacidad** o escribir **X**, **Y**, **An**, **Al**.
-3. Botones de la cabecera: duplicar capa, eliminar capa (`Supr`). En la lista: subir/bajar y
-   «Añadir capa».
-4. En el lienzo, la herramienta de selección (`V`) mueve y redimensiona.
+3. En cada fila de la lista: **ojo** (ocultar/mostrar la capa) y **candado** (bloquearla para que no
+   se mueva al hacer clic); **arrastrar la fila** la reordena.
+4. **«Añadir capa»**, subir/bajar, **duplicar capa** (icono o `Ctrl+D`) y eliminar capa (`Supr`).
+5. En el lienzo, la herramienta de selección (`V`) mueve y redimensiona.
+6. **Alinear**: con una capa seleccionada, los botones de «Componer → Alinear» (seis ejes).
+7. **DPI del documento**: en «Utilidades» → «DPI del documento» (por defecto 300).
 
 ### F15 · Recetas (repetir los mismos ajustes)
 
@@ -300,10 +312,42 @@ Después hay que **«Aceptar»** el resultado. Los textos y logos se mantienen c
 | `+` / `−` / `0` | Zoom / centrar |
 | `Ctrl+Z` / `Ctrl+Shift+Z` | Deshacer / rehacer |
 | `Ctrl+S` / `Ctrl+E` / `Ctrl+O` | Guardar / exportar / proyectos |
+| `Ctrl+D` | Duplicar la capa seleccionada |
 | `Supr` | Eliminar capa |
 
 **Comparar** necesita un resultado de IA previo aceptado; si no lo hay, avisa de que no hay estado
 anterior. La lista oficial siempre está en **«Ayuda»** (modal «Atajos y ayuda») y es la que manda.
+**Ningún atajo funciona con el cursor dentro de un campo**: primero hay que salir de él.
+
+### F17 · Recuperar un trabajo que quedó a medias
+
+1. Si se cerró la pestaña o se cortó la red con una generación en curso, al volver a abrir sale
+   «Hay un trabajo en curso en el servidor (…). Se recupera sin volver a enviarlo.».
+2. La app retoma el trabajo sola y muestra la vista previa: se acepta o se descarta como cualquier
+   otro resultado.
+3. Si no se puede recuperar («No se pudo recuperar el trabajo: …»), mirar antes en **Biblioteca**
+   antes de volver a generar: no se ha reenviado ni se ha vuelto a cobrar.
+
+### F18 · Móvil y paneles
+
+1. En pantalla estrecha, los paneles izquierdo y derecho se abren **superpuestos** sobre el lienzo.
+2. Se abren desde sus pestañas (la columna de iconos y «Capas») y se cierran con ✕ o tocando el
+   fondo oscuro.
+3. El lienzo se desplaza con la herramienta mano (`H` o `Espacio`) y se amplía con `+` / `−`.
+
+### F19 · Si la app no arranca
+
+1. Si aparece la pantalla **«La aplicación no ha arrancado»**, pulsar **«Recargar sin caché»**.
+2. Si vuelve a salir, **«Copiar diagnóstico»** copia URL, problemas y navegador: que lo pegue en el
+   chat y se revisa con eso.
+3. Esa pantalla aparece sola cuando el estudio no puede iniciarse; no es un fallo raro del navegador.
+
+### F20 · Cerrar sesión
+
+1. Pulsar el botón de sesión de la barra superior (el candado cambia a candado abierto con sesión).
+2. Si hay sesión, abre «Sesión iniciada» con la pregunta de cerrarla; confirmar con
+   **«Cerrar sesión»**.
+3. La app sigue funcionando en local: se puede editar y exportar, pero no generar.
 
 ## Qué verás mientras trabaja
 
@@ -350,15 +394,16 @@ de API. Esa elección inicial no es un error: es el diseño de la app.
 
 | Límite | Valor |
 |---|---|
-| Caracteres del prompt de imagen | 12.000 |
-| Caracteres del prompt de vídeo | 1.500 |
-| Peso por archivo | 20 MB |
+| Caracteres del prompt de imagen | 12.000 en el contador; el servidor **rechaza por encima de 11.800** porque añade la instrucción de idioma |
+| Caracteres del prompt de vídeo | 1.500 (Flow **recorta en silencio** si se pasa) |
+| Peso por archivo | el que anuncia el lienzo: tope 20 MB, rebajado si el servidor tiene un `post_max_size` menor |
 | Lado máximo de imagen | 8192 px |
 | Capas por documento | 120 |
-| Referencias por generación | 8 |
+| Referencias por generación | 8 en la interfaz; **con Flow solo viajan las 2 primeras** |
 | Imágenes por encolado (solo Flow) | 1–4 |
 | Deshacer | 60 pasos |
-| Proporciones con Flow | 1:1, 16:9, 4:3, 3:4, 9:16 (el resto cae a 1:1) |
+| Proporciones con Flow | 1:1, 16:9, 4:3, 3:4, 9:16 (el resto, desactivadas) |
+| Resolución con Flow | no se elige: ~1K nativa |
 | Formatos de vídeo | 16:9 y 9:16 |
 | Formatos de imagen admitidos | PNG, JPG, WebP (GIF no) |
 
@@ -386,6 +431,22 @@ de API. Esa elección inicial no es un error: es el diseño de la app.
 | «Ese resultado ya no está disponible: actualiza la lista.» | Trabajo borrado o caducado | «Actualizar» en Biblioteca |
 | «El trabajo sigue pendiente en el servidor… no se ha reenviado.» | Corte de red con trabajo en curso | Recargar: el trabajo se recupera solo |
 | «Imagen copiada al portapapeles.» / «No se pudo copiar…» | «Copiar» del modal de exportación | Si falla, exportar a archivo |
+| «El prompt es demasiado largo: deja margen para la instrucción de idioma (máximo 12.000 caracteres en total).» | Más de 11.800 caracteres | Acortar el prompt |
+| «Demasiados trabajos en un minuto. Espera antes de volver a generar.» | Ráfaga de envíos | Esperar un minuto y reintentar |
+| «No se pudo recuperar el trabajo: …» | El trabajo pendiente no se pudo retomar | Mirar en Biblioteca antes de repetir |
+
+## Trampas que conviene avisar (no son errores)
+
+- **Los atajos se mueren al escribir**: con el cursor en un campo se ignoran `Ctrl+S`, `Ctrl+E`,
+  `Ctrl+O`, `Supr` y `Escape`. Hay que salir del campo (clic en el lienzo) y volver a probar.
+- **El modal de acceso no se cierra con Escape**, porque enfoca la contraseña: ✕ o «Seguir en local».
+- **«Eliminar proyecto» borra la copia de este navegador**, no la del servidor: la copia remota se
+  queda huérfana. Si el proyecto importa, descargar antes el `.uis.json`.
+- **Las versiones se restauran pero no se borran** desde la interfaz: se acumulan.
+- **Con Flow llegan al modelo solo 2 referencias** y la resolución no se elige, por mucho que se
+  configuren en el panel.
+- **La compuerta admite un código de respaldo sin servidor**, además de la contraseña de acceso.
+  No se escribe en el chat: si hace falta, que lo introduzca él.
 
 ## Glosario para no perderlo
 
@@ -427,8 +488,9 @@ de API. Esa elección inicial no es un error: es el diseño de la app.
 | Mensajes de aviso y comportamiento de cada flujo | `assets/js/app.js` (buscar `toast(` y `throw new Error(`) |
 | Catálogo de modelos y notas | `assets/js/ai.js` (`MODELS`, `ASPECTS`) |
 | Qué modelos piden contraseña | `apps/_shared/model-gate.20261026b.js` (`FREE_MODELS`, `LABELS`) |
-| Proporciones reales de Flow | `lib/flow-engine.php` (`uis_flow_image_ratios`, `uis_flow_video_ratios`) |
-| Límites | `assets/js/core.js` (`LIMITS`) |
+| Proporciones y recortes reales de Flow | `lib/flow-engine.php` (`uis_flow_image_ratios`, `uis_flow_video_ratios`, truncado del prompt) |
+| Límites que aplica el servidor | `lib/jobs.php` (prompt máximo, ráfaga por minuto) |
+| Límites | `assets/js/core.js` (`LIMITS`) y `app.js` (ajuste del peso máximo al arrancar) |
 | Pruebas y límites declarados | `docs/VERIFICACION.md` |
 
 Al cambiar la app, **actualiza esta skill en el mismo encargo**: si cambia una etiqueta o un límite,

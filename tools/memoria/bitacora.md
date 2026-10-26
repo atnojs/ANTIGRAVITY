@@ -2248,17 +2248,21 @@ Antonio: «esta app: apps/flow_studio_hoola me ha dado este error: `RuntimeError
   la app resulta difícil de usar y Antonio quiere preguntar en lenguaje natural y recibir un paso a
   paso exacto, no una explicación genérica.
 - **Contenido:** mapa de la interfaz (3 modos, 6 pestañas de herramientas, 4 del panel derecho, barra
-  superior, lienzo y barra de estado), 16 flujos numerados con las etiquetas literales de cada
-  control, tabla de modelos con su compuerta, límites reales, 20 errores con su mensaje literal,
-  glosario, formato de respuesta del agente y fuentes de verdad para mantenerla.
+  superior, lienzo y barra de estado), 20 flujos numerados con las etiquetas literales de cada
+  control, tabla de modelos con su compuerta, límites reales, 23 errores con su mensaje literal,
+  glosario, formato de respuesta del agente, trampas de uso y fuentes de verdad para mantenerla.
+- **Correcciones de la ronda de verificación** (código, no memoria): la compuerta se guarda por
+  pestaña (`sessionStorage`) y no por sesión; con Flow el selector **desactiva** las proporciones que
+  no admite y la resolución; solo viajan 2 referencias; el prompt se rechaza por encima de 11.800 y
+  el de vídeo se recorta en silencio a 1.500; el peso máximo real lo fija el servidor al arrancar.
 - **Datos tomados de:** `index.html` (ids y etiquetas), `assets/js/app.js` (avisos y errores),
   `assets/js/ai.js` (`MODELS`, `ASPECTS`), `assets/js/core.js` (`LIMITS`),
   `apps/_shared/model-gate.20261026b.js` (`FREE_MODELS`, `LABELS`), `lib/flow-engine.php`
   (proporciones de Flow) y `docs/VERIFICACION.md`.
 - **Hallazgos que la skill documenta:** el modelo inicial de esta app es **FLOW · NANO BANANA 2**
-  (no IMAGE 2 LOW, que sigue siendo el de la política general); con Flow solo existen cinco
-  proporciones y el servidor cae a `1:1` con las demás sin avisar; sin sesión no se genera nada; y
-  los modelos protegidos piden la contraseña otra vez aunque ya haya sesión iniciada.
+  (no IMAGE 2 LOW, que sigue siendo el de la política general); con Flow el selector desactiva las
+  proporciones y la resolución que no admite y solo viajan 2 referencias; sin sesión no se genera
+  nada; y los modelos protegidos piden la contraseña otra vez aunque ya haya sesión iniciada.
 - **Límite:** no se grabó un recorrido nuevo en Chrome para esta entrada; los pasos se extrajeron del
   marcado y del código de la app (build `3.0.0-hoola`). Si cambian etiquetas o flujos, la skill se
   actualiza en el mismo encargo (tiene su propia sección de mantenimiento).
