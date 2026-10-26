@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- assets versionados 20261026e: modo vídeo con las opciones de Flow -->
+<!-- assets versionados 20261026f: modo vídeo con las opciones de Flow -->
 <title>Flow Studio · Genera imágenes y vídeos con Google Flow</title>
 <meta name="description" content="Genera imágenes y vídeos gratis con Google Flow. Elige modelo, formato y fotogramas, edita o anima una imagen y escala el resultado 2×, 4× u 8× en tu PC.">
 <meta name="theme-color" content="#001018">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.hoola.20261026e.css">
+<link rel="stylesheet" href="app.hoola.20261026f.css">
 </head>
 <body>
 
@@ -169,14 +169,14 @@
             </fieldset>
 
             <fieldset class="control" id="videoModelControl" hidden>
-                <legend>Modelo de vídeo</legend>
+                <legend>Modelo de vídeo <span class="legend-hint">de menor a mayor capacidad</span></legend>
                 <div class="chips" id="videoModelChips">
-                    <button type="button" class="chip is-active" data-vmodel="Veo 3.1 - Lite">Veo 3.1 Lite</button>
-                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Fast">Veo 3.1 Fast</button>
-                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Quality">Veo 3.1 Quality</button>
-                    <button type="button" class="chip" data-vmodel="Omni Flash">Omni Flash</button>
+                    <button type="button" class="chip is-active" data-vmodel="Veo 3.1 - Lite" title="10 puntos por vídeo · 5 al día con los 50 de la cuenta">Veo 3.1 Lite</button>
+                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Fast" title="El importe exacto lo marca Flow antes de generar">Veo 3.1 Fast</button>
+                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Quality" title="El importe exacto lo marca Flow antes de generar">Veo 3.1 Quality</button>
+                    <button type="button" class="chip" data-vmodel="Omni Flash" title="El importe exacto lo marca Flow antes de generar">Omni Flash</button>
                 </div>
-                <p class="refs-note" id="videoHint">Veo 3.1 Lite gasta 10 puntos por vídeo: 5 al día con los 50 de la cuenta. Fotogramas opcionales.</p>
+                <p class="refs-note" id="videoHint">Veo 3.1 Lite gasta 10 puntos por vídeo (5 al día con los 50). En Fast, Quality y Omni Flash, Flow marca el importe antes de generar.</p>
             </fieldset>
 
             <fieldset class="control">
@@ -271,7 +271,7 @@
 </noscript>
 
 <script src="history-manager.js"></script>
-<script src="app.20261026e.js"></script>
+<script src="app.20261026f.js"></script>
 
 <!-- Zoom con la rueda del raton en el visor de imagen grande -->
 <script src="lightbox-zoom.20261026.js?v=20261026" defer></script>
