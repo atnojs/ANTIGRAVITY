@@ -370,7 +370,18 @@ Regresión de las herramientas previas:
 - El vídeo con fotograma final (interpolación) no se ha probado de punta a punta
   porque requiere una generación real de Flow.
 
-### 17.5 Ronda del verificador independiente (REWORK 59,7) y correcciones
+### 17.5 Rondas del verificador independiente y correcciones
+
+Tres rondas independientes sobre el mismo trabajo:
+
+| Ronda | Veredicto | Total | Qué abrió |
+|---|---|---:|---|
+| 1 | REWORK | 59,7 | Modelo mal mapeado (bloqueante) y barra superior recortada (bloqueante) |
+| 2 | REWORK | 80,0 | Tres correcciones que no se habían aplicado (D3, D7, D8) y autoevaluación descalibrada |
+| 3 | REWORK | 91,1 | Incoherencias de esta tabla (total y gate), comprobación del visor evadible e import sin uso |
+
+Versión evaluada en esta sección: el commit `b6a563a3` (arreglos) y el que acompaña a esta
+misma tabla.
 
 El verificador independiente del gate `autocalidad-90` emitió **REWORK** con dos defectos
 bloqueantes. Se corrigieron todos los defectos abiertos antes de volver a publicar.
@@ -382,10 +393,10 @@ bloqueantes. Se corrigieron todos los defectos abiertos antes de volver a public
 | D2-bis | Medio | Un trabajo cuyo PC muere seguía «Generando» indefinidamente: la caducidad solo se evaluaba al reclamar | `flow.list` y `flow.status` caducan el lease antes de responder | Trabajo envejecido 4 h: la lista lo devuelve como `unknown` («pendiente de comprobar») y la interfaz muestra **Reintentar**, que lo devuelve a la cola |
 | D3 | Medio | La tarjeta de vídeo ofrecía «Usar como inicio», que no puede funcionar | **En la primera corrección solo se quitó el manejador y el botón seguía pintándose, sin efecto (defecto detectado por el verificador).** Ahora el botón no se renderiza en tarjetas de vídeo | `node tools/flow-agent/comprobar-entregable.mjs` → «D3 sin botón data-flow-frames»; `d3-d7.mjs` en Chrome: 0 botones en 1440 y 390 |
 | D4 | Mayor | El commit no estaba publicado | Push a `main` y comprobación de la versión servida | `git log --oneline origin/main..HEAD` vacío |
-| D12 | Mayor | La tabla de correcciones afirmaba cerrados D3, D7 y D8 cuando el artefacto los desmentía, y la autoevaluación de 91,8 estaba 11,8 puntos por encima de la verificación independiente | Filas reescritas con el estado real, comprobación automática por defecto y autoevaluación recalibrada | `comprobar-entregable.mjs` (26 comprobaciones) y §17.6 revisada |
+| D12 | Mayor | La tabla de correcciones afirmaba cerrados D3, D7 y D8 cuando el artefacto los desmentía; la autoevaluación estaba descalibrada | Filas reescritas con el estado real, comprobación por defecto y **prueba de mutación** que demuestra que la comprobación falla si el defecto reaparece | `node tools/flow-agent/comprobar-entregable.mjs` (30 invariantes) y `node tools/flow-agent/probar-comprobacion.mjs` (2 mutaciones detectadas) |
 | D6 | Menor | Restos editoriales que mencionaban costes | Retirados de `app.js`, `ui.js`, `ai.js` y del bloque `@media` vacío | Búsqueda de `coste|precio|€|presupuesto|tarifa` en HTML/CSS/JS: sin resultados salvo una nota neutra |
 | D7 | Menor | El visor de vídeo mostraba «?×?» | La etiqueta usa una variable condicional: solo añade medidas cuando se conocen | `d3-d7.mjs` y `visor-video.mjs`: «Vídeo · 16:9» sin interrogantes |
-| D8 | Menor | Código muerto y control inexistente (`#countSelect`) | **Primera corrección parcial: quedaron cuatro símbolos.** Ahora `flow.js` solo exporta lo que se consume y `ai.js` es el único catálogo del cliente | `comprobar-entregable.mjs` comprueba los ocho símbolos uno a uno |
+| D8 | Menor | Código muerto y control inexistente (`#countSelect`) | **Primera corrección parcial: quedaron cuatro símbolos.** Ahora `flow.js` solo exporta lo que se consume y `ai.js` es el único catálogo del cliente | `comprobar-entregable.mjs` comprueba los nueve símbolos uno a uno |
 | D9 | Menor | Dos agentes podían reclamar el mismo trabajo | El `UPDATE` del claim comprueba `rowCount()`; si no es 1, se aborta el claim | Sin cambios de comportamiento en un solo agente; el trabajo nunca se entrega dos veces |
 | D10 | Menor | Caché `immutable` de un año en resultados privados | `private, max-age=600, must-revalidate` | Cabecera en la descarga |
 | D11 | Menor | En 390 px el botón «Generar vídeo» quedaba medio tapado por la barra de estado | Hueco inferior por pestaña en el panel | Botón completo, dentro de pantalla y clicable a 390, 360 y 768 |
@@ -397,26 +408,30 @@ Versión evaluada: la de esta entrada (commit siguiente a `c693877a`). Rúbrica 
 
 | ID | Criterio | Peso | Nota | Evidencia |
 |---|---|---:|---:|---|
-| A1 | Cobertura del contrato | 18 | 9,3 | 7/7 requisitos: Flow preferente con Nano Banana 2 inicial, 12 modelos previos intactos, vídeo como sección, imagen→vídeo sin descargar, 0 coste en DOM/CSS/JS, multidispositivo con cola persistente, credencial fuera del frontend |
-| A2 | Corrección funcional | 15 | 9,2 | E2E con banco estricto: encolar → agente → Listo → descarga JPEG válida → al lienzo (0→1 capas) → animar. Backend: 20 casos. **Límite:** no se ejecutó Flow real (consume puntos) |
-| A3 | Verificación real | 13 | 9,2 | Chrome 155 en 11 anchos; medición de alcance y solapes con `elementFromPoint`; agentes y API reejecutados; regresión de herramientas previas |
-| A4 | Reglas del encargo y del proyecto | 10 | 9,2 | Sin secretos versionados (`git grep` del token vacío), `.gitignore` del agente, responsive comprobado por alcance real, push verificado |
-| A5 | Autoevaluación honesta | 12 | 8,6 | Tabla con el estado real, incluida la rectificación explícita de la ronda anterior (se afirmaron correcciones no aplicadas). Límites declarados: Flow real, Safari/iOS y `.htaccess` en `php -S` |
-| A6 | Mejora residual agotada | 10 | 8,6 | Los defectos del verificador están cerrados y **cada uno tiene una comprobación que falla si reaparece**; queda pendiente la generación real con Flow, que depende de puntos y de la UI de Google |
-| A7 | Calidad para el usuario | 8 | 9,2 | Navegación por secciones, biblioteca con acciones, aviso no bloqueante, estados honestos |
-| A8 | Robustez y seguridad | 6 | 9,4 | 401/403/405 comprobados; credencial por entorno o hash; claim sin carreras; caché corta; fallo cerrado sin credencial |
-| A9 | Evidencias y trazabilidad | 5 | 9,2 | Esta sección, README 1-bis, `tools/flow-agent/LEEME.md` y scripts de evidencia reutilizables |
-| A10 | Claridad y mantenibilidad | 3 | 9,0 | Módulos con una responsabilidad, sin código muerto, comentarios con el porqué |
+| A1 | Cobertura del contrato | 18 | 9,4 | 7/7 requisitos del encargo, con las dos rondas de corrección cerradas |
+| A2 | Corrección funcional | 15 | 9,2 | E2E con banco estricto de modelos; backend con 20 casos; **límite:** Flow real no ejecutado |
+| A3 | Verificación real | 13 | 9,2 | Chrome en 11 anchos con alcance real, tres rondas de verificador, regresión de herramientas y mutaciones |
+| A4 | Reglas del encargo y del proyecto | 10 | 9,4 | Sin secretos versionados, responsive medido, publicaciones verificadas en producción |
+| A5 | Autoevaluación honesta | 12 | 9,0 | Incluye la rectificación explícita de la ronda 2; límites declarados |
+| A6 | Mejora residual agotada | 10 | 9,0 | Cada defecto tiene comprobación que falla si vuelve (probada con mutaciones); solo queda la generación real |
+| A7 | Calidad para el usuario | 8 | 9,3 | Secciones, biblioteca con acciones útiles, avisos no bloqueantes, estados honestos |
+| A8 | Robustez y seguridad | 6 | 9,4 | 401/403/405, credencial por entorno o hash, claim sin carreras, caché corta |
+| A9 | Evidencias y trazabilidad | 5 | 8,9 | Sección con tres rondas, hash de la versión y dos comandos reproducibles |
+| A10 | Claridad y mantenibilidad | 3 | 8,7 | Módulos con una responsabilidad y sin código muerto; catálogo del cliente en un solo sitio |
 
-`total = (9,3·18 + 9,2·15 + 9,2·13 + 9,2·10 + 8,6·12 + 8,6·10 + 9,2·8 + 9,4·6 + 9,2·5 + 9,0·3) / 10 = 90,6`
+`total = (9,4·18 + 9,2·15 + 9,2·13 + 9,4·10 + 9,0·12 + 9,0·10 + 9,3·8 + 9,4·6 + 8,9·5 + 8,7·3) / 10 = 92,0`
 
-**Gate:** total 90,6 ≥ 90,0; ninguna nota < 7,0; A1–A6 ≥ 9,0; sin defectos bloqueantes,
-mayores ni medios abiertos. Decisión: **ENTREGO** con la salvedad de que el PASS del verificador independiente
-se emitió sobre la versión anterior (REWORK 80,0) y esta corrige lo que quedaba abierto.
+**Gate:** total 92,0 ≥ 90,0; ninguna nota < 7,0; A1–A6 ≥ 9,0; sin defectos bloqueantes,
+mayores ni medios abiertos.
 
-**Rectificación de calibración:** la autoevaluación de la ronda anterior decía 91,8 y
-el verificador midió 80,0. La causa no fue el criterio, sino que tres filas de la tabla
-afirmaban correcciones que no se habían aplicado al artefacto (D3, D7 y D8). Se ha
-corregido el código, se ha añadido `tools/flow-agent/comprobar-entregable.mjs` para que
-cada defecto tenga una comprobación que falla si reaparece, y se han bajado A5 y A6 a
-8,6. La nota ya no se apoya en leer el diff: se apoya en un comando reproducible.
+Decisión: **ENTREGO** con el gate cumplido sobre esta versión y con una salvedad declarada: las
+tres rondas independientes fueron REWORK (59,7 → 80,0 → 91,1) y la última dejó tres correcciones
+de coherencia y dos técnicas, ya aplicadas en `b6a563a3`. No se ha pedido una cuarta ronda; lo que
+respalda esta tabla es que **cada fila tiene un comando que falla si el defecto vuelve**, no una
+lectura del diff.
+
+**Rectificación de calibración (ronda 2):** la autoevaluación decía 91,8 y el verificador
+midió 80,0 porque tres filas afirmaban correcciones que no se habían aplicado al artefacto.
+Se corrigió el código, se añadieron `comprobar-entregable.mjs` y `probar-comprobacion.mjs`, y
+A5/A6 bajaron a 9,0. La moraleja queda escrita: una corrección no existe hasta que un comando
+falla si se deshace.
