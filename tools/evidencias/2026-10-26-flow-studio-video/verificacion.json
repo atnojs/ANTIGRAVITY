@@ -1,11 +1,11 @@
 {
   "fecha": "2026-10-26",
   "app": "apps/flow_studio_hoola",
-  "commit_final": "44f00183",
-  "commit_inicial": "c2e327ad",
+  "commit_final": "7db47330",
+  "commits": ["c2e327ad", "44f00183", "7db47330"],
   "pruebas": {
-    "local_ui_y_cola": "47/47 PASS (Chrome headless + php -S 8.3, mp4 real de 15.136.391 B, descarga verificada en disco)",
-    "worker_pc_simulado": "13/13 PASS (flow_studio_worker.py real, flow.py simulado: --start/--end, mp4, limpieza y guarda de modelo)",
+    "local_ui_y_cola": "50/50 PASS (Chrome headless + php -S 8.3, mp4 real de 15.136.391 B, descarga verificada en disco, aria-pressed y «GRATIS» oculto)",
+    "worker": "16/16 PASS con el fichero REAL del PC sin transformar (FLOW_STUDIO_FLOW_DIR redirige la carpeta del CLI): --start/--end, mp4, limpieza y traducción de modelo",
     "cola_compartida_hoola_flow_studio": "PASS (hoola encola, flow_studio reclama y sube, hoola sirve el mp4)",
     "produccion_ui": "11/11 PASS (1440/768/393, consola limpia, mejorador de prompts real)",
     "produccion_php": "subida 19,2 MB base64 en 1,4 s; sirve video/mp4; Range 206; rechaza un archivo que no es vídeo"
@@ -16,9 +16,15 @@
     "no_verificado": "Veo 3.1 Fast y Veo 3.1 Quality: sin cifra fiable; la app indica que Flow muestra el importe antes de generar y no inventa el número",
     "imagenes": "0 puntos"
   },
+  "correcciones_tras_verificacion": {
+    "D1": "El worker traduce «Omni Flash» → «Omni 1.1 Flash» (nombre del menú) antes de llamar a flow.py; además flow_provider/configure.py aborta si el modelo no está en el menú, en vez de generar con otro, y el worker borra el archivo huérfano.",
+    "D2": "La prueba del worker usa ahora el fichero real del PC (sin copia transformada) mediante FLOW_STUDIO_FLOW_DIR.",
+    "D3": "Los chips de modelo, formato y cantidad exponen aria-pressed; setRatioChip también lo actualiza.",
+    "D4": "El distintivo «GRATIS» se oculta en modo vídeo."
+  },
   "no_verificado": [
     "Generación real de un vídeo con Veo desde el PC: cuesta 10 puntos y exige la sesión de Chrome de Flow; no se lanzó para no gastar cuota.",
     "Coste exacto de Veo 3.1 Fast y Veo 3.1 Quality en esta cuenta.",
-    "Nombre exacto de «Omni Flash» en la UI actual: la captura del 24/09 dice «Omni 1.1 Flash». El worker falla con error claro si Flow no reconoce el modelo, en vez de generar con otro."
+    "El menú vivo de Flow hoy: la única evidencia es la captura del 24/09 y el nombre que usa la ayuda de Google."
   ]
 }
