@@ -6,35 +6,40 @@ import {
   state, emit, on, uid, clamp, getLayer, getResource, addResource, imageFor,
   createDoc, createProject, makeImageLayer, makeTextLayer, makeShapeLayer,
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
-  undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtMoney, fmtBytes, fmtDate,
+  undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
-} from './core.js?v=2';
-import { renderer } from './render.js?v=2';
-import { initTools, setTool } from './tools.js?v=2';
+} from './core.js?v=12';
+import { renderer } from './render.js?v=12';
+import { initTools, setTool } from './tools.js?v=12';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
   showLoading, hideLoading, updateTopbar, updateSaveState, updateViewportUI, setEmptyState,
   renderLayers, renderLayerProps, renderRefs, renderVersions, renderProjects, renderAssets,
   renderRecipes, setActiveModel, switchLeftTab, switchRightTab, setToolUI, paintStorageInfo,
-} from './ui.js?v=2';
+} from './ui.js?v=12';
 import {
   server, saveNow, scheduleSave, listProjects, loadProject, deleteProject, saveVersion,
   listVersions, deleteVersion, storageInfo, clearLocalCache, uploadResource, lastProjectId, idb,
   fetchVersionDoc,
-} from './persist.js?v=2';
+} from './persist.js?v=12';
 import {
   downloadExport, copyToClipboard, downloadProject, exportImage, canvasToBlob, estimateExport,
-} from './exporter.js?v=2';
+} from './exporter.js?v=12';
 import {
-  MODELS, modelById, loadCatalog, catalog, describeCost, costFor, generate, fetchBudget, saveBudget,
+  MODELS, modelById, loadCatalog, catalog, generate,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
-} from './ai.js?v=2';
+} from './ai.js?v=12';
+import {
+  FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
+  flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
+  statusFlowJobs, retryFlowJob, deleteFlowJob, cancelFlowJob, downloadFlowJob, fetchFlowBlob,
+} from './flow.js?v=13';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v2.0.2-hoola · 2026-10-26 · copia con estilo Hoola verificada';
+const BUILD = 'v3.0.0 · 2026-10-26 · copia Hoola al 100%';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -57,6 +62,7 @@ async function boot() {
   bindShortcuts();
   bindPersistence();
   bindGeneration();
+  bindFlowUI();
   bindProjectActions();
   bindExport();
   bindMisc();
@@ -97,7 +103,8 @@ async function boot() {
   }
   await loadCatalog();
   updateTopbar();
-  refreshBudget();
+  await refreshFlowState();
+  paintFlowAgent();
 
   const last = await lastProjectId();
   if (last) {
@@ -386,7 +393,6 @@ function bindTopbar() {
     syncPanelBackdrop();
   });
   $('exportBtn').addEventListener('click', openExport);
-  $('costMeter').addEventListener('click', openBudgetModal);
   $('exportBtn').addEventListener('dblclick', () => {});
   $('saveState').addEventListener('click', () => { saveNow('manual').then(() => toast('Guardado.', 'ok')); });
 
@@ -424,6 +430,8 @@ function positionCompareHandle() {
 function bindLeftPanel() {
   $$('.rail-btn[data-tab]').forEach((button) => {
     button.addEventListener('click', () => {
+      // Elegir una herramienta de imagen devuelve a la sección Imagen.
+      if (flowUi.mode !== 'image') setMode('image');
       switchLeftTab(button.dataset.tab);
       if (window.matchMedia('(max-width: 1100px)').matches) {
         const app = $('app');
@@ -462,9 +470,12 @@ function bindLeftPanel() {
     }
   });
 
-  $$('.model-toggle').forEach((button) => {
+  // Solo los botones del selector de imagen: los de vídeo y los filtros de la
+  // biblioteca comparten la clase de estilo pero tienen su propio manejador.
+  $$('#modelSelector .model-toggle').forEach((button) => {
     button.addEventListener('click', () => {
       setActiveModel(button.dataset.model);
+      syncFlowControls();
       updateTopbar();
     });
   });
@@ -1092,9 +1103,27 @@ async function runGeneration() {
   const text = $('generateBtnText');
   btn.disabled = true;
   text.textContent = 'PROCESANDO…';
-  showLoading('IA generando imagen…', 'Enviando la solicitud al proveedor. No cierres esta pestaña.');
+
+  const selected = modelById(state.ui.model);
+  const isFlow = selected?.provider === 'flow';
 
   try {
+    if (isFlow) {
+      // Motor Flow: se encola en el servidor y lo ejecuta el PC.
+      await runFlowImage({
+        prompt,
+        model: state.ui.model,
+        ratio: $('aspectSelect').value,
+        images,
+        // Con una referencia se edita (una sola salida); sin ella se generan
+        // tantas variantes como se hayan pedido.
+        mode: images.length ? 'edit' : 'generate',
+        count: images.length ? 1 : flowUi.imageCount,
+      });
+      return;
+    }
+
+    showLoading('IA generando imagen…', 'Enviando la solicitud al proveedor. No cierres esta pestaña.');
     const job = await generate({
       prompt,
       model: state.ui.model,
@@ -1106,16 +1135,15 @@ async function runGeneration() {
     if (!job?.image) throw new Error('El trabajo terminó sin imagen.');
     pendingResult = { job, dataUrl: job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}` };
     showResultPreview(pendingResult);
-    if (job.cost) state.ui.spent = (state.ui.spent || 0) + Number(job.cost);
     updateTopbar();
-    refreshBudget();
     toast('Resultado listo. Acéptalo para añadirlo al lienzo.', 'ok');
   } catch (error) {
     toast(`No se pudo generar: ${error.message}`, 'error', { duration: 9000 });
   } finally {
     generationBusy = false;
     btn.disabled = false;
-    text.textContent = 'GENERAR';
+    // La etiqueta la decide el modelo y la cantidad (p. ej. «GENERAR 4»).
+    syncFlowControls();
     hideLoading();
   }
 }
@@ -1604,6 +1632,19 @@ function saveRecipe() {
 }
 
 function applyRecipe(recipe) {
+  // Una receta puede apuntar a un modelo protegido: se pide la contraseña igual
+  // que al pulsar el botón, para que la compuerta no se pueda saltar por aquí.
+  const gate = window.ModelGate;
+  if (gate && typeof gate.isLocked === 'function' && gate.isLocked(recipe.model) && !gate.isUnlocked()) {
+    gate.request(recipe.model)
+      .then(() => applyRecipeUnlocked(recipe))
+      .catch(() => toast('La receta usa un modelo protegido: introduce la contraseña para aplicarla.', 'warn'));
+    return;
+  }
+  applyRecipeUnlocked(recipe);
+}
+
+function applyRecipeUnlocked(recipe) {
   setActiveModel(recipe.model);
   $('aspectSelect').value = recipe.aspect;
   $('resolutionSelect').value = String(recipe.resolution);
@@ -1616,43 +1657,693 @@ function applyRecipe(recipe) {
   toast(`Receta «${recipe.name}» aplicada.`, 'ok');
 }
 
-/* ══════════════════════ Presupuesto ══════════════════════ */
-async function openBudgetModal() {
-  const budget = await fetchBudget();
-  if (budget) {
-    $('budgetSession').value = String(budget.sessionLimit ?? 5);
-    $('budgetProject').value = String(budget.projectLimit ?? 20);
-    $('budgetOperation').value = String(budget.operationLimit ?? 1.5);
-  }
-  openModal('budgetModal');
-}
+/* El estudio no muestra costes, saldos ni presupuestos (decidido el 2026-10-26). */
 
-async function saveBudgetFromModal() {
-  if (!server.available || !server.writable) {
-    toast('El presupuesto se guarda en el servidor: no está disponible en modo local.', 'error');
+/* ══════════════════════ Google Flow: seguimiento no bloqueante ══════════════════════
+   Encolar es instantáneo; la generación la hace el PC y puede tardar minutos.
+   La interfaz NO se bloquea: un aviso compacto informa del avance y el usuario
+   puede seguir trabajando, cambiar de sección o cerrar la pestaña. */
+
+const flowWatch = {
+  ids: new Set(),
+  jobs: new Map(),
+  timer: 0,
+};
+
+function paintFlowProgress() {
+  const box = $('flowProgress');
+  if (!box) return;
+  const jobs = [...flowWatch.jobs.values()];
+  const active = jobs.filter((job) => job.status === 'queued' || job.status === 'running');
+  if (!active.length) {
+    box.classList.add('hidden');
+    box.setAttribute('aria-busy', 'false');
     return;
   }
+  const running = active.filter((job) => job.status === 'running');
+  const total = jobs.length;
+  const done = jobs.filter((job) => job.status === 'done').length;
+  const label = running.length
+    ? `Generando ${running.length === 1 ? (running[0].type === 'video' ? 'vídeo' : 'imagen') : `${running.length} trabajos`} en tu PC…`
+    : `En cola: esperando a que el PC recoja ${active.length === 1 ? 'el trabajo' : 'los trabajos'}…`;
+  const extra = total > 1 ? ` (${done}/${total} listos)` : '';
+  $('flowProgressText').textContent = label + extra;
+  box.classList.remove('hidden');
+  box.setAttribute('aria-busy', 'true');
+}
+
+/** Sigue un grupo de trabajos en segundo plano; avisa al terminar. */
+function watchFlowJobs(ids, { source = 'image', autoPreview = false } = {}) {
+  for (const id of ids) {
+    flowWatch.ids.add(id);
+    // Estado provisional: el aviso aparece al instante, sin esperar al sondeo.
+    if (!flowWatch.jobs.has(id)) {
+      flowWatch.jobs.set(id, { id, status: 'queued', type: source === 'video' ? 'video' : 'image' });
+    }
+  }
+  paintFlowProgress();
+  if (flowWatch.timer) return;
+  const tick = async () => {
+    flowWatch.timer = 0;
+    const pendingIds = [...flowWatch.ids];
+    if (!pendingIds.length) { paintFlowProgress(); return; }
+    let jobs = [];
+    try {
+      jobs = await statusFlowJobs(pendingIds);
+    } catch {
+      // Un fallo de consulta no reenvía ni cancela: se reintenta en el próximo ciclo.
+      flowWatch.timer = window.setTimeout(tick, 6000);
+      return;
+    }
+    for (const job of jobs) {
+      const before = flowWatch.jobs.get(job.id)?.status;
+      flowWatch.jobs.set(job.id, job);
+      if (before !== job.status) {
+        if (job.status === 'done') {
+          flowWatch.ids.delete(job.id);
+          toast(`${job.type === 'video' ? 'Vídeo' : 'Imagen'} listo: ${job.id.slice(0, 8)}. Está en Biblioteca.`, 'ok');
+          void refreshLibrary();
+          if (autoPreview && job.type === 'image' && source === 'image') showFlowPreview(job);
+        } else if (job.status === 'failed') {
+          flowWatch.ids.delete(job.id);
+          toast(job.error || 'Un trabajo de Flow falló. Revisa Biblioteca para reintentarlo.', 'error', { duration: 10000 });
+          void refreshLibrary();
+        } else if (job.status === 'unknown') {
+          flowWatch.ids.delete(job.id);
+          toast('El PC dejó de responder. El trabajo queda pendiente de comprobar en Biblioteca: no se ha reenviado.', 'warn', { duration: 12000 });
+          void refreshLibrary();
+        }
+      }
+    }
+    paintFlowProgress();
+    if (flowWatch.ids.size) {
+      flowWatch.timer = window.setTimeout(tick, 3500);
+    } else {
+      void refreshFlowState().then(paintFlowAgent);
+      // La lista se refresca una vez más para reflejar el estado final.
+      void refreshLibrary();
+    }
+  };
+  flowWatch.timer = window.setTimeout(tick, 2500);
+}
+
+/** Muestra el resultado de una imagen de Flow como vista previa aplicable. */
+async function showFlowPreview(job) {
   try {
-    const budget = await saveBudget({
-      sessionLimit: Number($('budgetSession').value),
-      projectLimit: Number($('budgetProject').value),
-      operationLimit: Number($('budgetOperation').value),
+    const blob = await fetchFlowBlob(job);
+    const dataUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.readAsDataURL(blob);
     });
-    state.ui.budget = budget;
-    updateTopbar();
-    closeModal('budgetModal');
-    toast('Presupuesto guardado. Se comprueba en el servidor antes de cada envío.', 'ok');
-  } catch (error) {
-    toast(`No se pudo guardar: ${error.message}`, 'error');
+    pendingResult = { job, dataUrl, flow: true };
+    showResultPreview(pendingResult);
+  } catch { /* la vista previa es opcional: el resultado ya está en Biblioteca */ }
+}
+
+/* ══════════════════════ Google Flow (imagen y vídeo) ══════════════════════ */
+const flowUi = {
+  mode: 'image',
+  videoModel: DEFAULT_FLOW_VIDEO_MODEL,
+  videoRatio: '16:9',
+  startFrame: null,      // data URL del fotograma inicial de vídeo
+  libraryFilter: 'all',
+  imageCount: 1,         // imágenes por encolado (1–4, solo con Flow)
+};
+
+/** Cambia de sección sin perder el trabajo en curso. */
+function setMode(mode) {
+  if (!['image', 'video', 'library'].includes(mode)) return;
+  flowUi.mode = mode;
+  for (const button of $$('#modeNav .mode-btn')) {
+    const active = button.dataset.mode === mode;
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-selected', String(active));
+  }
+  // El rail conserva su columna en la rejilla: ocultarlo dejaba el panel de
+  // herramientas en un hueco de 84 px y el texto se partía palabra a palabra.
+  $('rail').classList.toggle('is-inactive', mode !== 'image');
+  if (mode === 'image') {
+    switchLeftTab('generate');
+  } else if (mode === 'video') {
+    switchLeftTab('video');
+    openLeftPanel();
+    void refreshFlowState().then(paintFlowAgent);
+    void refreshLibrary();
+  } else {
+    switchLeftTab('library');
+    openLeftPanel();
+    void refreshFlowState().then(paintFlowAgent);
+    void refreshLibrary();
+  }
+  document.body.dataset.mode = mode;
+}
+
+/** En móvil, las secciones Vídeo y Biblioteca viven en el cajón izquierdo:
+    hay que abrirlo o el usuario pulsa «Vídeo» y no ve nada. */
+function openLeftPanel() {
+  if (window.innerWidth > 1100) return;
+  const app = $('app');
+  app.classList.add('is-left-open');
+  app.classList.remove('is-right-open');
+  $('railToggle').setAttribute('aria-expanded', 'true');
+  syncPanelBackdrop();
+}
+
+/** Pinta el estado del PC que ejecuta Flow en la tarjeta del panel y en la barra. */
+function paintFlowAgent() {
+  const online = flowState.workerOnline;
+  const configured = flowState.agentConfigured;
+  const text = $('flowStatusText');
+  const dot = $('flowStatus').querySelector('.dot');
+  let label = 'Flow: sin conexión';
+  let detail = 'El PC con Google Flow no está conectado. Puedes encolar igualmente: el trabajo espera a que se conecte.';
+  if (!server.available) {
+    label = 'Flow: sin servidor';
+    detail = 'El servidor PHP no responde, así que no se puede encolar nada. Revisa api.php?action=state.';
+  } else if (!configured) {
+    label = 'Flow: sin credencial';
+    detail = 'Falta la credencial del agente en el servidor (storage/flow-agent.json o UIS_FLOW_AGENT_TOKEN).';
+  } else if (online) {
+    label = `Flow: conectado${flowState.pending ? ` · ${flowState.pending} en cola` : ''}`;
+    detail = `Última señal del PC: ${formatFlowSeen(flowState.workerSeen)}. Los trabajos se ejecutan en tu PC.`;
+  }
+  if (text) text.textContent = label;
+  if (dot) {
+    dot.classList.toggle('is-online', online);
+    dot.classList.toggle('is-offline', !online);
+  }
+  const statusCard = $('flowAgentCard');
+  if (statusCard) {
+    $('flowAgentTitle').textContent = online ? 'PC conectado' : (configured ? 'PC desconectado' : 'Credencial pendiente');
+    $('flowAgentText').textContent = detail;
+  }
+  const card = $('flowStatus');
+  if (card) card.title = detail;
+}
+
+function formatFlowSeen(seconds) {
+  if (!seconds) return 'nunca';
+  const diff = Math.max(0, Math.round(Date.now() / 1000 - seconds));
+  if (diff < 60) return `hace ${diff} s`;
+  if (diff < 3600) return `hace ${Math.round(diff / 60)} min`;
+  return `hace ${Math.round(diff / 3600)} h`;
+}
+
+/** Etiqueta legible del estado de un trabajo. */
+function flowStatusLabel(job) {
+  const map = {
+    queued: 'En cola',
+    running: 'Generando',
+    done: 'Listo',
+    failed: 'Falló',
+    unknown: 'Pendiente de comprobar',
+  };
+  return map[job.status] || job.status;
+}
+
+/** Anima una imagen existente: la imagen pasa a ser el fotograma inicial del vídeo. */
+async function animateImage(dataUrl, { jump = true } = {}) {
+  if (!dataUrl) { toast('No hay ninguna imagen que animar.', 'warn'); return; }
+  flowUi.startFrame = dataUrl;
+  paintStartFrame();
+  if (jump) {
+    setMode('video');
+    $('videoPrompt').focus();
+    toast('Imagen cargada como fotograma inicial. Escribe el movimiento y pulsa generar.', 'ok');
   }
 }
 
-async function refreshBudget() {
-  const budget = await fetchBudget();
-  if (!budget) return;
-  state.ui.budget = budget;
-  state.ui.spent = budget.projectSpent || 0;
-  updateTopbar();
+function paintStartFrame() {
+  const img = $('videoStartThumb');
+  const empty = $('videoStartEmpty');
+  const clear = $('videoStartClear');
+  if (flowUi.startFrame) {
+    img.src = flowUi.startFrame;
+    img.classList.remove('hidden');
+    empty.classList.add('hidden');
+    clear.classList.remove('hidden');
+  } else {
+    img.src = '';
+    img.classList.add('hidden');
+    empty.classList.remove('hidden');
+    clear.classList.add('hidden');
+  }
+}
+
+/** Pide un archivo de imagen para usarlo como fotograma inicial. */
+function pickStartFrame() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/png,image/jpeg,image/webp';
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size > LIMITS.maxFileBytes) {
+      toast(`La imagen pesa ${fmtBytes(file.size)} y el máximo es ${fmtBytes(LIMITS.maxFileBytes)}.`, 'error');
+      return;
+    }
+    const url = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('No se pudo leer la imagen.'));
+      reader.readAsDataURL(file);
+    }).catch((error) => { toast(error.message, 'error'); return ''; });
+    if (url) { flowUi.startFrame = url; paintStartFrame(); }
+  });
+  input.click();
+}
+
+/** Usa el lienzo actual como fotograma inicial (sin descargar ni volver a subir). */
+function useCanvasAsStartFrame() {
+  if (!state.doc?.layers?.length) {
+    toast('El lienzo está vacío: importa o genera una imagen primero.', 'warn');
+    return;
+  }
+  const canvas = renderer.compositeToCanvas({ width: state.doc.width, height: state.doc.height });
+  animateImage(canvas.toDataURL('image/png'));
+}
+
+/** Encola una imagen con Flow. Devuelve al instante: el seguimiento es en segundo plano. */
+async function runFlowImage({ prompt, model, ratio, images, count = 1, mode = 'generate' }) {
+  const jobs = await createFlowImage({ prompt, model, ratio, images, count, mode });
+  const ids = jobs.map((job) => job.id);
+  toast(ids.length > 1
+    ? `${ids.length} variantes encoladas. Se generan en tu PC; puedes seguir trabajando.`
+    : 'Trabajo encolado en tu PC. Puedes seguir trabajando o cerrar la pestaña.', 'ok');
+  watchFlowJobs(ids, { source: 'image', autoPreview: true });
+  return ids;
+}
+
+/** Genera el vídeo: fotograma inicial opcional (modo Fotogramas de Flow). */
+async function runFlowVideo() {
+  const prompt = $('videoPrompt').value.trim();
+  if (!prompt) { toast('Describe el vídeo antes de generar.', 'warn'); $('videoPrompt').focus(); return; }
+  if (!server.available || !server.writable) {
+    toast('Para encolar vídeos necesitas sesión en el servidor privado.', 'error');
+    return;
+  }
+  const button = $('videoGenerateBtn');
+  if (button?.disabled) return;
+  if (button) { button.disabled = true; button.setAttribute('aria-busy', 'true'); }
+  try {
+    const jobs = await createFlowVideo({
+      prompt,
+      model: flowUi.videoModel,
+      ratio: flowUi.videoRatio,
+      images: flowUi.startFrame ? [flowUi.startFrame] : [],
+    });
+    const ids = jobs.map((job) => job.id);
+    toast('Vídeo encolado. Puedes cerrar la pestaña: seguirá en la cola.', 'ok');
+    watchFlowJobs(ids, { source: 'video' });
+    flowUi.startFrame = null;
+    paintStartFrame();
+  } catch (error) {
+    toast(`No se pudo encolar el vídeo: ${error.message}`, 'error', { duration: 9000 });
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+    }
+  }
+}
+
+/** Refresca la lista de resultados de Flow en Biblioteca. */
+async function refreshLibrary() {
+  if (!server.available) return;
+  const jobs = await listFlowJobs(flowUi.libraryFilter === 'all' ? '' : flowUi.libraryFilter);
+  renderFlowJobs(jobs);
+}
+
+function renderFlowJobs(jobs) {
+  const grid = $('flowJobs');
+  const empty = $('flowJobsEmpty');
+  if (!grid) return;
+  const visible = flowUi.libraryFilter === 'all' ? jobs : jobs.filter((job) => job.type === flowUi.libraryFilter);
+  empty.classList.toggle('hidden', visible.length > 0);
+  if (!visible.length) { grid.innerHTML = ''; return; }
+  grid.innerHTML = visible.map((job) => {
+    const active = job.status === 'queued' || job.status === 'running';
+    const media = job.status === 'done' && job.url
+      ? (job.type === 'video'
+        ? `<video class="flow-job-media" src="${escapeAttr(job.url)}" muted playsinline preload="metadata"></video>`
+        : `<img class="flow-job-media" src="${escapeAttr(job.url)}" alt="${escapeAttr(job.prompt || 'Resultado de Flow')}" loading="lazy" />`)
+      : `<div class="flow-job-placeholder"><svg class="ico"><use href="#i-${job.type === 'video' ? 'film' : 'image'}"/></svg><span>${escapeHtml(flowStatusLabel(job))}</span></div>`;
+    const actions = [];
+    if (job.status === 'done') {
+      actions.push(`<button class="btn btn-sm btn-ghost" data-flow-open="${job.id}">Ver</button>`);
+      actions.push(`<button class="btn btn-sm btn-ghost" data-flow-download="${job.id}">Descargar</button>`);
+      if (job.type === 'image') {
+        actions.push(`<button class="btn btn-sm btn-primary" data-flow-apply="${job.id}">Al lienzo</button>`);
+        actions.push(`<button class="btn btn-sm btn-ghost" data-flow-animate="${job.id}">Animar</button>`);
+      }
+    }
+    if (job.status === 'unknown' || job.status === 'failed') {
+      actions.push(`<button class="btn btn-sm btn-primary" data-flow-retry="${job.id}">Reintentar</button>`);
+    }
+    // Parar mientras se genera (o retirar de la cola): cierra Chrome en el PC y
+    // quita la tarjeta. Sin esto, un trabajo colgado no tenía salida.
+    if (job.status === 'running' || job.status === 'queued') {
+      actions.push(`<button class="btn btn-sm btn-danger" data-flow-cancel="${job.id}" title="Parar y quitar de la biblioteca">${job.status === 'running' ? 'Parar' : 'Quitar'}</button>`);
+    }
+    if (!active) {
+      actions.push(`<button class="btn btn-sm btn-danger" data-flow-delete="${job.id}" aria-label="Eliminar resultado">✕</button>`);
+    }
+    return `<article class="flow-job" data-job="${job.id}">
+      <div class="flow-job-thumb">${media}</div>
+      <div class="flow-job-body">
+        <div class="flow-job-row">
+          <span class="flow-job-state" data-state="${job.status}">${escapeHtml(flowStatusLabel(job))}</span>
+          <span class="flow-job-meta mono">${escapeHtml(job.ratio || '')} ${job.type === 'video' ? '· vídeo' : ''}</span>
+        </div>
+        <p class="flow-job-prompt">${escapeHtml(job.prompt || 'Sin prompt')}</p>
+        ${job.error ? `<p class="flow-job-error">${escapeHtml(job.error)}</p>` : ''}
+        <div class="flow-job-actions">${actions.join('')}</div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/"/g, '&quot;');
+}
+
+/** Abre el visor grande (imagen o vídeo) con su descarga. */
+function openFlowViewer(job) {
+  const box = $('flowLightbox');
+  const img = $('flowLightboxImg');
+  const video = $('flowLightboxVideo');
+  if (!job?.url) return;
+  const medidas = job.width > 0 && job.height > 0 ? ` · ${job.width}×${job.height}` : '';
+  $('flowLightboxMeta').textContent = `${job.type === 'video' ? 'Vídeo' : 'Imagen'} · ${job.ratio || ''}${medidas}`;
+  $('flowLightboxDownload').href = `${job.url}${job.url.includes('?') ? '&' : '?'}download=1`;
+  $('flowLightboxDownload').setAttribute('download', '');
+  if (job.type === 'video') {
+    img.classList.add('hidden');
+    img.src = '';
+    video.classList.remove('hidden');
+    video.src = job.url;
+  } else {
+    video.classList.add('hidden');
+    video.removeAttribute('src');
+    img.classList.remove('hidden');
+    img.src = job.url;
+  }
+  box.classList.remove('hidden');
+  box.dataset.job = job.id;
+  $('flowLightboxClose').focus();
+}
+
+function closeFlowViewer() {
+  const box = $('flowLightbox');
+  if (!box || box.classList.contains('hidden')) return;
+  box.classList.add('hidden');
+  const video = $('flowLightboxVideo');
+  video.pause?.();
+  video.removeAttribute('src');
+  $('flowLightboxImg').src = '';
+  delete box.dataset.job;
+}
+
+function findJob(id) {
+  return flowState.jobs.find((job) => job.id === id) || null;
+}
+
+/** Añade un resultado de Flow al lienzo como capa nueva. */
+async function applyFlowJobToCanvas(job) {
+  if (!job?.url) return;
+  try {
+    const blob = await fetchFlowBlob(job);
+    const dims = await new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(blob);
+      const probe = new Image();
+      probe.onload = () => { resolve({ width: probe.naturalWidth, height: probe.naturalHeight }); URL.revokeObjectURL(url); };
+      probe.onerror = () => { URL.revokeObjectURL(url); reject(new Error('La imagen del resultado no se pudo leer.')); };
+      probe.src = url;
+    });
+    const resource = addResource({ name: `${job.type}-${job.id.slice(0, 6)}.jpg`, mime: blob.type || 'image/jpeg', blob, width: dims.width, height: dims.height });
+    void uploadResource(resource);
+    if (!state.doc) {
+      state.doc = createDoc({ name: 'Generación', width: dims.width, height: dims.height });
+      state.project = createProject('Generación', state.doc);
+    }
+    state.ui.beforeImage = renderer.snapshotImage();
+    const fits = fitInside(dims.width, dims.height, state.doc.width, state.doc.height);
+    const layer = makeImageLayer({
+      name: 'Resultado Flow',
+      resourceId: resource.id,
+      x: Math.round((state.doc.width - fits.w) / 2),
+      y: Math.round((state.doc.height - fits.h) / 2),
+      w: fits.w, h: fits.h,
+    });
+    mutate('aplicar resultado de Flow', () => { state.doc.layers.push(layer); });
+    selectLayer(layer.id);
+    setEmptyState(false);
+    renderLayers();
+    renderAssets();
+    renderer.requestRender('flow-apply');
+    scheduleSave('flow-apply');
+    setMode('image');
+    toast('Resultado añadido al lienzo como capa nueva.', 'ok');
+  } catch (error) {
+    toast(`No se pudo aplicar el resultado: ${error.message}`, 'error');
+  }
+}
+
+/** Acciones de la biblioteca (delegación de eventos). */
+async function onFlowLibraryClick(event) {
+  const button = event.target.closest('button[data-flow-open], button[data-flow-download], button[data-flow-apply], button[data-flow-animate], button[data-flow-retry], button[data-flow-delete], button[data-flow-cancel]');
+  if (!button) return;
+  const {
+    flowOpen, flowDownload, flowApply, flowAnimate, flowRetry, flowDelete, flowCancel,
+  } = button.dataset;
+  const id = flowOpen || flowDownload || flowApply || flowAnimate || flowRetry || flowDelete || flowCancel;
+  const job = findJob(id);
+  if (!job) { toast('Ese resultado ya no está disponible: actualiza la lista.', 'warn'); return; }
+  button.disabled = true;
+  try {
+    if (flowOpen) { openFlowViewer(job); return; }
+    if (flowDownload) { const name = await downloadFlowJob(job); toast(`Descargado ${name}.`, 'ok'); return; }
+    if (flowApply) { await applyFlowJobToCanvas(job); return; }
+    if (flowAnimate) {
+      const blob = await fetchFlowBlob(job);
+      const dataUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.readAsDataURL(blob);
+      });
+      await animateImage(dataUrl);
+      return;
+    }
+
+    if (flowRetry) {
+      const updated = await retryFlowJob(job.id);
+      toast(updated?.status === 'queued'
+        ? 'Trabajo devuelto a la cola. Se ejecutará en cuanto el PC pueda.'
+        : 'El trabajo no se pudo reprogramar.', updated?.status === 'queued' ? 'ok' : 'warn');
+      await refreshFlowState().then(paintFlowAgent);
+      await refreshLibrary();
+      return;
+    }
+    if (flowCancel) {
+      // Parar una generación en curso: el agente cierra Chrome en el PC y el
+      // trabajo desaparece de la biblioteca.
+      const generando = job.status === 'running';
+      const ok = await confirmDialog({
+        title: generando ? 'Parar la generación' : 'Quitar de la cola',
+        text: generando
+          ? 'Se pedirá al PC que cierre la generación en curso. La imagen no se subirá y desaparecerá de la biblioteca.'
+          : 'Este trabajo aún no ha empezado: se quitará de la cola y desaparecerá de la biblioteca.',
+        okLabel: generando ? 'Parar' : 'Quitar',
+        danger: true,
+      });
+      if (!ok) return;
+      await cancelFlowJob(job.id);
+      await refreshLibrary();
+      toast(generando ? 'Generación detenida. Puede tardar unos segundos en cerrarse en el PC.' : 'Trabajo quitado de la cola.', 'ok');
+      return;
+    }
+    if (flowDelete) {
+      const ok = await confirmDialog({
+        title: 'Eliminar resultado',
+        text: 'Se borrará el archivo del servidor. Esta acción no se puede deshacer.',
+        okLabel: 'Eliminar',
+        danger: true,
+      });
+      if (!ok) return;
+      await deleteFlowJob(job.id);
+      renderFlowJobs(flowState.jobs);
+      toast('Resultado eliminado.', 'ok');
+    }
+  } catch (error) {
+    toast(`No se pudo completar la acción: ${error.message}`, 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+/** Refleja en el selector si el modelo elegido usa Flow (y ajusta los controles). */
+function syncFlowControls() {
+  const model = modelById(state.ui.model);
+  const isFlow = model?.provider === 'flow';
+  document.body.classList.toggle('is-flow-model', isFlow);
+  const note = $('modelNote');
+  if (note) {
+    note.textContent = isFlow
+      ? `${model.model} en tu PC con Google Flow: no consume clave de API. Genera a ~1K; el formato se elige abajo.`
+      : (model?.note || '');
+  }
+  // Flow solo admite cinco proporciones: el resto se marca como no disponible.
+  const aspect = $('aspectSelect');
+  if (aspect) {
+    for (const option of aspect.options) {
+      const supported = FLOW_IMAGE_RATIOS.includes(option.value);
+      option.disabled = isFlow && !supported;
+    }
+    if (isFlow && !FLOW_IMAGE_RATIOS.includes(aspect.value)) {
+      aspect.value = '1:1';
+      state.ui.aspect = '1:1';
+    }
+  }
+  // La resolución la decide Flow: el control no aplica.
+  const resolution = $('resolutionSelect');
+  if (resolution) {
+    resolution.disabled = isFlow;
+    resolution.title = isFlow ? 'Google Flow genera a su resolución nativa (~1K).' : '';
+  }
+  // Varias imágenes por encolado: es una capacidad del motor Flow. Con los
+  // proveedores directos el envío es de una sola imagen, así que el control se
+  // desactiva en vez de fingir que hace algo.
+  const variantGroup = $('variantGroup');
+  const variantsNote = $('variantsNote');
+  if (variantGroup) {
+    for (const button of $$('#variantGroup [data-count]')) {
+      button.disabled = !isFlow;
+      button.setAttribute('aria-disabled', String(!isFlow));
+    }
+    variantGroup.classList.toggle('is-disabled', !isFlow);
+    if (!isFlow && flowUi.imageCount !== 1) {
+      // Al cambiar a un proveedor directo se vuelve a una imagen, sin sorpresas.
+      flowUi.imageCount = 1;
+      paintVariantSelection();
+    }
+  }
+  if (variantsNote) {
+    variantsNote.textContent = isFlow
+      ? (flowUi.imageCount > 1
+        ? `${flowUi.imageCount} imágenes: Flow las genera una detrás de otra en tu PC.`
+        : 'Con Flow, cada imagen es una generación: se hacen una detrás de otra en tu PC.')
+      : 'Solo disponible con los modelos de Flow. Los proveedores directos generan una imagen por envío.';
+  }
+  const btnText = $('generateBtnText');
+  if (btnText) {
+    btnText.textContent = isFlow && flowUi.imageCount > 1 ? `GENERAR ${flowUi.imageCount}` : 'GENERAR';
+  }
+}
+
+/** Marca el botón de cantidad activo según el estado. */
+function paintVariantSelection() {
+  for (const button of $$('#variantGroup [data-count]')) {
+    const active = Number(button.dataset.count) === flowUi.imageCount;
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-pressed', String(active));
+  }
+}
+
+/** Enlaza la interfaz de Flow (navegación, vídeo y biblioteca). */
+function bindFlowUI() {
+  for (const button of $$('#modeNav .mode-btn')) {
+    button.addEventListener('click', () => setMode(button.dataset.mode));
+  }
+  $('flowRefreshBtn').addEventListener('click', async () => {
+    $('flowRefreshBtn').disabled = true;
+    await refreshFlowState();
+    paintFlowAgent();
+    $('flowRefreshBtn').disabled = false;
+    toast(flowState.workerOnline ? 'El PC con Flow está conectado.' : 'El PC con Flow no responde ahora mismo.', flowState.workerOnline ? 'ok' : 'warn');
+  });
+  $('flowAgentRefresh').addEventListener('click', async () => {
+    await refreshFlowState();
+    paintFlowAgent();
+  });
+  // Cantidad de imágenes por encolado (1–4).
+  $('variantGroup').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-count]');
+    if (!button || button.disabled) return;
+    const value = Math.max(1, Math.min(4, Number(button.dataset.count) || 1));
+    if (value === flowUi.imageCount) return;
+    flowUi.imageCount = value;
+    paintVariantSelection();
+    syncFlowControls();
+    if (value > 1) {
+      toast(`${value} imágenes por encolado: se generarán una detrás de otra en tu PC.`, 'info');
+    }
+  });
+  $('videoModelGroup').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-vmodel]');
+    if (!button) return;
+    flowUi.videoModel = button.dataset.vmodel;
+    for (const item of $$('#videoModelGroup [data-vmodel]')) {
+      const active = item === button;
+      item.classList.toggle('is-active', active);
+      item.setAttribute('aria-pressed', String(active));
+    }
+  });
+  $('videoRatioGroup').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-vratio]');
+    if (!button) return;
+    flowUi.videoRatio = button.dataset.vratio;
+    for (const item of $$('#videoRatioGroup [data-vratio]')) {
+      const active = item === button;
+      item.classList.toggle('is-active', active);
+      item.setAttribute('aria-pressed', String(active));
+    }
+  });
+  $('videoPrompt').addEventListener('input', () => {
+    const length = $('videoPrompt').value.length;
+    $('videoPromptCount').textContent = `${length} / 1.500`;
+  });
+  $('videoStartPick').addEventListener('click', pickStartFrame);
+  $('videoStartClear').addEventListener('click', () => { flowUi.startFrame = null; paintStartFrame(); });
+  $('videoGenerateBtn').addEventListener('click', runFlowVideo);
+  $('videoUseCanvas').addEventListener('click', useCanvasAsStartFrame);
+  $('flowLibraryRefresh').addEventListener('click', () => { void refreshLibrary(); });
+  $('flowProgressMore').addEventListener('click', () => setMode('library'));
+  $('libraryFilter').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-filter]');
+    if (!button) return;
+    flowUi.libraryFilter = button.dataset.filter;
+    for (const item of $$('#libraryFilter [data-filter]')) {
+      const active = item === button;
+      item.classList.toggle('is-active', active);
+      item.setAttribute('aria-pressed', String(active));
+    }
+    void refreshLibrary();
+  });
+  $('flowJobs').addEventListener('click', onFlowLibraryClick);
+  $('flowLightboxClose').addEventListener('click', closeFlowViewer);
+  $('flowLightbox').addEventListener('click', (event) => {
+    if (event.target.id === 'flowLightbox') closeFlowViewer();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeFlowViewer();
+  });
+  on('flow:state', paintFlowAgent);
+  // El selector de modelo cambia los controles de Flow.
+  const selector = $('modelSelector');
+  if (selector) selector.addEventListener('click', () => setTimeout(syncFlowControls, 0));
+  syncFlowControls();
+  document.addEventListener('keydown', (event) => {
+    // Atajo: animar el lienzo actual desde la sección de imagen.
+    if (event.altKey && event.key.toLowerCase() === 'v' && !isTypingTarget(event.target)) {
+      event.preventDefault();
+      useCanvasAsStartFrame();
+    }
+  });
 }
 
 /* ══════════════════════ Persistencia y atajos ══════════════════════ */
@@ -1725,11 +2416,9 @@ function bindMisc() {
       }
     }, 140);
   });
-  $('saveBudgetBtn').addEventListener('click', saveBudgetFromModal);
   $('doCropBtn').addEventListener('click', applyCrop);
   $('doResizeBtn').addEventListener('click', applyResize);
   $('resizeKeepRatio').addEventListener('change', () => {});
-  $('budgetModal').addEventListener('click', (event) => { if (event.target.id === 'budgetModal') closeModal('budgetModal'); });
   document.addEventListener('uis:view', ({ detail }) => updateViewportUI(detail.zoom));
   onJob((job) => {
     if (!job) return;
@@ -1797,11 +2486,9 @@ async function submitLogin() {
     closeModal('loginModal');
     $('loginPassword').value = '';
     await loadCatalog();
-    await refreshBudget();
-    await refreshProjectLists();
-    paintStorageInfo(await storageInfo());
+    await refreshFlowState();
+    paintFlowAgent();
     updateTopbar();
-    updateUtilities();
     toast('Sesión iniciada: guardado y generación disponibles en el servidor.', 'ok');
   } catch (error) {
     $('loginError').textContent = error.status === 401 ? 'Contraseña incorrecta.' : error.message;
@@ -1809,6 +2496,20 @@ async function submitLogin() {
     button.disabled = false;
   }
 }
+
+/* La compuerta de modelos acepta la contraseña de acceso de la app y, si es
+   válida, inicia sesión en el servidor. Aquí se refresca el estado para que
+   guardar, la biblioteca y la generación funcionen sin volver a pedirla. */
+document.addEventListener('ag-model-gate:access', async () => {
+  const probe = await server.probe();
+  if (!probe?.authenticated) return;
+  closeModal('loginModal');
+  await loadCatalog();
+  await refreshFlowState();
+  paintFlowAgent();
+  updateTopbar();
+  toast('Sesión iniciada con la contraseña de acceso.', 'ok');
+});
 
 function updateUtilities() {
   const doc = state.doc;
@@ -1833,7 +2534,7 @@ async function showDiagnostics() {
     `Proyectos locales: ${info.projects}`,
     `Caché: ${fmtBytes(info.used)}${info.quota ? ` / ${fmtBytes(info.quota)}` : ''}`,
     `Trabajos pendientes en servidor: ${pending.length}`,
-    `Catálogo de precios: ${catalog.pricingConfigured ? 'configurado' : 'no configurado'}`,
+    `Modelos de Flow: ${flowState.agentConfigured ? 'agente configurado' : 'sin credencial de agente'} · PC ${flowState.workerOnline ? 'conectado' : 'desconectado'}`,
     `Motor de render: ${renderer.view.width}×${renderer.view.height} px (${renderer.renderScale.toFixed(2)}×)`,
     `Último guardado: ${state.flags.lastSavedAt ? fmtDate(state.flags.lastSavedAt) : '—'}`,
   ];

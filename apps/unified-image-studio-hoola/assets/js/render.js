@@ -2,7 +2,7 @@
    render.js — motor de dibujo, viewport y composición
    ============================================================ */
 
-import { state, clamp, getResource, imageFor, getLayer } from './core.js?v=2';
+import { state, clamp, getResource, imageFor, getLayer } from './core.js?v=12';
 
 const HANDLE_DEFS = [
   ['nw', -1, -1], ['n', 0, -1], ['ne', 1, -1],
@@ -261,7 +261,7 @@ class Renderer {
     ctx.textAlign = layer.align === 'center' ? 'center' : layer.align === 'right' ? 'right' : 'left';
     ctx.textBaseline = 'top';
     try { ctx.letterSpacing = `${layer.letterSpacing || 0}px`; } catch { /* opcional */ }
-    ctx.font = `${layer.weight || 400} ${size}px ${layer.fontFamily || 'Electrolize'}, Electrolize, system-ui, sans-serif`;
+    ctx.font = `${layer.weight || 400} ${size}px ${layer.fontFamily || 'Inter'}, Inter, system-ui, sans-serif`;
     const lines = String(layer.text ?? '').split('\n');
     const lineHeight = size * (layer.lineHeight || 1.22);
     const x = layer.align === 'center' ? layer.w / 2 : layer.align === 'right' ? layer.w : 0;
@@ -287,7 +287,7 @@ class Renderer {
       else ctx.rect(0, 0, w, h);
     }
     if (shape === 'line') {
-      ctx.strokeStyle = layer.stroke || layer.fill || '#00D0D0';
+      ctx.strokeStyle = layer.stroke || layer.fill || '#2ee8ff';
       ctx.lineWidth = Math.max(1, layer.strokeWidth || 2);
       ctx.lineCap = 'round';
       ctx.stroke();
@@ -361,7 +361,7 @@ class Renderer {
         ctx.drawImage(canvas, 0, 0, doc.width, doc.height);
         // Tinte cian sobre la máscara pintada.
         ctx.globalCompositeOperation = 'source-in';
-        ctx.fillStyle = 'rgba(0,208,208,.5)';
+        ctx.fillStyle = 'rgba(46,232,255,.55)';
         ctx.fillRect(0, 0, doc.width, doc.height);
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 1;
@@ -369,7 +369,7 @@ class Renderer {
       if (live) {
         ctx.save();
         ctx.globalAlpha = 0.75;
-        ctx.strokeStyle = live.mode === 'erase' ? 'rgba(248,81,73,.8)' : 'rgba(0,208,208,.85)';
+        ctx.strokeStyle = live.mode === 'erase' ? 'rgba(248,81,73,.8)' : 'rgba(46,232,255,.85)';
         ctx.fillStyle = ctx.strokeStyle;
         paintStroke(ctx, { ...live, mode: 'paint' });
         ctx.restore();
@@ -398,7 +398,7 @@ class Renderer {
     const halfW = layer.w / 2;
     const halfH = layer.h / 2;
 
-    ctx.strokeStyle = 'rgba(0,208,208,.95)';
+    ctx.strokeStyle = 'rgba(46,232,255,.95)';
     ctx.lineWidth = lw;
     ctx.setLineDash([]);
     ctx.strokeRect(-halfW, -halfH, layer.w, layer.h);
@@ -407,8 +407,8 @@ class Renderer {
     for (const [, sx, sy] of HANDLE_DEFS) {
       const x = (sx * layer.w) / 2;
       const y = (sy * layer.h) / 2;
-      ctx.fillStyle = '#062f43';
-      ctx.strokeStyle = '#00D0D0';
+      ctx.fillStyle = '#0d1117';
+      ctx.strokeStyle = '#2ee8ff';
       ctx.lineWidth = lw;
       ctx.beginPath();
       ctx.rect(x - size / 2, y - size / 2, size, size);
@@ -418,16 +418,16 @@ class Renderer {
 
     // Tirador de rotación
     const rotY = -halfH - 22 / this.zoom;
-    ctx.strokeStyle = 'rgba(0,208,208,.7)';
+    ctx.strokeStyle = 'rgba(46,232,255,.7)';
     ctx.beginPath();
     ctx.moveTo(0, -halfH);
     ctx.lineTo(0, rotY);
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(0, rotY, size * 0.72, 0, TAU);
-    ctx.fillStyle = '#062f43';
+    ctx.fillStyle = '#0d1117';
     ctx.fill();
-    ctx.strokeStyle = '#00D0D0';
+    ctx.strokeStyle = '#2ee8ff';
     ctx.stroke();
     ctx.restore();
   }
@@ -444,20 +444,20 @@ class Renderer {
     if (img && img.complete && img.naturalWidth) {
       ctx.drawImage(img, 0, 0, doc.width, doc.height);
     } else {
-      ctx.fillStyle = 'rgba(4,24,36,.6)';
+      ctx.fillStyle = 'rgba(13,17,23,.6)';
       ctx.fillRect(0, 0, split, doc.height);
     }
     ctx.restore();
 
     ctx.save();
-    ctx.strokeStyle = '#00D0D0';
+    ctx.strokeStyle = '#2ee8ff';
     ctx.lineWidth = 2 / this.zoom;
     ctx.beginPath();
     ctx.moveTo(split, 0);
     ctx.lineTo(split, doc.height);
     ctx.stroke();
-    ctx.fillStyle = 'rgba(0,208,208,.9)';
-    ctx.font = `${11 / this.zoom}px Electrolize, sans-serif`;
+    ctx.fillStyle = 'rgba(46,232,255,.9)';
+    ctx.font = `${11 / this.zoom}px Inter, sans-serif`;
     ctx.fillText('ANTES', 10 / this.zoom, 18 / this.zoom);
     ctx.fillStyle = 'rgba(230,237,243,.9)';
     ctx.fillText('DESPUÉS', split + 10 / this.zoom, 18 / this.zoom);

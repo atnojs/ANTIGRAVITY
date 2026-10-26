@@ -91,21 +91,214 @@
 
 .topbar-actions { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
 
-.cost-meter {
-  display: flex;
+/* Navegación de secciones: Imagen · Vídeo · Biblioteca */
+.mode-nav {
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  height: 32px;
-  padding: 0 11px;
+  gap: 2px;
+  padding: 3px;
   border-radius: var(--r-md);
   border: 1px solid var(--line);
   background: var(--bg-deep);
-  cursor: help;
+  flex: 0 0 auto;
 }
-.cost-label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); }
-.cost-value { font-size: 12px; font-weight: 700; color: var(--amber-soft); }
-.cost-sub { font-size: 10.5px; color: var(--faint); padding-left: 7px; border-left: 1px solid var(--line); }
+.mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11.5px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+}
+.mode-btn .ico { width: 14px; height: 14px; }
+.mode-btn:hover { color: var(--text); background: rgba(255, 255, 255, .06); }
+.mode-btn.is-active {
+  color: var(--text);
+  background: var(--acc-dim, rgba(46, 232, 255, .16));
+  border-color: var(--acc-line, rgba(46, 232, 255, .45));
+}
+.mode-btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
 
+/* Estado de Flow en la barra superior */
+.flow-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 6px 0 11px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--bg-deep);
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.flow-status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); flex: 0 0 auto; }
+.flow-status .dot.is-online { background: #26c626; box-shadow: 0 0 8px rgba(38, 198, 38, .8); }
+.flow-status .dot.is-offline { background: #f0b429; box-shadow: 0 0 8px rgba(240, 180, 41, .6); }
+.flow-status .flow-refresh { width: 22px; height: 22px; }
+.flow-status .flow-refresh .ico { width: 12px; height: 12px; }
+
+/* Vídeo y biblioteca de Flow */
+.flow-intro { margin-bottom: 4px; }
+.frame-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg-deep);
+  flex-wrap: wrap;
+}
+.frame-empty { display: flex; align-items: center; gap: 7px; color: var(--faint); font-size: 12px; flex: 1 1 auto; }
+.frame-empty .ico { width: 15px; height: 15px; }
+.frame-thumb { width: 66px; height: 66px; object-fit: cover; border-radius: var(--r-sm); border: 1px solid var(--line); flex: 0 0 auto; }
+.frame-thumb.hidden { display: none; }
+.frame-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.video-footer { margin-top: 14px; display: grid; gap: 8px; }
+.video-footer .link-btn { justify-self: center; }
+.flow-agent-card {
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg-deep);
+  display: grid;
+  gap: 8px;
+}
+.flow-agent-head { display: flex; align-items: center; gap: 7px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.library-head { justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.library-filter { margin-bottom: 12px; }
+.flow-jobs { display: grid; gap: 10px; }
+.flow-job {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg-deep);
+}
+.flow-job-thumb {
+  width: 84px;
+  height: 84px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: rgba(0, 0, 0, .3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flow-job-media { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+.flow-job-placeholder { display: grid; justify-items: center; gap: 4px; color: var(--faint); font-size: 9.5px; text-align: center; padding: 4px; }
+.flow-job-placeholder .ico { width: 18px; height: 18px; }
+.flow-job-body { min-width: 0; display: grid; gap: 6px; align-content: start; }
+.flow-job-row { display: flex; align-items: center; gap: 8px; }
+.flow-job-state { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.flow-job-state[data-state="done"] { color: #7ff29a; border-color: rgba(38, 198, 38, .5); }
+.flow-job-state[data-state="failed"] { color: #ff9b95; border-color: rgba(248, 81, 73, .5); }
+.flow-job-state[data-state="unknown"] { color: #f0c869; border-color: rgba(240, 180, 41, .5); }
+.flow-job-state[data-state="running"] { color: var(--acc); border-color: var(--acc-line, rgba(46, 232, 255, .45)); }
+.flow-job-meta { font-size: 10px; color: var(--faint); }
+.flow-job-prompt { margin: 0; font-size: 12px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.flow-job-error { margin: 0; font-size: 11px; color: #ff9b95; }
+.flow-job-actions { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* Visor grande de resultados */
+.flow-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 40000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px;
+  background: rgba(4, 8, 12, .93);
+  backdrop-filter: blur(10px);
+}
+.flow-lightbox.hidden { display: none; }
+.flow-lightbox-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.flow-lightbox-bar .mono { font-size: 11.5px; color: var(--muted); }
+.flow-lightbox-img { max-width: 92vw; max-height: 78vh; object-fit: contain; border-radius: var(--r-md); cursor: zoom-out; }
+.flow-lightbox-img.hidden, .flow-lightbox-video.hidden { display: none; }
+.flow-lightbox-video { max-width: 92vw; max-height: 78vh; border-radius: var(--r-md); background: #000; }
+
+/* Aviso de trabajos en curso: no bloquea la interfaz */
+.flow-progress {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 46px);
+  transform: translateX(-50%);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(92vw, 560px);
+  padding: 9px 14px;
+  border: 1px solid rgba(46, 232, 255, .45);
+  border-radius: 999px;
+  background: rgba(6, 16, 24, .95);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, .45);
+  font-size: 12px;
+  color: var(--text);
+}
+.flow-progress.hidden { display: none; }
+.flow-progress-spinner {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid rgba(46, 232, 255, .25);
+  border-top-color: var(--acc);
+  animation: flow-spin .9s linear infinite;
+  flex: 0 0 auto;
+}
+@keyframes flow-spin { to { transform: rotate(360deg); } }
+.flow-progress-text { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) {
+  .flow-progress-spinner { animation: none; }
+}
+@media (max-width: 640px) {
+  .flow-progress { bottom: calc(env(safe-area-inset-bottom, 0px) + 62px); font-size: 11.5px; padding: 8px 12px; }
+}
+/* Rail atenuado cuando la sección activa no es de imagen: conserva su columna
+   (ocultarlo rompía la rejilla y dejaba el panel en 84 px). */
+.rail.is-inactive .rail-btn[data-tab] { opacity: .42; }
+.rail.is-inactive .rail-btn[data-tab]:hover,
+.rail.is-inactive .rail-btn[data-tab]:focus-visible { opacity: 1; }
+
+/* La marca no debe cortarse a media palabra cuando entra la navegación. */
+.brand-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 1560px) {
+  .brand-name { display: none; }
+}
+
+/* Hueco bajo el contenido del panel: el pie de generación es fijo y tapaba
+   las últimas etiquetas del formulario. */
+.panel-left .panel-body { padding-bottom: 8px; }
+body[data-left-tab="generate"] .panel-left .panel-body { padding-bottom: 132px; }
+/* Cantidad de imágenes por encolado: el grupo se apaga cuando el modelo no es
+   de Flow, para no ofrecer un control que no hace nada. */
+.model-toggle-group.is-disabled { opacity: .45; }
+.model-toggle-group.is-disabled .model-toggle { cursor: not-allowed; }
+.model-toggle:disabled { cursor: not-allowed; }
+.model-toggle:disabled:hover {
+  color: var(--muted);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
 .save-state {
   display: inline-flex;
   align-items: center;
@@ -341,8 +534,6 @@
   display: none;
 }
 body[data-left-tab="generate"] .generate-footer { display: block; }
-.estimate { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px; }
-.estimate-label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); }
 
 .result-tray {
   margin-top: 14px;
@@ -938,6 +1129,35 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
 @keyframes toast-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
 @keyframes toast-out { to { opacity: 0; transform: translateX(16px); } }
 
+/* La barra superior reparte el ancho por prioridad: primero la accion principal
+   (Exportar) y el acceso; los indicadores secundarios se pliegan antes de
+   empujar nada fuera de la pantalla. Antes de esta regla, la navegacion de
+   secciones y el estado de Flow dejaban Exportar inalcanzable por debajo de
+   1024 px. */
+.topbar { flex-wrap: nowrap; }
+.topbar .brand { flex: 0 1 auto; min-width: 0; }
+.topbar .mode-nav { flex: 0 1 auto; min-width: 0; }
+.topbar-project { flex: 0 1 auto; min-width: 0; }
+.topbar-actions { flex: 0 0 auto; }
+#exportBtn { flex: 0 0 auto; }
+.flow-status { flex: 0 1 auto; min-width: 0; }
+/* Cantidad de imágenes por encolado: el grupo se apaga cuando el modelo no es
+   de Flow, para no ofrecer un control que no hace nada. */
+.model-toggle-group.is-disabled { opacity: .45; }
+.model-toggle-group.is-disabled .model-toggle { cursor: not-allowed; }
+.model-toggle:disabled { cursor: not-allowed; }
+.model-toggle:disabled:hover {
+  color: var(--muted);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+.save-state { flex: 0 1 auto; min-width: 0; }
+.project-chip { min-width: 0; }
+.project-chip #projectName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+/* El boton de menu (movil) tiene que quedar siempre por encima de la navegacion. */
+.rail-toggle { position: relative; z-index: 3; }
+
 /* ══════════════════════ Responsive ══════════════════════ */
 @media (max-width: 1280px) {
   :root { --panel-left-w: 292px; --panel-right-w: 304px; }
@@ -946,12 +1166,6 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
 
 @media (max-width: 1080px) {
   .doc-meta { display: none; }
-  .cost-sub { display: none; }
-}
-
-@media (max-width: 1024px) {
-  /* La barra ya no cabe con el medidor de coste: se consulta desde el panel. */
-  .cost-meter { display: none; }
 }
 
 @media (max-width: 1100px) {
@@ -1002,7 +1216,6 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
 @media (max-width: 720px) {
   .topbar-actions .btn span { display: none; }
   .brand-mark { display: none; }
-  .cost-meter { display: none; }
   .doc-meta { display: none; }
   .btn-group[aria-label="Vista"] #compareBtn { display: none; }
   .empty-actions { flex-direction: column; }
@@ -1023,4 +1236,54 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
   .zoom-widget { transform: scale(.92); transform-origin: bottom right; bottom: 62px; right: 8px; }
   .toolbar-float { max-width: calc(100% - 20px); }
   #statusBuild { display: none; }
+}
+
+/* ── Barra superior: plegado progresivo ──
+   Se oculta primero lo informativo y se conservan siempre Exportar y el acceso. */
+@media (max-width: 1400px) {
+  .flow-status .flow-status-text { display: none; }
+  .flow-status { padding: 0 4px; }
+}
+@media (max-width: 1240px) {
+  .save-state { display: none; }
+}
+@media (max-width: 1150px) {
+  .mode-btn span { display: none; }
+  .mode-btn { padding: 0 10px; }
+  .project-chip #projectName { max-width: 110px; }
+}
+@media (max-width: 1024px) {
+  .flow-status { display: none; }
+}
+@media (max-width: 900px) {
+  .topbar .brand-mark { display: none; }
+  .topbar-project .doc-meta { display: none; }
+  #undoBtn, #redoBtn { display: none; }
+}
+@media (max-width: 720px) {
+  .mode-btn { padding: 0 8px; }
+  .project-chip #projectName { max-width: 84px; }
+  #authBtn { display: none; }
+}
+@media (max-width: 520px) {
+  .topbar { gap: 4px; }
+  .project-chip #projectName { max-width: 64px; }
+  #exportBtn span { display: none; }
+  #exportBtn { padding: 0 10px; }
+}
+
+/* En movil, el pie del panel de video no debe quedar bajo la barra de estado. */
+body[data-left-tab="video"] .panel-left .panel-body { padding-bottom: 96px; }
+body[data-left-tab="library"] .panel-left .panel-body { padding-bottom: 24px; }
+
+/* Objetivos táctiles: en pantallas pequeñas o con puntero grueso, los botones de
+   selección (modelo, formato, cantidad) no deben quedarse en 26 px. Se sube el
+   mínimo sin cambiar tipografía ni paleta, así todo el panel mantiene el mismo
+   tamaño de toque. */
+@media (max-width: 700px), (pointer: coarse) {
+  .model-toggle { min-height: 38px; }
+  .model-toggle-group { padding: .3rem; }
+}
+@media (pointer: coarse) {
+  .model-toggle { min-height: 42px; }
 }

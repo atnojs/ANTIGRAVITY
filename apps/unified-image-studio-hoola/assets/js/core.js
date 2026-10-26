@@ -17,11 +17,6 @@ export const uid = (prefix = 'id') =>
 
 export const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-export const fmtMoney = (value) =>
-  Number.isFinite(value)
-    ? value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
-    : '—';
-
 export const fmtBytes = (bytes) => {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -66,7 +61,7 @@ export const state = {
     maskMode: 'paint',
     brushSize: 80,
     brushHardness: 80,
-    model: 'openai-image-2-low',
+    model: 'flow-nano-banana-2',
     aspect: '1:1',
     resolution: 1024,
     refs: [],
@@ -168,7 +163,7 @@ export function makeImageLayer({ name, resourceId, x, y, w, h }) {
   };
 }
 
-export function makeTextLayer({ text, x, y, width, fontSize = 64, color = '#ffffff', weight = '400', align = 'center', fontFamily = 'Electrolize' }) {
+export function makeTextLayer({ text, x, y, width, fontSize = 64, color = '#ffffff', weight = '400', align = 'center', fontFamily = 'Inter' }) {
   const lines = String(text || 'Texto').split('\n');
   const lineHeight = 1.22;
   const height = Math.max(fontSize * lineHeight, lines.length * fontSize * lineHeight);
@@ -199,7 +194,7 @@ export function makeShapeLayer({ shape, x, y, w, h, fill, stroke, strokeWidth = 
     name: { rect: 'Rectángulo', ellipse: 'Elipse', line: 'Línea' }[shape] || 'Forma',
     shape,
     x, y, w, h,
-    fill: fill || '#00D0D0',
+    fill: fill || '#2ee8ff',
     stroke: stroke || '#00d0d0',
     strokeWidth,
     radius,

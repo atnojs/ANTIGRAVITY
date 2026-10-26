@@ -22,7 +22,7 @@ if (isset($_SERVER['SCRIPT_FILENAME']) && realpath($_SERVER['SCRIPT_FILENAME']) 
     exit;
 }
 
-const UIS_VERSION = '2.0.2-hoola';
+const UIS_VERSION = '3.0.0-hoola';
 const UIS_MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 const UIS_MAX_JSON_BYTES = 32 * 1024 * 1024;
 const UIS_MAX_DIMENSION = 8192;
@@ -113,9 +113,12 @@ function uis_db(): PDO
     if ($fresh) {
         uis_migrate($db);
         @chmod($file, 0660);
-    } elseif ((int)$db->query('PRAGMA user_version')->fetchColumn() < 1) {
+    } elseif ((int)$db->query('PRAGMA user_version')->fetchColumn() < 2) {
         uis_migrate($db);
     }
+    // Migración 3: se aplica siempre (es idempotente y cuesta un PRAGMA), para que
+    // una base ya existente gane la columna de cancelación sin recrear nada.
+    uis_migrate_flow_cancel($db);
     return $db;
 }
 
@@ -201,7 +204,74 @@ CREATE TABLE IF NOT EXISTS auth_failures (
     created_at INTEGER NOT NULL
 );
 SQL);
-    $db->exec('PRAGMA user_version = 1');
+    uis_migrate_flow($db);
+    $db->exec('PRAGMA user_version = 2');
+}
+
+/**
+ * Migración 2: cola de Google Flow (motor del estudio).
+ * Los trabajos de Flow se ejecutan en el PC del usuario y se recogen aquí;
+ * el resultado se guarda en storage/flow y solo se sirve con sesión válida.
+ */
+function uis_migrate_flow(PDO $db): void
+{
+    $db->exec(<<<'SQL'
+CREATE TABLE IF NOT EXISTS flow_jobs (
+    id TEXT PRIMARY KEY,
+    type TEXT NOT NULL,
+    status TEXT NOT NULL,
+    model TEXT NOT NULL,
+    ratio TEXT NOT NULL,
+    prompt TEXT NOT NULL,
+    mode TEXT NOT NULL DEFAULT 'generate',
+    refs TEXT NOT NULL DEFAULT '[]',
+    file TEXT,
+    mime TEXT,
+    bytes INTEGER NOT NULL DEFAULT 0,
+    width INTEGER NOT NULL DEFAULT 0,
+    height INTEGER NOT NULL DEFAULT 0,
+    error TEXT,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    started_at INTEGER NOT NULL DEFAULT 0,
+    finished_at INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0,
+    worker_seen INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_flow_status ON flow_jobs(status, created_at);
+CREATE TABLE IF NOT EXISTS flow_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
+SQL);
+    // Bases creadas antes de la migración 2: la tabla de trabajos puede no
+    // tener updated_at si se sirvió una versión intermedia.
+    $columns = array_map(static fn(array $row): string => (string)$row['name'], $db->query('PRAGMA table_info(flow_jobs)')->fetchAll());
+    if (!in_array('updated_at', $columns, true)) {
+        $db->exec('ALTER TABLE flow_jobs ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0');
+    }
+    // Permite pedir la cancelación de un trabajo en curso: el agente lo consulta
+    // mientras genera y, si está marcado, cierra Chrome y no sube nada.
+    if (!in_array('cancel_requested', $columns, true)) {
+        $db->exec('ALTER TABLE flow_jobs ADD COLUMN cancel_requested INTEGER NOT NULL DEFAULT 0');
+    }
+}
+
+/**
+ * Migración 3: cancelación de trabajos.
+ *
+ * Se aplica sobre bases que ya están en la versión 2, que es el caso de la
+ * instalación en producción: sin esto, la columna `cancel_requested` no existiría
+ * y la biblioteca no podría parar una generación en curso.
+ */
+function uis_migrate_flow_cancel(PDO $db): void
+{
+    $tablas = $db->query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'flow_jobs'")->fetchAll();
+    if ($tablas === []) return;
+    $columns = array_map(static fn(array $row): string => (string)$row['name'], $db->query('PRAGMA table_info(flow_jobs)')->fetchAll());
+    if (!in_array('cancel_requested', $columns, true)) {
+        $db->exec('ALTER TABLE flow_jobs ADD COLUMN cancel_requested INTEGER NOT NULL DEFAULT 0');
+    }
 }
 
 /* ── Autenticación ──
@@ -240,7 +310,14 @@ function uis_session_start(): void
     // Con la librería común manda su cookie (antigravity_auth), compartida con
     // el resto de apps: entrar en una es entrar en todas.
     if (uis_auth_lib()) {
+        // La librería abre su propia sesión (cookie antigravity_auth). La de
+        // esta app solo se abre si ya venía, para no descartar una sesión
+        // válida que esté en curso.
         au_sesion();
+        if (session_status() !== PHP_SESSION_ACTIVE && !empty($_COOKIE['UISSESSID'])) {
+            session_name('UISSESSID');
+            @session_start();
+        }
         return;
     }
 

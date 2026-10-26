@@ -1,92 +1,66 @@
 # Verificación — Unified Image Studio · Hoola
 
-Fecha: 2026-10-26 · Build: `2.0.2-hoola` · Original intacto en `apps/unified-image-studio/`.
+Fecha: 2026-10-26 · Build: `3.0.0-hoola` · Original intacto en `apps/unified-image-studio/`.
 
-La copia reutiliza el backend PHP/SQLite del original sin cambios de contrato. Lo que se verifica
-aquí es que (a) la app arranca y funciona con ese backend, (b) el flujo real del usuario funciona
-en Chrome y (c) el estilo Hoola se aplica de forma medible y consistente, también en producción.
+Esta versión **no es un rediseño parcial**: es una copia completa del código actual del original
+(con Google Flow, la compuerta de modelos y la cancelación de trabajos) sobre la que se aplica el
+sistema visual Hoola/Relatos al 100 %. Lo que se verifica aquí es que la copia arranca, conserva
+todas las funciones, aplica de verdad los tokens Hoola y no rompe el flujo ni la responsividad.
 
 ## 1. Entorno de prueba
 
 | Elemento | Valor |
 |---|---|
-| Servidor local | PHP 8.3 (WinGet) con `pdo_sqlite`, `curl`, `sqlite3`, `openssl`, `mbstring`, `-S 127.0.0.1:8777 -t E:\ANTIGRAVITY` |
-| Auth de prueba | `PW_ACCESS`/`PW_EDIT` en el entorno del proceso PHP (solo local; producción usa el `.htaccess` raíz) |
-| Navegador | Chrome 155 vía `playwright-cli 0.1.22` |
-| URL local | `http://127.0.0.1:8777/apps/unified-image-studio-hoola/` |
+| Servidor local | Node 24 (estático) sirviendo `apps/`; `*.php` responde 503 para forzar el modo local |
+| Navegador | Chrome real (headless) manejado por CDP, perfil propio |
+| URL local | `http://127.0.0.1:8781/unified-image-studio-hoola/index.html` |
 | URL producción | `https://atnojs.es/apps/unified-image-studio-hoola/` |
+| Evidencias | `tools/evidencias/2026-10-26-uis-hoola-v3/` |
 
-## 2. Pruebas ejecutadas y resultado
+## 2. Pruebas funcionales locales (12/12)
 
-| # | Prueba | Resultado | Evidencia |
-|---|---|---|---|
-| 1 | Lint PHP (`api.php`, `proxy.php`, `lib/bootstrap.php`, `lib/jobs.php`) | Sin errores de sintaxis | `php -l` |
-| 2 | Sintaxis JS de los 8 módulos + `lightbox.js` | Sin errores (ESM) | `node --check` sobre copia `.mjs` |
-| 3 | `GET api.php?action=state` local y producción | `200`, `ok:true`, `configured:true`, `sharedSession:true`, `version:2.0.2-hoola` | petición directa |
-| 4 | Login con contraseña del servidor (local) | `200`, cookie de sesión, UI en modo servidor | requests 19/65/91 |
-| 5 | Importar imagen (PNG) | Imagen en lienzo, recurso subido (`resource.upload` 200) | captura `18-hoola-imagen.png` |
-| 6 | Añadir texto Electrolize | Capa de texto creada y renderizada | captura `23-hoola-texto.png` |
-| 7 | Exportar PNG | Descargado en disco: 1024×1024, PNG válido, 57 077 B | `export-hoola.png` + `System.Drawing` |
-| 8 | Descargar proyecto `.uis.json` | JSON válido: `schema:1`, doc 1024×1024, 1 capa imagen + recurso base64 | `proyecto-hoola.uis.json` |
-| 9 | Recarga y persistencia (local) | Proyecto recuperado del servidor (`project.get` 200), capas intactas | captura `22-hoola-reload2.png` |
-| 10 | Guardar versión | `version.list` 200, 1 versión «15:18:14 · 2 capas», toast correcto | eval DOM |
-| 11 | Modal de proyectos | Lista del servidor, acciones y cierre | captura `32-hoola-proyectos.png` |
-| 12 | Overlay de carga real (job.create interceptado con 3,5 s de retardo) | Visible con `display:flex`, blur `14px saturate(1.8)`, 3 aros de 80 px, texto exacto «IA generando lo solicitado...», barra cian→verde animada, panel 360 px | captura `24-hoola-loading.png` + medidas inline |
-| 13 | Error del proveedor sin claves | Overlay se oculta, prompt conservado, toast comprensible «No se pudo generar: …» | captura `25-hoola-error-proveedor.png` |
-| 14 | Payload del modelo | Se envía `model:gemini-pro` con prompt, aspecto, resolución, proyecto y documento; por defecto `openai-image-2-low` | interceptación de `job.create` |
-| 15 | Lightbox + zoom | Rueda real → escala 3,06; arrastre real → `translate(90px, 60px)`; clic → cierra y resetea; Escape → cierra; aviso canónico visible | capturas `26`/`27` + medidas |
-| 16 | Geometría 1920→320 px | `scrollWidth == innerWidth` en los 12 anchos (0 px de desbordamiento); topbar 56 px; paneles 322/336 (292/304 a 1280); selector sin desbordamiento interno | barrido con `setViewportSize` |
-| 17 | Panel móvil | Abre superpuesto (348 px), modelos en píldoras sin recorte, sin scroll horizontal | captura `28-hoola-movil-panel.png` |
-| 18 | Consola local | Sin errores propios; solo aviso del navegador por campo de contraseña fuera de `<form>` (heredado) | `console` Playwright |
-| 19 | Accesibilidad básica | `lang=es`, título y meta descripción, 1 `h1`, imgs con `alt`, botones con etiqueta, inputs con label, sin IDs duplicados ni `tabindex` positivo, `aria-live`, overlay `role=status`, lightbox `role=dialog` | auditoría DOM |
-| 20 | Tokens Hoola en runtime | `font-family: Electrolize`, degradado + halos + rejilla 46 px, paneles `rgba(23,79,122,·)` con borde cian 2 px, primario gradiente cian→verde | `getComputedStyle` |
-| 21 | **Producción: despliegue** | `version.txt` sirve `2.0.1-hoola`; `index.html` con `last-modified 15:36:43`; webhook de GitHub entregando 200 | petición directa + API GitHub |
-| 22 | **Producción: CSP propia** | Cabecera servida: `img-src 'self' data: blob: https:` (sin tailwind/unpkg); consola sin violaciones CSP | cabecera HTTP + `console` |
-| 23 | **Producción: importación en modo local** | Tras «Seguir en local», la imagen importada (blob de IndexedDB) se pinta en el lienzo; antes fallaba con 2 errores CSP | capturas `60`–`62` |
-| 24 | **Producción: exportación** | PNG descargado 1024×1024 y 57 077 B (idéntico al local). Con el CSP viejo salía en blanco (24 805 B) | `63-prod2-export.png` |
-| 25 | **Producción: responsive** | 1440/768/393 sin desbordamiento (`overflowX: 0`) y con capturas | `64`–`66-prod2-*.png` |
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | Arranque y sello de versión | PASS · `v3.0.0 · 2026-10-26 · copia Hoola al 100%` |
+| 2 | Compuerta de modelos cargada | PASS · Model Gate 1.2.0, **12 candados** exactos |
+| 3 | Electrolize en toda la interfaz | PASS · `document.fonts.check('12px Electrolize')` |
+| 4 | Fondo Hoola medido | PASS · degradado `rgb(0,16,24) → rgb(6,47,67) → rgb(14,83,104)` + rejilla `46px 46px` |
+| 5 | Sin errores de arranque | PASS · `__UIS_DIAG__.problems` vacío |
+| 6 | IMAGE 2 LOW libre | PASS · se selecciona sin modal |
+| 7 | OPENAI 2.5 MEDIUM protegido | PASS · modal «Modelo protegido», no cambia la selección |
+| 8 | Desbloqueo con el código de modelos | PASS · MEDIUM activo, 0 candados |
+| 9 | El desbloqueo persiste al recargar | PASS · `sessionStorage` y 0 candados |
+| 10 | Pestaña de vídeo | PASS · `data-mode=video`, modelos y fotograma presentes |
+| 11 | Biblioteca | PASS · filtros y contenedor de trabajos |
+| 12 | Pestaña nueva: VEO 3.1 QUALITY | PASS · vuelve a pedir contraseña con 12 candados |
 
-## 3. Incidencia detectada y corregida (CSP + blob)
+## 3. Estilo Hoola: medidas y capturas
 
-- **Síntoma (solo producción):** al importar una imagen en modo local aparecía la capa pero el
-  lienzo no pintaba la imagen; consola: `Loading the image 'blob:…' violates … img-src 'self' data: https:`. El PNG exportado salía en blanco (24 805 B).
-- **Causa:** la CSP heredada de la raíz no permitía `blob:`, que es el esquema con el que el
-  estudio sirve los blobs de IndexedDB mientras no hay sesión.
-- **Corrección:** `.htaccess` propio de la app (mismo patrón que `apps/conversor_multimedia`) que
-  sustituye la CSP por una política del proyecto con `blob:` solo en `img-src`/`media-src` y
-  scripts/conexiones en `'self'` (commit `33516df0`). Validada primero con un proxy local que
-  inyecta la misma cabecera (`50`/`51-csp-local*.png`, `export-csp-local.png`) y después en la URL
-  real (`version.txt` + import/export OK).
+| Comprobación | Medida / evidencia |
+|---|---|
+| Barra superior | 56 px de alto, vidrio con borde inferior cian de 2 px |
+| Paneles | 322 px (izquierdo) y 336 px (derecho) a 1422 px de ventana; borde cian de separación |
+| Navegación Imagen/Vídeo/Biblioteca | 304 × 34 px, píldora de vidrio; activo con gradiente `#174F7A → #00D0D0` |
+| Lienzo | 622 × 622 px a 1422; sin scroll horizontal (`scrollWidth == innerWidth`) |
+| 390 y 768 px | `scrollWidth == innerWidth`; panel móvil superpuesto; sin desbordes |
+| Overlay de carga | Tres aros, fondo translúcido con blur, título «IA generando lo solicitado...», barra indeterminada cian→verde |
+| Modales | Acceso privado, compuerta y ayuda en vidrio azulado con borde cian y botón primario cian→verde |
 
-## 4. Pruebas no ejecutadas y por qué
+Capturas: `01-hoola-escritorio.png`, `02-hoola-video.png`, `03-hoola-biblioteca.png`,
+`04-hoola-ayuda.png`, `05-hoola-movil.png`, `06-hoola-tablet.png`, `07-hoola-carga.png`,
+`08-hoola-acceso.png`, `09-hoola-compuerta.png`, `10-hoola-ayuda.png`,
+`11-hoola-biblioteca-vacia.png`.
 
-- **Generación real con proveedor**: el equipo de desarrollo no tiene las claves del `.htaccess`
-  raíz (`OPENAI_API_KEY` / `R`). Se ha verificado todo lo anterior al envío y el tratamiento del
-  error 500 devuelto por el servidor sin claves. El pipeline es el mismo código que el original.
-- **Persistencia con sesión en producción**: requiere la contraseña `PW_ACCESS` de producción, que
-  no está disponible para el agente. Se verificó en local con el mismo `api.php`/SQLite; en
-  producción se verificó el arranque, el modo local, edición/exportación y la CSP.
-- **Restauración desde copia de seguridad** del `storage/`: procedimiento documentado, no probado
-  en esta tarea.
+## 4. Producción
 
-## 5. Despliegue
+Pendiente de completar tras el despliegue de este commit: comprobación de `index.html` servido,
+`api.php?action=state`, CSP y fuentes, y repetición del flujo de compuerta y pestañas sobre la URL
+real.
 
-El primer push se desplegó a los ~40 s. Los siguientes (fix CSP y marcador) no se publicaron
-durante ~15 min pese a que GitHub entregó todos los hooks con HTTP 200; se re-disparó con commits
-vacíos (`baaaace1`, `29569591`) y el despliegue llegó a las 15:36:43 UTC. Verificado con
-`version.txt`, cabecera CSP y prueba de import/export en la URL real.
+## 5. Límites declarados
 
-## 6. Correcciones menores de la ronda final (build 2.0.2)
-
-Dos defectos menores detectados por la verificación funcional independiente, corregidos antes de
-cerrar:
-
-- **Sello de versión interno desactualizado:** `const BUILD` de `app.js` decía `v2.0.0-hoola`
-  mientras `version.txt` ya era `2.0.2-hoola`. Ahora ambos coinciden (`v2.0.2-hoola`).
-- **Panel de Utilidades/Biblioteca no se refrescaba tras el login:** mostraba «Modo local · sin
-  sesión» hasta recargar. Ahora, al iniciar sesión, se refrescan presupuesto, lista de proyectos,
-  información de almacenamiento y utilidades sin recargar la página.
-- **Versión de la API desincronizada:** `UIS_VERSION` de `lib/bootstrap.php` seguía en `2.0.0-hoola`
-  mientras el build era `2.0.2`. Ahora `api.php?action=state` informa `version: 2.0.2-hoola`, igual
-  que `version.txt`, el sello de `app.js` y la ayuda.
-
+- No hay PHP en el equipo de desarrollo de esta ronda: las pruebas locales cubren interfaz, estilo,
+  compuerta y navegación; la API se comprueba en producción (copia literal del backend del original).
+- La generación real con Flow depende de un agente encendido en el PC de Flow; no se lanzaron
+  generaciones (coste real).
+- La base SQLite es propia de esta copia: no comparte proyectos con el original.

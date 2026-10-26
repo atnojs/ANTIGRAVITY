@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark" />
 <meta name="robots" content="noindex, nofollow" />
 <title>Unified Image Studio · Hoola</title>
-<meta name="description" content="Estación de trabajo de imagen con IA: importa, genera, edita, compone y exporta. Copia con el estilo hoola: cian y verde, Electrolize y vidrio azulado." />
+<meta name="description" content="Estación de trabajo de imagen con IA, versión Hoola: importa, genera con Google Flow, edita, compone y exporta. Cian y verde, Electrolize y vidrio azulado." />
 <meta name="theme-color" content="#001018" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -54,21 +54,21 @@
     box.id = 'uisBootGuard';
     box.setAttribute('role', 'alertdialog');
     box.setAttribute('aria-label', 'Aviso de arranque');
-    box.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 30% 20%,rgba(0,40,60,.4),rgba(0,12,20,.55)),rgba(0,16,24,.92);backdrop-filter:blur(12px);font-family:Electrolize,system-ui,sans-serif;color:#eaffff';
+    box.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(5,8,12,.94);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#e6edf3';
     var items = problems.length
       ? '<ul style="margin:8px 0 0;padding-left:18px;line-height:1.6">' + problems.map(function (p) {
           return '<li style="font-family:ui-monospace,monospace;font-size:12px;color:#ff9b95">' + esc(p) + '</li>';
         }).join('') + '</ul>'
-      : '<p style="margin:8px 0 0;font-size:13px;color:#99CCCC">El script principal no llegó a ejecutarse. Normalmente es una copia antigua en caché o un recurso bloqueado.</p>';
-    box.innerHTML = '<div style="max-width:620px;width:100%;background:linear-gradient(180deg,rgba(23,79,122,.55),rgba(4,28,40,.92));border:2px solid #00D0D0;border-radius:14px;padding:22px;box-shadow:0 0 30px rgba(0,208,208,.3)">' +
-      '<h1 style="margin:0 0 6px;font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:#eaffff;text-shadow:0 0 12px rgba(0,208,208,.5)">La aplicación no ha arrancado</h1>' +
-      '<p style="margin:0;font-size:13px;color:#99CCCC">Esta pantalla aparece sola cuando el estudio no puede iniciarse, para que no se quede en «Comprobando…» sin explicación.</p>' +
+      : '<p style="margin:8px 0 0;font-size:13px;color:#b6c2cf">El script principal no llegó a ejecutarse. Normalmente es una copia antigua en caché o un recurso bloqueado.</p>';
+    box.innerHTML = '<div style="max-width:620px;width:100%;background:#161b22;border:1px solid #f85149;border-radius:14px;padding:22px">' +
+      '<h1 style="margin:0 0 6px;font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:#ff9b95">La aplicación no ha arrancado</h1>' +
+      '<p style="margin:0;font-size:13px;color:#b6c2cf">Esta pantalla aparece sola cuando el estudio no puede iniciarse, para que no se quede en «Comprobando…» sin explicación.</p>' +
       items +
-      '<p style="margin:14px 0 0;font-size:12px;color:#86b8b8">Dirección: <span style="font-family:ui-monospace,monospace">' + esc(location.href) + '</span></p>' +
-      '<p style="margin:6px 0 0;font-size:12px;color:#86b8b8">Servidor: <a style="color:#00D0D0" href="api.php?action=state" target="_blank" rel="noopener">api.php?action=state</a></p>' +
+      '<p style="margin:14px 0 0;font-size:12px;color:#8b949e">Dirección: <span style="font-family:ui-monospace,monospace">' + esc(location.href) + '</span></p>' +
+      '<p style="margin:6px 0 0;font-size:12px;color:#8b949e">Servidor: <a style="color:#2ee8ff" href="api.php?action=state" target="_blank" rel="noopener">api.php?action=state</a></p>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px">' +
-        '<button id="uisDiagReload" style="height:34px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.35);background:linear-gradient(135deg,#00D0D0,#26C626);color:#032820;font-weight:700;cursor:pointer">Recargar sin caché</button>' +
-        '<button id="uisDiagCopy" style="height:34px;padding:0 14px;border-radius:9px;border:1px solid rgba(0,208,208,.5);background:rgba(8,40,56,.5);color:#ccf2f2;cursor:pointer">Copiar diagnóstico</button>' +
+        '<button id="uisDiagReload" style="height:34px;padding:0 14px;border-radius:8px;border:0;background:#2ee8ff;color:#04252b;font-weight:700;cursor:pointer">Recargar sin caché</button>' +
+        '<button id="uisDiagCopy" style="height:34px;padding:0 14px;border-radius:8px;border:1px solid #36414f;background:transparent;color:#b6c2cf;cursor:pointer">Copiar diagnóstico</button>' +
       '</div></div>';
     document.body.appendChild(box);
     box.querySelector('#uisDiagReload').onclick = function () { location.reload(true); };
@@ -135,6 +135,11 @@
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></symbol>
     <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></symbol>
     <symbol id="i-mask" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-film" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v16"/><path d="M17 4v16"/><path d="M2 9h5"/><path d="M2 15h5"/><path d="M17 9h5"/><path d="M17 15h5"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5Z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v6"/><path d="M15 2v6"/><path d="M6 8h12v3a6 6 0 0 1-12 0Z"/><path d="M12 17v5"/></symbol>
   </defs>
 </svg>
 
@@ -148,9 +153,21 @@
         <svg class="ico"><use href="#i-menu"/></svg>
       </button>
       <span class="brand-mark" aria-hidden="true">UIS</span>
-      <h1 class="brand-name">Unified <em>Image</em> Studio</h1>
+      <span class="brand-name">Unified <em>Image</em> Studio</span>
       <span class="brand-tag" aria-hidden="true">Hoola</span>
     </div>
+
+    <nav class="mode-nav" id="modeNav" role="tablist" aria-label="Sección del estudio">
+      <button class="mode-btn is-active" role="tab" aria-selected="true" data-mode="image" aria-controls="leftPanel">
+        <svg class="ico"><use href="#i-image"/></svg><span>Imagen</span>
+      </button>
+      <button class="mode-btn" role="tab" aria-selected="false" data-mode="video" aria-controls="leftPanel">
+        <svg class="ico"><use href="#i-film"/></svg><span>Vídeo</span>
+      </button>
+      <button class="mode-btn" role="tab" aria-selected="false" data-mode="library" aria-controls="leftPanel">
+        <svg class="ico"><use href="#i-history"/></svg><span>Biblioteca</span>
+      </button>
+    </nav>
 
     <div class="topbar-project">
       <button class="project-chip" id="projectChip" aria-haspopup="dialog" title="Abrir biblioteca de proyectos (Ctrl+O)">
@@ -173,10 +190,12 @@
         <button class="icon-btn" id="compareBtn" aria-label="Comparar antes y después" title="Comparar antes/después (C)" aria-pressed="false"><svg class="ico"><use href="#i-compare"/></svg></button>
       </div>
 
-      <div class="cost-meter" id="costMeter" title="Coste estimado de la sesión y consumo registrado">
-        <span class="cost-label">Coste</span>
-        <span class="mono cost-value" id="costValue">0,00 €</span>
-        <span class="cost-sub mono" id="costBudget" title="Presupuesto restante">—</span>
+      <div class="flow-status" id="flowStatus" role="status" aria-live="polite" title="Estado del PC que ejecuta Google Flow">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="flow-status-text" id="flowStatusText">Flow: comprobando…</span>
+        <button class="icon-btn icon-btn-sm flow-refresh" id="flowRefreshBtn" aria-label="Comprobar la conexión con el PC" title="Comprobar la conexión con el PC">
+          <svg class="ico ico-sm"><use href="#i-refresh"/></svg>
+        </button>
       </div>
 
       <div class="save-state" id="saveState" data-state="idle" role="status" aria-live="polite">
@@ -203,7 +222,7 @@
   <div class="workspace" id="workspace">
 
     <!-- Rail + panel izquierdo -->
-    <nav class="rail" aria-label="Herramientas">
+    <nav class="rail" id="rail" aria-label="Herramientas">
       <button class="rail-btn is-active" data-tab="generate" aria-pressed="true" title="Generación">
         <svg class="ico"><use href="#i-sparkles"/></svg><span>Generar</span>
       </button>
@@ -251,7 +270,15 @@
           <div class="field">
             <span class="field-label">Modelo</span>
             <div class="model-selector" id="modelSelector" role="group" aria-label="Seleccionar modelo de generación">
-              <div class="model-provider-layout">
+              <div class="model-provider-column model-flow-column">
+                <span class="model-provider-title">FLOW · GOOGLE</span>
+                <span class="model-quality-hint">Motor preferente · se ejecuta en tu PC</span>
+                <div class="model-toggle-group">
+                  <button type="button" class="model-toggle is-active" data-model="flow-nano-banana-2" aria-pressed="true">NANO BANANA 2</button>
+                  <button type="button" class="model-toggle" data-model="flow-nano-banana-pro" aria-pressed="false">NANO BANANA PRO</button>
+                  <button type="button" class="model-toggle" data-model="flow-nano-banana-2-lite" aria-pressed="false">NANO BANANA 2 LITE</button>
+                </div>
+              </div>
               <div class="model-provider-column">
                 <span class="model-provider-title">OPENAI 2.5</span>
                 <span class="model-quality-hint">De menor a mayor calidad</span>
@@ -266,7 +293,6 @@
               <div class="model-provider-row">
                 <div class="model-provider-column">
                   <span class="model-provider-title">GEMINI</span>
-                  <span class="model-quality-hint" aria-hidden="true">De menor a mayor calidad</span>
                   <div class="model-toggle-group">
                     <button type="button" class="model-toggle" data-model="gemini-2" aria-pressed="false">GEMINI 2</button>
                     <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
@@ -275,24 +301,21 @@
                 </div>
                 <div class="model-provider-column">
                   <span class="model-provider-title">QWEN</span>
-                  <span class="model-quality-hint" aria-hidden="true">De menor a mayor calidad</span>
                   <div class="model-toggle-group">
                     <button type="button" class="model-toggle" data-model="qwen-pro" aria-pressed="false">QWEN 3 PRO</button>
                   </div>
                 </div>
                 <div class="model-provider-column">
                   <span class="model-provider-title">IMAGE 2</span>
-                  <span class="model-quality-hint" aria-hidden="true">De menor a mayor calidad</span>
                   <div class="model-toggle-group">
-                    <button type="button" class="model-toggle is-active" data-model="openai-image-2-low" aria-pressed="true">LOW</button>
+                    <button type="button" class="model-toggle" data-model="openai-image-2-low" aria-pressed="false">LOW</button>
                     <button type="button" class="model-toggle" data-model="openai-image-2" aria-pressed="false">MEDIUM</button>
                     <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false">HIGH</button>
                   </div>
                 </div>
               </div>
-              </div>
             </div>
-            <p class="field-note" id="modelNote">gpt-image-2 · calidad low · el más rápido y económico.</p>
+            <p class="field-note" id="modelNote">Nano Banana 2 en tu PC con Google Flow: no necesita clave de API.</p>
           </div>
 
           <div class="grid-2">
@@ -311,6 +334,17 @@
                 <option value="2048">2048</option><option value="4096">4096</option>
               </select>
             </div>
+          </div>
+
+          <div class="field" id="variantsField">
+            <span class="field-label">Imágenes por encolado <span class="hint" id="variantsHint">(con Flow)</span></span>
+            <div class="model-toggle-group" id="variantGroup" role="group" aria-label="Cuántas imágenes generar de una vez">
+              <button type="button" class="model-toggle is-active" data-count="1" aria-pressed="true">1</button>
+              <button type="button" class="model-toggle" data-count="2" aria-pressed="false">2</button>
+              <button type="button" class="model-toggle" data-count="3" aria-pressed="false">3</button>
+              <button type="button" class="model-toggle" data-count="4" aria-pressed="false">4</button>
+            </div>
+            <p class="field-note" id="variantsNote">Con Flow, cada imagen es una generación: se hacen una detrás de otra en tu PC.</p>
           </div>
 
           <div class="field">
@@ -428,7 +462,7 @@
               <button class="shape-btn" data-shape="line" title="Línea"><span class="shape-preview line"></span>Línea</button>
             </div>
             <div class="grid-2">
-              <div class="field"><label for="shapeFill">Relleno</label><input type="color" id="shapeFill" value="#00d0d0" /></div>
+              <div class="field"><label for="shapeFill">Relleno</label><input type="color" id="shapeFill" value="#2ee8ff" /></div>
               <div class="field"><label for="shapeStroke">Borde</label><input type="color" id="shapeStroke" value="#00d0d0" /></div>
             </div>
             <div class="field">
@@ -517,17 +551,97 @@
           </div>
         </section>
 
+        <!-- ── VÍDEO (Google Flow · Veo) ── -->
+        <section class="tabpane" data-pane="video" hidden aria-label="Generación de vídeo">
+          <div class="flow-intro">
+            <h3 class="group-title">Generar vídeo con Flow</h3>
+            <p class="pane-hint">Se genera en tu PC con Google Flow. Puedes cerrar esta pestaña: el trabajo queda en la cola y aparece en Biblioteca.</p>
+          </div>
+
+          <div class="field">
+            <label for="videoPrompt">Describe el vídeo</label>
+            <textarea id="videoPrompt" rows="5" placeholder="Describe la escena, el movimiento y el ambiente. Todo texto generado debe estar en español."></textarea>
+            <div class="field-row">
+              <span class="hint" id="videoPromptCount">0 / 1.500</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Fotograma inicial <span class="hint">(opcional · anima una imagen)</span></span>
+            <div class="frame-slot" id="videoStartSlot">
+              <div class="frame-empty" id="videoStartEmpty">
+                <svg class="ico"><use href="#i-image"/></svg>
+                <span>Sin fotograma</span>
+              </div>
+              <img class="frame-thumb hidden" id="videoStartThumb" alt="Fotograma inicial seleccionado" />
+              <div class="frame-actions">
+                <button class="btn btn-sm btn-ghost" id="videoStartPick">Elegir imagen</button>
+                <button class="btn btn-sm btn-ghost hidden" id="videoStartClear">Quitar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Modelo de vídeo</span>
+            <div class="model-toggle-group" id="videoModelGroup" role="group" aria-label="Modelo de vídeo">
+              <button type="button" class="model-toggle is-active" data-vmodel="veo-3.1-lite" aria-pressed="true">VEO 3.1 LITE</button>
+              <button type="button" class="model-toggle" data-vmodel="veo-3.1-fast" aria-pressed="false">VEO 3.1 FAST</button>
+              <button type="button" class="model-toggle" data-vmodel="veo-3.1-quality" aria-pressed="false">VEO 3.1 QUALITY</button>
+              <button type="button" class="model-toggle" data-vmodel="omni-flash" aria-pressed="false">OMNI FLASH</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Formato</span>
+            <div class="model-toggle-group" id="videoRatioGroup" role="group" aria-label="Formato del vídeo">
+              <button type="button" class="model-toggle is-active" data-vratio="16:9" aria-pressed="true">16:9</button>
+              <button type="button" class="model-toggle" data-vratio="9:16" aria-pressed="false">9:16</button>
+            </div>
+            <p class="field-note">Flow solo genera vídeo en 16:9 o 9:16.</p>
+          </div>
+
+          <div class="flow-agent-card" id="flowAgentCard">
+            <div class="flow-agent-head">
+              <svg class="ico ico-sm"><use href="#i-plug"/></svg>
+              <span id="flowAgentTitle">Estado del PC</span>
+            </div>
+            <p class="field-note" id="flowAgentText">Comprobando la conexión con el PC que ejecuta Flow…</p>
+            <button class="btn btn-ghost btn-block btn-sm" id="flowAgentRefresh">
+              <svg class="ico ico-sm"><use href="#i-refresh"/></svg>Comprobar conexión
+            </button>
+          </div>
+
+          <div class="video-footer">
+            <button class="btn btn-primary btn-block" id="videoGenerateBtn">
+              <svg class="ico"><use href="#i-film"/></svg><span>GENERAR VÍDEO</span>
+            </button>
+            <button class="link-btn" id="videoUseCanvas">Usar el lienzo como fotograma inicial</button>
+            <p class="field-note">El vídeo se genera en tu PC. Cerrar esta pestaña no cancela el trabajo.</p>
+          </div>
+        </section>
+
+        <!-- ── BIBLIOTECA (resultados de Flow) ── -->
+        <section class="tabpane" data-pane="library" hidden aria-label="Biblioteca de resultados">
+          <div class="field-row library-head">
+            <span class="field-label">Resultados</span>
+            <button class="link-btn" id="flowLibraryRefresh">Actualizar</button>
+          </div>
+          <div class="model-toggle-group library-filter" id="libraryFilter" role="group" aria-label="Filtrar resultados">
+            <button type="button" class="model-toggle is-active" data-filter="all" aria-pressed="true">TODO</button>
+            <button type="button" class="model-toggle" data-filter="image" aria-pressed="false">IMÁGENES</button>
+            <button type="button" class="model-toggle" data-filter="video" aria-pressed="false">VÍDEOS</button>
+          </div>
+          <div class="flow-jobs" id="flowJobs" aria-live="polite"></div>
+          <p class="pane-hint" id="flowJobsEmpty">Todavía no hay resultados. Genera una imagen o un vídeo y aparecerán aquí, también desde el móvil.</p>
+        </section>
+
       </div>
 
       <div class="generate-footer" id="generateFooter">
-        <div class="estimate">
-          <span class="estimate-label">Estimación</span>
-          <span class="mono" id="estimateValue">—</span>
-        </div>
         <button class="btn btn-primary btn-block" id="generateBtn">
           <svg class="ico"><use href="#i-sparkles"/></svg><span id="generateBtnText">GENERAR</span>
         </button>
-        <p class="field-note" id="generateNote">El coste se comprueba en el servidor antes de enviar la solicitud.</p>
+        <p class="field-note" id="generateNote">El trabajo queda registrado en el servidor: puedes cerrar la pestaña y recuperarlo.</p>
       </div>
     </aside>
 
@@ -657,6 +771,13 @@
         </section>
       </div>
     </aside>
+  </div>
+
+  <!-- ── Aviso no bloqueante de trabajos de Flow ── -->
+  <div class="flow-progress hidden" id="flowProgress" role="status" aria-live="polite" aria-busy="false">
+    <span class="flow-progress-spinner" aria-hidden="true"></span>
+    <span class="flow-progress-text" id="flowProgressText">En cola…</span>
+    <button class="link-btn" id="flowProgressMore">Ver en Biblioteca</button>
   </div>
 
   <!-- ── Barra de estado ── -->
@@ -793,25 +914,16 @@
   </div>
 </div>
 
-<div class="modal-backdrop hidden" id="budgetModal" role="dialog" aria-modal="true" aria-labelledby="budgetTitle">
-  <div class="modal">
-    <div class="modal-head">
-      <h2 id="budgetTitle">Presupuesto</h2>
-      <button class="icon-btn" data-close="budgetModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
-    </div>
-    <div class="modal-body">
-      <p class="field-note">Los importes son estimaciones: el proveedor no informa del coste real. El servidor comprueba el presupuesto, incluidos los trabajos en curso, antes de enviar cada solicitud.</p>
-      <div class="grid-2">
-        <div class="field"><label for="budgetSession">Presupuesto por sesión (€)</label><input type="number" id="budgetSession" min="0" step="0.5" value="5" /></div>
-        <div class="field"><label for="budgetProject">Presupuesto por proyecto (€)</label><input type="number" id="budgetProject" min="0" step="0.5" value="20" /></div>
-      </div>
-      <div class="field"><label for="budgetOperation">Límite por operación (€)</label><input type="number" id="budgetOperation" min="0" step="0.1" value="1.5" /></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" data-close="budgetModal">Cancelar</button>
-      <button class="btn btn-primary" id="saveBudgetBtn">Guardar</button>
+<div class="flow-lightbox hidden" id="flowLightbox" role="dialog" aria-modal="true" aria-label="Resultado ampliado">
+  <div class="flow-lightbox-bar">
+    <span class="mono" id="flowLightboxMeta">—</span>
+    <div class="btn-row">
+      <a class="btn btn-sm btn-ghost" id="flowLightboxDownload" href="#" download>Descargar</a>
+      <button class="btn btn-sm btn-ghost" id="flowLightboxClose" aria-label="Cerrar visor">Cerrar</button>
     </div>
   </div>
+  <img class="flow-lightbox-img" id="flowLightboxImg" alt="Resultado de Flow ampliado" />
+  <video class="flow-lightbox-video hidden" id="flowLightboxVideo" controls playsinline></video>
 </div>
 
 <div class="modal-backdrop hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
@@ -879,7 +991,7 @@
 </div>
 
 <div class="modal-backdrop hidden auth-modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-  <div class="modal modal-sm auth-modal-content">
+  <div class="modal modal-sm">
     <div class="modal-head">
       <h2 id="loginTitle">Acceso privado</h2>
       <button class="icon-btn" data-close="loginModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
@@ -903,31 +1015,24 @@
 </div>
 
 <!-- ── Overlays ── -->
-<div class="loading-overlay hidden" id="loadingOverlay" role="status" aria-live="polite" aria-busy="false">
+<div class="loading-overlay hidden" id="loadingOverlay" role="status" aria-live="polite" aria-busy="true">
   <div class="spinner-triple"><div class="ring ring-1"></div><div class="ring ring-2"></div><div class="ring ring-3"></div></div>
-  <p class="loading-text" id="loadingText">IA generando lo solicitado...</p>
+  <p class="loading-text" id="loadingText">IA generando imagen…</p>
   <div class="loading-panel">
     <div class="loading-bar" role="progressbar" aria-label="Progreso de la operación" aria-valuemin="0" aria-valuemax="100"><span></span></div>
   </div>
   <p class="secondary-status" id="loadingSecondary">Enviando la solicitud al proveedor.</p>
 </div>
 
-<!-- Visor ampliado: se engancha con lightbox-zoom.js (rueda, arrastre, pellizco). -->
-<div class="lightbox hidden" id="antigravity-lightbox" role="dialog" aria-modal="true" aria-label="Imagen ampliada" aria-hidden="true">
-  <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Cerrar imagen ampliada">✕</button>
-  <img id="lightbox-img" src="" alt="Imagen ampliada" draggable="false" />
-  <p class="lightbox-caption" id="lightboxCaption"></p>
-</div>
-
 <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
 
-<input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" aria-label="Importar imagen al lienzo" hidden />
-<input type="file" id="refInput" accept="image/png,image/jpeg,image/webp" aria-label="Añadir imágenes de referencia" hidden multiple />
-<input type="file" id="projectInput" accept=".json,application/json" aria-label="Importar proyecto (.uis.json)" hidden />
+<input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" hidden />
+<input type="file" id="refInput" accept="image/png,image/jpeg,image/webp" hidden multiple />
+<input type="file" id="projectInput" accept=".json,application/json" hidden />
 
+<script src="../_shared/model-gate.20261026b.js"></script>
 <script type="module" src="assets/js/app.js?v=1"></script>
-<script src="lightbox-zoom.js?v=20261026" defer></script>
-<script src="assets/js/lightbox.js?v=1" defer></script>
-<script src="/apps/_shared/password-eye.js?v=20261025b" defer></script>
+<script src="lightbox-zoom.20261026.js" defer></script>
+<script src="../_shared/password-eye.js?v=20261025b" defer></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
-2.0.2-hoola 2026-10-26
-Verificación final: CSP propia con blob, importación y exportación comprobadas en producción.
-Autoevaluación A1–A10: 93,9 (ver docs/VERIFICACION.md).
+3.0.0-hoola 2026-10-26
+Copia completa del original actual (Google Flow, compuerta de modelos con la contraseña de
+acceso, cancelación y biblioteca) con el estilo Hoola/Relatos al 100 %.
+Verificación local 12/12 y comprobación en producción en docs/VERIFICACION.md.

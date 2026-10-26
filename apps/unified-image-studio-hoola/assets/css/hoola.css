@@ -733,3 +733,139 @@
   .lightbox { padding: 14px; }
   .lightbox-close { top: 10px; right: 10px; width: 38px; height: 38px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   v3 · Piezas nuevas del estudio (Flow, vídeo, biblioteca) y compuerta
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Navegación Imagen / Vídeo / Biblioteca */
+.mode-nav {
+  display: inline-flex; align-items: center; gap: .2rem;
+  padding: .2rem; border-radius: 999px;
+  background: var(--card-bg); border: 1px solid var(--border);
+  box-shadow: inset 0 0 14px rgba(0, 208, 208, .08), 0 0 12px var(--glow-soft);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.mode-btn {
+  color: var(--muted); border: 1px solid transparent; border-radius: 999px;
+  font-family: var(--font-ui); letter-spacing: .05em; text-transform: uppercase;
+}
+.mode-btn:hover {
+  color: var(--text); background: rgba(255, 255, 255, .08);
+  border-color: var(--border);
+}
+.mode-btn.is-active {
+  color: #CCFFFF; border-color: var(--border-strong);
+  background: linear-gradient(135deg, var(--contenedor), var(--acc));
+  text-shadow: 0 0 8px var(--glow);
+  box-shadow: 0 0 16px var(--glow-soft);
+}
+
+/* Estado del PC que ejecuta Flow */
+.flow-status { color: var(--muted); }
+.flow-status .dot.is-online { background: var(--acc2); box-shadow: 0 0 10px rgba(38, 198, 38, .8); }
+.flow-status .dot.is-offline { background: var(--danger); box-shadow: 0 0 10px rgba(239, 68, 68, .6); }
+.flow-refresh { color: var(--muted); }
+.flow-refresh:hover { color: var(--acc); }
+
+.flow-intro,
+.flow-agent-card {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: 0 0 18px var(--glow-soft), inset 0 0 16px rgba(0, 208, 208, .06);
+}
+.flow-agent-head { color: var(--acc); }
+.flow-agent-head .ico { color: var(--acc); }
+
+/* Fotograma inicial del vídeo */
+.frame-slot {
+  background: var(--card-bg);
+  border: 2px dashed var(--border);
+  border-radius: var(--r-lg);
+  transition: border-color .2s, background .2s, box-shadow .2s;
+}
+.frame-slot:hover {
+  border-color: var(--border-strong);
+  background: var(--card-hover);
+  box-shadow: 0 0 16px var(--glow-soft);
+}
+.frame-empty { color: var(--muted); }
+.frame-thumb { border-radius: var(--r-md); border: 2px solid var(--border); }
+
+/* Biblioteca y trabajos de Flow */
+.library-head { border-bottom: 1px solid var(--line-soft); }
+.flow-jobs { gap: .6rem; }
+.flow-job {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: 0 0 16px var(--glow-soft);
+}
+.flow-job:hover {
+  border-color: var(--border-strong);
+  background: var(--card-hover);
+  box-shadow: 0 0 20px var(--glow);
+}
+.flow-job-thumb { background: rgba(0, 12, 20, .5); border-radius: var(--r-md); }
+.flow-job-state { color: var(--muted); }
+.flow-job-state[data-state="queued"] { color: var(--acc); }
+.flow-job-state[data-state="running"] { color: var(--acc2); }
+.flow-job-state[data-state="done"] { color: var(--acc2); }
+.flow-job-state[data-state="failed"] { color: var(--danger); }
+.flow-job-prompt { color: var(--text-dim); }
+.flow-job-meta { color: var(--faint); }
+.flow-job-error { color: var(--danger); }
+.flow-job-placeholder { color: var(--muted); }
+
+/* Aviso compacto de progreso (no bloqueante) */
+.flow-progress {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  box-shadow: 0 0 16px var(--glow-soft);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.flow-progress-spinner { border-color: var(--acc); border-top-color: transparent; }
+.flow-progress-text { color: var(--text); }
+
+/* Visor de resultados de Flow */
+.flow-lightbox {
+  background: rgba(0, 12, 20, .9);
+  backdrop-filter: blur(10px) saturate(1.4);
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+}
+.flow-lightbox-bar {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: 0 0 20px var(--glow-soft);
+}
+.flow-lightbox-img,
+.flow-lightbox-video {
+  border-radius: var(--r-lg);
+  border: 2px solid var(--border);
+}
+.video-footer { color: var(--muted); }
+
+/* Candado de los modelos: insignia en la esquina, sin tapar el texto */
+.model-toggle.ag-model-locked { overflow: visible; }
+.model-toggle.ag-model-locked::after {
+  top: -.34rem;
+  right: -.2rem;
+  font-size: .62rem;
+  padding: 1px 2px;
+  border-radius: 999px;
+  background: #001018;
+  border: 1px solid var(--border);
+  box-shadow: 0 0 8px var(--glow-soft);
+}
+
+/* Barras de desplazamiento Hoola */
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: rgba(0, 12, 20, .4); }
+*::-webkit-scrollbar-thumb { background: rgba(0, 208, 208, .5); border-radius: 999px; }
+*::-webkit-scrollbar-thumb:hover { background: var(--acc); }
