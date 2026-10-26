@@ -287,3 +287,10 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
   protege, la publicación sí pide `PW_ACCESS`.
 - **Verificación:** `tools/evidencias/2026-10-24-trickvault-renombrar/prod-despues/informe-prod-despues.json`
   (persistencia tras recarga con la capa publicada antigua) y `verificador/VEREDICTO.md` (PASS 96,0).
+
+### [2026-10-26] Copia Hoola de unified-image-studio: namespace local y CSP propia
+
+- **Decisión:** la copia `apps/unified-image-studio-hoola/` usa su propio IndexedDB (`unified-image-studio-hoola`) y claves `uis-hoola:*`, porque IndexedDB/localStorage son por origen y la copia vive en el mismo dominio que la original: sin namespace se mezclarían proyectos locales.
+- **Decisión:** `.htaccess` propio con CSP que permite `blob:` solo en img/media (el resto igual de restrictivo que la política del proyecto). No se toca la CSP raíz. Motivo: el modo local del estudio usa object URLs y el CSP heredado lo bloqueaba; el patrón ya existía en `apps/conversor_multimedia`.
+- **Decisión:** el historial sigue siendo proyectos + versiones + `jobs` en SQLite (diseño del original), sin añadir `history.php`/`history-manager.js` para no duplicar almacenamiento.
+- **Decisión:** el selector de modelo conserva los 12 ids canónicos y el estado inicial `openai-image-2-low`; en el panel lateral se reparte en varias líneas por ancho (la skill lo permite cuando el panel es más estrecho que el grupo).

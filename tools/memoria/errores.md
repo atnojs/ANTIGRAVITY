@@ -953,3 +953,10 @@ Ampliación con datos de la entrada del 2026-10-16:
   UI de Google puede romper **dos** rutas a la vez (fotogramas y nombre de modelo): probar las dos.
 - **Commit:** herramienta local sin publicar (repo aparte con adaptaciones previas sin commitear);
   documentación y memoria en el commit de esta entrada en `ANTIGRAVITY`.
+### [2026-10-26] Copia Hoola: CSP heredado bloquea blob de IndexedDB en modo local
+
+- **Síntoma:** en producción, al importar una imagen sin sesión el lienzo no la pintaba y el PNG exportado salía en blanco (24.805 B); consola: `Loading the image 'blob:…' violates … img-src 'self' data: https:`.
+- **Causa:** la CSP heredada de la raíz no incluye `blob:` en `img-src`; el estudio usa object URLs de IndexedDB mientras no hay sesión. En local no se reproduce porque el servidor PHP no aplica el `.htaccess`.
+- **Solución:** `.htaccess` propio de la app con `Header unset`/`Header always unset Content-Security-Policy` + política con `img-src 'self' data: blob: https:` y `media-src … blob:` (patrón ya usado en `apps/conversor_multimedia`). Commit `33516df0` de la copia.
+- **Verificación:** proxy local que inyecta la misma cabecera (`_csp_test_server.py`) y prueba en la URL real: import visible, export PNG 1024×1024 57.077 B, 0 violaciones.
+- **Extra:** el webhook de GitHub entregó todos los push con HTTP 200 pero Hostinger no publicó durante ~15 min; se resolvió con commits vacíos de re-disparo y comprobando `version.txt` servido (no basta HTTP 200).
