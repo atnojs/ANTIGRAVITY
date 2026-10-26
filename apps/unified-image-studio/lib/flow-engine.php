@@ -75,34 +75,42 @@ function uis_flow_video_ratios(): array
 /**
  * Credencial del agente del PC. Fuente única: entorno del servidor o el
  * fichero privado storage/flow-agent.json (nunca versionado).
+ * El fichero puede guardar el valor en claro (`token`) o su sha256; el
+ * sha256 es lo recomendado porque el valor no se puede leer del disco.
  */
+function uis_flow_agent_file(): array
+{
+    $file = uis_storage() . '/flow-agent.json';
+    if (!is_file($file)) {
+        return [];
+    }
+    $raw = (string)file_get_contents($file);
+    $raw = preg_replace('/^\xEF\xBB\xBF/', '', $raw) ?? $raw;
+    $data = json_decode($raw, true);
+    return is_array($data) ? $data : [];
+}
+
+/** ¿Hay credencial de agente configurada, en cualquiera de sus dos formatos? */
+function uis_flow_agent_configured(): bool
+{
+    if (uis_env('UIS_FLOW_AGENT_TOKEN') !== '') {
+        return true;
+    }
+    $data = uis_flow_agent_file();
+    $plain = isset($data['token']) && is_string($data['token']) ? trim($data['token']) : '';
+    $hash = isset($data['sha256']) && is_string($data['sha256']) ? strtolower(trim($data['sha256'])) : '';
+    return $plain !== '' || preg_match('/^[0-9a-f]{64}$/', $hash) === 1;
+}
+
+/** Token en claro, solo si está configurado así (para comparar con `hash_equals`). */
 function uis_flow_agent_token(): string
 {
     $env = uis_env('UIS_FLOW_AGENT_TOKEN');
     if ($env !== '') {
         return $env;
     }
-    $file = uis_storage() . '/flow-agent.json';
-    if (is_file($file)) {
-        $raw = (string)file_get_contents($file);
-        $raw = preg_replace('/^\xEF\xBB\xBF/', '', $raw) ?? $raw;
-        $data = json_decode($raw, true);
-        if (is_array($data) && isset($data['token']) && is_string($data['token']) && trim($data['token']) !== '') {
-            return trim($data['token']);
-        }
-    }
-    return '';
-}
-
-function uis_flow_set_agent_token(string $plain): void
-{
-    $file = uis_storage() . '/flow-agent.json';
-    $payload = json_encode([
-        'sha256' => hash('sha256', $plain),
-        'created' => time(),
-    ], JSON_UNESCAPED_SLASHES);
-    uis_write_file($file, (string)$payload);
-    @chmod($file, 0600);
+    $plain = uis_flow_agent_file()['token'] ?? '';
+    return is_string($plain) ? trim($plain) : '';
 }
 
 function uis_flow_agent_token_matches(string $candidate): bool
@@ -114,14 +122,13 @@ function uis_flow_agent_token_matches(string $candidate): bool
     if ($env !== '') {
         return hash_equals($env, $candidate);
     }
-    $file = uis_storage() . '/flow-agent.json';
-    if (!is_file($file)) {
-        return false;
+    $data = uis_flow_agent_file();
+    $plain = isset($data['token']) && is_string($data['token']) ? trim($data['token']) : '';
+    if ($plain !== '') {
+        return hash_equals($plain, $candidate);
     }
-    $raw = preg_replace('/^\xEF\xBB\xBF/', '', (string)file_get_contents($file)) ?? '';
-    $data = json_decode($raw, true);
-    $hash = is_array($data) && isset($data['sha256']) && is_string($data['sha256']) ? $data['sha256'] : '';
-    return $hash !== '' && hash_equals($hash, hash('sha256', $candidate));
+    $hash = isset($data['sha256']) && is_string($data['sha256']) ? strtolower(trim($data['sha256'])) : '';
+    return preg_match('/^[0-9a-f]{64}$/', $hash) === 1 && hash_equals($hash, hash('sha256', $candidate));
 }
 
 /**
@@ -221,7 +228,9 @@ function uis_flow_create(PDO $db, array $body): array
         $models = uis_flow_video_models();
         $modelKey = (string)($body['model'] ?? UIS_FLOW_DEFAULT_VIDEO_MODEL);
         if (!isset($models[$modelKey])) $modelKey = UIS_FLOW_DEFAULT_VIDEO_MODEL;
-        $model = $modelKey;
+        // Se guarda el nombre EXACTO del menú de Flow: el agente lo pasa tal cual
+        // a `flow.py --model`, que rechaza los identificadores internos.
+        $model = $models[$modelKey];
         $ratio = (string)($body['ratio'] ?? '16:9');
         if (!in_array($ratio, uis_flow_video_ratios(), true)) $ratio = '16:9';
         $mode = $refs !== [] ? 'frames' : 'text';
@@ -230,7 +239,8 @@ function uis_flow_create(PDO $db, array $body): array
         $models = uis_flow_image_models();
         $modelKey = (string)($body['model'] ?? UIS_FLOW_DEFAULT_IMAGE_MODEL);
         if (!isset($models[$modelKey])) $modelKey = UIS_FLOW_DEFAULT_IMAGE_MODEL;
-        $model = $modelKey;
+        // Igual que en vídeo: se guarda «Nano Banana 2», no «flow-nano-banana-2».
+        $model = $models[$modelKey]['flow'];
         $ratio = (string)($body['ratio'] ?? '1:1');
         if (!in_array($ratio, uis_flow_image_ratios(), true)) $ratio = '1:1';
         $mode = ((string)($body['mode'] ?? 'generate')) === 'edit' ? 'edit' : 'generate';
@@ -298,7 +308,7 @@ function uis_flow_state(PDO $db): array
         'pending' => $pending,
         'queueMax' => UIS_FLOW_QUEUE_MAX,
         'videoQueueMax' => UIS_FLOW_VIDEO_QUEUE_MAX,
-        'agentConfigured' => uis_flow_agent_token() !== '',
+        'agentConfigured' => uis_flow_agent_configured(),
         'imageModels' => $imageModels,
         'videoModels' => uis_flow_video_models(),
         'imageRatios' => uis_flow_image_ratios(),
@@ -387,8 +397,14 @@ function uis_flow_claim(PDO $db): ?array
             return null;
         }
         $now = time();
-        $db->prepare('UPDATE flow_jobs SET status = ?, started_at = ?, worker_seen = ?, attempts = attempts + 1, updated_at = ? WHERE id = ? AND status = ?')
-            ->execute(['running', $now, $now, $now, (string)$row['id'], 'queued']);
+        $update = $db->prepare('UPDATE flow_jobs SET status = ?, started_at = ?, worker_seen = ?, attempts = attempts + 1, updated_at = ? WHERE id = ? AND status = ?');
+        $update->execute(['running', $now, $now, $now, (string)$row['id'], 'queued']);
+        if ($update->rowCount() !== 1) {
+            // Otro agente reclamó el mismo trabajo entre el SELECT y el UPDATE:
+            // no se devuelve nada para que no lo generen dos veces.
+            $db->rollBack();
+            return null;
+        }
         $db->commit();
     } catch (Throwable $error) {
         $db->rollBack();
@@ -506,8 +522,7 @@ function uis_flow_heartbeat(PDO $db, string $note = ''): array
     ];
 }
 
-function uis_flow_schedule(PDO $db, string $id): array
-{
+function uis_flow_schedule(PDO $db, string $id): array{
     if (!uis_safe_id($id)) throw new InvalidArgumentException('Identificador no válido.', 400);
     $stmt = $db->prepare('SELECT * FROM flow_jobs WHERE id = ?');
     $stmt->execute([$id]);

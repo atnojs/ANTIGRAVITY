@@ -167,7 +167,6 @@ export function updateTopbar() {
   $('zoomValue').textContent = `${Math.round(state.ui.zoom * 100)} %`;
   $('dirtyDot').classList.toggle('is-dirty', state.flags.dirty);
 
-  // La interfaz de costes se retiró del estudio: no se pinta ningún importe.
   $('saveState').dataset.state = state.ui.saveState;
   const labels = {
     idle: 'Sin guardar', dirty: 'Cambios sin guardar', saving: 'Guardando…',

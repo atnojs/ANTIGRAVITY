@@ -30,9 +30,8 @@ import {
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
 } from './ai.js?v=12';
 import {
-  FLOW_IMAGE_MODELS, FLOW_VIDEO_MODELS, FLOW_IMAGE_RATIOS, FLOW_VIDEO_RATIOS,
-  DEFAULT_FLOW_IMAGE_MODEL, DEFAULT_FLOW_VIDEO_MODEL,
-  flowState, isFlowModel, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
+  FLOW_IMAGE_RATIOS, DEFAULT_FLOW_IMAGE_MODEL, DEFAULT_FLOW_VIDEO_MODEL,
+  flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
   statusFlowJobs, retryFlowJob, deleteFlowJob, downloadFlowJob, fetchFlowBlob,
 } from './flow.js?v=12';
 
@@ -40,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v1.4.0 · 2026-10-23 · recursos verificados';
+const BUILD = 'v1.5.0 · 2026-10-26 · google flow integrado';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -1641,10 +1640,7 @@ function applyRecipe(recipe) {
   toast(`Receta «${recipe.name}» aplicada.`, 'ok');
 }
 
-/* ══════════════════════ Presupuesto (retirado) ══════════════════════
-   La interfaz de costes, saldos y límites en euros se ha retirado del
-   estudio: la generación con Flow no cobra por la app. El servidor sigue
-   protegiendo los proveedores de pago con sus propios límites técnicos. */
+/* El estudio no muestra costes, saldos ni presupuestos (decidido el 2026-10-26). */
 
 /* ══════════════════════ Google Flow: seguimiento no bloqueante ══════════════════════
    Encolar es instantáneo; la generación la hace el PC y puede tardar minutos.
@@ -1755,8 +1751,6 @@ const flowUi = {
   videoRatio: '16:9',
   startFrame: null,      // data URL del fotograma inicial de vídeo
   libraryFilter: 'all',
-  watching: new Set(),   // ids en seguimiento para no lanzar dos esperas
-  lastImageJob: null,
 };
 
 /** Cambia de sección sin perder el trabajo en curso. */
@@ -1916,7 +1910,6 @@ function useCanvasAsStartFrame() {
 async function runFlowImage({ prompt, model, ratio, images, count = 1, mode = 'generate' }) {
   const jobs = await createFlowImage({ prompt, model, ratio, images, count, mode });
   const ids = jobs.map((job) => job.id);
-  flowUi.lastImageJob = ids[0] || null;
   toast(ids.length > 1
     ? `${ids.length} variantes encoladas. Se generan en tu PC; puedes seguir trabajando.`
     : 'Trabajo encolado en tu PC. Puedes seguir trabajando o cerrar la pestaña.', 'ok');
@@ -2101,12 +2094,12 @@ async function applyFlowJobToCanvas(job) {
 
 /** Acciones de la biblioteca (delegación de eventos). */
 async function onFlowLibraryClick(event) {
-  const button = event.target.closest('button[data-flow-open], button[data-flow-download], button[data-flow-apply], button[data-flow-animate], button[data-flow-frames], button[data-flow-retry], button[data-flow-delete]');
+  const button = event.target.closest('button[data-flow-open], button[data-flow-download], button[data-flow-apply], button[data-flow-animate], button[data-flow-retry], button[data-flow-delete]');
   if (!button) return;
   const {
-    flowOpen, flowDownload, flowApply, flowAnimate, flowFrames, flowRetry, flowDelete,
+    flowOpen, flowDownload, flowApply, flowAnimate, flowRetry, flowDelete,
   } = button.dataset;
-  const id = flowOpen || flowDownload || flowApply || flowAnimate || flowFrames || flowRetry || flowDelete;
+  const id = flowOpen || flowDownload || flowApply || flowAnimate || flowRetry || flowDelete;
   const job = findJob(id);
   if (!job) { toast('Ese resultado ya no está disponible: actualiza la lista.', 'warn'); return; }
   button.disabled = true;
@@ -2124,16 +2117,7 @@ async function onFlowLibraryClick(event) {
       await animateImage(dataUrl);
       return;
     }
-    if (flowFrames) {
-      const blob = await fetchFlowBlob(job);
-      const url = URL.createObjectURL(blob);
-      flowUi.startFrame = url;
-      // El visor de vídeo no sirve como fotograma: se avisa con claridad.
-      toast('Un vídeo no se puede usar como fotograma. Elige una imagen generada.', 'warn');
-      URL.revokeObjectURL(url);
-      flowUi.startFrame = null;
-      return;
-    }
+
     if (flowRetry) {
       const updated = await retryFlowJob(job.id);
       toast(updated?.status === 'queued'
@@ -2190,11 +2174,6 @@ function syncFlowControls() {
   if (resolution) {
     resolution.disabled = isFlow;
     resolution.title = isFlow ? 'Google Flow genera a su resolución nativa (~1K).' : '';
-  }
-  const count = $('countSelect');
-  if (count) {
-    count.disabled = isFlow ? false : count.disabled;
-    count.title = isFlow ? 'Flow permite hasta 4 variantes por encolado.' : '';
   }
 }
 

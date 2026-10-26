@@ -1118,6 +1118,24 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
 @keyframes toast-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
 @keyframes toast-out { to { opacity: 0; transform: translateX(16px); } }
 
+/* La barra superior reparte el ancho por prioridad: primero la accion principal
+   (Exportar) y el acceso; los indicadores secundarios se pliegan antes de
+   empujar nada fuera de la pantalla. Antes de esta regla, la navegacion de
+   secciones y el estado de Flow dejaban Exportar inalcanzable por debajo de
+   1024 px. */
+.topbar { flex-wrap: nowrap; }
+.topbar .brand { flex: 0 1 auto; min-width: 0; }
+.topbar .mode-nav { flex: 0 1 auto; min-width: 0; }
+.topbar-project { flex: 0 1 auto; min-width: 0; }
+.topbar-actions { flex: 0 0 auto; }
+#exportBtn { flex: 0 0 auto; }
+.flow-status { flex: 0 1 auto; min-width: 0; }
+.save-state { flex: 0 1 auto; min-width: 0; }
+.project-chip { min-width: 0; }
+.project-chip #projectName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+/* El boton de menu (movil) tiene que quedar siempre por encima de la navegacion. */
+.rail-toggle { position: relative; z-index: 3; }
+
 /* ══════════════════════ Responsive ══════════════════════ */
 @media (max-width: 1280px) {
   :root { --panel-left-w: 292px; --panel-right-w: 304px; }
@@ -1126,10 +1144,6 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
 
 @media (max-width: 1080px) {
   .doc-meta { display: none; }
-}
-
-@media (max-width: 1024px) {
-  /* La barra ya no cabe con el medidor de coste: se consulta desde el panel. */
 }
 
 @media (max-width: 1100px) {
@@ -1201,3 +1215,41 @@ body[data-left-tab="generate"] .generate-footer { display: block; }
   .toolbar-float { max-width: calc(100% - 20px); }
   #statusBuild { display: none; }
 }
+
+/* ── Barra superior: plegado progresivo ──
+   Se oculta primero lo informativo y se conservan siempre Exportar y el acceso. */
+@media (max-width: 1400px) {
+  .flow-status .flow-status-text { display: none; }
+  .flow-status { padding: 0 4px; }
+}
+@media (max-width: 1240px) {
+  .save-state { display: none; }
+}
+@media (max-width: 1150px) {
+  .mode-btn span { display: none; }
+  .mode-btn { padding: 0 10px; }
+  .project-chip #projectName { max-width: 110px; }
+}
+@media (max-width: 1024px) {
+  .flow-status { display: none; }
+}
+@media (max-width: 900px) {
+  .topbar .brand-mark { display: none; }
+  .topbar-project .doc-meta { display: none; }
+  #undoBtn, #redoBtn { display: none; }
+}
+@media (max-width: 720px) {
+  .mode-btn { padding: 0 8px; }
+  .project-chip #projectName { max-width: 84px; }
+  #authBtn { display: none; }
+}
+@media (max-width: 520px) {
+  .topbar { gap: 4px; }
+  .project-chip #projectName { max-width: 64px; }
+  #exportBtn span { display: none; }
+  #exportBtn { padding: 0 10px; }
+}
+
+/* En movil, el pie del panel de video no debe quedar bajo la barra de estado. */
+body[data-left-tab="video"] .panel-left .panel-body { padding-bottom: 96px; }
+body[data-left-tab="library"] .panel-left .panel-body { padding-bottom: 24px; }

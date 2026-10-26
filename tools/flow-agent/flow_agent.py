@@ -52,6 +52,20 @@ MAX_VIDEO_BYTES = 32 * 1024 * 1024
 VIDEO_EXT = ('.mp4', '.webm', '.mov')
 IMAGE_EXT = ('.jpg', '.jpeg', '.png', '.webp')
 MODEL_ALIASES = {'Omni Flash': 'Omni 1.1 Flash'}
+# El servidor guarda el nombre del menú de Flow, pero un trabajo antiguo puede
+# traer el identificador interno: se traduce para no abortar la generación.
+MODEL_NAMES = {
+    'flow-nano-banana-2': 'Nano Banana 2',
+    'flow-nano-banana-pro': 'Nano Banana Pro',
+    'flow-nano-banana-2-lite': 'Nano Banana 2 Lite',
+    'nano-banana-2': 'Nano Banana 2',
+    'nano-banana-pro': 'Nano Banana Pro',
+    'nano-banana-2-lite': 'Nano Banana 2 Lite',
+    'veo-3.1-lite': 'Veo 3.1 - Lite',
+    'veo-3.1-fast': 'Veo 3.1 - Fast',
+    'veo-3.1-quality': 'Veo 3.1 - Quality',
+    'omni-flash': 'Omni Flash',
+}
 REF_MIME_EXT = {
     'image/png': 'png',
     'image/jpeg': 'jpg',
@@ -266,7 +280,18 @@ def summarize_error(out: str) -> str:
 
 
 def flow_model(model: str) -> str:
-    return MODEL_ALIASES.get(model, model)
+    """Nombre con el que Flow llama al modelo en su menú.
+
+    El servidor ya manda el nombre del menú; si llega un identificador interno
+    (trabajo antiguo o cliente nuevo), se traduce. Nunca se cambia de modelo:
+    si no se reconoce, se pasa tal cual y configure.py aborta con un mensaje
+    claro en vez de generar con otro.
+    """
+    name = str(model or '').strip()
+    if not name:
+        return name
+    name = MODEL_NAMES.get(name.lower(), name)
+    return MODEL_ALIASES.get(name, name)
 
 
 def check_model_used(out: str, model: str) -> None:

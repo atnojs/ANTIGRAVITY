@@ -435,6 +435,9 @@ switch ($action) {
     case 'flow.list':
         uis_require_auth();
         uis_flow_sweep($db);
+        // Si el PC murió a mitad, aquí se marca «pendiente de comprobar»:
+        // el usuario ve el estado real aunque el agente no vuelva.
+        uis_flow_expire($db);
         $limit = max(1, min(60, (int)($_GET['limit'] ?? 24)));
         $type = (string)($_GET['type'] ?? '');
         $sql = 'SELECT * FROM flow_jobs';
@@ -456,6 +459,7 @@ switch ($action) {
 
     case 'flow.status':
         uis_require_auth();
+        uis_flow_expire($db);
         $ids = [];
         foreach (explode(',', (string)($_GET['ids'] ?? '')) as $id) {
             $id = trim($id);
@@ -498,7 +502,9 @@ switch ($action) {
         $download = (string)($_GET['download'] ?? '') === '1';
         header('Content-Type: ' . $mime);
         header('Content-Disposition: ' . ($download ? 'attachment' : 'inline') . '; filename="' . $name . '"');
-        header('Cache-Control: private, max-age=31536000, immutable');
+        // Los resultados son privados: caché corta y revalidable. Un immutable de un
+        // año dejaba el archivo en el navegador después de cerrar sesión.
+        header('Cache-Control: private, max-age=600, must-revalidate');
         header('X-Content-Type-Options: nosniff');
         if (str_starts_with($mime, 'video/')) header('Accept-Ranges: bytes');
         $start = 0;
