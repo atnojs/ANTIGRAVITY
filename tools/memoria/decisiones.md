@@ -294,3 +294,38 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 - **Decisión:** `.htaccess` propio con CSP que permite `blob:` solo en img/media (el resto igual de restrictivo que la política del proyecto). No se toca la CSP raíz. Motivo: el modo local del estudio usa object URLs y el CSP heredado lo bloqueaba; el patrón ya existía en `apps/conversor_multimedia`.
 - **Decisión:** el historial sigue siendo proyectos + versiones + `jobs` en SQLite (diseño del original), sin añadir `history.php`/`history-manager.js` para no duplicar almacenamiento.
 - **Decisión:** el selector de modelo conserva los 12 ids canónicos y el estado inicial `openai-image-2-low`; en el panel lateral se reparte en varias líneas por ancho (la skill lo permite cuando el panel es más estrecho que el grupo).
+---
+
+### [2026-10-26] Unified Image Studio: Flow se ejecuta en el PC y la web solo encola
+
+- **Decisión:** la generación con Google Flow **no** ocurre en el navegador ni en Hostinger. La web
+  encola en SQLite (`flow_jobs`) y un agente instalado en el PC
+  (`tools/flow-agent/flow_agent.py`) reclama por HTTPS con su propia credencial, genera con la CLI de
+  Flow y sube el resultado al servidor.
+- **Por qué:** Antonio pidió usar el estudio **desde el móvil y desde otros ordenadores**. Hostinger
+  no puede alcanzar su PC (CGNAT, IP variable, sin puertos abiertos) y `localhost` del visitante es
+  su propio dispositivo, no el PC con Flow. Una conexión **saliente** del PC resuelve el problema sin
+  tocar el router ni exponer nada.
+- **Contrapartida:** el PC tiene que estar encendido y con la sesión de Flow iniciada. Se asume y se
+  comunica: la interfaz muestra «Flow: conectado / desconectado», permite encolar igualmente y la
+  cola sobrevive a cerrar la pestaña.
+- **Credencial:** solo del entorno (`UIS_FLOW_AGENT_TOKEN`) o de `storage/flow-agent.json`, nunca en
+  Git ni en el frontend; el `agente.json` del PC está en `.gitignore`. Es independiente de la
+  contraseña de la persona: `claim/complete/fail` exigen credencial de agente y `flow.file` exige
+  sesión o credencial.
+- **Estados honestos:** un trabajo cuyo PC dejó de responder pasa a `unknown` («pendiente de
+  comprobar») y **no se reenvía solo**; el usuario decide con «Reintentar» después de mirar en Flow.
+  Evita gastar dos veces la generación.
+- **Verificación:** `apps/unified-image-studio/docs/VERIFICACION.md` §17 (backend, agente, Chrome en
+  tres anchos, regresión). Generación real de Flow no ejecutada en esa ronda (consume puntos).
+
+### [2026-10-26] La interfaz de costes sale del estudio; la protección económica se queda en el servidor
+
+- **Decisión:** se retiran del DOM, CSS y JS el medidor de coste, la estimación por operación y el
+  modal de presupuesto. **No** se retiran autenticación, límites técnicos (trabajos por minuto,
+  tamaño de subida), protección de proveedores ni mensajes de cuota del proveedor.
+- **Por qué:** Antonio lo pidió expresamente. Ocultar euros no hace gratuita una generación: los
+  límites reales siguen donde deben estar (servidor), y los errores de cuota se explican tal cual.
+- **Contrapartida:** `budget.get/set` y la tabla `ledger` siguen en el backend, sin interfaz que los
+  use. Se conservan para no romper la base de datos ni el histórico; si se quiere limpiar del todo,
+  es un cambio de esquema aparte.

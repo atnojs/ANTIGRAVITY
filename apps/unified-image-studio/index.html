@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/base.css?v=11" />
-<link rel="stylesheet" href="assets/css/studio.css?v=11" />
+<link rel="stylesheet" href="assets/css/base.css?v=12" />
+<link rel="stylesheet" href="assets/css/studio.css?v=12" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d1117'/%3E%3Cpath d='M8 22l6-12 4 8 2-4 4 8' stroke='%232ee8ff' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 </head>
 <body>
@@ -132,6 +132,11 @@
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></symbol>
     <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></symbol>
     <symbol id="i-mask" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-film" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v16"/><path d="M17 4v16"/><path d="M2 9h5"/><path d="M2 15h5"/><path d="M17 9h5"/><path d="M17 15h5"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5Z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v6"/><path d="M15 2v6"/><path d="M6 8h12v3a6 6 0 0 1-12 0Z"/><path d="M12 17v5"/></symbol>
   </defs>
 </svg>
 
@@ -147,6 +152,18 @@
       <span class="brand-mark" aria-hidden="true">UIS</span>
       <span class="brand-name">Unified <em>Image</em> Studio</span>
     </div>
+
+    <nav class="mode-nav" id="modeNav" role="tablist" aria-label="Sección del estudio">
+      <button class="mode-btn is-active" role="tab" aria-selected="true" data-mode="image" aria-controls="leftPanel">
+        <svg class="ico"><use href="#i-image"/></svg><span>Imagen</span>
+      </button>
+      <button class="mode-btn" role="tab" aria-selected="false" data-mode="video" aria-controls="leftPanel">
+        <svg class="ico"><use href="#i-film"/></svg><span>Vídeo</span>
+      </button>
+      <button class="mode-btn" role="tab" aria-selected="false" data-mode="library" aria-controls="leftPanel">
+        <svg class="ico"><use href="#i-history"/></svg><span>Biblioteca</span>
+      </button>
+    </nav>
 
     <div class="topbar-project">
       <button class="project-chip" id="projectChip" aria-haspopup="dialog" title="Abrir biblioteca de proyectos (Ctrl+O)">
@@ -169,10 +186,12 @@
         <button class="icon-btn" id="compareBtn" aria-label="Comparar antes y después" title="Comparar antes/después (C)" aria-pressed="false"><svg class="ico"><use href="#i-compare"/></svg></button>
       </div>
 
-      <div class="cost-meter" id="costMeter" title="Coste estimado de la sesión y consumo registrado">
-        <span class="cost-label">Coste</span>
-        <span class="mono cost-value" id="costValue">0,00 €</span>
-        <span class="cost-sub mono" id="costBudget" title="Presupuesto restante">—</span>
+      <div class="flow-status" id="flowStatus" role="status" aria-live="polite" title="Estado del PC que ejecuta Google Flow">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="flow-status-text" id="flowStatusText">Flow: comprobando…</span>
+        <button class="icon-btn icon-btn-sm flow-refresh" id="flowRefreshBtn" aria-label="Comprobar la conexión con el PC" title="Comprobar la conexión con el PC">
+          <svg class="ico ico-sm"><use href="#i-refresh"/></svg>
+        </button>
       </div>
 
       <div class="save-state" id="saveState" data-state="idle" role="status" aria-live="polite">
@@ -199,7 +218,7 @@
   <div class="workspace" id="workspace">
 
     <!-- Rail + panel izquierdo -->
-    <nav class="rail" aria-label="Herramientas">
+    <nav class="rail" id="rail" aria-label="Herramientas">
       <button class="rail-btn is-active" data-tab="generate" aria-pressed="true" title="Generación">
         <svg class="ico"><use href="#i-sparkles"/></svg><span>Generar</span>
       </button>
@@ -247,6 +266,15 @@
           <div class="field">
             <span class="field-label">Modelo</span>
             <div class="model-selector" id="modelSelector" role="group" aria-label="Seleccionar modelo de generación">
+              <div class="model-provider-column model-flow-column">
+                <span class="model-provider-title">FLOW · GOOGLE</span>
+                <span class="model-quality-hint">Motor preferente · se ejecuta en tu PC</span>
+                <div class="model-toggle-group">
+                  <button type="button" class="model-toggle is-active" data-model="flow-nano-banana-2" aria-pressed="true">NANO BANANA 2</button>
+                  <button type="button" class="model-toggle" data-model="flow-nano-banana-pro" aria-pressed="false">NANO BANANA PRO</button>
+                  <button type="button" class="model-toggle" data-model="flow-nano-banana-2-lite" aria-pressed="false">NANO BANANA 2 LITE</button>
+                </div>
+              </div>
               <div class="model-provider-column">
                 <span class="model-provider-title">OPENAI 2.5</span>
                 <span class="model-quality-hint">De menor a mayor calidad</span>
@@ -276,14 +304,14 @@
                 <div class="model-provider-column">
                   <span class="model-provider-title">IMAGE 2</span>
                   <div class="model-toggle-group">
-                    <button type="button" class="model-toggle is-active" data-model="openai-image-2-low" aria-pressed="true">LOW</button>
+                    <button type="button" class="model-toggle" data-model="openai-image-2-low" aria-pressed="false">LOW</button>
                     <button type="button" class="model-toggle" data-model="openai-image-2" aria-pressed="false">MEDIUM</button>
                     <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false">HIGH</button>
                   </div>
                 </div>
               </div>
             </div>
-            <p class="field-note" id="modelNote">gpt-image-2 · calidad low · el más rápido y económico.</p>
+            <p class="field-note" id="modelNote">Nano Banana 2 en tu PC con Google Flow: no necesita clave de API.</p>
           </div>
 
           <div class="grid-2">
@@ -508,17 +536,97 @@
           </div>
         </section>
 
+        <!-- ── VÍDEO (Google Flow · Veo) ── -->
+        <section class="tabpane" data-pane="video" hidden aria-label="Generación de vídeo">
+          <div class="flow-intro">
+            <h3 class="group-title">Generar vídeo con Flow</h3>
+            <p class="pane-hint">Se genera en tu PC con Google Flow. Puedes cerrar esta pestaña: el trabajo queda en la cola y aparece en Biblioteca.</p>
+          </div>
+
+          <div class="field">
+            <label for="videoPrompt">Describe el vídeo</label>
+            <textarea id="videoPrompt" rows="5" placeholder="Describe la escena, el movimiento y el ambiente. Todo texto generado debe estar en español."></textarea>
+            <div class="field-row">
+              <span class="hint" id="videoPromptCount">0 / 1.500</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Fotograma inicial <span class="hint">(opcional · anima una imagen)</span></span>
+            <div class="frame-slot" id="videoStartSlot">
+              <div class="frame-empty" id="videoStartEmpty">
+                <svg class="ico"><use href="#i-image"/></svg>
+                <span>Sin fotograma</span>
+              </div>
+              <img class="frame-thumb hidden" id="videoStartThumb" alt="Fotograma inicial seleccionado" />
+              <div class="frame-actions">
+                <button class="btn btn-sm btn-ghost" id="videoStartPick">Elegir imagen</button>
+                <button class="btn btn-sm btn-ghost hidden" id="videoStartClear">Quitar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Modelo de vídeo</span>
+            <div class="model-toggle-group" id="videoModelGroup" role="group" aria-label="Modelo de vídeo">
+              <button type="button" class="model-toggle is-active" data-vmodel="veo-3.1-lite" aria-pressed="true">VEO 3.1 LITE</button>
+              <button type="button" class="model-toggle" data-vmodel="veo-3.1-fast" aria-pressed="false">VEO 3.1 FAST</button>
+              <button type="button" class="model-toggle" data-vmodel="veo-3.1-quality" aria-pressed="false">VEO 3.1 QUALITY</button>
+              <button type="button" class="model-toggle" data-vmodel="omni-flash" aria-pressed="false">OMNI FLASH</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Formato</span>
+            <div class="model-toggle-group" id="videoRatioGroup" role="group" aria-label="Formato del vídeo">
+              <button type="button" class="model-toggle is-active" data-vratio="16:9" aria-pressed="true">16:9</button>
+              <button type="button" class="model-toggle" data-vratio="9:16" aria-pressed="false">9:16</button>
+            </div>
+            <p class="field-note">Flow solo genera vídeo en 16:9 o 9:16.</p>
+          </div>
+
+          <div class="flow-agent-card" id="flowAgentCard">
+            <div class="flow-agent-head">
+              <svg class="ico ico-sm"><use href="#i-plug"/></svg>
+              <span id="flowAgentTitle">Estado del PC</span>
+            </div>
+            <p class="field-note" id="flowAgentText">Comprobando la conexión con el PC que ejecuta Flow…</p>
+            <button class="btn btn-ghost btn-block btn-sm" id="flowAgentRefresh">
+              <svg class="ico ico-sm"><use href="#i-refresh"/></svg>Comprobar conexión
+            </button>
+          </div>
+
+          <div class="video-footer">
+            <button class="btn btn-primary btn-block" id="videoGenerateBtn">
+              <svg class="ico"><use href="#i-film"/></svg><span>GENERAR VÍDEO</span>
+            </button>
+            <button class="link-btn" id="videoUseCanvas">Usar el lienzo como fotograma inicial</button>
+            <p class="field-note">El vídeo se genera en tu PC. Cerrar esta pestaña no cancela el trabajo.</p>
+          </div>
+        </section>
+
+        <!-- ── BIBLIOTECA (resultados de Flow) ── -->
+        <section class="tabpane" data-pane="library" hidden aria-label="Biblioteca de resultados">
+          <div class="field-row library-head">
+            <span class="field-label">Resultados</span>
+            <button class="link-btn" id="flowLibraryRefresh">Actualizar</button>
+          </div>
+          <div class="model-toggle-group library-filter" id="libraryFilter" role="group" aria-label="Filtrar resultados">
+            <button type="button" class="model-toggle is-active" data-filter="all" aria-pressed="true">TODO</button>
+            <button type="button" class="model-toggle" data-filter="image" aria-pressed="false">IMÁGENES</button>
+            <button type="button" class="model-toggle" data-filter="video" aria-pressed="false">VÍDEOS</button>
+          </div>
+          <div class="flow-jobs" id="flowJobs" aria-live="polite"></div>
+          <p class="pane-hint" id="flowJobsEmpty">Todavía no hay resultados. Genera una imagen o un vídeo y aparecerán aquí, también desde el móvil.</p>
+        </section>
+
       </div>
 
       <div class="generate-footer" id="generateFooter">
-        <div class="estimate">
-          <span class="estimate-label">Estimación</span>
-          <span class="mono" id="estimateValue">—</span>
-        </div>
         <button class="btn btn-primary btn-block" id="generateBtn">
           <svg class="ico"><use href="#i-sparkles"/></svg><span id="generateBtnText">GENERAR</span>
         </button>
-        <p class="field-note" id="generateNote">El coste se comprueba en el servidor antes de enviar la solicitud.</p>
+        <p class="field-note" id="generateNote">El trabajo queda registrado en el servidor: puedes cerrar la pestaña y recuperarlo.</p>
       </div>
     </aside>
 
@@ -648,6 +756,13 @@
         </section>
       </div>
     </aside>
+  </div>
+
+  <!-- ── Aviso no bloqueante de trabajos de Flow ── -->
+  <div class="flow-progress hidden" id="flowProgress" role="status" aria-live="polite" aria-busy="false">
+    <span class="flow-progress-spinner" aria-hidden="true"></span>
+    <span class="flow-progress-text" id="flowProgressText">En cola…</span>
+    <button class="link-btn" id="flowProgressMore">Ver en Biblioteca</button>
   </div>
 
   <!-- ── Barra de estado ── -->
@@ -784,25 +899,16 @@
   </div>
 </div>
 
-<div class="modal-backdrop hidden" id="budgetModal" role="dialog" aria-modal="true" aria-labelledby="budgetTitle">
-  <div class="modal">
-    <div class="modal-head">
-      <h2 id="budgetTitle">Presupuesto</h2>
-      <button class="icon-btn" data-close="budgetModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
-    </div>
-    <div class="modal-body">
-      <p class="field-note">Los importes son estimaciones: el proveedor no informa del coste real. El servidor comprueba el presupuesto, incluidos los trabajos en curso, antes de enviar cada solicitud.</p>
-      <div class="grid-2">
-        <div class="field"><label for="budgetSession">Presupuesto por sesión (€)</label><input type="number" id="budgetSession" min="0" step="0.5" value="5" /></div>
-        <div class="field"><label for="budgetProject">Presupuesto por proyecto (€)</label><input type="number" id="budgetProject" min="0" step="0.5" value="20" /></div>
-      </div>
-      <div class="field"><label for="budgetOperation">Límite por operación (€)</label><input type="number" id="budgetOperation" min="0" step="0.1" value="1.5" /></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" data-close="budgetModal">Cancelar</button>
-      <button class="btn btn-primary" id="saveBudgetBtn">Guardar</button>
+<div class="flow-lightbox hidden" id="flowLightbox" role="dialog" aria-modal="true" aria-label="Resultado ampliado">
+  <div class="flow-lightbox-bar">
+    <span class="mono" id="flowLightboxMeta">—</span>
+    <div class="btn-row">
+      <a class="btn btn-sm btn-ghost" id="flowLightboxDownload" href="#" download>Descargar</a>
+      <button class="btn btn-sm btn-ghost" id="flowLightboxClose" aria-label="Cerrar visor">Cerrar</button>
     </div>
   </div>
+  <img class="flow-lightbox-img" id="flowLightboxImg" alt="Resultado de Flow ampliado" />
+  <video class="flow-lightbox-video hidden" id="flowLightboxVideo" controls playsinline></video>
 </div>
 
 <div class="modal-backdrop hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
@@ -906,7 +1012,8 @@
 <input type="file" id="refInput" accept="image/png,image/jpeg,image/webp" hidden multiple />
 <input type="file" id="projectInput" accept=".json,application/json" hidden />
 
-<script type="module" src="assets/js/app.js?v=11"></script>
+<script type="module" src="assets/js/app.js?v=12"></script>
+<script src="lightbox-zoom.20261026.js" defer></script>
 <script src="/apps/_shared/password-eye.js?v=20261025b" defer></script>
 </body>
 </html>

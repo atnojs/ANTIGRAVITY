@@ -4,10 +4,10 @@
 
 import {
   state, emit, on, getLayer, selectLayer, removeLayer, duplicateLayer, reorderLayer,
-  moveLayerTo, mutate, getResource, fmtMoney, fmtDate, fmtBytes, canUndo, canRedo,
+  moveLayerTo, mutate, getResource, fmtDate, fmtBytes, canUndo, canRedo,
   clamp, LIMITS,
-} from './core.js?v=11';
-import { modelById, describeCost, catalog } from './ai.js?v=11';
+} from './core.js?v=12';
+import { modelById, catalog } from './ai.js?v=12';
 
 export const $ = (id) => document.getElementById(id);
 export const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -167,17 +167,7 @@ export function updateTopbar() {
   $('zoomValue').textContent = `${Math.round(state.ui.zoom * 100)} %`;
   $('dirtyDot').classList.toggle('is-dirty', state.flags.dirty);
 
-  const cost = describeCost(state.ui.model, 1);
-  $('estimateValue').textContent = cost.text;
-  $('costValue').textContent = fmtMoney(state.ui.spent || 0);
-  $('costBudget').textContent = state.ui.budget
-    ? `restante ${fmtMoney(Math.max(0, state.ui.budget.remaining ?? 0))}`
-    : 'presupuesto —';
-  $('costBudget').title = state.ui.budget
-    ? `Sesión: ${fmtMoney(state.ui.budget.sessionSpent || 0)} / ${fmtMoney(state.ui.budget.sessionLimit ?? 0)} · Proyecto: ${fmtMoney(state.ui.budget.projectSpent || 0)} / ${fmtMoney(state.ui.budget.projectLimit ?? 0)}`
-    : 'Sin presupuesto consultado';
-  $('costMeter').title = cost.detail;
-  $('estimateValue').title = cost.detail;
+  // La interfaz de costes se retiró del estudio: no se pinta ningún importe.
   $('saveState').dataset.state = state.ui.saveState;
   const labels = {
     idle: 'Sin guardar', dirty: 'Cambios sin guardar', saving: 'Guardando…',
@@ -493,16 +483,14 @@ export function renderRecipes(recipes = state.ui.recipes) {
 /* ══════════════ Selector de modelo ══════════════ */
 export function setActiveModel(modelId) {
   state.ui.model = modelId;
-  $$('.model-toggle').forEach((button) => {
+  // Solo el selector de imagen: vídeo y filtros usan la misma clase visual.
+  $$('#modelSelector .model-toggle').forEach((button) => {
     const active = button.dataset.model === modelId;
     button.classList.toggle('is-active', active);
     button.setAttribute('aria-pressed', String(active));
   });
   const model = modelById(modelId);
-  const price = describeCost(modelId, 1);
   $('modelNote').textContent = `${model.model}${model.quality ? ` · calidad ${model.quality}` : ''} · ${model.note}`;
-  $('estimateValue').textContent = price.text;
-  $('estimateValue').title = price.detail;
   updateTopbar();
 }
 
@@ -518,7 +506,7 @@ export function switchLeftTab(tab) {
     pane.classList.toggle('is-active', active);
     pane.hidden = !active;
   });
-  const titles = { generate: 'Generación', edit: 'Edición y máscaras', compose: 'Composición', product: 'Producto y moda', utilities: 'Utilidades' };
+  const titles = { generate: 'Generación', edit: 'Edición y máscaras', compose: 'Composición', product: 'Producto y moda', utilities: 'Utilidades', video: 'Vídeo', library: 'Biblioteca' };
   $('panelTitle').textContent = titles[tab] || 'Herramientas';
   document.body.dataset.leftTab = tab;
 }

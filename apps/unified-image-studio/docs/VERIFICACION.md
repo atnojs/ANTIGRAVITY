@@ -277,3 +277,95 @@ interrumpe, y desde esta versión eso se muestra con un aviso explícito en pant
 | Modales sin trampa de foco ni restauración | Menor | Foco atrapado y devuelto al disparador; pila sin duplicados | `test-20` (3/3) |
 | Dos guardados simultáneos → 409 falso | Medio (nuevo) | Guardados serializados | `test-19` |
 | `ai.js` viejo en caché con `app.js` nuevo | Bloqueante en producción | Imports con `?v=` y `.htaccess` con `no-cache` | producción `v1.4.0`, módulos `?v=11` |
+---
+
+## 17. Integración de Google Flow y retirada de la interfaz de costes (2026-10-26)
+
+Entorno: Windows, Chrome 155 headless (CDP), PHP 8.4.20 portable estático
+(`dl.static-php.dev`, NTS x64) con `pdo_sqlite`, `sqlite3`, `curl`, `mbstring`,
+`openssl`, `gd`, `fileinfo`. Servidor local con `php -S` y datos en `.tmp-build/`
+(fuera de Git).
+
+### 17.1 Backend: cola, credencial y estados
+
+| Prueba | Comando / archivo | Resultado |
+|---|---|---|
+| Sintaxis PHP | `php -l api.php lib/bootstrap.php lib/jobs.php lib/flow-engine.php` | PASS · sin errores |
+| Migración a la versión 2 (tablas `flow_jobs` y `flow_meta`) | `PHP user_version` = 2 | PASS |
+| `flow.state` sin sesión | petición anónima | PASS · HTTP 401 `needsLogin` |
+| `agent.claim` con token falso | cabecera `X-UIS-Agent` inventada | PASS · HTTP 401 |
+| `agent.claim` con la credencial correcta | cabecera real | PASS · HTTP 200 |
+| `flow.file` sin sesión ni credencial | proceso aislado sin `auto_prepend` | PASS · HTTP 401 |
+| `flow.file` con credencial de agente | misma ruta | PASS · HTTP 200 `image/jpeg` |
+| Encolar imagen (Nano Banana 2) | `flow.create` | PASS · trabajo `queued` |
+| Encolar 2 variantes | `count: 2` | PASS · 2 identificadores |
+| Encolar vídeo | `type: video` | PASS · `mode: text` |
+| Vídeo con fotograma inicial | `images: [jpeg]` | PASS · `mode: frames`, `refs=1` en el agente |
+| Edición de imagen con referencia | `mode: edit` | PASS · `refs=1` en el agente |
+| Edición sin imagen | `mode: edit` sin `images` | PASS · HTTP 400 con mensaje claro |
+| Modelo inexistente | `model: modelo-que-no-existe` | PASS · cae al modelo inicial |
+| Proporción no soportada por Flow | `ratio: 7:3` | PASS · se normaliza a `1:1` |
+| Límite de vídeos en cola | 3.er vídeo pendiente | PASS · HTTP 429 con motivo |
+| Caducidad de un trabajo abandonado | `started_at` envejecido 4 h | PASS · estado `unknown`, mensaje honesto |
+| Reprogramar un trabajo `unknown` | `flow.retry` | PASS · vuelve a `queued` |
+
+### 17.2 Agente del PC (`tools/flow-agent/flow_agent.py`)
+
+| Prueba | Resultado |
+|---|---|
+| Sintaxis (`py_compile`) | PASS |
+| `--status` contra el servidor | PASS · `credencial: OK`, cola y perfil libres |
+| Ciclo imagen | PASS · reclama, genera, sube JPEG y el servidor lo marca `done` |
+| Ciclo vídeo | PASS · sube MP4 (`ftyp` verificado) y queda `done` |
+| Subida grande por multipart | PASS · el vídeo no depende del límite de JSON |
+| Fallo sin credencial | PASS · no reclama trabajos (código 3) |
+| Lock con PID vivo/muerto | PASS · el lock huérfano se libera solo |
+
+### 17.3 Frontend en Chrome (Playwright, tres anchos)
+
+| Prueba | 1440 | 1024 | 390 |
+|---|---|---|---|
+| Arranque sin aviso de error | PASS | PASS | PASS |
+| Elementos de coste en el DOM | 0 | 0 | 0 |
+| Navegación Imagen · Vídeo · Biblioteca | PASS | PASS | PASS (cajón) |
+| Modelo inicial | Nano Banana 2 | Nano Banana 2 | Nano Banana 2 |
+| Modelos Flow presentes / total del selector | 3 / 15 | 3 / 15 | 3 / 15 |
+| Panel de herramientas (ancho real) | 322 px | cajón | cajón |
+| Desbordamiento horizontal | no | no | no |
+| Consola sin errores propios | PASS | PASS | PASS |
+
+Flujo completo de extremo a extremo (Chrome + agente + servidor):
+
+| Paso | Resultado |
+|---|---|
+| Encolar imagen desde la web | PASS · aviso inmediato, sin overlay bloqueante |
+| Navegar a otra sección mientras genera | PASS · interfaz utilizable |
+| El agente procesa el trabajo | PASS · el vigilante lo detecta en < 10 s |
+| Aviso de progreso | PASS · aparece al encolar y desaparece al terminar |
+| Descargar el resultado desde Biblioteca | PASS · JPEG de 6.431 B con cabecera válida |
+| Aplicar al lienzo | PASS · documento pasa de 0 a 1 capas |
+| Animar una imagen | PASS · abre Vídeo con el fotograma cargado |
+| Consola y red | PASS · sin errores ni peticiones fallidas |
+
+Regresión de las herramientas previas:
+
+| Prueba | Resultado |
+|---|---|
+| Importar imagen | PASS · 1 capa |
+| Pestañas Editar, Componer, Producto, Utilidades, Generar | PASS · las cinco visibles |
+| Modelo anterior (IMAGE 2 LOW) | PASS · nota correcta, resolución activa, 9 proporciones |
+| Modelo Flow | PASS · resolución desactivada, 5 proporciones admitidas |
+| Exportar JPG | PASS · 66.853 B con cabecera JPEG |
+| Guardar (Ctrl+S) | PASS · «Guardado 17:54» |
+| Ayuda y acceso | PASS · sin menciones a costes |
+
+### 17.4 Límites declarados
+
+- La generación real con Google Flow **no se ha ejecutado** en esta ronda: el PC
+  tiene la sesión de Flow guardada, pero las pruebas usan un sustituto del
+  binario de Flow para no consumir puntos ni depender de la UI de Google.
+- El agente se ha probado con el servidor local. En producción necesita la
+  credencial en el `.htaccess` raíz (`UIS_FLOW_AGENT_TOKEN`) o en
+  `storage/flow-agent.json`; sin ella la interfaz muestra «Flow: sin credencial».
+- El vídeo con fotograma final (interpolación) no se ha probado de punta a punta
+  porque requiere una generación real de Flow.

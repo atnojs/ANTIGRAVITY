@@ -4,8 +4,12 @@ Estación de trabajo visual privada y autoalojada: importar o generar una imagen
 componer con textos, logos y formas, guardar el proyecto editable y exportar. PHP + SQLite en
 Hostinger y frontend en HTML/CSS/JavaScript modular, sin paso de compilación.
 
-> Estado de la entrega: **frontend verificado en navegador**; **backend PHP implementado pero no
-> ejecutado en este equipo** (no hay PHP disponible). Ver [docs/VERIFICACION.md](docs/VERIFICACION.md).
+**Google Flow es el motor preferente**: las imágenes y los vídeos se encolan en el servidor y
+los ejecuta un agente instalado en el PC, así que el estudio funciona desde el móvil y desde
+cualquier ordenador. Los proveedores anteriores (OpenAI, Gemini, Qwen) siguen disponibles.
+
+> Estado: frontend y backend **verificados en navegador y en servidor local** (PHP 8.4, SQLite).
+> Ver [docs/VERIFICACION.md](docs/VERIFICACION.md).
 
 ---
 
@@ -24,16 +28,33 @@ apps/unified-image-studio/
 │   ├── ui.js                   Vistas, listas, avisos, modales, estado visible
 │   ├── persist.js              IndexedDB, autoguardado y cliente de la API
 │   ├── exporter.js             PNG/JPG/WebP, escala, DPI real, portapapeles
-│   └── ai.js                   Catálogo de modelos, trabajos y costes
-├── api.php                     API privada: sesión, proyectos, recursos, trabajos, presupuesto
-├── proxy.php                   Entrada del proveedor: mismo pipeline y mismo presupuesto
-├── lib/bootstrap.php           Configuración, SQLite, migraciones, auth, presupuesto
-├── lib/jobs.php                Pipeline único de trabajos (idempotencia, coste, proveedor)
+│   ├── ai.js                   Catálogo de modelos directos (OpenAI, Gemini, Qwen)
+│   └── flow.js                 Motor Google Flow: cola, estado del PC y trabajos
+├── api.php                     API privada: sesión, proyectos, recursos, trabajos y Flow
+├── proxy.php                   Entrada del proveedor directo (OpenAI/Gemini/Qwen)
+├── lib/bootstrap.php           Configuración, SQLite, migraciones, auth
+├── lib/jobs.php                Pipeline de trabajos directos (idempotencia, proveedor)
+├── lib/flow-engine.php         Cola de Flow, credencial del agente y trabajos
 ├── lib/canonical-image-model.php  Contrato de generación del proyecto (copia sincronizada)
-├── storage/                    Datos privados: SQLite, originales y derivados (denegado por web)
-├── pricing.example.json        Plantilla de tarifas (sin precios inventados)
+├── storage/                    Datos privados: SQLite, originales, resultados (denegado por web)
 └── docs/VERIFICACION.md        Evidencia de pruebas y límites declarados
 ```
+
+## 1-bis. Google Flow: imágenes y vídeos desde cualquier dispositivo
+
+| Pieza | Dónde vive | Qué hace |
+|---|---|---|
+| Cola de trabajos | servidor (`flow_jobs` en SQLite) | Guarda el trabajo aunque cierres la pestaña |
+| Agente del PC | `tools/flow-agent/` | Reclama, genera con Flow y sube el resultado |
+| Credencial del agente | entorno del servidor o `storage/flow-agent.json` | Autentica al PC; nunca viaja al navegador |
+
+- **Modelos de imagen**: `Nano Banana 2` (inicial), `Nano Banana Pro` y `Nano Banana 2 Lite`.
+- **Vídeo**: Veo 3.1 Lite/Fast/Quality y Omni Flash, en 16:9 o 9:16.
+- **Animar**: cualquier imagen (generada o del lienzo) pasa a ser el fotograma inicial del vídeo.
+- **Estados honestos**: en cola, generando, listo, falló y *pendiente de comprobar* (el PC se
+  apagó a mitad: no se reenvía solo para no gastar dos veces la generación).
+- Instalación y diagnóstico del agente: [`tools/flow-agent/LEEME.md`](../../tools/flow-agent/LEEME.md).
+
 
 ## 2. Requisitos
 

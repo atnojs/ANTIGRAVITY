@@ -960,3 +960,36 @@ Ampliación con datos de la entrada del 2026-10-16:
 - **Solución:** `.htaccess` propio de la app con `Header unset`/`Header always unset Content-Security-Policy` + política con `img-src 'self' data: blob: https:` y `media-src … blob:` (patrón ya usado en `apps/conversor_multimedia`). Commit `33516df0` de la copia.
 - **Verificación:** proxy local que inyecta la misma cabecera (`_csp_test_server.py`) y prueba en la URL real: import visible, export PNG 1024×1024 57.077 B, 0 violaciones.
 - **Extra:** el webhook de GitHub entregó todos los push con HTTP 200 pero Hostinger no publicó durante ~15 min; se resolvió con commits vacíos de re-disparo y comprobando `version.txt` servido (no basta HTTP 200).
+---
+
+### [2026-10-26] El overlay de carga bloqueaba toda el estudio mientras había un trabajo en cola
+
+- **Síntoma:** al encolar una imagen con Flow, Playwright no podía pulsar «Biblioteca»:
+  `<div id="loadingOverlay"> intercepts pointer events`. En uso real, el usuario se quedaba hasta
+  30 minutos sin poder cambiar de sección, guardar ni exportar.
+- **Causa:** reutilicé el overlay a pantalla completa (`showLoading`) para esperar un trabajo que no
+  corre en el navegador sino en el PC. Ese overlay está pensado para peticiones de segundos, no para
+  una cola asíncrona.
+- **Solución:** en las rutas de Flow no se usa el overlay. Se encola, se devuelve el control al
+  usuario y un vigilante en segundo plano (sondeo 3,5 s) pinta un aviso compacto
+  (`#flowProgress`, `position:fixed`, no modal) que muestra «en cola» o «generando» y desaparece al
+  terminar. La interfaz sigue siendo utilizable y el botón de generar se libera enseguida.
+- **Verificación:** `e2e.mjs` comprueba `overlayDeCarga: false` y `uiLibreDuranteGeneracion: true`
+  mientras hay un trabajo pendiente.
+- **Regla que queda:** un overlay modal solo para operaciones que bloquean de verdad el trabajo del
+  usuario (segundos). Para colas o agentes externos, aviso no bloqueante.
+
+### [2026-10-26] Ocultar el rail con `display:none` rompió la rejilla del estudio
+
+- **Síntoma:** al entrar en la sección Vídeo, el panel de herramientas quedaba en ~84 px y el texto
+  se partía palabra a palabra («Se genera en tu PC con Google Flow…» en una columna de 8 caracteres).
+- **Causa:** `.workspace` es una rejilla de columnas fijas
+  (`rail | panel izquierdo | lienzo | panel derecho`). Al sacar el rail del flujo con `display:none`,
+  el panel izquierdo pasó a ocupar **la celda del rail** (84 px) y el resto se desplazó.
+- **Solución:** el rail nunca se oculta: conserva su columna y se atenúa con
+  `.rail.is-inactive` (opacidad 0,42, recuperada al pasar el ratón o al enfocar). Pulsar cualquier
+  herramienta del rail devuelve a la sección Imagen.
+- **Verificación:** medida real en Chrome a 1440 px: panel de 322 px en las tres secciones, 0 nodos
+  de texto estrechos y 0 desbordamiento horizontal.
+- **Regla que queda:** en una rejilla con celdas fijas, no quitar hijos del flujo (`display:none`)
+  para «esconder» algo: cambiar su contenido, atenuarlo o colapsar su columna con una clase.

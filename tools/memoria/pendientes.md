@@ -483,3 +483,18 @@ propósito, para que no se pierda de vista.
 - **Pendiente 6 — conflicto 409:** al «Conservar la mía» el guardado se hace pero salta `setSaveState is not defined` (`app.js:1540`). *Siguiente paso:* importar `setSaveState` desde `core.js` y probar el flujo.
 - **Pendiente 7 — máscara y roles:** el contrato canónico no reenvía `mask` ni los roles de referencia al proveedor (`canonical-image-model.php`). *Siguiente paso:* decidir si se implementa el envío (OpenAI `/images/edits` admite `mask`) o se retira la promesa de la UI.
 - **Evidencias:** `tools/evidencias/2026-10-25-tutorial-uis/verificacion-ui.md` (68 capturas, descargas validadas) y `verificacion-tutorial-r2.md`.
+
+## 2026-10-26 — Seguridad: token de la cola de Flow escrito en el repositorio público
+
+- **Qué:** `apps/flow_studio/flow_queue.php` y `apps/flow_studio_hoola/flow_queue.php` llevan
+  `const QUEUE_TOKEN = '...'` en claro, y el repositorio es público. Ese token autoriza `claim`
+  (reclamar trabajos) y `complete`/`fail` (subir resultados) en la cola compartida.
+- **Riesgo:** quien lo lea puede inyectar resultados falsos o quedarse trabajos de la cola. No da
+  acceso a la cuenta de Google, pero sí a la cola.
+- **Estado:** **no se ha tocado** en esta ronda para no romper el worker antiguo
+  (`E:\herramientas\google-flow\flow_studio_worker.py`, que usa el valor literal). El motor nuevo
+  (`apps/unified-image-studio`) **no** lo reutiliza: tiene credencial propia por entorno/fichero.
+- **Siguiente paso concreto:** rotar el valor, moverlo a `SetEnv FLOW_QUEUE_TOKEN` en el `.htaccess`
+  raíz, hacer que ambos `flow_queue.php` lo lean del entorno con `hash_equals` y actualizar el worker
+  del PC para leerlo de un fichero de configuración fuera de Git. Después, retirar
+  `apps/flow_studio_hoola` si el estudio unificado ya cubre su función.

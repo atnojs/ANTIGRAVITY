@@ -5,8 +5,8 @@
 import {
   state, emit, getLayer, selectLayer, clamp, makeTextLayer, makeShapeLayer, addLayer,
   pushHistory, markDirty,
-} from './core.js?v=11';
-import { renderer, hitTestHandle, pointInLayer } from './render.js?v=11';
+} from './core.js?v=12';
+import { renderer, hitTestHandle, pointInLayer } from './render.js?v=12';
 
 const SNAP_DEG = 15;
 const MIN_SIZE = 8;

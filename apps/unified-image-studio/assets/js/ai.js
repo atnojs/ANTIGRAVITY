@@ -1,14 +1,17 @@
 /* ============================================================
-   ai.js — catálogo de modelos, trabajos y control de costes
+   ai.js — catálogo de modelos y trabajos de los proveedores directos
    ============================================================ */
 
-import { state, emit, uid, getResource, blobToBase64, dataUrlToBlob, fmtMoney } from './core.js?v=11';
-import { server } from './persist.js?v=11';
+import { state, emit, uid, getResource, blobToBase64, dataUrlToBlob } from './core.js?v=12';
+import { server } from './persist.js?v=12';
 
 /* Catálogo espejo del contrato canónico del servidor
-   (lib/canonical-image-model.php). No inventa modelos: solo
-   describe los que el proxy acepta. */
+   (lib/canonical-image-model.php) más el motor Flow, que se ejecuta en el PC.
+   Los modelos de Flow van primero: es el motor preferente del estudio. */
 export const MODELS = [
+  { id: 'flow-nano-banana-2', group: 'FLOW · GOOGLE', label: 'NANO BANANA 2', provider: 'flow', model: 'Nano Banana 2', note: 'Nano Banana 2 en tu PC con Google Flow. Es el modelo inicial de un trabajo nuevo.' },
+  { id: 'flow-nano-banana-pro', group: 'FLOW · GOOGLE', label: 'NANO BANANA PRO', provider: 'flow', model: 'Nano Banana Pro', note: 'Nano Banana Pro con Flow: más detalle, tarda algo más.' },
+  { id: 'flow-nano-banana-2-lite', group: 'FLOW · GOOGLE', label: 'NANO BANANA 2 LITE', provider: 'flow', model: 'Nano Banana 2 Lite', note: 'Nano Banana 2 Lite con Flow: el más rápido.' },
   { id: 'openai-medium', group: 'OPENAI 2.5', label: 'MEDIUM', provider: 'openai', model: 'gpt-image-2.5-flare', quality: 'medium', note: 'Flare en calidad media: la opción más rápida de la gama 2.5.' },
   { id: 'openai-high', group: 'OPENAI 2.5', label: 'HIGH', provider: 'openai', model: 'gpt-image-2.5-flare', quality: 'high', note: 'Flare en calidad alta: más detalle y coste superior a MEDIUM.' },
   { id: 'openai-max-flare', group: 'OPENAI 2.5', label: 'MAX FLARE', provider: 'openai', model: 'gpt-image-2.5-flare', quality: 'max', note: 'Calidad máxima del modelo flare.' },
@@ -18,19 +21,17 @@ export const MODELS = [
   { id: 'gemini-flash', group: 'GEMINI', label: '3.1 FLASH', provider: 'gemini', model: 'google/gemini-3.1-flash-image', note: 'Gemini 3.1 Flash: rápido y bueno con texto.' },
   { id: 'gemini-pro', group: 'GEMINI', label: '3 PRO', provider: 'gemini', model: 'google/gemini-3-pro-image', note: 'Gemini 3 Pro: máxima calidad del grupo para texto.' },
   { id: 'qwen-pro', group: 'QWEN', label: 'QWEN 3 PRO', provider: 'qwen', model: 'qwen/qwen-image-3-pro', note: 'Qwen Image 3 Pro: texto nítido y diseños densos.' },
-  { id: 'openai-image-2-low', group: 'IMAGE 2', label: 'LOW', provider: 'openai', model: 'gpt-image-2', quality: 'low', note: 'gpt-image-2 en calidad baja: el más rápido y económico. Activo por defecto.' },
+  { id: 'openai-image-2-low', group: 'IMAGE 2', label: 'LOW', provider: 'openai', model: 'gpt-image-2', quality: 'low', note: 'gpt-image-2 en calidad baja: el más rápido y económico de los proveedores directos.' },
   { id: 'openai-image-2', group: 'IMAGE 2', label: 'MEDIUM', provider: 'openai', model: 'gpt-image-2', quality: 'medium', note: 'gpt-image-2 en calidad media.' },
   { id: 'openai-image-2-high', group: 'IMAGE 2', label: 'HIGH', provider: 'openai', model: 'gpt-image-2', quality: 'high', note: 'gpt-image-2 en calidad alta: más detalle y coste.' },
 ];
 
-export const modelById = (id) => MODELS.find((m) => m.id === id) || MODELS.find((m) => m.id === 'openai-image-2-low');
+export const modelById = (id) => MODELS.find((m) => m.id === id) || MODELS[0];
 
 export const ASPECTS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
 
 export const catalog = {
   loaded: false,
-  pricingConfigured: false,
-  pricing: {},
   providers: { openai: false, openrouter: false },
   models: MODELS.map((m) => m.id),
 };
@@ -38,14 +39,11 @@ export const catalog = {
 export async function loadCatalog() {
   if (!server.available || !server.writable) {
     catalog.loaded = true;
-    catalog.pricingConfigured = false;
     return catalog;
   }
   try {
     const data = await server.call('catalog', {}, { method: 'GET', timeout: 8000 });
     catalog.loaded = true;
-    catalog.pricingConfigured = Boolean(data?.pricingConfigured);
-    catalog.pricing = data?.pricing || {};
     catalog.providers = data?.providers || catalog.providers;
     if (Array.isArray(data?.models) && data.models.length) {
       catalog.models = data.models.filter((id) => MODELS.some((m) => m.id === id));
@@ -53,30 +51,13 @@ export async function loadCatalog() {
     emit('catalog:change', {});
   } catch (error) {
     catalog.loaded = true;
-    catalog.pricingConfigured = false;
     emit('catalog:error', { error: error.message });
   }
   return catalog;
 }
 
-/* ── Costes ── */
-export function costFor(modelId, count = 1) {
-  const price = catalog.pricing[modelId];
-  if (!price || !Number.isFinite(price.unit)) return null;
-  return price.unit * count;
-}
-
-export function describeCost(modelId, count = 1) {
-  const value = costFor(modelId, count);
-  if (value === null) {
-    return {
-      known: false,
-      text: 'Tarifa no configurada',
-      detail: 'Configura storage/pricing.json con el precio real de cada modelo para que el presupuesto se aplique en euros.',
-    };
-  }
-  return { known: true, text: fmtMoney(value), detail: 'Estimación: el proveedor no informa del importe real de la operación.' };
-}
+/* Los costes, saldos y presupuestos se retiraron del estudio (2026-10-26):
+   no hay ninguna función que estime importes en el cliente. */
 
 /* ── Datos de referencia ── */
 const dataUrlCache = new Map();
@@ -239,21 +220,7 @@ export async function resumeJob(job) {
   }
 }
 
-export async function fetchBudget() {
-  if (!server.available || !server.writable) return null;
-  try {
-    const data = await server.call('budget.get', {}, { method: 'GET', timeout: 8000 });
-    return data?.budget || null;
-  } catch {
-    return null;
-  }
-}
-
-export async function saveBudget(budget) {
-  assertReady();
-  const data = await server.call('budget.set', budget, { timeout: 10000 });
-  return data?.budget || null;
-}export async function jobHistory(limit = 20) {
+export async function jobHistory(limit = 20) {
   if (!server.available || !server.writable) return [];
   try {
     const data = await server.call('job.list', { limit }, { method: 'GET', timeout: 8000 });

@@ -5,6 +5,41 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-26 — Unified Image Studio: Google Flow como motor preferente (imagen y vídeo) y fuera la interfaz de costes
+
+- **Encargo:** integrar las capacidades de `apps/flow_studio_hoola` en `apps/unified-image-studio` con
+  Flow como núcleo, Nano Banana 2 por defecto, vídeo accesible, **desde móvil y otros PC**, sin
+  perder ninguna herramienta previa y sin rastro de costes/créditos en la interfaz.
+- **Decisión de arquitectura:** el navegador **nunca** habla con el PC. La web encola en el servidor
+  (`flow_jobs` en SQLite) y un **agente del PC** (`tools/flow-agent/`) reclama por HTTPS con su
+  propia credencial, genera con Flow y sube el resultado. Así funciona desde cualquier dispositivo
+  sin abrir puertos ni exponer `localhost`, y cerrar la pestaña no cancela nada. Detalle en
+  `decisiones.md`.
+- **Seguridad:** la credencial del agente se resuelve **solo** del entorno (`UIS_FLOW_AGENT_TOKEN`) o
+  de `storage/flow-agent.json` (fuera de Git). `agent.claim/complete/fail` exigen esa credencial y
+  `flow.file` exige sesión o credencial: conocer la URL no da acceso. Verificado con 401 en los tres
+  caminos. El `agente.json` del PC y sus resultados quedan en `.gitignore`.
+- **Qué se retiró:** medidor de coste de la barra, estimación del pie y modal de presupuesto (HTML,
+  CSS y JS). No se tocaron autenticación, límites técnicos ni errores de proveedor.
+- **Qué se añadió:** navegación Imagen · Vídeo · Biblioteca; grupo `FLOW · GOOGLE` al frente del
+  selector con Nano Banana 2 inicial; panel de vídeo (Veo/Omni, 16:9 y 9:16, fotograma inicial);
+  biblioteca de resultados con Ver, Descargar, Al lienzo, Animar, Reintentar y Eliminar; visor con
+  zoom; aviso de progreso **no bloqueante**; estado del PC en la barra.
+- **Fallo propio detectado y corregido en pruebas:** el primer diseño usaba el overlay de carga
+  durante la espera, que **bloqueaba toda la interfaz** hasta 30 min e impedía navegar. Sustituido
+  por un aviso compacto y seguimiento en segundo plano. Segundo fallo: ocultar el rail con
+  `display:none` rompía la rejilla y dejaba el panel en 84 px con el texto partido palabra a palabra;
+  ahora el rail conserva su columna y se atenúa.
+- **Verificación:** PHP 8.4 portable + servidor local; 20 casos de backend (auth, validación,
+  caducidad, reintento), ciclo real con agente (imagen, vídeo, fotograma, edición), Chrome en
+  1440/1024/390 (sin desbordes, consola limpia), regresión de importar/exportar/guardar/pestañas.
+  Evidencia en `docs/VERIFICACION.md` §17.
+- **Límite declarado:** no se ha lanzado una generación real con Google Flow (consume puntos); el
+  agente se probó con un sustituto que fabrica archivos válidos. En producción hace falta la
+  credencial del agente en el servidor.
+
+---
+
 ## 2026-10-25 — Visor de contraseña (ojo para ver/ocultar lo escrito) en las 165 páginas publicadas con contraseña
 
 - **Encargo:** «edita las aps/webs que soliciten contraseña para que si lo deseo pueda ver la
@@ -1955,6 +1990,28 @@ Antonio: «el historial solo tiene un botón de eliminar, añade uno de descarga
 
 **Limitación:** no se probó la ruta destructiva del borrado (se canceló el confirm para no borrar historial real) ni la conversión de mime no-PNG (no hay entradas de ese tipo); tampoco se lanzó una generación real con IA (fuera del alcance del cambio).
 
+## 2026-10-25 (tarde, cierre) — Tutorial UIS con 149 ejercicios: PASS 95,4
+
+El usuario pidió **4–5 ejercicios prácticos por tema** que cubrieran toda la teoría. Se añadieron 33 tandas (una por capítulo) con **149 ejercicios** en formato objetivo → pasos → criterio de comprobación, con tiempo y dificultad, insertadas al final de cada capítulo por `build.ps1` desde `_build/ejercicios-a…d.html` (marcadores `<!--@sN-->`; el build valida 33 prácticas y 132–165 ejercicios). Portada y pie actualizados.
+
+**Gate:** tres rondas de rework más (r3 REWORK 91,0 → D1–D6; r4 REWORK 92,5 → método de D1; r5 **PASS 95,4**, cero defectos y 0 mejoras abiertas). Versión final `TUTORIAL.html` SHA-256 `11134db7…` (5.874.529 B), verificada en disco y servida; informes r1–r5 en `tools/evidencias/2026-10-25-tutorial-uis/`. Aprendizaje: los criterios de comprobación de un ejercicio hay que probarlos en la app real, no deducirlos del código (falló «Modo local» con Offline+recarga y se resolvió bloqueando solo `api.php`).
+
+## 2026-10-25 (tarde) — incidente: producción revirtió y fix con assets fechados
+
+Antonio: «no veo los botones ni refrescando ni en incognito» (historial de `infografia-referencia`).
+
+- **Diagnóstico:** el origen de Hostinger servía `app.css?v=9`/`app.js?v=11` (árbol del commit anterior), con `Last-Modified 16:56:21`, mientras GitHub sí tenía la versión nueva (`85ee9983`/`86910ca3`). Un despliegue atrasado de un commit anterior revirtió el árbol en el origen (patrón ya documentado en `errores.md`); no era caché del navegador.
+- **Fix:** commit `415132d7` — copias fechadas `app.20261025a.css` y `app.20261025a.js` (idénticas a las nuevas) + `index.html` apuntando a ellas, porque la CDN cachea estáticos por ruta e ignora `?v=`. Push y re-despliegue: en ~1 min el HTML sirvió los assets nuevos.
+- **Verificación en producción (URL normal, Chrome limpio):** assets fechados, 12 tarjetas con 3 acciones (Descargar/Referencia/Eliminar), descarga real 1.474.295 B PNG 768×1376 con SHA-256 igual al fichero servido, «Referencia cargada» y sin overflow a 393 px. Evidencias: `tools/evidencias/2026-10-25-infografia-historial/fix-produccion-*` y `resultado-fix-produccion.json`.
+- **Limitación:** la comprobación inicial usó `?cb=` y no la URL limpia minutos después; se corrige el procedimiento (ver `errores.md`).
+## 2026-10-25 (tarde, cierre 2) — Tutorial UIS en PDF con anexo de soluciones: PASS 96,5
+
+A petición del usuario se añadió el **anexo de soluciones** (33 bloques, 149 respuestas, entrada 34 del índice) y se generó el **PDF A4**: `tools/tutoriales/unified-image-studio/TUTORIAL.pdf` (133 páginas, 24 capturas únicas, 248 marcadores, fondo blanco, paginación y metadatos). Pipeline nuevo y reproducible: `_build\topdf.cjs` (Playwright + Chrome, A4, `color-scheme: light`) + `_build\finalize_pdf.py` (fondo blanco, numeración, metadatos).
+
+**Gate:** r6 REWORK 90,3 (figura móvil cortada en PDF, contradicción sobre la máscara, límite 11.800, homoglyph cirílico, preset sin usar, recuentos) → r7 REWORK 94,7 (página huérfana, referencias) → r8 **PASS 96,5**, cero defectos y cero mejoras abiertas. Versión final: HTML `53020cdb…` (5.907.125 B) y PDF `a0b2de55…` (9.662.719 B). Informes r1–r8 en `tools/evidencias/2026-10-25-tutorial-uis/`.
+
+**Aprendizajes PDF:** Chrome imprime el lienzo en oscuro si el documento declara `color-scheme: dark`; hay que forzar `light` y meta light antes de `page.pdf`. Las figuras verticales necesitan `max-height` en impresión para no salir cortadas. `.practice { break-inside: auto }` evita páginas huérfanas al final de capítulo. El texto con acentos se extrae bien aunque el terminal lo muestre como `�` (es codificación de consola, no del PDF).
+
 ## 2026-10-25 (tarde) — app `webs/curso-ia-2026` eliminada del repo y de producción
 
 Antonio: «elimina esta app: webs/curso-ia-2026».
@@ -2012,7 +2069,6 @@ Antonio: «hazlo» (activar la generación en la copia Hoola).
 - Verificado en producción: `ping` de copia y original con el mismo `lastSeen`/`pending`; los 4 trabajos atrapados pasaron de 4 a 0 y aparecieron en el lienzo; `?action=img` sirve desde la copia las mismas imágenes; generación real desde la UI de la copia en 51 s (1024×1024, 162.944 B) con «PC conectado».
 - Commits `73a748ae`, `ed6902e8` y el de evidencias. La app original no se ha tocado.
 
-
 ## 2026-10-26 (tarde) — Flow Studio: arreglado el vídeo con fotogramas (Timeout 8000 ms)
 
 Antonio: «esta app: apps/flow_studio_hoola me ha dado este error: `RuntimeError: playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 8000ms exceeded` generando un video. corrige lo necesario.»
@@ -2032,3 +2088,15 @@ Antonio: «esta app: apps/flow_studio_hoola me ha dado este error: `RuntimeError
 **Limitación:** no se repitió una segunda generación por la cola de producción para no gastar otros 10 puntos de Flow; la app/cola no cambiaron y el comando real del worker es el mismo que se probó.
 
 **Commits:** el de esta entrada (memoria + skill `SKILL_GOOGLE_FLOW.md`); la herramienta local queda aplicada en disco, sin publicar a su repo remoto (arrastra adaptaciones previas sin commitear, como las sesiones anteriores). Evidencias en `tools/evidencias/2026-10-26-flow-studio-video-fotogramas/`.
+
+---
+
+## 2026-10-26 — Copia de unified-image-studio con el estilo Hoola
+
+- **Qué se hizo:** nueva app `apps/unified-image-studio-hoola/`: copia funcional de `apps/unified-image-studio` (mismo backend PHP/SQLite, misma auth y contratos) con migración visual completa al sistema Hoola/Relatos (cian #00D0D0 + verde #26C626, Electrolize, degradado + halos + rejilla 46px, paneles de vidrio con borde cian 2px, selector de modelo en píldoras, overlay de carga canónico, lightbox con zoom de rueda). Original intacto.
+- **Archivos nuevos:** `assets/css/hoola.css` (capa visual), `assets/js/lightbox.js`, `lightbox-zoom.js` (módulo canónico), `docs/VERIFICACION.md`, `version.txt`; reescritos `base.css`, `index.html`, `README`; namespace local propio (`unified-image-studio-hoola` / `uis-hoola:*`).
+- **Incidencia y arreglo:** en producción el CSP heredado (`img-src 'self' data: https:`) bloqueaba las imágenes `blob:` de IndexedDB en modo local (canvas sin pintar y export en blanco, 24.805 B). Se añadió `.htaccess` propio con CSP equivalente a la del proyecto pero con `blob:` en img/media (patrón de `apps/conversor_multimedia`). Verificado en la URL real: import visible y export PNG 1024×1024 57.077 B.
+- **Despliegue:** el webhook de GitHub entregó todos los push con 200, pero Hostinger no publicó durante ~15 min; se re-disparó varias veces con commits vacíos. Lección: comparar `version.txt`/hashes servidos, no solo HTTP 200.
+- **Verificación:** QA funcional independiente PASS (local + producción: login, import, texto, export PNG/JPG/WebP, .uis.json, persistencia, model payload, overlay, lightbox, anchos, CSP) y scorecard autocalidad independiente **PASS 92,8/100** (gate D1–D7, 1 menor M-01 declarada). Autoevaluación del autor 93,9.
+- **Publicación:** commits `7f828b31` → `33516df0` → `d6e8d112` → `c4ecb272` → `050ef9ef` → `b2a87152` → `425c8ab2` (HEAD `fe89ee8a`); `origin/main..HEAD` vacío; producción https://atnojs.es/apps/unified-image-studio-hoola/ sirve `2.0.2-hoola` (`version.txt` sha256 2aea7647…).
+- **Evidencias:** `tools/evidencias/2026-10-26-uis-hoola/` (antes/después, capturas, export, MANIFIESTO, AUTOEVALUACION), QA en `…-verif/`, scorecard en `…-autocalidad/` y comparativa `tools/comparativa_hoola_unified_image_studio.png`.

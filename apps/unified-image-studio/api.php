@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/lib/bootstrap.php';
 require_once __DIR__ . '/lib/jobs.php';
+require_once __DIR__ . '/lib/flow-engine.php';
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $action = strtolower(trim((string)($_REQUEST['action'] ?? 'state')));
@@ -12,8 +13,10 @@ if ($method === 'OPTIONS') {
     exit;
 }
 
-/* Fuerza JSON en las escrituras: evita POST de formularios externos. */
-if ($method === 'POST') {
+/* Fuerza JSON en las escrituras: evita POST de formularios externos.
+   Las rutas del agente usan multipart y se autentican con su propia credencial;
+   agent.complete envía el archivo en multipart para superar el límite de JSON. */
+if ($method === 'POST' && !str_starts_with($action, 'agent.')) {
     $requestedWith = strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? ''));
     if ($requestedWith !== 'xmlhttprequest') {
         uis_fail(403, 'Solicitud no reconocida.');
@@ -22,10 +25,15 @@ if ($method === 'POST') {
 
 $db = uis_db();
 
-// Cuerpo mayor que post_max_size: PHP descarta el cuerpo y deja $_POST vacío.
+/**
+ * Cuerpo mayor que post_max_size: PHP descarta el cuerpo y deja $_POST vacío.
+ * Solo se comprueba para JSON: las descargas del agente son formularios
+ * multipart acotados por sus propios límites.
+ */
 $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
 $postMax = uis_ini_bytes((string)ini_get('post_max_size'));
-if ($postMax > 0 && $contentLength > $postMax) {
+$isJsonRequest = str_contains(strtolower((string)($_SERVER['CONTENT_TYPE'] ?? '')), 'application/json');
+if ($isJsonRequest && $postMax > 0 && $contentLength > $postMax) {
     uis_json(413, [
         'ok' => false,
         'error' => sprintf(
@@ -389,6 +397,229 @@ switch ($action) {
         // La lista no devuelve imágenes en base64 ni el prompt.
         foreach ($jobs as $index => $job) unset($jobs[$index]['image']);
         uis_json(200, ['ok' => true, 'jobs' => $jobs]);
+        break;
+
+    /* ── Google Flow: motor preferente (cola persistente + agente del PC) ── */
+
+    case 'flow.state':
+        uis_require_auth();
+        uis_json(200, uis_flow_state($db));
+        break;
+
+    case 'flow.create':
+        uis_require_auth();
+        if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
+        $body = uis_read_json();
+        $pending = (int)$db->query("SELECT COUNT(*) FROM flow_jobs WHERE status IN ('queued','running')")->fetchColumn();
+        if ($pending >= UIS_FLOW_QUEUE_MAX) {
+            uis_fail(429, 'La cola de Flow está llena (' . $pending . ' trabajos pendientes). Espera a que termine alguno.');
+        }
+        // Los vídeos consumen puntos del servicio: se limitan por separado.
+        $isVideo = ((string)($body['type'] ?? 'image')) === 'video';
+        if ($isVideo) {
+            $videos = (int)$db->query("SELECT COUNT(*) FROM flow_jobs WHERE type = 'video' AND status IN ('queued','running')")->fetchColumn();
+            if ($videos >= UIS_FLOW_VIDEO_QUEUE_MAX) {
+                uis_fail(429, 'Ya hay ' . $videos . ' vídeos en la cola. Espera a que termine alguno antes de encargar otro.');
+            }
+        }
+        try {
+            $created = uis_flow_create($db, $body);
+        } catch (InvalidArgumentException $error) {
+            uis_fail((int)($error->getCode() ?: 400), $error->getMessage());
+        } catch (LengthException $error) {
+            uis_fail(413, $error->getMessage());
+        }
+        uis_json(200, ['ok' => true] + $created);
+        break;
+
+    case 'flow.list':
+        uis_require_auth();
+        uis_flow_sweep($db);
+        $limit = max(1, min(60, (int)($_GET['limit'] ?? 24)));
+        $type = (string)($_GET['type'] ?? '');
+        $sql = 'SELECT * FROM flow_jobs';
+        $params = [];
+        if ($type === 'image' || $type === 'video') {
+            $sql .= ' WHERE type = ?';
+            $params[] = $type;
+        }
+        $sql .= ' ORDER BY created_at DESC LIMIT ' . $limit;
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $seen = uis_flow_worker_seen($db);
+        $jobs = array_map(
+            static fn(array $row): array => uis_flow_decorate_timing(uis_flow_public_row($row), $seen),
+            $stmt->fetchAll()
+        );
+        uis_json(200, ['ok' => true, 'jobs' => $jobs, 'workerOnline' => $seen > 0 && (time() - $seen) < UIS_FLOW_AGENT_FRESH, 'workerSeen' => $seen]);
+        break;
+
+    case 'flow.status':
+        uis_require_auth();
+        $ids = [];
+        foreach (explode(',', (string)($_GET['ids'] ?? '')) as $id) {
+            $id = trim($id);
+            if (uis_safe_id($id)) $ids[] = $id;
+        }
+        if ($ids === []) uis_fail(400, 'Faltan identificadores.');
+        $ids = array_slice(array_unique($ids), 0, 24);
+        $sql = 'SELECT * FROM flow_jobs WHERE id IN (' . implode(',', array_fill(0, count($ids), '?')) . ')';
+        $stmt = $db->prepare($sql);
+        $stmt->execute($ids);
+        $seen = uis_flow_worker_seen($db);
+        $jobs = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $jobs[] = uis_flow_decorate_timing(uis_flow_public_row($row), $seen);
+        }
+        uis_json(200, [
+            'ok' => true,
+            'jobs' => $jobs,
+            'workerOnline' => $seen > 0 && (time() - $seen) < UIS_FLOW_AGENT_FRESH,
+            'workerSeen' => $seen,
+        ]);
+        break;
+
+    case 'flow.file':
+        // El agente también puede descargar el resultado (verificación manual).
+        if (!uis_authenticated() && !uis_flow_agent_token_matches((string)($_SERVER['HTTP_X_UIS_AGENT'] ?? ''))) {
+            uis_fail(401, 'Sesión no autorizada. Inicia sesión para continuar.', ['needsLogin' => true]);
+        }
+        $id = preg_replace('/[^a-f0-9]/', '', strtolower((string)($_GET['id'] ?? ''))) ?? '';
+        if ($id === '' || strlen($id) !== 16) uis_fail(400, 'Identificador no válido.');
+        $stmt = $db->prepare('SELECT * FROM flow_jobs WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        if (!$row || ($row['status'] ?? '') !== 'done' || empty($row['file'])) uis_fail(404, 'El resultado no está disponible.');
+        $path = uis_flow_result_dir() . '/' . basename((string)$row['file']);
+        if (!is_file($path)) uis_fail(404, 'El archivo del resultado no está disponible.');
+        $size = (int)filesize($path);
+        $mime = (string)($row['mime'] ?? 'application/octet-stream');
+        $name = $id . '.' . pathinfo($path, PATHINFO_EXTENSION);
+        $download = (string)($_GET['download'] ?? '') === '1';
+        header('Content-Type: ' . $mime);
+        header('Content-Disposition: ' . ($download ? 'attachment' : 'inline') . '; filename="' . $name . '"');
+        header('Cache-Control: private, max-age=31536000, immutable');
+        header('X-Content-Type-Options: nosniff');
+        if (str_starts_with($mime, 'video/')) header('Accept-Ranges: bytes');
+        $start = 0;
+        $end = $size - 1;
+        $range = (string)($_SERVER['HTTP_RANGE'] ?? '');
+        if ($range !== '' && preg_match('/bytes=(\d*)-(\d*)/', $range, $match) === 1) {
+            if ($match[1] === '' && $match[2] !== '') {
+                $start = max(0, $size - (int)$match[2]);
+            } else {
+                $start = $match[1] === '' ? 0 : (int)$match[1];
+                $end = $match[2] === '' ? $size - 1 : min((int)$match[2], $size - 1);
+            }
+            if ($start > $end || $start >= $size) {
+                header('Content-Range: bytes */' . $size);
+                http_response_code(416);
+                exit;
+            }
+            http_response_code(206);
+            header('Content-Range: bytes ' . $start . '-' . $end . '/' . $size);
+        }
+        header('Content-Length: ' . ($end - $start + 1));
+        $handle = fopen($path, 'rb');
+        if ($handle === false) uis_fail(500, 'No se pudo leer el archivo.');
+        fseek($handle, $start);
+        $left = $end - $start + 1;
+        while ($left > 0 && !feof($handle)) {
+            $chunk = fread($handle, (int)min(262144, $left));
+            if ($chunk === false || $chunk === '') break;
+            echo $chunk;
+            $left -= strlen($chunk);
+        }
+        fclose($handle);
+        exit;
+
+    case 'flow.retry':
+        uis_require_auth();
+        if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
+        $body = uis_read_json();
+        try {
+            $job = uis_flow_schedule($db, (string)($body['id'] ?? ''));
+        } catch (InvalidArgumentException $error) {
+            uis_fail((int)($error->getCode() ?: 400), $error->getMessage());
+        }
+        uis_json(200, ['ok' => true, 'job' => uis_flow_decorate_timing($job, uis_flow_worker_seen($db))]);
+        break;
+
+    case 'flow.delete':
+        uis_require_auth();
+        if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
+        $body = uis_read_json();
+        try {
+            uis_flow_delete($db, (string)($body['id'] ?? ''));
+        } catch (InvalidArgumentException $error) {
+            uis_fail((int)($error->getCode() ?: 400), $error->getMessage());
+        }
+        uis_json(200, ['ok' => true]);
+        break;
+
+    /* ── API del agente del PC (credencial independiente, nunca la sesión) ── */
+
+    case 'agent.claim':
+        uis_flow_require_agent();
+        $job = uis_flow_claim($db);
+        uis_json(200, ['ok' => true, 'job' => $job, 'seen' => time()]);
+        break;
+
+    case 'agent.heartbeat':
+        uis_flow_require_agent();
+        uis_json(200, uis_flow_heartbeat($db, (string)($_REQUEST['note'] ?? '')));
+        break;
+
+    case 'agent.complete':
+    case 'agent.fail':
+        uis_flow_require_agent();
+        if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
+        $isMultipart = str_contains(strtolower((string)($_SERVER['CONTENT_TYPE'] ?? '')), 'multipart/form-data');
+        if ($isMultipart) {
+            $id = (string)($_POST['id'] ?? '');
+            // El agente sube los bytes crudos en el campo file_upload o file_image.
+            $file = $_FILES['file_upload'] ?? $_FILES['file_image'] ?? null;
+            if (is_array($file) && ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                uis_fail(400, 'La subida del archivo falló (código ' . (int)$file['error'] . ').');
+            }
+            if (is_array($file) && is_string($file['tmp_name'] ?? null) && is_file($file['tmp_name'])) {
+                if ((int)$file['size'] > UIS_FLOW_VIDEO_BYTES) {
+                    uis_fail(413, 'El archivo supera el tamaño permitido.');
+                }
+                $raw = (string)file_get_contents($file['tmp_name']);
+                // El campo describe el archivo recibido. El tipo del trabajo
+                // decide después si es imagen o vídeo: un PNG no es MP4.
+                $isVideoFile = strlen($raw) > 12 && substr($raw, 4, 4) === 'ftyp';
+                $body = $isVideoFile
+                    ? ['video' => $raw, 'image' => '', 'raw' => true]
+                    : ['video' => '', 'image' => $raw, 'raw' => true];
+            } else {
+                $body = [
+                    'video' => (string)($_POST['video'] ?? ''),
+                    'image' => (string)($_POST['image'] ?? ''),
+                ];
+            }
+            if ($action === 'agent.fail') {
+                uis_json(200, uis_flow_fail($db, $id, (string)($_POST['error'] ?? '')));
+            }
+        } else {
+            $body = uis_read_json();
+            $id = (string)($body['id'] ?? '');
+            if ($action === 'agent.fail') {
+                uis_json(200, uis_flow_fail($db, $id, (string)($body['error'] ?? '')));
+            }
+        }
+        if (!uis_safe_id($id)) uis_fail(400, 'Identificador no válido.');
+        try {
+            $job = uis_flow_finish($db, $id, $body);
+        } catch (InvalidArgumentException $error) {
+            uis_fail((int)($error->getCode() ?: 400), $error->getMessage());
+        } catch (LengthException $error) {
+            uis_fail(413, $error->getMessage());
+        } catch (RuntimeException $error) {
+            uis_fail(500, $error->getMessage());
+        }
+        uis_json(200, ['ok' => true, 'job' => $job]);
         break;
 
     default:

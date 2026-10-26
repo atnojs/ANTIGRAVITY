@@ -4,7 +4,7 @@
 
 import {
   state, emit, addResource, markSaved, setSaveState, uid, SCHEMA,
-} from './core.js?v=11';
+} from './core.js?v=12';
 
 const DB_NAME = 'unified-image-studio';
 const DB_VERSION = 1;

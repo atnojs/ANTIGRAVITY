@@ -17,11 +17,6 @@ export const uid = (prefix = 'id') =>
 
 export const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-export const fmtMoney = (value) =>
-  Number.isFinite(value)
-    ? value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
-    : '—';
-
 export const fmtBytes = (bytes) => {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -66,7 +61,7 @@ export const state = {
     maskMode: 'paint',
     brushSize: 80,
     brushHardness: 80,
-    model: 'openai-image-2-low',
+    model: 'flow-nano-banana-2',
     aspect: '1:1',
     resolution: 1024,
     refs: [],
