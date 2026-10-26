@@ -87,8 +87,19 @@ function rateLimitOk(): bool
     return true;
 }
 
-function buildSystemPrompt(string $ratio): string
+function buildSystemPrompt(string $ratio, string $mode): string
 {
+    if ($mode === 'edit') {
+        return 'Eres director de retoque fotográfico especializado en instrucciones para modelos de imagen '
+            . '(Nano Banana / Google Flow) que reciben una imagen y una orden de edición. Reescribe la idea '
+            . 'del usuario en español de España como una instrucción imperativa y concreta de 35 a 55 palabras. '
+            . 'Di qué debe cambiar (sujeto, acción, luz, color, fondo, encuadre o detalle) y qué debe permanecer '
+            . 'intacto (composición, identidad, geometría, texto y resto de elementos). No describas una escena '
+            . 'nueva, no inventes marcas ni personas reales y no repitas la imagen original. '
+            . 'Devuelve EXACTAMENTE 4 líneas, una por propuesta, con este formato: '
+            . 'TITULO CORTO || instrucción completa. '
+            . 'Sin numeración, sin JSON, sin markdown, sin comillas y sin texto extra.';
+    }
     return 'Eres director de arte y fotógrafo especializado en prompts para modelos de imagen '
         . '(Nano Banana / Google Flow). Reescribes la idea del usuario en español de España, sin '
         . 'inventar marcas ni personas reales. Cada propuesta debe ser un prompt visual completo de '
@@ -237,6 +248,8 @@ $ratio = (string) ($body['ratio'] ?? '1:1');
 if (!in_array($ratio, ['1:1', '16:9', '9:16', '4:3', '3:4'], true)) {
     $ratio = '1:1';
 }
+// edit: propuestas para cambiar una imagen existente, no para crear una escena.
+$mode = ((string) ($body['mode'] ?? 'generate')) === 'edit' ? 'edit' : 'generate';
 
 if (!rateLimitOk()) {
     respond(['ok' => false, 'error' => 'Demasiadas peticiones seguidas. Espera un minuto.'], 429);
@@ -255,10 +268,12 @@ for ($attempt = 0; $attempt < 2 && trim($content) === ''; $attempt++) {
     $payload = [
         'model' => TEXT_MODEL,
         'messages' => $attempt === 0 ? [
-            ['role' => 'system', 'content' => buildSystemPrompt($ratio)],
+            ['role' => 'system', 'content' => buildSystemPrompt($ratio, $mode)],
             ['role' => 'user', 'content' => $prompt],
         ] : [
-            ['role' => 'system', 'content' => 'Devuelve 4 líneas. Cada línea: TITULO || prompt visual en español de 40 a 55 palabras para formato ' . $ratio . '. Sin JSON, sin numeración, sin comillas, sin texto extra.'],
+            ['role' => 'system', 'content' => $mode === 'edit'
+                ? 'Devuelve 4 líneas. Cada línea: TITULO || instrucción de edición en español de 35 a 55 palabras que diga qué cambia y qué debe permanecer intacto. Sin JSON, sin numeración, sin comillas, sin texto extra.'
+                : 'Devuelve 4 líneas. Cada línea: TITULO || prompt visual en español de 40 a 55 palabras para formato ' . $ratio . '. Sin JSON, sin numeración, sin comillas, sin texto extra.'],
             ['role' => 'user', 'content' => $prompt],
         ],
         'temperature' => $attempt === 0 ? 0.85 : 0.6,
@@ -329,6 +344,7 @@ if (count($options) < 1) {
 respond([
     'ok' => true,
     'model' => TEXT_MODEL,
+    'mode' => $mode,
     'original' => $prompt,
     'options' => array_slice($options, 0, 4),
 ]);

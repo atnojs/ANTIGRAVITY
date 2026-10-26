@@ -13,7 +13,9 @@ declare(strict_types=1);
  */
 
 const QUEUE_TOKEN = 'fs7-Qm4xV2tP9kR6wL1z';
-const MAX_PROMPT = 1200;
+// 1500: el modo edición añade una instrucción delante del texto del usuario
+// (máx. 1200 en el editor) sin que la cola recorte el final de su petición.
+const MAX_PROMPT = 1500;
 const MAX_QUEUE = 12;
 const MAX_REFS = 2;                 // imágenes de referencia por trabajo
 const MAX_REF_BYTES = 6 * 1024 * 1024;  // 6 MB por referencia ya decodificada
@@ -301,6 +303,13 @@ if ($reqAction === 'request') {
     }
     $count = (int) ($body['count'] ?? 1);
     $count = max(1, min(4, $count));
+    // mode=edit: la primera referencia es la imagen que se edita. La edición
+    // reutiliza el canal de referencias del worker, así que no hace falta
+    // desplegar de nuevo el worker del PC para que funcione.
+    $mode = ((string) ($body['mode'] ?? 'generate')) === 'edit' ? 'edit' : 'generate';
+    if ($mode === 'edit') {
+        $count = 1;
+    }
 
     // Referencias de imagen: se validan y decodifican ANTES de tocar la cola.
     $parsedRefs = parse_refs($body['refs'] ?? []);
@@ -308,8 +317,11 @@ if ($reqAction === 'request') {
         respond(['ok' => false, 'error' => $parsedRefs['error']], 400);
     }
     $refsIn = $parsedRefs['refs'];
+    if ($mode === 'edit' && count($refsIn) === 0) {
+        respond(['ok' => false, 'error' => 'Falta la imagen que quieres editar'], 400);
+    }
 
-    $result = with_lock(function () use ($queueFile, $prompt, $ratio, $model, $count, $refsIn, $refsDir) {
+    $result = with_lock(function () use ($queueFile, $prompt, $ratio, $model, $count, $mode, $refsIn, $refsDir) {
         $q = read_queue($queueFile);
         $pending = 0;
         foreach ($q['jobs'] as $j) {
@@ -340,6 +352,7 @@ if ($reqAction === 'request') {
                 'prompt' => $prompt,
                 'ratio' => $ratio,
                 'model' => $model,
+                'mode' => $mode,
                 'status' => 'queued',
                 'created' => time(),
                 'started' => 0,
@@ -383,7 +396,11 @@ if ($reqAction === 'status') {
         if (!in_array($j['id'], $ids, true)) {
             continue;
         }
-        $item = ['status' => $j['status'], 'error' => $j['error'] ?? ''];
+        $item = [
+            'status' => $j['status'],
+            'error' => $j['error'] ?? '',
+            'mode' => $j['mode'] ?? 'generate',
+        ];
         if ($j['status'] === 'done' && !empty($j['file'])) {
             $item['url'] = 'flow_queue.php?action=img&id=' . $j['id'];
             $item['ratio'] = $j['ratio'];
@@ -445,6 +462,7 @@ if ($reqAction === 'claim') {
                     'prompt' => $j['prompt'],
                     'ratio' => $j['ratio'],
                     'model' => $j['model'],
+                    'mode' => $j['mode'] ?? 'generate',
                     'refs' => $refs,
                 ];
                 break;
