@@ -41,7 +41,7 @@ def main() -> int:
         print('Falta "base" en agente.json (la URL del api.php).')
         return 2
 
-    url = base + '?action=agent.heartbeat'
+    url = base + '?action=agent.ping'
     req = urllib.request.Request(
         url,
         data=b'{}',
@@ -56,7 +56,7 @@ def main() -> int:
         with urllib.request.urlopen(req, timeout=30) as resp:
             data = json.loads(resp.read().decode('utf-8'))
         print('HTTP %d: el servidor ACEPTA este token.' % resp.status)
-        print('Trabajos pendientes ahora mismo: %s' % data.get('pending', '?'))
+        print('(Comprobación de solo lectura: no marca el PC como conectado.)')
         print('Siguiente paso: doble clic en iniciar-agente.bat')
         return 0
     except urllib.error.HTTPError as exc:

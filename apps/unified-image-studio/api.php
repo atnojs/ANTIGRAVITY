@@ -571,6 +571,13 @@ switch ($action) {
         uis_json(200, ['ok' => true, 'job' => $job, 'seen' => time()]);
         break;
 
+    case 'agent.ping':
+        // Comprobar la credencial SIN marcar el PC como conectado: si no hay
+        // agente corriendo, la web no debe decir «Flow: conectado».
+        uis_flow_require_agent();
+        uis_json(200, ['ok' => true, 'version' => UIS_VERSION, 'now' => time()]);
+        break;
+
     case 'agent.release':
         // Fallo pasajero (perfil de Chrome ocupado): el trabajo vuelve a la cola
         // sin contar como fallo, salvo que ya se haya aplazado demasiadas veces.

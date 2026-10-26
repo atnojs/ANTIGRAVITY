@@ -66,6 +66,7 @@ ok('cantidad: se desactiva con proveedores directos', app.includes('button.disab
 // ── Resiliencia ante el perfil de Chrome ocupado ──
 const agentePy = fs.readFileSync('tools/flow-agent/flow_agent.py', 'utf8');
 ok('perfil: no reclama si el perfil está ocupado', agentePy.includes('espero sin reclamar trabajo'));
+ok('credencial: comprobar no marca el PC como conectado', leer('api.php').includes("case 'agent.ping'") && fs.readFileSync('tools/flow-agent/comprobar-token.py', 'utf8').includes('agent.ping'));
 ok('perfil: los fallos pasajeros se aplazan', agentePy.includes('class TransientError') && agentePy.includes("'agent.release'"));
 ok('perfil: se guarda el log completo', agentePy.includes('def guardar_log'));
 ok('perfil: el resumen ignora el ruido de asyncio', agentePy.includes('event loop is closed'));
