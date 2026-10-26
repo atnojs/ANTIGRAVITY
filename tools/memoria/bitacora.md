@@ -4,6 +4,26 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-26 (noche) — La compuerta de modelos acepta la contraseña de acceso
+
+- **Incidencia:** «pongo la contraseña y me dice que es incorrecta». La compuerta 1.1.0 solo
+  aceptaba el código de modelos del proyecto, mientras la app pide al entrar la contraseña de
+  acceso (`PW_ACCESS`): dos contraseñas distintas con el mismo rótulo.
+- **Corrección:** `apps/_shared/model-gate.20261026b.js` (Model Gate 1.2.0) valida la contraseña
+  escrita contra `api.php?action=login`, el endpoint real del acceso. Si es correcta, desbloquea
+  **e inicia sesión** (emite `ag-model-gate:access`; `app.js` cierra el modal de acceso y refresca
+  catálogo y estado de Flow). El código de modelos sigue como respaldo, también sin servidor. El
+  modal pasa a decir «Contraseña de acceso».
+- **Pruebas:** 12/12 en banco local con API simulada (contraseña correcta/incorrecta, sesión,
+  recarga, pestaña nueva, respaldo) y 8/8 en producción (módulo 1.2.0, modal, rechazo del servidor
+  real, respaldo). Detalle en `apps/unified-image-studio/docs/VERIFICACION.md` §23-bis.
+- **Publicación:** commit `056232df` (código) y el de esta entrada; producción publicada a las
+  21:46 UTC.
+- **Lección:** una app no debe tener dos contraseñas distintas con el mismo rótulo. Si la compuerta
+  protege un recurso de la app, debe validar la credencial de la app, no una clave paralela.
+
+---
+
 ## 2026-10-26 (noche) — Modelos protegidos por contraseña en Unified Image Studio
 
 - **Encargo:** «los modelos de generación de imagen protegidos por contraseña (si clico en alguno

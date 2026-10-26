@@ -636,3 +636,44 @@ comportamiento del navegador, no de la compuerta. La lista del módulo es de mod
 cualquier alta nueva que no se añada a `FREE_MODELS` pedirá contraseña (comprobado y anotado en el
 README para no bloquear modelos nuevos por olvido).
 
+---
+
+## 23-bis. La compuerta acepta la contraseña de acceso (2026-10-26, v1.6.1)
+
+**Síntoma reportado:** «pongo la contraseña y me dice que es incorrecta». La compuerta 1.1.0 solo
+aceptaba el **código de modelos del proyecto**, mientras la app pide al entrar la **contraseña de
+acceso** (`PW_ACCESS`): dos contraseñas distintas con el mismo aspecto y el mismo rótulo.
+
+**Corrección:** `../_shared/model-gate.20261026b.js` (Model Gate 1.2.0). La contraseña escrita se
+valida contra `api.php?action=login`, el mismo endpoint del formulario de acceso. Si es correcta:
+desbloquea los modelos, **deja la sesión iniciada** y emite `ag-model-gate:access`; `app.js` cierra
+el modal de acceso y refresca catálogo y estado de Flow. El código de modelos sigue aceptándose como
+respaldo (también sin servidor). El campo y el título ahora dicen «Contraseña de acceso» y el texto
+explica que es la misma con la que se entra.
+
+| Qué se comprobó | Resultado |
+|---|---|
+| Compuerta 1.2.0 cargada y 12 candados | PASS |
+| El modal pide «Contraseña de acceso» y lo explica | PASS |
+| Contraseña incorrecta: la rechaza el servidor (401), sigue bloqueado | PASS |
+| El botón se reactiva tras comprobar (no se queda en «Comprobando…») | PASS |
+| Contraseña de acceso correcta: desbloquea, aplica el modelo y deja `mode: server` con el acceso cerrado | PASS · banco con API simulada |
+| Recarga: desbloqueo y sesión persisten | PASS |
+| Pestaña nueva: compuerta bloqueada aunque la sesión de la app siga | PASS |
+| Código de modelos como respaldo (incluso con espacios alrededor) | PASS |
+| `node --check` del módulo y de `app.js` | PASS |
+
+Cómo se probó: banco local con **API PHP simulada** (login/state/catalog/flow.state con cookie de
+sesión) y **Chrome real headless** por CDP, 12/12 PASS. Capturas:
+`01b-modal-password-acceso.png`, `02b-desbloqueado-sesion.png`.
+
+**Producción (2026-10-26, 21:46 UTC):** `index.html` sirve `app.js?v=15` y
+`/_shared/model-gate.20261026b.js` (200, v1.2.0); 12 candados, modal «Contraseña de acceso»,
+contraseña incorrecta rechazada por el servidor real y código de respaldo desbloqueando: **8/8
+PASS**. Evidencia: `11-produccion-modal-acceso.png`, `12-produccion-desbloqueado.png`.
+
+**Límite de la prueba:** el acierto con la contraseña real de Antonio no se puede automatizar (no la
+conocemos). Se prueba el flujo completo con la API simulada y, en producción, el rechazo y el
+desbloqueo de respaldo. El endpoint es exactamente el mismo que usa el formulario de acceso, así que
+una contraseña que entra en la app desbloquea los modelos.
+

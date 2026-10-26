@@ -62,8 +62,14 @@ Los modelos caros piden contraseña antes de seleccionarse. La compuerta es el m
 del proyecto, cargado al final de `index.html`:
 
 ```html
-<script src="../_shared/model-gate.20261026.js"></script>
+<script src="../_shared/model-gate.20261026b.js"></script>
 ```
+
+**La contraseña es la de acceso de la app** (la de `PW_ACCESS`, la misma del formulario de entrada).
+El módulo la comprueba contra `api.php?action=login`, el endpoint real del acceso; al acertar,
+además de desbloquear los modelos, **deja la sesión iniciada** (el formulario de acceso se cierra y
+la app pasa a modo servidor). El código de modelos del proyecto sigue valiendo como respaldo, útil
+si el servidor no responde.
 
 | Sin contraseña | Con contraseña |
 |---|---|
@@ -71,17 +77,16 @@ del proyecto, cargado al final de `index.html`:
 | IMAGE 2: `LOW` y `MEDIUM` | `GEMINI`: 2, 3.1 FLASH, 3 PRO · `QWEN 3 PRO` · IMAGE 2 `HIGH` |
 | Vídeo: `VEO 3.1 LITE` y `VEO 3.1 FAST` | Vídeo: `VEO 3.1 QUALITY` y `OMNI FLASH` |
 
-- Al pulsar un modelo protegido aparece **Modelo protegido**; la selección no cambia hasta
-  escribir la contraseña de modelos del proyecto (la misma que usan las demás apps con este
-  módulo). Al acertar, el modelo pulsado se aplica solo y desaparecen los candados.
+- Al pulsar un modelo protegido aparece **Modelo protegido** y la selección no cambia hasta que la
+  contraseña se valida. Al acertar, el modelo pulsado se aplica solo y desaparecen los candados.
 - El desbloqueo dura la pestaña (`sessionStorage`): al recargar se mantiene; en una pestaña nueva
   se vuelve a pedir. `ModelGate.lock()` lo revoca a mano.
 - Además del clic hay un **guardián de envío**: si una receta, un proyecto restaurado o un envío
   intenta usar un modelo protegido sin desbloquear, la petición queda en espera y se pide la
   contraseña antes de salir al servidor.
-- **Límite declarado:** es una compuerta de interfaz, como en el resto de apps del proyecto. La
-  contraseña viaja en el propio archivo compartido y no sustituye a la autenticación del servidor:
-  para generar sigue siendo obligatoria la sesión `PW_ACCESS`.
+- **Límite declarado:** la comprobación de la contraseña de acceso se hace en el servidor, pero el
+  desbloqueo vive en la pestaña (es una comodidad de uso, no un permiso). La autenticación real para
+  generar sigue siendo la sesión `PW_ACCESS`, que la compuerta también inicia al acertar.
 - **Al añadir un modelo nuevo:** la lista del módulo es de **libres** (`FREE_MODELS`); cualquier
   identificador que no esté ahí pide contraseña. Si el modelo nuevo debe quedar libre (Flow, Image 2
   LOW/MEDIUM o vídeo ligero), hay que añadirlo a `FREE_MODELS` al darlo de alta en `ai.js`.
