@@ -112,6 +112,12 @@ está libre y el estado de la sesión de Flow.
 ## 3. Ejecutarlo
 
 - **Lo normal:** doble clic en `iniciar-agente.bat`. Trabaja 25 minutos y se cierra.
+- **Si la app dice «Flow: sin conexión»:** doble clic en `conectar.bat`. Comprueba la credencial,
+  arranca el agente **12 horas con la ventana abierta** y, si algo falla, deja el error en pantalla
+  (no se cierra sola). Es la forma más rápida de ver qué pasa.
+- **Para que no se vuelva a caer:** doble clic en `instalar-tarea.bat` **una vez**. Instala la tarea
+  `UisFlowAgent` (cada 2 minutos, 6 minutos por pasada, también al iniciar sesión) y la arranca.
+  A partir de ahí el PC se reconecta solo aunque cierres la ventana o reinicies.
 - Una sola pasada (para tareas programadas):
   ```powershell
   iniciar-agente.bat --once
@@ -159,7 +165,8 @@ Register-ScheduledTask -TaskName "UisFlowAgent" -Action $accion -Trigger $dispar
 | `credencial rechazada (HTTP 401)` | El token del PC no coincide con el del servidor | Regenerarlo y actualizar los dos lados |
 | `hay N Chrome con el perfil de Flow abierto` | Chrome abierto a mano con ese perfil | Cerrar esos Chrome |
 | `Flow no reconoce el modelo` | Google renombró el modelo | Revisar `MODEL_ALIASES` en `flow_agent.py` |
-| El trabajo se queda en cola | El agente no corre o no llega al servidor | `--status` y revisar la conexión |
+| El trabajo se queda en cola | El agente no corre o no llega al servidor | `conectar.bat` y revisar la ventana |
+| «otro agente en marcha» sin haber ninguno | Lock huérfano con el PID reciclado por otro programa | Corregido en v1.3.1; `conectar.bat` también lo limpia |
 | `aplazado: …ProcessSingleton` | Otro Chrome tiene el perfil ocupado | Normal: el trabajo vuelve a la cola y se reintenta solo |
 | `Event loop is closed` en el mensaje | Antes tapaba la causa real | Actualizado: ahora se informa del motivo verdadero y se guarda `logs/<id>.log` |
 | `pendiente de comprobar` en la web | El PC se apagó generando | Comprobar en Flow si salió y pulsar «Reintentar» |

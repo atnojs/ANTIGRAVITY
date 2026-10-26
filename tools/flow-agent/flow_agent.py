@@ -47,7 +47,7 @@ LOCKFILE = os.path.join(AGENT_DIR, 'flow_agent.lock')
 FLOW_PY = os.path.join(AGENT_DIR, 'flow.py')
 LOCK_STALE_SEC = 3 * 60 * 60
 # Sello del build: permite saber qué versión está corriendo cuando hay dudas.
-AGENT_BUILD = 'v1.3.0 · 2026-10-26 · cancelacion, aplazamiento y logs'
+AGENT_BUILD = 'v1.3.1 · 2026-10-26 · lock huerfano por PID reciclado'
 # Cada cuánto se pregunta al servidor si hay que parar (segundos).
 CANCEL_POLL_SEC = 3
 # Se activa cuando el último trabajo se aplazó por el perfil ocupado: conviene
@@ -204,6 +204,25 @@ def _pid_alive(pid: int) -> bool:
         kernel32.CloseHandle(handle)
 
 
+def _pid_is_python(pid: int) -> bool:
+    """En Windows el PID de un lock huérfano puede reciclarse a otro programa.
+    El lock solo es válido si su titular sigue siendo un proceso de Python; si
+    no, se trata como huérfano y se libera (antes el agente se negaba a arrancar
+    con «otro agente en marcha» aunque no hubiera ninguno)."""
+    if pid <= 0 or os.name != 'nt':
+        return True
+    try:
+        out = subprocess.check_output(
+            ['tasklist', '/FI', 'PID eq %d' % pid, '/FO', 'CSV', '/NH'],
+            text=True, timeout=8, stderr=subprocess.DEVNULL,
+        )
+    except Exception:
+        return True  # si no se puede comprobar, no se bloquea el arranque
+    first = out.strip().splitlines()[0] if out.strip() else ''
+    name = first.split('","')[0].strip('"').strip().lower() if first else ''
+    return name.startswith('python')
+
+
 def take_lock() -> bool:
     try:
         if os.path.isfile(LOCKFILE):
@@ -213,7 +232,7 @@ def take_lock() -> bool:
             except (OSError, ValueError):
                 holder = 0
             stale = time.time() - os.path.getmtime(LOCKFILE) > LOCK_STALE_SEC
-            if stale or not _pid_alive(holder):
+            if stale or not _pid_alive(holder) or not _pid_is_python(holder):
                 os.remove(LOCKFILE)
             else:
                 return False
