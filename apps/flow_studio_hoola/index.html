@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- assets versionados 20261026d: edición, referencia y escalado -->
-<title>Flow Studio · Genera y edita imágenes con Google Flow</title>
-<meta name="description" content="Genera y edita imágenes gratis con Google Flow. Sube una foto, describe los cambios, añade referencias y escala el resultado 2×, 4× u 8× en tu PC.">
+<!-- assets versionados 20261026e: modo vídeo con las opciones de Flow -->
+<title>Flow Studio · Genera imágenes y vídeos con Google Flow</title>
+<meta name="description" content="Genera imágenes y vídeos gratis con Google Flow. Elige modelo, formato y fotogramas, edita o anima una imagen y escala el resultado 2×, 4× u 8× en tu PC.">
 <meta name="theme-color" content="#001018">
-<meta property="og:title" content="Flow Studio · Genera y edita imágenes con Google Flow">
-<meta property="og:description" content="Describe la imagen o sube una para editarla, añade referencias y escala el resultado 2×, 4× u 8×. Tu PC lo hace con Google Flow, sin claves.">
+<meta property="og:title" content="Flow Studio · Genera imágenes y vídeos con Google Flow">
+<meta property="og:description" content="Describe la imagen o el vídeo, elige modelo y formato, añade fotogramas y descarga el resultado. Tu PC lo hace con Google Flow, sin claves.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300D0D0'/%3E%3Cstop offset='1' stop-color='%2326C626'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%230a0b0d'/%3E%3Cpath d='M20 44V20h22v7H28v5h11v7H28v5z' fill='url(%23g)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.hoola.20261026c.css">
+<link rel="stylesheet" href="app.hoola.20261026e.css">
 </head>
 <body>
 
@@ -58,6 +58,13 @@
                         <path d="m13.5 6.5 3 3"/>
                     </svg>
                     <span>Editar</span>
+                </button>
+                <button type="button" id="modeVideo" class="mode-btn" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="5.5" width="18" height="13" rx="2.4"/>
+                        <path d="M10.2 9.4v5.2l4.6-2.6z"/>
+                    </svg>
+                    <span>Vídeo</span>
                 </button>
             </div>
 
@@ -152,13 +159,24 @@
                 <input type="file" id="refInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
             </fieldset>
 
-            <fieldset class="control">
+            <fieldset class="control" id="imageModelControl">
                 <legend>Modelo</legend>
                 <div class="chips" id="modelChips">
                     <button type="button" class="chip is-active" data-model="Nano Banana 2">Nano Banana 2</button>
                     <button type="button" class="chip" data-model="Nano Banana Pro">Nano Banana Pro</button>
                     <button type="button" class="chip" data-model="Nano Banana 2 Lite">2 Lite</button>
                 </div>
+            </fieldset>
+
+            <fieldset class="control" id="videoModelControl" hidden>
+                <legend>Modelo de vídeo</legend>
+                <div class="chips" id="videoModelChips">
+                    <button type="button" class="chip is-active" data-vmodel="Veo 3.1 - Lite">Veo 3.1 Lite</button>
+                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Fast">Veo 3.1 Fast</button>
+                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Quality">Veo 3.1 Quality</button>
+                    <button type="button" class="chip" data-vmodel="Omni Flash">Omni Flash</button>
+                </div>
+                <p class="refs-note" id="videoHint">Veo 3.1 Lite gasta 10 puntos por vídeo: 5 al día con los 50 de la cuenta. Fotogramas opcionales.</p>
             </fieldset>
 
             <fieldset class="control">
@@ -253,7 +271,7 @@
 </noscript>
 
 <script src="history-manager.js"></script>
-<script src="app.20261026d.js"></script>
+<script src="app.20261026e.js"></script>
 
 <!-- Zoom con la rueda del raton en el visor de imagen grande -->
 <script src="lightbox-zoom.20261026.js?v=20261026" defer></script>

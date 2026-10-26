@@ -19,6 +19,10 @@ const MAX_PROMPT = 1500;
 const MAX_QUEUE = 12;
 const MAX_REFS = 2;                 // imágenes de referencia por trabajo
 const MAX_REF_BYTES = 6 * 1024 * 1024;  // 6 MB por referencia ya decodificada
+const MAX_VIDEO_BYTES = 32 * 1024 * 1024;  // 32 MB por vídeo ya decodificado
+const MAX_VIDEO_QUEUE = 2;          // vídeos pendientes a la vez (cada uno gasta puntos)
+const VIDEO_MODELS = ['Veo 3.1 - Lite', 'Veo 3.1 - Fast', 'Veo 3.1 - Quality', 'Omni Flash'];
+const VIDEO_RATIOS = ['16:9', '9:16'];  // la UI de Flow solo ofrece estos dos en vídeo
 const STALE_RUNNING = 0;        // 0 = nunca reencolar: sin límite de tiempo (2026-10-22)
 const WORKER_FRESH = 600;       // 10 min sin señales = worker desconectado
 
@@ -168,6 +172,18 @@ function sniff_ext(string $bytes): ?string
     return null;
 }
 
+function sniff_video(string $bytes): ?string
+{
+    // MP4/MOV: caja 'ftyp' en el byte 4 (el tipo concreto va dentro).
+    if (strlen($bytes) > 12 && substr($bytes, 4, 4) === 'ftyp') {
+        return 'mp4';
+    }
+    if (str_starts_with($bytes, 'RIFF') && substr($bytes, 8, 4) === 'WEBM') {
+        return 'webm';
+    }
+    return null;
+}
+
 /**
  * Valida las referencias que llegan del navegador (data URL o base64 puro).
  * Devuelve ['refs' => [['bytes' => ..., 'ext' => ...]], 'error' => ''].
@@ -230,23 +246,66 @@ function purge_refs(string $refsDir, array $refs): void
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $action = $_GET['action'] ?? '';
 
-// --- imagen pública por id ------------------------------------------------
-if ($method === 'GET' && $action === 'img') {
+// --- archivo público por id (imagen o vídeo) ------------------------------
+if ($method === 'GET' && ($action === 'img' || $action === 'file')) {
     $id = preg_replace('/[^a-f0-9]/', '', strtolower((string) ($_GET['id'] ?? '')));
     if ($id === '' || strlen($id) !== 16) {
         respond(['ok' => false, 'error' => 'id no válido'], 400);
     }
     $matches = glob($imgDir . '/' . $id . '.*') ?: [];
     if (!$matches) {
-        respond(['ok' => false, 'error' => 'imagen no encontrada'], 404);
+        respond(['ok' => false, 'error' => 'archivo no encontrado'], 404);
     }
     $path = $matches[0];
     $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-    $types = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp', 'gif' => 'image/gif'];
+    $types = [
+        'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png',
+        'webp' => 'image/webp', 'gif' => 'image/gif',
+        'mp4' => 'video/mp4', 'webm' => 'video/webm',
+    ];
+    $size = (int) filesize($path);
     header('Content-Type: ' . ($types[$ext] ?? 'application/octet-stream'));
-    header('Content-Length: ' . (string) filesize($path));
     header('Cache-Control: public, max-age=31536000, immutable');
-    readfile($path);
+    header('Content-Disposition: inline; filename="' . $id . '.' . $ext . '"');
+    header('Accept-Ranges: bytes');
+
+    // Los vídeos necesitan rangos para que el navegador pueda avanzar y
+    // rebobinar sin descargar el archivo entero otra vez.
+    $start = 0;
+    $end = $size - 1;
+    $range = (string) ($_SERVER['HTTP_RANGE'] ?? '');
+    if ($range !== '' && preg_match('/bytes=(\d*)-(\d*)/', $range, $m)) {
+        if ($m[1] === '' && $m[2] !== '') {
+            $start = max(0, $size - (int) $m[2]);
+            $end = $size - 1;
+        } else {
+            $start = $m[1] === '' ? 0 : (int) $m[1];
+            $end = $m[2] === '' ? $size - 1 : min((int) $m[2], $size - 1);
+        }
+        if ($start > $end || $start >= $size) {
+            header('Content-Range: bytes */' . $size);
+            http_response_code(416);
+            exit;
+        }
+        http_response_code(206);
+        header('Content-Range: bytes ' . $start . '-' . $end . '/' . $size);
+    }
+    header('Content-Length: ' . (string) ($end - $start + 1));
+
+    $handle = fopen($path, 'rb');
+    if ($handle !== false) {
+        fseek($handle, $start);
+        $left = $end - $start + 1;
+        while ($left > 0 && !feof($handle)) {
+            $chunk = fread($handle, (int) min(262144, $left));
+            if ($chunk === false || $chunk === '') {
+                break;
+            }
+            echo $chunk;
+            $left -= strlen($chunk);
+        }
+        fclose($handle);
+    }
     exit;
 }
 
@@ -284,7 +343,7 @@ if (!is_array($body)) {
 $reqAction = (string) ($body['action'] ?? $action);
 $token = (string) ($body['token'] ?? ($_SERVER['HTTP_X_QUEUE_TOKEN'] ?? ''));
 
-// --- request: encolar N imágenes -----------------------------------------
+// --- request: encolar imágenes o vídeos -----------------------------------
 if ($reqAction === 'request') {
     $prompt = trim((string) ($body['prompt'] ?? ''));
     if ($prompt === '') {
@@ -293,25 +352,41 @@ if ($reqAction === 'request') {
     if (text_len($prompt) > MAX_PROMPT) {
         $prompt = text_cut($prompt, MAX_PROMPT);
     }
-    $ratio = (string) ($body['ratio'] ?? '1:1');
-    if (!in_array($ratio, ['1:1', '16:9', '9:16', '4:3', '3:4'], true)) {
-        $ratio = '1:1';
-    }
-    $model = (string) ($body['model'] ?? 'Nano Banana 2');
-    if (!in_array($model, ['Nano Banana 2', 'Nano Banana Pro', 'Nano Banana 2 Lite'], true)) {
-        $model = 'Nano Banana 2';
-    }
-    $count = (int) ($body['count'] ?? 1);
-    $count = max(1, min(4, $count));
-    // mode=edit: la primera referencia es la imagen que se edita. La edición
-    // reutiliza el canal de referencias del worker, así que no hace falta
-    // desplegar de nuevo el worker del PC para que funcione.
-    $mode = ((string) ($body['mode'] ?? 'generate')) === 'edit' ? 'edit' : 'generate';
-    if ($mode === 'edit') {
+    $type = ((string) ($body['type'] ?? 'image')) === 'video' ? 'video' : 'image';
+    if ($type === 'video') {
+        // Vídeo con Flow (Veo): solo 16:9 o 9:16 y un clip por petición.
+        $ratio = (string) ($body['ratio'] ?? '16:9');
+        if (!in_array($ratio, VIDEO_RATIOS, true)) {
+            $ratio = '16:9';
+        }
+        $model = (string) ($body['model'] ?? 'Veo 3.1 - Lite');
+        if (!in_array($model, VIDEO_MODELS, true)) {
+            $model = 'Veo 3.1 - Lite';
+        }
         $count = 1;
+        $mode = 'video';
+    } else {
+        $ratio = (string) ($body['ratio'] ?? '1:1');
+        if (!in_array($ratio, ['1:1', '16:9', '9:16', '4:3', '3:4'], true)) {
+            $ratio = '1:1';
+        }
+        $model = (string) ($body['model'] ?? 'Nano Banana 2');
+        if (!in_array($model, ['Nano Banana 2', 'Nano Banana Pro', 'Nano Banana 2 Lite'], true)) {
+            $model = 'Nano Banana 2';
+        }
+        $count = (int) ($body['count'] ?? 1);
+        $count = max(1, min(4, $count));
+        // mode=edit: la primera referencia es la imagen que se edita. La edición
+        // reutiliza el canal de referencias del worker, así que no hace falta
+        // desplegar de nuevo el worker del PC para que funcione.
+        $mode = ((string) ($body['mode'] ?? 'generate')) === 'edit' ? 'edit' : 'generate';
+        if ($mode === 'edit') {
+            $count = 1;
+        }
     }
 
     // Referencias de imagen: se validan y decodifican ANTES de tocar la cola.
+    // En vídeo son los fotogramas: la primera es el inicial y la segunda el final.
     $parsedRefs = parse_refs($body['refs'] ?? []);
     if ($parsedRefs['error'] !== '') {
         respond(['ok' => false, 'error' => $parsedRefs['error']], 400);
@@ -321,13 +396,20 @@ if ($reqAction === 'request') {
         respond(['ok' => false, 'error' => 'Falta la imagen que quieres editar'], 400);
     }
 
-    $result = with_lock(function () use ($queueFile, $prompt, $ratio, $model, $count, $mode, $refsIn, $refsDir) {
+    $result = with_lock(function () use ($queueFile, $prompt, $ratio, $model, $count, $mode, $type, $refsIn, $refsDir) {
         $q = read_queue($queueFile);
         $pending = 0;
+        $pendingVideos = 0;
         foreach ($q['jobs'] as $j) {
             if (in_array($j['status'] ?? '', ['queued', 'running'], true)) {
                 $pending++;
+                if (($j['type'] ?? 'image') === 'video') {
+                    $pendingVideos++;
+                }
             }
+        }
+        if ($type === 'video' && $pendingVideos >= MAX_VIDEO_QUEUE) {
+            return ['ok' => false, 'error' => 'Ya hay ' . $pendingVideos . ' vídeos en cola. Espera a que termine alguno antes de encargar otro.'];
         }
         if ($pending + $count > MAX_QUEUE) {
             return ['ok' => false, 'error' => 'La cola está llena (' . $pending . ' pendientes). Espera un poco.'];
@@ -349,6 +431,7 @@ if ($reqAction === 'request') {
             }
             $q['jobs'][] = [
                 'id' => $id,
+                'type' => $type,
                 'prompt' => $prompt,
                 'ratio' => $ratio,
                 'model' => $model,
@@ -398,11 +481,13 @@ if ($reqAction === 'status') {
         }
         $item = [
             'status' => $j['status'],
+            'type' => $j['type'] ?? 'image',
             'error' => $j['error'] ?? '',
             'mode' => $j['mode'] ?? 'generate',
         ];
         if ($j['status'] === 'done' && !empty($j['file'])) {
-            $item['url'] = 'flow_queue.php?action=img&id=' . $j['id'];
+            $urlAction = ($j['type'] ?? 'image') === 'video' ? 'file' : 'img';
+            $item['url'] = 'flow_queue.php?action=' . $urlAction . '&id=' . $j['id'];
             $item['ratio'] = $j['ratio'];
             $item['model'] = $j['model'];
             $item['prompt'] = $j['prompt'];
@@ -459,6 +544,7 @@ if ($reqAction === 'claim') {
                 }
                 $job = [
                     'id' => $j['id'],
+                    'type' => $j['type'] ?? 'image',
                     'prompt' => $j['prompt'],
                     'ratio' => $j['ratio'],
                     'model' => $j['model'],
@@ -481,33 +567,52 @@ if ($reqAction === 'complete') {
         respond(['ok' => false, 'error' => 'Token no válido'], 403);
     }
     $id = preg_replace('/[^a-f0-9]/', '', strtolower((string) ($body['id'] ?? '')));
-    $image = (string) ($body['image'] ?? '');
-    if ($id === '' || strlen($id) !== 16 || $image === '') {
+    $payload = (string) ($body['video'] ?? '');
+    $isVideo = $payload !== '';
+    if (!$isVideo) {
+        $payload = (string) ($body['image'] ?? '');
+    }
+    if ($id === '' || strlen($id) !== 16 || $payload === '') {
         respond(['ok' => false, 'error' => 'Parámetros incompletos'], 400);
     }
-    if (str_starts_with($image, 'data:')) {
-        $image = substr($image, (int) strpos($image, ',') + 1);
+    if (str_starts_with($payload, 'data:')) {
+        $payload = substr($payload, (int) strpos($payload, ',') + 1);
     }
-    $bytes = base64_decode($image, true);
+    $bytes = base64_decode($payload, true);
     if ($bytes === false) {
         respond(['ok' => false, 'error' => 'Base64 no válido'], 400);
     }
-    $ext = sniff_ext($bytes);
-    if ($ext === null) {
-        respond(['ok' => false, 'error' => 'El archivo no es una imagen'], 400);
-    }
-    if (strlen($bytes) > 8 * 1024 * 1024) {
-        respond(['ok' => false, 'error' => 'Imagen demasiado grande'], 400);
+    if ($isVideo) {
+        $ext = sniff_video($bytes);
+        if ($ext === null) {
+            respond(['ok' => false, 'error' => 'El archivo no es un vídeo MP4'], 400);
+        }
+        if (strlen($bytes) > MAX_VIDEO_BYTES) {
+            respond(['ok' => false, 'error' => 'Vídeo demasiado grande (máximo 32 MB)'], 400);
+        }
+    } else {
+        $ext = sniff_ext($bytes);
+        if ($ext === null) {
+            respond(['ok' => false, 'error' => 'El archivo no es una imagen'], 400);
+        }
+        if (strlen($bytes) > 8 * 1024 * 1024) {
+            respond(['ok' => false, 'error' => 'Imagen demasiado grande'], 400);
+        }
     }
     $path = $imgDir . '/' . $id . '.' . $ext;
     if (file_put_contents($path, $bytes) === false) {
-        respond(['ok' => false, 'error' => 'No se pudo guardar la imagen'], 500);
+        respond(['ok' => false, 'error' => 'No se pudo guardar el resultado'], 500);
     }
-    $result = with_lock(function () use ($queueFile, $id, $ext, $refsDir) {
+    $result = with_lock(function () use ($queueFile, $id, $ext, $isVideo, $refsDir, $path) {
         $q = read_queue($queueFile);
         $q['worker_seen'] = time();
         foreach ($q['jobs'] as &$j) {
             if ($j['id'] === $id) {
+                if ((($j['type'] ?? 'image') === 'video') !== $isVideo) {
+                    unset($j);
+                    @unlink($path);
+                    return ['ok' => false, 'error' => 'El archivo no corresponde al tipo del trabajo'];
+                }
                 $j['status'] = 'done';
                 $j['file'] = $id . '.' . $ext;
                 $j['finished'] = time();

@@ -89,6 +89,17 @@ function rateLimitOk(): bool
 
 function buildSystemPrompt(string $ratio, string $mode): string
 {
+    if ($mode === 'video') {
+        return 'Eres director de cine especializado en prompts para modelos de vídeo (Veo / Google Flow) '
+            . 'que generan clips de unos 8 segundos. Reescribe la idea del usuario en español de España como '
+            . 'un prompt de 40 a 55 palabras con: sujeto y acción concreta, movimiento de cámara (plano fijo, '
+            . 'acercamiento, órbita o travelling), escena y momento del día, iluminación, paleta y ritmo. '
+            . 'Sin texto en pantalla, sin cortes, sin varias escenas, sin marcas ni personas reales. '
+            . 'Formato del clip: ' . $ratio . '. '
+            . 'Devuelve EXACTAMENTE 4 líneas, una por propuesta, con este formato: '
+            . 'TITULO CORTO || prompt completo. '
+            . 'Sin numeración, sin JSON, sin markdown, sin comillas y sin texto extra.';
+    }
     if ($mode === 'edit') {
         return 'Eres director de retoque fotográfico especializado en instrucciones para modelos de imagen '
             . '(Nano Banana / Google Flow) que reciben una imagen y una orden de edición. Reescribe la idea '
@@ -244,12 +255,16 @@ if ($prompt === '') {
 }
 $prompt = textCut($prompt, MAX_PROMPT);
 
-$ratio = (string) ($body['ratio'] ?? '1:1');
-if (!in_array($ratio, ['1:1', '16:9', '9:16', '4:3', '3:4'], true)) {
-    $ratio = '1:1';
+$mode = (string) ($body['mode'] ?? 'generate');
+if (!in_array($mode, ['generate', 'edit', 'video'], true)) {
+    $mode = 'generate';
 }
-// edit: propuestas para cambiar una imagen existente, no para crear una escena.
-$mode = ((string) ($body['mode'] ?? 'generate')) === 'edit' ? 'edit' : 'generate';
+// En vídeo Flow solo genera 16:9 o 9:16.
+$ratio = (string) ($body['ratio'] ?? ($mode === 'video' ? '16:9' : '1:1'));
+$validRatios = $mode === 'video' ? ['16:9', '9:16'] : ['1:1', '16:9', '9:16', '4:3', '3:4'];
+if (!in_array($ratio, $validRatios, true)) {
+    $ratio = $validRatios[0];
+}
 
 if (!rateLimitOk()) {
     respond(['ok' => false, 'error' => 'Demasiadas peticiones seguidas. Espera un minuto.'], 429);
@@ -271,9 +286,13 @@ for ($attempt = 0; $attempt < 2 && trim($content) === ''; $attempt++) {
             ['role' => 'system', 'content' => buildSystemPrompt($ratio, $mode)],
             ['role' => 'user', 'content' => $prompt],
         ] : [
-            ['role' => 'system', 'content' => $mode === 'edit'
-                ? 'Devuelve 4 líneas. Cada línea: TITULO || instrucción de edición en español de 35 a 55 palabras que diga qué cambia y qué debe permanecer intacto. Sin JSON, sin numeración, sin comillas, sin texto extra.'
-                : 'Devuelve 4 líneas. Cada línea: TITULO || prompt visual en español de 40 a 55 palabras para formato ' . $ratio . '. Sin JSON, sin numeración, sin comillas, sin texto extra.'],
+            ['role' => 'system', 'content' => 'Devuelve 4 líneas. Cada línea: TITULO || ' . (
+                $mode === 'edit'
+                    ? 'instrucción de edición en español de 35 a 55 palabras que diga qué cambia y qué debe permanecer intacto.'
+                    : ($mode === 'video'
+                        ? 'prompt de vídeo en español de 40 a 55 palabras con acción, movimiento de cámara, luz y ritmo para formato ' . $ratio . ', para un clip de unos 8 segundos.'
+                        : 'prompt visual en español de 40 a 55 palabras para formato ' . $ratio . '.')
+            ) . ' Sin JSON, sin numeración, sin comillas, sin texto extra.'],
             ['role' => 'user', 'content' => $prompt],
         ],
         'temperature' => $attempt === 0 ? 0.85 : 0.6,
