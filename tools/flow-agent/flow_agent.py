@@ -424,6 +424,18 @@ def compress_image(path: str) -> bytes:
 
 
 def work_once(cfg: dict) -> bool:
+    profile = str(cfg.get('flow_profile') or '')
+
+    # El perfil de Chrome solo lo puede usar un proceso a la vez. Si otro worker
+    # (por ejemplo el antiguo de Flow Studio) lo tiene ocupado, NO se reclama el
+    # trabajo: reclamarlo y fallar quemaría el intento y marcaría el trabajo como
+    # fallido por una colisión pasajera.
+    if profile:
+        ocupado = chrome_using_profile(profile)
+        if ocupado > 0:
+            print('perfil de Flow ocupado por %d Chrome: espero sin reclamar trabajo' % ocupado)
+            return False
+
     try:
         payload = api_retry(cfg, 'agent.claim', {}, attempts=2, timeout=45)
     except RuntimeError as exc:
@@ -438,7 +450,9 @@ def work_once(cfg: dict) -> bool:
     is_video = (job.get('type') or 'image') == 'video'
     refs: list[str] = []
     try:
-        open_chrome = chrome_using_profile(str(cfg.get('flow_profile') or ''))
+        # Segunda comprobación: entre el claim y la generación pudo abrirse otro
+        # Chrome. Aquí ya hay trabajo reclamado, así que se informa del fallo.
+        open_chrome = chrome_using_profile(profile)
         if open_chrome > 0:
             raise RuntimeError(
                 'hay %d Chrome con el perfil de Flow abierto: ciérralos antes de generar' % open_chrome

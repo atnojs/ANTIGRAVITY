@@ -42,8 +42,9 @@ antiguo de Flow Studio (`E:\herramientas\google-flow\flow_studio_worker.py`, tar
    Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*flow_studio_worker*' } |
      ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
    ```
-2. Convivir con ambos y aceptar que alguno falle de vez en cuando (el agente avisa con un
-   mensaje claro: «hay N Chrome con el perfil de Flow abierto»).
+2. Convivir con ambos. El agente **no reclama trabajo mientras el perfil esté ocupado**
+   (imprime «perfil de Flow ocupado… espero sin reclamar trabajo»), así que la colisión no
+   marca trabajos como fallidos: simplemente espera al siguiente ciclo.
 ## 1. Credencial del agente
 
 El token debe coincidir con el del servidor. Se admite de dos formas:
