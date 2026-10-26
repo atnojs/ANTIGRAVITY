@@ -143,15 +143,22 @@ export function confirmDialog({ title = 'Confirmar', text = '¿Seguro?', okLabel
 }
 
 export function showLoading(text = 'IA generando imagen…', secondary = 'Enviando la solicitud al proveedor.') {
+  const overlay = $('loadingOverlay');
   $('loadingText').textContent = text;
   $('loadingSecondary').textContent = secondary;
-  $('loadingOverlay').classList.remove('hidden');
-  $('loadingOverlay').style.display = 'flex';
+  overlay.classList.remove('hidden');
+  overlay.style.display = 'flex';
+  overlay.setAttribute('aria-busy', 'true');
+  // Mientras el overlay está visible no se desplaza el documento de fondo.
+  document.documentElement.classList.add('is-loading');
 }
 
 export function hideLoading() {
-  $('loadingOverlay').classList.add('hidden');
-  $('loadingOverlay').style.display = 'none';
+  const overlay = $('loadingOverlay');
+  overlay.classList.add('hidden');
+  overlay.style.display = 'none';
+  overlay.setAttribute('aria-busy', 'false');
+  document.documentElement.classList.remove('is-loading');
 }
 
 /* ══════════════ Barra superior / estado ══════════════ */

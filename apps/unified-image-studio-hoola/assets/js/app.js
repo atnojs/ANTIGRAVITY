@@ -1108,9 +1108,11 @@ async function runGeneration() {
   const isFlow = selected?.provider === 'flow';
 
   try {
+    showLoading('IA generando imagen…', 'Enviando la solicitud al proveedor. No cierres esta pestaña.');
     if (isFlow) {
-      // Motor Flow: se encola en el servidor y lo ejecuta el PC.
-      await runFlowImage({
+      // Motor Flow: se encola en el servidor y lo ejecuta el PC. El overlay
+      // sigue visible hasta que el PC termina, igual que con los modelos directos.
+      const { done } = await runFlowImage({
         prompt,
         model: state.ui.model,
         ratio: $('aspectSelect').value,
@@ -1119,11 +1121,18 @@ async function runGeneration() {
         // tantas variantes como se hayan pedido.
         mode: images.length ? 'edit' : 'generate',
         count: images.length ? 1 : flowUi.imageCount,
+        onUpdate: paintGenerationProgress,
       });
+      // Si el PC deja de responder, el overlay no puede bloquear la app para
+      // siempre: a los 5 minutos se devuelve el control y el trabajo se sigue
+      // en segundo plano desde Biblioteca.
+      await Promise.race([
+        done,
+        new Promise((resolve) => window.setTimeout(resolve, 300000)),
+      ]);
       return;
     }
 
-    showLoading('IA generando imagen…', 'Enviando la solicitud al proveedor. No cierres esta pestaña.');
     const job = await generate({
       prompt,
       model: state.ui.model,
@@ -1146,6 +1155,21 @@ async function runGeneration() {
     syncFlowControls();
     hideLoading();
   }
+}
+
+/** Actualiza el segundo aviso del overlay con el avance real de Flow. */
+function paintGenerationProgress(jobs) {
+  if (!jobs.length) return;
+  const total = jobs.length;
+  const done = jobs.filter((job) => job.status === 'done').length;
+  const failed = jobs.filter((job) => job.status === 'failed' || job.status === 'unknown').length;
+  const running = jobs.filter((job) => job.status === 'running').length;
+  const remaining = total - done - failed;
+  let text;
+  if (!remaining) text = 'Terminando y preparando el resultado…';
+  else if (running) text = total > 1 ? `Generando en tu PC… (${done} de ${total} listas)` : 'Generando en tu PC…';
+  else text = total > 1 ? `En cola: ${remaining} ${remaining === 1 ? 'trabajo' : 'trabajos'} esperando al PC…` : 'En cola: esperando a que el PC recoja el trabajo…';
+  $('loadingSecondary').textContent = text;
 }
 
 function showResultPreview(result) {
@@ -1659,15 +1683,17 @@ function applyRecipeUnlocked(recipe) {
 
 /* El estudio no muestra costes, saldos ni presupuestos (decidido el 2026-10-26). */
 
-/* ══════════════════════ Google Flow: seguimiento no bloqueante ══════════════════════
+/* ══════════════════════ Google Flow: seguimiento de trabajos ══════════════════════
    Encolar es instantáneo; la generación la hace el PC y puede tardar minutos.
-   La interfaz NO se bloquea: un aviso compacto informa del avance y el usuario
-   puede seguir trabajando, cambiar de sección o cerrar la pestaña. */
+   La imagen mantiene el overlay canónico hasta que el PC termina (con un tope
+   de 5 minutos); el vídeo no lo usa y se sigue con el aviso compacto, para no
+   bloquear la app. En ambos casos el trabajo sobrevive a cerrar la pestaña. */
 
 const flowWatch = {
   ids: new Set(),
   jobs: new Map(),
   timer: 0,
+  waiters: [],
 };
 
 function paintFlowProgress() {
@@ -1692,8 +1718,10 @@ function paintFlowProgress() {
   box.setAttribute('aria-busy', 'true');
 }
 
-/** Sigue un grupo de trabajos en segundo plano; avisa al terminar. */
-function watchFlowJobs(ids, { source = 'image', autoPreview = false } = {}) {
+/** Sigue un grupo de trabajos en segundo plano; avisa al terminar.
+ *  Con `wait:true` devuelve una promesa que se resuelve cuando todos los ids
+ *  terminan (o fallan), para poder mantener el overlay hasta ese momento. */
+function watchFlowJobs(ids, { source = 'image', autoPreview = false, wait = false, onUpdate = null } = {}) {
   for (const id of ids) {
     flowWatch.ids.add(id);
     // Estado provisional: el aviso aparece al instante, sin esperar al sondeo.
@@ -1701,12 +1729,19 @@ function watchFlowJobs(ids, { source = 'image', autoPreview = false } = {}) {
       flowWatch.jobs.set(id, { id, status: 'queued', type: source === 'video' ? 'video' : 'image' });
     }
   }
+  let settled = null;
+  if (wait) {
+    settled = new Promise((resolve) => {
+      flowWatch.waiters.push({ ids: new Set(ids), resolve, onUpdate });
+    });
+  }
   paintFlowProgress();
-  if (flowWatch.timer) return;
+  settleFlowWaiters();
+  if (flowWatch.timer) return settled;
   const tick = async () => {
     flowWatch.timer = 0;
     const pendingIds = [...flowWatch.ids];
-    if (!pendingIds.length) { paintFlowProgress(); return; }
+    if (!pendingIds.length) { paintFlowProgress(); settleFlowWaiters(); return; }
     let jobs = [];
     try {
       jobs = await statusFlowJobs(pendingIds);
@@ -1736,6 +1771,7 @@ function watchFlowJobs(ids, { source = 'image', autoPreview = false } = {}) {
       }
     }
     paintFlowProgress();
+    settleFlowWaiters();
     if (flowWatch.ids.size) {
       flowWatch.timer = window.setTimeout(tick, 3500);
     } else {
@@ -1745,6 +1781,21 @@ function watchFlowJobs(ids, { source = 'image', autoPreview = false } = {}) {
     }
   };
   flowWatch.timer = window.setTimeout(tick, 2500);
+  return settled;
+}
+
+/** Avisa del estado real a quien esté esperando (p. ej. el overlay de carga). */
+function settleFlowWaiters() {
+  if (!flowWatch.waiters.length) return;
+  const waiting = [];
+  for (const waiter of flowWatch.waiters) {
+    const jobs = [...waiter.ids].map((id) => flowWatch.jobs.get(id)).filter(Boolean);
+    waiter.onUpdate?.(jobs);
+    const pending = jobs.some((job) => job.status === 'queued' || job.status === 'running');
+    if (pending) waiting.push(waiter);
+    else waiter.resolve(jobs);
+  }
+  flowWatch.waiters = waiting;
 }
 
 /** Muestra el resultado de una imagen de Flow como vista previa aplicable. */
@@ -1931,15 +1982,15 @@ function useCanvasAsStartFrame() {
   animateImage(canvas.toDataURL('image/png'));
 }
 
-/** Encola una imagen con Flow. Devuelve al instante: el seguimiento es en segundo plano. */
-async function runFlowImage({ prompt, model, ratio, images, count = 1, mode = 'generate' }) {
+/** Encola una imagen con Flow y devuelve los ids y la promesa de seguimiento. */
+async function runFlowImage({ prompt, model, ratio, images, count = 1, mode = 'generate', onUpdate = null }) {
   const jobs = await createFlowImage({ prompt, model, ratio, images, count, mode });
   const ids = jobs.map((job) => job.id);
   toast(ids.length > 1
-    ? `${ids.length} variantes encoladas. Se generan en tu PC; puedes seguir trabajando.`
-    : 'Trabajo encolado en tu PC. Puedes seguir trabajando o cerrar la pestaña.', 'ok');
-  watchFlowJobs(ids, { source: 'image', autoPreview: true });
-  return ids;
+    ? `${ids.length} variantes encoladas en tu PC. La generación sigue aunque cierres la pestaña.`
+    : 'Trabajo encolado en tu PC. La generación sigue aunque cierres la pestaña.', 'ok');
+  const done = watchFlowJobs(ids, { source: 'image', autoPreview: true, wait: true, onUpdate });
+  return { ids, done };
 }
 
 /** Genera el vídeo: fotograma inicial opcional (modo Fotogramas de Flow). */

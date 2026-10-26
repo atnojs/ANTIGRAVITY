@@ -557,6 +557,13 @@ kbd {
   backdrop-filter: blur(14px) saturate(1.8);
   -webkit-backdrop-filter: blur(14px) saturate(1.8);
 }
+
+/* El overlay bloquea el scroll del documento mientras la IA trabaja. */
+html.is-loading,
+html.is-loading body {
+  overflow: hidden;
+}
+
 .loading-text {
   margin: 0;
   font-family: var(--font-display);
