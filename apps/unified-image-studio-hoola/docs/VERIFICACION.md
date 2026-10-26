@@ -22,7 +22,7 @@ en Chrome y (c) el estilo Hoola se aplica de forma medible y consistente, tambi�
 |---|---|---|---|
 | 1 | Lint PHP (`api.php`, `proxy.php`, `lib/bootstrap.php`, `lib/jobs.php`) | Sin errores de sintaxis | `php -l` |
 | 2 | Sintaxis JS de los 8 módulos + `lightbox.js` | Sin errores (ESM) | `node --check` sobre copia `.mjs` |
-| 3 | `GET api.php?action=state` local y producción | `200`, `ok:true`, `configured:true`, `sharedSession:true`, `version:2.0.0-hoola` | petición directa |
+| 3 | `GET api.php?action=state` local y producción | `200`, `ok:true`, `configured:true`, `sharedSession:true`, `version:2.0.2-hoola` | petición directa |
 | 4 | Login con contraseña del servidor (local) | `200`, cookie de sesión, UI en modo servidor | requests 19/65/91 |
 | 5 | Importar imagen (PNG) | Imagen en lienzo, recurso subido (`resource.upload` 200) | captura `18-hoola-imagen.png` |
 | 6 | Añadir texto Electrolize | Capa de texto creada y renderizada | captura `23-hoola-texto.png` |
@@ -86,4 +86,7 @@ cerrar:
 - **Panel de Utilidades/Biblioteca no se refrescaba tras el login:** mostraba «Modo local · sin
   sesión» hasta recargar. Ahora, al iniciar sesión, se refrescan presupuesto, lista de proyectos,
   información de almacenamiento y utilidades sin recargar la página.
+- **Versión de la API desincronizada:** `UIS_VERSION` de `lib/bootstrap.php` seguía en `2.0.0-hoola`
+  mientras el build era `2.0.2`. Ahora `api.php?action=state` informa `version: 2.0.2-hoola`, igual
+  que `version.txt`, el sello de `app.js` y la ayuda.
 

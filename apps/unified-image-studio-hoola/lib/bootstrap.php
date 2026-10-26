@@ -22,7 +22,7 @@ if (isset($_SERVER['SCRIPT_FILENAME']) && realpath($_SERVER['SCRIPT_FILENAME']) 
     exit;
 }
 
-const UIS_VERSION = '2.0.0-hoola';
+const UIS_VERSION = '2.0.2-hoola';
 const UIS_MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 const UIS_MAX_JSON_BYTES = 32 * 1024 * 1024;
 const UIS_MAX_DIMENSION = 8192;
