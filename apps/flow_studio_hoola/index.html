@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- assets versionados 20261026f: modo vídeo con las opciones de Flow -->
+<!-- assets versionados 20261026g: modo vídeo con las opciones de Flow -->
 <title>Flow Studio · Genera imágenes y vídeos con Google Flow</title>
 <meta name="description" content="Genera imágenes y vídeos gratis con Google Flow. Elige modelo, formato y fotogramas, edita o anima una imagen y escala el resultado 2×, 4× u 8× en tu PC.">
 <meta name="theme-color" content="#001018">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.hoola.20261026f.css">
+<link rel="stylesheet" href="app.hoola.20261026g.css">
 </head>
 <body>
 
@@ -162,19 +162,19 @@
             <fieldset class="control" id="imageModelControl">
                 <legend>Modelo</legend>
                 <div class="chips" id="modelChips">
-                    <button type="button" class="chip is-active" data-model="Nano Banana 2">Nano Banana 2</button>
-                    <button type="button" class="chip" data-model="Nano Banana Pro">Nano Banana Pro</button>
-                    <button type="button" class="chip" data-model="Nano Banana 2 Lite">2 Lite</button>
+                    <button type="button" class="chip is-active" data-model="Nano Banana 2" aria-pressed="true">Nano Banana 2</button>
+                    <button type="button" class="chip" data-model="Nano Banana Pro" aria-pressed="false">Nano Banana Pro</button>
+                    <button type="button" class="chip" data-model="Nano Banana 2 Lite" aria-pressed="false">2 Lite</button>
                 </div>
             </fieldset>
 
             <fieldset class="control" id="videoModelControl" hidden>
                 <legend>Modelo de vídeo <span class="legend-hint">de menor a mayor capacidad</span></legend>
                 <div class="chips" id="videoModelChips">
-                    <button type="button" class="chip is-active" data-vmodel="Veo 3.1 - Lite" title="10 puntos por vídeo · 5 al día con los 50 de la cuenta">Veo 3.1 Lite</button>
-                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Fast" title="El importe exacto lo marca Flow antes de generar">Veo 3.1 Fast</button>
-                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Quality" title="El importe exacto lo marca Flow antes de generar">Veo 3.1 Quality</button>
-                    <button type="button" class="chip" data-vmodel="Omni Flash" title="El importe exacto lo marca Flow antes de generar">Omni Flash</button>
+                    <button type="button" class="chip is-active" data-vmodel="Veo 3.1 - Lite" aria-pressed="true" title="10 puntos por vídeo · 5 al día con los 50 de la cuenta">Veo 3.1 Lite</button>
+                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Fast" aria-pressed="false" title="El importe exacto lo marca Flow antes de generar">Veo 3.1 Fast</button>
+                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Quality" aria-pressed="false" title="El importe exacto lo marca Flow antes de generar">Veo 3.1 Quality</button>
+                    <button type="button" class="chip" data-vmodel="Omni Flash" aria-pressed="false" title="El importe exacto lo marca Flow antes de generar">Omni Flash</button>
                 </div>
                 <p class="refs-note" id="videoHint">Veo 3.1 Lite gasta 10 puntos por vídeo (5 al día con los 50). En Fast, Quality y Omni Flash, Flow marca el importe antes de generar.</p>
             </fieldset>
@@ -182,21 +182,21 @@
             <fieldset class="control">
                 <legend>Formato</legend>
                 <div class="chips" id="ratioChips">
-                    <button type="button" class="chip is-active" data-ratio="1:1"><span class="ratio-ico r-1-1" aria-hidden="true"></span>1:1</button>
-                    <button type="button" class="chip" data-ratio="16:9"><span class="ratio-ico r-16-9" aria-hidden="true"></span>16:9</button>
-                    <button type="button" class="chip" data-ratio="9:16"><span class="ratio-ico r-9-16" aria-hidden="true"></span>9:16</button>
-                    <button type="button" class="chip" data-ratio="4:3"><span class="ratio-ico r-4-3" aria-hidden="true"></span>4:3</button>
-                    <button type="button" class="chip" data-ratio="3:4"><span class="ratio-ico r-3-4" aria-hidden="true"></span>3:4</button>
+                    <button type="button" class="chip is-active" data-ratio="1:1" aria-pressed="true"><span class="ratio-ico r-1-1" aria-hidden="true"></span>1:1</button>
+                    <button type="button" class="chip" data-ratio="16:9" aria-pressed="false"><span class="ratio-ico r-16-9" aria-hidden="true"></span>16:9</button>
+                    <button type="button" class="chip" data-ratio="9:16" aria-pressed="false"><span class="ratio-ico r-9-16" aria-hidden="true"></span>9:16</button>
+                    <button type="button" class="chip" data-ratio="4:3" aria-pressed="false"><span class="ratio-ico r-4-3" aria-hidden="true"></span>4:3</button>
+                    <button type="button" class="chip" data-ratio="3:4" aria-pressed="false"><span class="ratio-ico r-3-4" aria-hidden="true"></span>3:4</button>
                 </div>
             </fieldset>
 
             <fieldset class="control" id="countControl">
                 <legend>Cantidad</legend>
                 <div class="chips" id="countChips">
-                    <button type="button" class="chip is-active" data-count="1">1</button>
-                    <button type="button" class="chip" data-count="2">2</button>
-                    <button type="button" class="chip" data-count="3">3</button>
-                    <button type="button" class="chip" data-count="4">4</button>
+                    <button type="button" class="chip is-active" data-count="1" aria-pressed="true">1</button>
+                    <button type="button" class="chip" data-count="2" aria-pressed="false">2</button>
+                    <button type="button" class="chip" data-count="3" aria-pressed="false">3</button>
+                    <button type="button" class="chip" data-count="4" aria-pressed="false">4</button>
                 </div>
             </fieldset>
         </div>
@@ -271,7 +271,7 @@
 </noscript>
 
 <script src="history-manager.js"></script>
-<script src="app.20261026f.js"></script>
+<script src="app.20261026g.js"></script>
 
 <!-- Zoom con la rueda del raton en el visor de imagen grande -->
 <script src="lightbox-zoom.20261026.js?v=20261026" defer></script>
