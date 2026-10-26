@@ -570,6 +570,12 @@ body::after {
     border-color: var(--border-strong);
     box-shadow: 0 0 14px var(--glow-soft);
 }
+.icon-btn[data-act="delete"]:hover {
+    background: rgba(239, 68, 68, 0.28);
+    border-color: rgba(239, 68, 68, 0.75);
+    color: #ffe1e1;
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.4);
+}
 .icon-btn svg { width: 16px; height: 16px; }
 
 .card-body { padding: 11px 13px 13px; }

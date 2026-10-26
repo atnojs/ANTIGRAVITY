@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Flow Studio Ã‚Â· Hoola
    Copia visual de la app con el sistema Hoola/Relatos:
    cian #00D0D0, verde #26C626, Electrolize, vidrio azulado,
@@ -569,6 +569,12 @@ body::after {
     background: rgba(0, 208, 208, 0.22);
     border-color: var(--border-strong);
     box-shadow: 0 0 14px var(--glow-soft);
+}
+.icon-btn[data-act="delete"]:hover {
+    background: rgba(239, 68, 68, 0.28);
+    border-color: rgba(239, 68, 68, 0.75);
+    color: #ffe1e1;
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.4);
 }
 .icon-btn svg { width: 16px; height: 16px; }
 

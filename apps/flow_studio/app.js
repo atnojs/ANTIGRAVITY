@@ -75,7 +75,7 @@
         download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg>',
         repeat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>',
         copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
-        expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>',
+        trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6.5 7l.9 12.1a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4L17.5 7"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>',
     };
 
     /* ------------------------------ utilidades ------------------------------ */
@@ -168,7 +168,7 @@
             <button type="button" class="icon-btn" data-act="download" aria-label="Descargar imagen">${SVG.download}</button>
             <button type="button" class="icon-btn" data-act="repeat" aria-label="Usar este prompt otra vez">${SVG.repeat}</button>
             <button type="button" class="icon-btn" data-act="copy" aria-label="Copiar el prompt">${SVG.copy}</button>
-            <button type="button" class="icon-btn" data-act="expand" aria-label="Ampliar imagen">${SVG.expand}</button>`;
+            <button type="button" class="icon-btn" data-act="delete" aria-label="Eliminar imagen">${SVG.trash}</button>`;
         media.appendChild(actions);
 
         const body = document.createElement('div');
@@ -229,7 +229,7 @@
                 const ok = await copyText(record.prompt);
                 setNote(ok ? 'Prompt copiado.' : 'No se pudo copiar el prompt.', !ok);
             }
-            if (btn.dataset.act === 'expand') openLightbox(record.url, record.prompt);
+            if (btn.dataset.act === 'delete') await deleteCard(record);
         });
 
         if (insert) {
@@ -283,6 +283,55 @@
         card.querySelector('.card-media').appendChild(err);
         card.classList.remove('is-waiting');
         card.classList.add('is-error');
+    }
+
+    /** Quita del lienzo la tarjeta con ese id (trabajos y tarjetas del historial). */
+    function removeCard(id) {
+        const key = String(id);
+        const job = state.jobs.get(key);
+        const card = (job && job.el) || [...els.grid.querySelectorAll('.card')]
+            .find((el) => el.dataset.id === key);
+        if (card) card.remove();
+        state.jobs.delete(key);
+        updateStudioCount();
+    }
+
+    /** Quita del lienzo las tarjetas que representan una entrada del historial. */
+    function removeCardsForHistory(id) {
+        removeCard('h_' + id);
+        [...state.jobs.values()].forEach((job) => {
+            if (job.historyId === id) removeCard(job.id);
+        });
+    }
+
+    /** Elimina la imagen del lienzo y, si está guardada, también del historial. */
+    async function deleteCard(job) {
+        if (!job) return;
+        const prompt = job.prompt || '';
+        const question = prompt
+            ? `¿Eliminar esta imagen?\n\n"${prompt}"\n\nSe borra también del historial y del servidor. No se puede deshacer.`
+            : '¿Eliminar esta imagen?\n\nSe borra también del historial y del servidor. No se puede deshacer.';
+        if (!window.confirm(question)) return;
+
+        // Si la imagen acaba de terminar, espera a que termine su guardado en el
+        // historial para poder borrar también esa entrada del servidor.
+        if (job.historySave) {
+            try { await job.historySave; } catch { /* el error ya se registra al guardar */ }
+        }
+        let historyId = job.historyId || '';
+        if (!historyId && String(job.id).startsWith('h_')) historyId = String(job.id).slice(2);
+
+        if (historyId && history) {
+            try {
+                await history.delete(historyId);
+            } catch (err) {
+                setNote('No se pudo eliminar del historial: ' + err.message, true);
+                return;
+            }
+            if (els.historyPanel.classList.contains('is-open')) renderHistory();
+        }
+        removeCard(job.id);
+        setNote('Imagen eliminada.');
     }
 
     /* ------------------------------ imágenes ------------------------------ */
@@ -362,26 +411,41 @@
         items.forEach((item) => {
             const data = item.data || {};
             const url = item.imageUrl ? item.imageUrl.replace(/^\.\//, '') : '';
-            const row = document.createElement('button');
-            row.type = 'button';
+            const prompt = data.prompt || 'Sin prompt';
+            // La fila ya no abre el visor: la imagen se amplía desde su tarjeta
+            // del lienzo y aquí la única acción es eliminarla del historial.
+            const row = document.createElement('div');
             row.className = 'history-item';
-            row.style.textAlign = 'left';
-            row.style.background = 'none';
-            row.style.font = 'inherit';
-            row.style.color = 'inherit';
             row.innerHTML = `
-                <img src="${url}" alt="" loading="lazy">
-                <div>
-                    <p>${escapeHtml(data.prompt || 'Sin prompt')}</p>
+                <img src="${url}" alt="${escapeHtml(prompt)}" loading="lazy">
+                <div class="history-info">
+                    <p>${escapeHtml(prompt)}</p>
                     <time>${formatDate(item.createdAt)}</time>
-                </div>`;
-            row.addEventListener('click', () => {
-                if (!url) return;
-                openLightbox(url, data.prompt || '');
-                closeHistory();
-            });
+                </div>
+                <button type="button" class="history-delete" data-id="${escapeHtml(String(item.id))}"
+                    aria-label="Eliminar del historial: ${escapeHtml(prompt)}" title="Eliminar del historial">${SVG.trash}</button>`;
             els.historyList.appendChild(row);
         });
+    }
+
+    /** Borra del servidor la imagen del historial y la quita del lienzo. */
+    async function deleteHistoryItem(id) {
+        if (!history || !id) return;
+        const item = history.getAll().find((entry) => String(entry.id) === String(id));
+        const prompt = (item && item.data && item.data.prompt) || '';
+        const question = prompt
+            ? `¿Eliminar del historial esta imagen?\n\n"${prompt}"\n\nSe borra también del servidor y no se puede deshacer.`
+            : '¿Eliminar esta imagen del historial?\n\nSe borra también del servidor y no se puede deshacer.';
+        if (!window.confirm(question)) return;
+        try {
+            await history.delete(id);
+        } catch (err) {
+            setNote('No se pudo eliminar del historial: ' + err.message, true);
+            return;
+        }
+        removeCardsForHistory(id);
+        renderHistory();
+        setNote('Imagen eliminada del historial.');
     }
 
     function formatDate(iso) {
@@ -402,6 +466,7 @@
             if (!url) return;
             const job = {
                 id: 'h_' + item.id,
+                historyId: item.id,
                 prompt: data.prompt || 'Sin prompt',
                 ratio: data.ratio || '1:1',
                 model: item.model || '',
@@ -427,12 +492,13 @@
             const resp = await fetch(job.url, { cache: 'force-cache' });
             const blob = await resp.blob();
             const dataUrl = await blobToDataUrl(blob);
-            await history.save({
+            const entry = await history.save({
                 type: 'image',
                 model: job.model,
                 data: { prompt: job.prompt, ratio: job.ratio },
                 imageData: dataUrl,
             });
+            job.historyId = entry.id;
             if (els.historyPanel.classList.contains('is-open')) renderHistory();
         } catch (err) {
             console.warn('[flow-studio] historial:', err.message);
@@ -519,7 +585,7 @@
             if (!info) return;
             if (info.status === 'done' && job.status !== 'done') {
                 markDone(job, info);
-                saveToHistory(job);
+                job.historySave = saveToHistory(job);
             } else if (info.status === 'error' && job.status !== 'error') {
                 markError(job, info.error);
                 job.status = 'error';
@@ -927,6 +993,12 @@
         open ? closeHistory() : openHistory();
     });
     els.btnHistoryClose.addEventListener('click', closeHistory);
+
+    els.historyList.addEventListener('click', (event) => {
+        const btn = event.target.closest('.history-delete');
+        if (!btn) return;
+        deleteHistoryItem(btn.dataset.id);
+    });
 
     els.lightbox.addEventListener('click', (event) => {
         if (event.target === els.lightbox || event.target === els.lightboxImg) closeLightbox();
