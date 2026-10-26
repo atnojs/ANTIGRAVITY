@@ -82,6 +82,9 @@ del proyecto, cargado al final de `index.html`:
 - **Límite declarado:** es una compuerta de interfaz, como en el resto de apps del proyecto. La
   contraseña viaja en el propio archivo compartido y no sustituye a la autenticación del servidor:
   para generar sigue siendo obligatoria la sesión `PW_ACCESS`.
+- **Al añadir un modelo nuevo:** la lista del módulo es de **libres** (`FREE_MODELS`); cualquier
+  identificador que no esté ahí pide contraseña. Si el modelo nuevo debe quedar libre (Flow, Image 2
+  LOW/MEDIUM o vídeo ligero), hay que añadirlo a `FREE_MODELS` al darlo de alta en `ai.js`.
 
 
 ## 2. Requisitos

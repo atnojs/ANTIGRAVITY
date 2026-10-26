@@ -17,7 +17,9 @@ Una entrada por sesión de trabajo relevante.
 - **Pruebas:** 13/13 PASS en local (Chrome real headless manejado por CDP: candados exactos, libres
   sin modal, contraseña incorrecta/correcta, persistencia por pestaña, vídeo, guardián de envío,
   receta, teclado) y 13/13 en producción sobre la URL real. Sin errores de consola; 390/768 px sin
-  desbordes. Detalle y capturas en `apps/unified-image-studio/docs/VERIFICACION.md` §23 y en
+  desbordes. **Verificador independiente: PASS** (33/33 en el banco local y PASS sobre producción,
+  incluidas las 12 fichas una a una y la no regresión de las otras apps con el módulo v1.0.1).
+  Detalle y capturas en `apps/unified-image-studio/docs/VERIFICACION.md` §23 y en
   `tools/evidencias/2026-10-26-uis-model-gate/`.
 - **Publicación:** commit `d8143f15` en `main`; Hostinger publicó a las 21:13 UTC (`index.html` con
   `app.js?v=14` y `model-gate.20261026.js` a 200).

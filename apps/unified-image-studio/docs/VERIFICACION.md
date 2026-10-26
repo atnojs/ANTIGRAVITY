@@ -630,4 +630,9 @@ correcta desbloquea y selecciona. Evidencia: `07-produccion-bloqueado.png`,
 Límites declarados: la compuerta es de interfaz (la contraseña vive en el archivo compartido, igual
 que en las otras apps que lo usan) y el servidor mantiene su propia exigencia de sesión
 `PW_ACCESS`. Las recetas ya guardadas con un modelo protegido pasan por la compuerta al aplicarse.
+El desbloqueo se guarda en `sessionStorage`: una pestaña nueva normal (Ctrl+T) nace bloqueada, pero
+«Duplicar pestaña» clona el almacenamiento de la pestaña original y nace desbloqueada; es
+comportamiento del navegador, no de la compuerta. La lista del módulo es de modelos **libres**:
+cualquier alta nueva que no se añada a `FREE_MODELS` pedirá contraseña (comprobado y anotado en el
+README para no bloquear modelos nuevos por olvido).
 
