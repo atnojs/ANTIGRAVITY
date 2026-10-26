@@ -4,6 +4,27 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-26 (noche) — Modelos protegidos por contraseña en Unified Image Studio
+
+- **Encargo:** «los modelos de generación de imagen protegidos por contraseña (si clico en alguno
+  me pide contraseña), menos los de Flow y los LOW/MEDIUM de IMAGE 2; VEO 3.1 QUALITY y OMNI FLASH
+  también».
+- **Qué se hizo:** `apps/unified-image-studio` carga `apps/_shared/model-gate.20261026.js` (Model
+  Gate 1.1.0). Libres: los tres de Flow, IMAGE 2 LOW/MEDIUM y, en vídeo, VEO 3.1 LITE/FAST.
+  Protegidos: los cinco de OPENAI 2.5, GEMINI, QWEN, IMAGE 2 HIGH, VEO 3.1 QUALITY y OMNI FLASH
+  (12 botones). La compuerta engancha también `data-vmodel` (vídeo), el envío (`fetch` con `"model"`
+  protegido) y la aplicación de recetas. El módulo v1.0.1 que usan las demás apps **no se tocó**.
+- **Pruebas:** 13/13 PASS en local (Chrome real headless manejado por CDP: candados exactos, libres
+  sin modal, contraseña incorrecta/correcta, persistencia por pestaña, vídeo, guardián de envío,
+  receta, teclado) y 13/13 en producción sobre la URL real. Sin errores de consola; 390/768 px sin
+  desbordes. Detalle y capturas en `apps/unified-image-studio/docs/VERIFICACION.md` §23 y en
+  `tools/evidencias/2026-10-26-uis-model-gate/`.
+- **Publicación:** commit `d8143f15` en `main`; Hostinger publicó a las 21:13 UTC (`index.html` con
+  `app.js?v=14` y `model-gate.20261026.js` a 200).
+- **Límite:** compuerta de interfaz; el servidor sigue exigiendo sesión `PW_ACCESS` para generar.
+
+---
+
 ## 2026-10-26 (noche) — Parar una generación en curso desde la biblioteca
 
 - **Encargo:** «se quedó colgada; quiero poder eliminar una solicitud cuando pone generando».

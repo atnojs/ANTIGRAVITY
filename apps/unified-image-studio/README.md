@@ -72,8 +72,8 @@ del proyecto, cargado al final de `index.html`:
 | Vídeo: `VEO 3.1 LITE` y `VEO 3.1 FAST` | Vídeo: `VEO 3.1 QUALITY` y `OMNI FLASH` |
 
 - Al pulsar un modelo protegido aparece **Modelo protegido**; la selección no cambia hasta
-  escribir la contraseña del proyecto (la misma del resto de apps, `05`). Al acertar, el modelo
-  pulsado se aplica solo y desaparecen los candados.
+  escribir la contraseña de modelos del proyecto (la misma que usan las demás apps con este
+  módulo). Al acertar, el modelo pulsado se aplica solo y desaparecen los candados.
 - El desbloqueo dura la pestaña (`sessionStorage`): al recargar se mantiene; en una pestaña nueva
   se vuelve a pedir. `ModelGate.lock()` lo revoca a mano.
 - Además del clic hay un **guardián de envío**: si una receta, un proyecto restaurado o un envío

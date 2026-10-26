@@ -616,9 +616,18 @@ Cómo se probó: servidor estático local de `apps/` (sin PHP, la app arranca en
 **Chrome real headless** manejado por CDP con clics y envío del formulario, no eventos simulados
 desde el propio código. Suites y capturas: `tools/evidencias/2026-10-26-uis-model-gate/`
 (`01-arranque-bloqueado.png`, `02-modal-modelo-protegido.png`, `03-desbloqueado.png`,
-`04-video-quality-protegido.png`); 13/13 PASS.
+`04-video-quality-protegido.png`, `05-movil-390.png`, `06-tablet-768.png`); 13/13 PASS, más
+teclado (Enter abre la compuerta, Escape cierra y devuelve el foco), clic real de ratón y receta
+(`applyRecipe`) con modelo protegido.
+
+**Producción (2026-10-26, 21:13 UTC):** `index.html` sirve `assets/js/app.js?v=14` y
+`/_shared/model-gate.20261026.js` (HTTP 200, 23.720 B, `x-hcdn-cache-status: MISS`). Las mismas
+13 comprobaciones sobre la URL real: **13/13 PASS** — 12 candados exactos, IMAGE 2 LOW y NANO
+BANANA 2 libres, GEMINI 3 PRO y OMNI FLASH piden contraseña, la incorrecta se rechaza y la
+correcta desbloquea y selecciona. Evidencia: `07-produccion-bloqueado.png`,
+`08-produccion-modal.png`, `09-produccion-video.png`.
 
 Límites declarados: la compuerta es de interfaz (la contraseña vive en el archivo compartido, igual
-que en las otras 40 apps que lo usan) y el servidor mantiene su propia exigencia de sesión
+que en las otras apps que lo usan) y el servidor mantiene su propia exigencia de sesión
 `PW_ACCESS`. Las recetas ya guardadas con un modelo protegido pasan por la compuerta al aplicarse.
 
