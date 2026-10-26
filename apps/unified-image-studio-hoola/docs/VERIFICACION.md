@@ -51,11 +51,31 @@ Capturas: `01-hoola-escritorio.png`, `02-hoola-video.png`, `03-hoola-biblioteca.
 `08-hoola-acceso.png`, `09-hoola-compuerta.png`, `10-hoola-ayuda.png`,
 `11-hoola-biblioteca-vacia.png`.
 
-## 4. Producción
+## 4. Producción (2026-10-26, 23:11 UTC)
 
-Pendiente de completar tras el despliegue de este commit: comprobación de `index.html` servido,
-`api.php?action=state`, CSP y fuentes, y repetición del flujo de compuerta y pestañas sobre la URL
-real.
+`index.html` servido con `model-gate.20261026b.js`, `assets/css/hoola.css` y `app.js?v=1`;
+`api.php?action=state` responde `ok:true`, `version:"3.0.0-hoola"`, `configured:true` y
+`sharedSession:true`. Los recursos nuevos (`flow.js`, `lightbox-zoom.20261026.js`, `hoola.css`)
+responden 200. **16/16 PASS** en Chrome real, sin errores de consola ni violaciones de CSP:
+
+| Comprobación | Resultado |
+|---|---|
+| Arranque con sello v3.0.0 y Electrolize | PASS |
+| 12 candados y compuerta 1.2.0 | PASS |
+| Fondo Hoola y rejilla 46 px medidas | PASS |
+| IMAGE 2 LOW libre / GEMINI 3 PRO pide contraseña | PASS |
+| Código de modelos desbloquea y selecciona | PASS |
+| Pestaña Vídeo con 4 modelos / Biblioteca con 3 filtros | PASS |
+| Móvil 390 px sin desbordes | PASS |
+
+Capturas: `12-produccion-escritorio.png`, `13-produccion-compuerta.png`,
+`14-produccion-video.png`, `15-produccion-movil.png`.
+
+**Ajuste posterior:** con el servidor disponible pero **sin sesión**, la barra decía «Flow: sin
+credencial», que se podía leer como un fallo de credencial. Ahora dice «Flow: inicia sesión» y la
+tarjeta del panel «Sesión pendiente» (commit `389990fb`). No cambia el comportamiento, solo el
+mensaje.
+
 
 ## 5. Límites declarados
 

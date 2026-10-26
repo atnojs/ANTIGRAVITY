@@ -4,6 +4,26 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-26 (noche) — Copia Hoola v3: todo el estudio con el estilo al 100 %
+
+- **Encargo:** «una copia de la app con el estilo hoola al 100 %».
+- **Qué se hizo:** `apps/unified-image-studio-hoola` pasa de la 2.0.2 a la **3.0.0**. No es un
+  parche visual: se copia el código actual del original (Google Flow, compuerta de modelos 1.2.0,
+  cancelación, biblioteca) y se aplica la capa Hoola completa (base.css con tokens, hoola.css más
+  una sección v3 para Flow/vídeo/biblioteca, fondo con halos y rejilla de 46 px, overlay canónico,
+  modales y visor con zoom). Namespace local propio y CSP con `blob:`.
+- **Verificación:** 12/12 en local y **16/16 en producción** (arranque, 12 candados, libre frente a
+  protegido, código de modelos, pestaña de vídeo, biblioteca, móvil 390, CSP/fuentes y `api.php`
+  con `version:3.0.0-hoola`). Sin errores de consola. Detalle en
+  `apps/unified-image-studio-hoola/docs/VERIFICACION.md` §4.
+- **Publicación:** commits `fee4d428` (copia v3), `389990fb` (etiqueta de Flow sin sesión) y
+  `e5a0ca5f` (re-disparo del despliegue); URL https://atnojs.es/apps/unified-image-studio-hoola/.
+- **Límite:** no se lanzaron generaciones reales (coste). El agente de Flow del PC sigue parado y
+  no se puede arrancar desde esta sesión (el PC de Flow no tiene WinRM/SSH); queda pendiente en ese
+  equipo.
+
+---
+
 ## 2026-10-26 (noche) — La compuerta de modelos acepta la contraseña de acceso
 
 - **Incidencia:** «pongo la contraseña y me dice que es incorrecta». La compuerta 1.1.0 solo
