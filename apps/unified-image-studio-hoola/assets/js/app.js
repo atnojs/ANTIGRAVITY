@@ -1821,6 +1821,11 @@ function paintFlowAgent() {
   if (!server.available) {
     label = 'Flow: sin servidor';
     detail = 'El servidor PHP no responde, así que no se puede encolar nada. Revisa api.php?action=state.';
+  } else if (!server.writable) {
+    // Sin sesión el servidor no puede informar del agente: no se debe decir
+    // «sin credencial», porque la credencial puede estar perfectamente puesta.
+    label = 'Flow: inicia sesión';
+    detail = 'Entra con la contraseña de acceso para consultar el estado de Flow y encolar trabajos.';
   } else if (!configured) {
     label = 'Flow: sin credencial';
     detail = 'Falta la credencial del agente en el servidor (storage/flow-agent.json o UIS_FLOW_AGENT_TOKEN).';
@@ -1835,7 +1840,9 @@ function paintFlowAgent() {
   }
   const statusCard = $('flowAgentCard');
   if (statusCard) {
-    $('flowAgentTitle').textContent = online ? 'PC conectado' : (configured ? 'PC desconectado' : 'Credencial pendiente');
+    $('flowAgentTitle').textContent = !server.writable
+      ? 'Sesión pendiente'
+      : (online ? 'PC conectado' : (configured ? 'PC desconectado' : 'Credencial pendiente'));
     $('flowAgentText').textContent = detail;
   }
   const card = $('flowStatus');
