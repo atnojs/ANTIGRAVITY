@@ -105,10 +105,10 @@
         syncGridHeight();
     }
 
-    // La rejilla del lienzo deja ver dos filas y, a partir de ahí, scrollea
-    // dentro de sí misma para que el compositor y el botón Generar no se
-    // pierdan al acumular imágenes.
-    const GRID_ROWS = 2;
+    // La rejilla del lienzo deja ver una fila y, a partir de la segunda,
+    // scrollea dentro de sí misma para que el compositor y el botón Generar
+    // no se pierdan al acumular imágenes.
+    const GRID_ROWS = 1;
     let gridMeasureRaf = 0;
     let gridObserver = null;
 

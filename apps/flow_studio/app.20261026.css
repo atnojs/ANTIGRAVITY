@@ -320,7 +320,7 @@ body {
     gap: 16px;
 }
 
-/* El lienzo se queda en dos filas y scrollea a partir de la tercera. */
+/* El lienzo se queda en una fila y scrollea a partir de la segunda. */
 .grid.is-scrollable {
     overflow-y: auto;
     overscroll-behavior: contain;
