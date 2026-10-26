@@ -1,0 +1,16 @@
+# Unified Image Studio — caché y tipos MIME.
+# Los módulos ES se piden con ?v=N, pero un despliegue puede dejar un módulo
+# viejo en caché: se fuerza revalidación para que HTML y JS sean siempre de la
+# misma versión.
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|js|css|json|webmanifest)$">
+        Header set Cache-Control "no-cache, must-revalidate, max-age=0"
+    </FilesMatch>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
+
+<IfModule mod_mime.c>
+    AddType text/javascript .js
+    AddType text/css .css
+</IfModule>

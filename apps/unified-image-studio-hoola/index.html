@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Unified Image Studio · Hoola</title>
+<meta name="description" content="Estación de trabajo de imagen con IA: importa, genera, edita, compone y exporta. Copia con el estilo hoola: cian y verde, Electrolize y vidrio azulado." />
+<meta name="theme-color" content="#001018" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/base.css?v=1" />
+<link rel="stylesheet" href="assets/css/studio.css?v=1" />
+<link rel="stylesheet" href="assets/css/hoola.css?v=1" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300D0D0'/%3E%3Cstop offset='1' stop-color='%2326C626'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='%23001018'/%3E%3Cpath d='M8 22l6-12 4 8 2-4 4 8' stroke='url(%23g)' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+</head>
+<body>
+<a class="skip-link" href="#stage">Saltar al lienzo</a>
+
+<!-- ══════════════════════ VIGILANTE DE ARRANQUE ══════════════════════
+     Si un recurso no carga (caché vieja, MIME, CSP) o el módulo falla,
+     esta pantalla lo dice en lugar de dejar la interfaz muerta. -->
+<script>
+(function () {
+  var problems = [];
+  var shown = false;
+
+  window.addEventListener('error', function (event) {
+    var el = event.target;
+    if (el && (el.tagName === 'SCRIPT' || el.tagName === 'LINK')) {
+      problems.push((el.tagName === 'SCRIPT' ? 'Script' : 'Estilo') + ' no cargado: ' + (el.src || el.href));
+    } else if (event.message) {
+      problems.push('Error de JavaScript: ' + event.message);
+    }
+  }, true);
+
+  document.addEventListener('securitypolicyviolation', function (event) {
+    problems.push('La política CSP bloqueó ' + (event.blockedURI || 'un recurso') + ' (' + event.violatedDirective + ')');
+  });
+
+  window.__UIS_DIAG__ = { problems: problems, started: false, show: function () { panel(); } };
+
+  function esc(text) {
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  }
+
+  function panel() {
+    if (shown) return;
+    if (window.__UIS_DIAG__ && window.__UIS_DIAG__.started) return;
+    shown = true;
+    var box = document.createElement('div');
+    box.id = 'uisBootGuard';
+    box.setAttribute('role', 'alertdialog');
+    box.setAttribute('aria-label', 'Aviso de arranque');
+    box.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 30% 20%,rgba(0,40,60,.4),rgba(0,12,20,.55)),rgba(0,16,24,.92);backdrop-filter:blur(12px);font-family:Electrolize,system-ui,sans-serif;color:#eaffff';
+    var items = problems.length
+      ? '<ul style="margin:8px 0 0;padding-left:18px;line-height:1.6">' + problems.map(function (p) {
+          return '<li style="font-family:ui-monospace,monospace;font-size:12px;color:#ff9b95">' + esc(p) + '</li>';
+        }).join('') + '</ul>'
+      : '<p style="margin:8px 0 0;font-size:13px;color:#99CCCC">El script principal no llegó a ejecutarse. Normalmente es una copia antigua en caché o un recurso bloqueado.</p>';
+    box.innerHTML = '<div style="max-width:620px;width:100%;background:linear-gradient(180deg,rgba(23,79,122,.55),rgba(4,28,40,.92));border:2px solid #00D0D0;border-radius:14px;padding:22px;box-shadow:0 0 30px rgba(0,208,208,.3)">' +
+      '<h1 style="margin:0 0 6px;font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:#eaffff;text-shadow:0 0 12px rgba(0,208,208,.5)">La aplicación no ha arrancado</h1>' +
+      '<p style="margin:0;font-size:13px;color:#99CCCC">Esta pantalla aparece sola cuando el estudio no puede iniciarse, para que no se quede en «Comprobando…» sin explicación.</p>' +
+      items +
+      '<p style="margin:14px 0 0;font-size:12px;color:#86b8b8">Dirección: <span style="font-family:ui-monospace,monospace">' + esc(location.href) + '</span></p>' +
+      '<p style="margin:6px 0 0;font-size:12px;color:#86b8b8">Servidor: <a style="color:#00D0D0" href="api.php?action=state" target="_blank" rel="noopener">api.php?action=state</a></p>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px">' +
+        '<button id="uisDiagReload" style="height:34px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.35);background:linear-gradient(135deg,#00D0D0,#26C626);color:#032820;font-weight:700;cursor:pointer">Recargar sin caché</button>' +
+        '<button id="uisDiagCopy" style="height:34px;padding:0 14px;border-radius:9px;border:1px solid rgba(0,208,208,.5);background:rgba(8,40,56,.5);color:#ccf2f2;cursor:pointer">Copiar diagnóstico</button>' +
+      '</div></div>';
+    document.body.appendChild(box);
+    box.querySelector('#uisDiagReload').onclick = function () { location.reload(true); };
+    box.querySelector('#uisDiagCopy').onclick = function () {
+      var text = JSON.stringify({ url: location.href, problems: problems, ua: navigator.userAgent }, null, 2);
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () {
+        box.querySelector('#uisDiagCopy').textContent = 'Copiado';
+      });
+    };
+  }
+
+  window.addEventListener('load', function () { setTimeout(panel, 5000); });
+  setTimeout(panel, 12000);
+})();
+</script>
+
+<!-- ══════════════════════ ICONOS ══════════════════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+    <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></symbol>
+    <symbol id="i-fit" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
+    <symbol id="i-one" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M8 8v8"/><path d="M16 8v8"/></symbol>
+    <symbol id="i-compare" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/><path d="m8 12 2-2-2-2"/><path d="m16 12-2-2 2-2"/></symbol>
+    <symbol id="i-zoom-in" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/><path d="M11 8v6"/><path d="M8 11h6"/></symbol>
+    <symbol id="i-zoom-out" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/><path d="M8 11h6"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-4.5-4.5L7 20"/></symbol>
+    <symbol id="i-text" viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></symbol>
+    <symbol id="i-shape" viewBox="0 0 24 24"><rect x="3" y="8" width="9" height="9" rx="1.5"/><circle cx="16.5" cy="10" r="4.5"/></symbol>
+    <symbol id="i-brush" viewBox="0 0 24 24"><path d="M9.1 11.9 17.2 3.8a2.9 2.9 0 1 1 4 4l-8 8.1"/><path d="M7 14.9a3 3 0 0 0-3 3c0 1.3-2.5 1.5-2 2 1.1 1.1 2.5 2 4 2a4.1 4.1 0 0 0 4-4 3 3 0 0 0-3-3Z"/></symbol>
+    <symbol id="i-eraser" viewBox="0 0 24 24"><path d="m7 21-4-4a2 2 0 0 1 0-2.8l9.8-9.8a2 2 0 0 1 2.8 0l4.2 4.2a2 2 0 0 1 0 2.8L13 21Z"/><path d="M22 21H9"/><path d="m5 13 7 7"/></symbol>
+    <symbol id="i-crop" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.7 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.6 3.5"/><path d="M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a10.7 10.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.7-1.4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M4 5h16"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
+    <symbol id="i-move" viewBox="0 0 24 24"><path d="M5 9l-3 3 3 3"/><path d="M9 5l3-3 3 3"/><path d="M15 19l-3 3-3-3"/><path d="M19 9l3 3-3 3"/><path d="M2 12h20"/><path d="M12 2v20"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3.5-7.1"/><path d="M21 3v6h-6"/></symbol>
+    <symbol id="i-flip" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M7 8 3 12l4 4Z"/><path d="m17 8 4 4-4 4Z"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v5l3 2"/></symbol>
+    <symbol id="i-wand" viewBox="0 0 24 24"><path d="m3 21 9-9"/><path d="M15 4V2"/><path d="M15 10V8"/><path d="M12.5 6.5h-2"/><path d="M19.5 6.5h-2"/><path d="m18 3-1.5 1.5"/><path d="m18 10-1.5-1.5"/><path d="m12 3 1.5 1.5"/><path d="m12 10 1.5-1.5"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 12 22l-9-9V4a1 1 0 0 1 1-1h9Z"/><path d="M8 8h.01"/></symbol>
+    <symbol id="i-shirt" viewBox="0 0 24 24"><path d="M16 3 12 6 8 3 3 6l2 5 2-1v11h10V10l2 1 2-5Z"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M14.5 4h-5L8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3Z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 1 1 4.3 2.7c-.9.5-1.4 1.1-1.4 2.3"/><path d="M12 17h.01"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></symbol>
+    <symbol id="i-mask" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor" stroke="none"/></symbol>
+  </defs>
+</svg>
+
+<!-- ══════════════════════ APP ══════════════════════ -->
+<div class="app" id="app">
+
+  <!-- ── Barra superior ── -->
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <button class="icon-btn rail-toggle" id="railToggle" aria-label="Mostrar u ocultar herramientas" aria-expanded="false" aria-controls="leftPanel">
+        <svg class="ico"><use href="#i-menu"/></svg>
+      </button>
+      <span class="brand-mark" aria-hidden="true">UIS</span>
+      <h1 class="brand-name">Unified <em>Image</em> Studio</h1>
+      <span class="brand-tag" aria-hidden="true">Hoola</span>
+    </div>
+
+    <div class="topbar-project">
+      <button class="project-chip" id="projectChip" aria-haspopup="dialog" title="Abrir biblioteca de proyectos (Ctrl+O)">
+        <span class="dot" id="dirtyDot" aria-hidden="true"></span>
+        <span id="projectName">Sin proyecto</span>
+        <svg class="ico ico-sm"><use href="#i-chevron-down"/></svg>
+      </button>
+      <span class="doc-meta mono" id="docMeta">— × —</span>
+    </div>
+
+    <div class="topbar-actions">
+      <div class="btn-group" role="group" aria-label="Historial">
+        <button class="icon-btn" id="undoBtn" aria-label="Deshacer" title="Deshacer (Ctrl+Z)" disabled><svg class="ico"><use href="#i-undo"/></svg></button>
+        <button class="icon-btn" id="redoBtn" aria-label="Rehacer" title="Rehacer (Ctrl+Shift+Z)" disabled><svg class="ico"><use href="#i-redo"/></svg></button>
+      </div>
+
+      <div class="btn-group" role="group" aria-label="Vista">
+        <button class="icon-btn" id="fitBtn" aria-label="Ajustar al espacio" title="Ajustar al espacio (Shift+1)" aria-pressed="true"><svg class="ico"><use href="#i-fit"/></svg></button>
+        <button class="icon-btn" id="actualBtn" aria-label="Ver al 100 %" title="Ver al 100 % (Shift+2)" aria-pressed="false"><span class="icon-text">1:1</span></button>
+        <button class="icon-btn" id="compareBtn" aria-label="Comparar antes y después" title="Comparar antes/después (C)" aria-pressed="false"><svg class="ico"><use href="#i-compare"/></svg></button>
+      </div>
+
+      <div class="cost-meter" id="costMeter" title="Coste estimado de la sesión y consumo registrado">
+        <span class="cost-label">Coste</span>
+        <span class="mono cost-value" id="costValue">0,00 €</span>
+        <span class="cost-sub mono" id="costBudget" title="Presupuesto restante">—</span>
+      </div>
+
+      <div class="save-state" id="saveState" data-state="idle" role="status" aria-live="polite">
+        <span class="save-dot" aria-hidden="true"></span>
+        <span id="saveStateText">Sin guardar</span>
+      </div>
+
+      <button class="icon-btn" id="authBtn" title="Acceso y sesión" aria-label="Acceso y sesión">
+        <svg class="ico"><use href="#i-lock"/></svg>
+      </button>
+
+      <button class="icon-btn" id="rightToggle" aria-label="Mostrar u ocultar capas y biblioteca" aria-expanded="false" aria-controls="rightPanel" title="Capas y biblioteca">
+        <svg class="ico"><use href="#i-layers"/></svg>
+      </button>
+
+      <button class="btn btn-primary" id="exportBtn" title="Exportar (Ctrl+E)">
+        <svg class="ico"><use href="#i-download"/></svg><span>Exportar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Área de trabajo ── -->
+  <div class="panel-backdrop hidden" id="panelBackdrop" aria-hidden="true"></div>
+  <div class="workspace" id="workspace">
+
+    <!-- Rail + panel izquierdo -->
+    <nav class="rail" aria-label="Herramientas">
+      <button class="rail-btn is-active" data-tab="generate" aria-pressed="true" title="Generación">
+        <svg class="ico"><use href="#i-sparkles"/></svg><span>Generar</span>
+      </button>
+      <button class="rail-btn" data-tab="edit" aria-pressed="false" title="Edición y máscaras">
+        <svg class="ico"><use href="#i-brush"/></svg><span>Editar</span>
+      </button>
+      <button class="rail-btn" data-tab="compose" aria-pressed="false" title="Composición">
+        <svg class="ico"><use href="#i-text"/></svg><span>Componer</span>
+      </button>
+      <button class="rail-btn" data-tab="product" aria-pressed="false" title="Producto y moda">
+        <svg class="ico"><use href="#i-shirt"/></svg><span>Producto</span>
+      </button>
+      <button class="rail-btn" data-tab="utilities" aria-pressed="false" title="Utilidades">
+        <svg class="ico"><use href="#i-settings"/></svg><span>Utilidades</span>
+      </button>
+      <div class="rail-spacer"></div>
+      <button class="rail-btn" id="railHelp" title="Atajos y ayuda">
+        <svg class="ico"><use href="#i-help"/></svg><span>Ayuda</span>
+      </button>
+    </nav>
+
+    <aside class="panel panel-left" id="leftPanel" aria-label="Herramientas de trabajo">
+      <div class="panel-head">
+        <h2 id="panelTitle">Generación</h2>
+        <button class="icon-btn panel-collapse" id="leftCollapse" aria-label="Plegar panel" title="Plegar panel">
+          <svg class="ico"><use href="#i-chevron-left"/></svg>
+        </button>
+        <button class="icon-btn panel-close" data-close-panel="left" aria-label="Cerrar panel de herramientas" title="Cerrar">
+          <svg class="ico"><use href="#i-x"/></svg>
+        </button>
+      </div>
+      <div class="panel-body" id="panelBody">
+
+        <!-- ── GENERACIÓN ── -->
+        <section class="tabpane is-active" data-pane="generate" aria-labelledby="panelTitle">
+          <div class="field">
+            <label for="promptInput">Descripción de la imagen</label>
+            <textarea id="promptInput" rows="5" placeholder="Describe lo que quieres generar. Todo texto o audio generado debe estar obligatoriamente en español."></textarea>
+            <div class="field-row">
+              <span class="hint" id="promptCount">0 / 12.000</span>
+              <button class="link-btn" id="useDocAsContext" title="Usar la imagen actual como referencia">Usar lienzo como referencia</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Modelo</span>
+            <div class="model-selector" id="modelSelector" role="group" aria-label="Seleccionar modelo de generación">
+              <div class="model-provider-layout">
+              <div class="model-provider-column">
+                <span class="model-provider-title">OPENAI 2.5</span>
+                <span class="model-quality-hint">De menor a mayor calidad</span>
+                <div class="model-toggle-group">
+                  <button type="button" class="model-toggle" data-model="openai-medium" aria-pressed="false">MEDIUM</button>
+                  <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGH</button>
+                  <button type="button" class="model-toggle" data-model="openai-max-flare" aria-pressed="false">MAX FLARE</button>
+                  <button type="button" class="model-toggle" data-model="openai-xhigh" aria-pressed="false">XHIGH</button>
+                  <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false">MAX SUNBURST</button>
+                </div>
+              </div>
+              <div class="model-provider-row">
+                <div class="model-provider-column">
+                  <span class="model-provider-title">GEMINI</span>
+                  <span class="model-quality-hint" aria-hidden="true">De menor a mayor calidad</span>
+                  <div class="model-toggle-group">
+                    <button type="button" class="model-toggle" data-model="gemini-2" aria-pressed="false">GEMINI 2</button>
+                    <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
+                    <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+                  </div>
+                </div>
+                <div class="model-provider-column">
+                  <span class="model-provider-title">QWEN</span>
+                  <span class="model-quality-hint" aria-hidden="true">De menor a mayor calidad</span>
+                  <div class="model-toggle-group">
+                    <button type="button" class="model-toggle" data-model="qwen-pro" aria-pressed="false">QWEN 3 PRO</button>
+                  </div>
+                </div>
+                <div class="model-provider-column">
+                  <span class="model-provider-title">IMAGE 2</span>
+                  <span class="model-quality-hint" aria-hidden="true">De menor a mayor calidad</span>
+                  <div class="model-toggle-group">
+                    <button type="button" class="model-toggle is-active" data-model="openai-image-2-low" aria-pressed="true">LOW</button>
+                    <button type="button" class="model-toggle" data-model="openai-image-2" aria-pressed="false">MEDIUM</button>
+                    <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false">HIGH</button>
+                  </div>
+                </div>
+              </div>
+              </div>
+            </div>
+            <p class="field-note" id="modelNote">gpt-image-2 · calidad low · el más rápido y económico.</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="aspectSelect">Proporción</label>
+              <select id="aspectSelect">
+                <option value="1:1">1:1</option><option value="4:5">4:5</option><option value="3:4">3:4</option>
+                <option value="2:3">2:3</option><option value="16:9">16:9</option><option value="9:16">9:16</option>
+                <option value="3:2">3:2</option><option value="4:3">4:3</option><option value="21:9">21:9</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="resolutionSelect">Resolución</label>
+              <select id="resolutionSelect">
+                <option value="512">512</option><option value="1024" selected>1024</option>
+                <option value="2048">2048</option><option value="4096">4096</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Referencias <span class="badge" id="refCount">0</span></span>
+            <div class="ref-strip" id="refStrip" aria-live="polite"></div>
+            <div class="field-row">
+              <button class="btn btn-ghost btn-sm" id="addRefBtn"><svg class="ico ico-sm"><use href="#i-plus"/></svg>Añadir referencia</button>
+              <button class="link-btn" id="clearRefsBtn">Quitar todas</button>
+            </div>
+            <p class="field-note">Cada referencia admite un papel: producto, identidad, estilo, pose o composición. Se traduce al formato que admite el modelo.</p>
+          </div>
+
+          <div class="result-tray hidden" id="resultTray" aria-live="polite">
+            <div class="result-tray-head">
+              <span>Resultado de IA</span>
+              <button class="icon-btn icon-btn-sm" id="closeResult" aria-label="Cerrar resultado"><svg class="ico ico-sm"><use href="#i-x"/></svg></button>
+            </div>
+            <img id="resultPreview" alt="Resultado de la generación" />
+            <div class="result-actions">
+              <button class="btn btn-sm btn-primary" id="acceptResult">Aceptar</button>
+              <button class="btn btn-sm btn-ghost" id="regenResult">Regenerar</button>
+              <button class="btn btn-sm btn-ghost" id="variantResult">Guardar variante</button>
+              <button class="btn btn-sm btn-danger" id="discardResult">Descartar</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── EDICIÓN ── -->
+        <section class="tabpane" data-pane="edit" hidden>
+          <div class="group">
+            <h3 class="group-title">Máscara de la capa</h3>
+            <div class="segmented" id="maskMode" role="group" aria-label="Modo de máscara">
+              <button class="seg" data-mode="paint" aria-pressed="true">Pintar</button>
+              <button class="seg" data-mode="erase" aria-pressed="false">Borrar</button>
+            </div>
+            <div class="field">
+              <label for="brushSize">Tamaño del pincel <span class="mono" id="brushSizeValue">80 px</span></label>
+              <input type="range" id="brushSize" min="4" max="600" step="2" value="80" />
+            </div>
+            <div class="field">
+              <label for="brushHardness">Dureza <span class="mono" id="brushHardnessValue">80 %</span></label>
+              <input type="range" id="brushHardness" min="0" max="100" step="1" value="80" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-ghost btn-sm" id="invertMaskBtn">Invertir</button>
+              <button class="btn btn-ghost btn-sm" id="clearMaskBtn">Limpiar</button>
+              <button class="btn btn-ghost btn-sm" id="toggleMaskBtn" aria-pressed="false">Ocultar máscara</button>
+            </div>
+            <p class="field-note">La máscara se guarda en coordenadas del documento: mantiene la alineación con cualquier zoom o desplazamiento.</p>
+          </div>
+
+          <div class="group">
+            <h3 class="group-title">Recorte y tamaño</h3>
+            <div class="btn-row">
+              <button class="btn btn-ghost btn-sm" id="cropBtn"><svg class="ico ico-sm"><use href="#i-crop"/></svg>Recortar</button>
+              <button class="btn btn-ghost btn-sm" id="resizeBtn">Redimensionar</button>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-ghost btn-sm" id="rotateCwBtn" title="Girar 90° a la derecha">90° ↻</button>
+              <button class="btn btn-ghost btn-sm" id="rotateCcwBtn" title="Girar 90° a la izquierda">90° ↺</button>
+              <button class="btn btn-ghost btn-sm" id="flipHBtn" title="Voltear horizontal">↔</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <h3 class="group-title">Edición con IA</h3>
+            <div class="field">
+              <label for="inpaintPrompt">Instrucción de inpainting</label>
+              <textarea id="inpaintPrompt" rows="3" placeholder="Qué debe aparecer dentro de la máscara pintada"></textarea>
+            </div>
+            <button class="btn btn-ghost btn-block" id="inpaintBtn"><svg class="ico"><use href="#i-wand"/></svg>Rellenar la máscara</button>
+            <div class="divider"></div>
+            <button class="btn btn-ghost btn-block" id="removeBgBtn"><svg class="ico"><use href="#i-mask"/></svg>Quitar fondo por color (local)</button>
+            <button class="btn btn-ghost btn-block" id="removeBgAiBtn"><svg class="ico"><use href="#i-sparkles"/></svg>Quitar fondo con IA</button>
+            <p class="field-note">El recorte local analiza el color de las esquinas sin enviar nada. La versión con IA envía la imagen al proveedor y conserva el original como recurso aparte.</p>
+          </div>
+        </section>
+
+        <!-- ── COMPOSICIÓN ── -->
+        <section class="tabpane" data-pane="compose" hidden>
+          <div class="group">
+            <h3 class="group-title">Texto</h3>
+            <div class="field">
+              <label for="textContent">Contenido</label>
+              <textarea id="textContent" rows="2" placeholder="Tu texto"></textarea>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="textSize">Tamaño <span class="mono" id="textSizeValue">64</span></label>
+                <input type="range" id="textSize" min="8" max="400" step="1" value="64" />
+              </div>
+              <div class="field">
+                <label for="textColor">Color</label>
+                <input type="color" id="textColor" value="#ffffff" />
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="textWeight">Grosor</label>
+                <select id="textWeight"><option value="400">Regular</option><option value="600">Semibold</option><option value="700">Bold</option></select>
+              </div>
+              <div class="field">
+                <label for="textAlign">Alineación</label>
+                <select id="textAlign"><option value="left">Izquierda</option><option value="center" selected>Centro</option><option value="right">Derecha</option></select>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="addTextBtn"><svg class="ico"><use href="#i-plus"/></svg>Añadir texto</button>
+          </div>
+
+          <div class="group">
+            <h3 class="group-title">Formas</h3>
+            <div class="shape-grid" role="group" aria-label="Tipo de forma">
+              <button class="shape-btn" data-shape="rect" title="Rectángulo"><span class="shape-preview rect"></span>Rectángulo</button>
+              <button class="shape-btn" data-shape="ellipse" title="Elipse"><span class="shape-preview ellipse"></span>Elipse</button>
+              <button class="shape-btn" data-shape="line" title="Línea"><span class="shape-preview line"></span>Línea</button>
+            </div>
+            <div class="grid-2">
+              <div class="field"><label for="shapeFill">Relleno</label><input type="color" id="shapeFill" value="#00d0d0" /></div>
+              <div class="field"><label for="shapeStroke">Borde</label><input type="color" id="shapeStroke" value="#00d0d0" /></div>
+            </div>
+            <div class="field">
+              <label for="shapeStrokeWidth">Grosor del borde <span class="mono" id="shapeStrokeValue">0</span></label>
+              <input type="range" id="shapeStrokeWidth" min="0" max="60" step="1" value="0" />
+            </div>
+          </div>
+
+          <div class="group">
+            <h3 class="group-title">Logotipo</h3>
+            <button class="btn btn-ghost btn-block" id="addLogoBtn"><svg class="ico"><use href="#i-upload"/></svg>Importar logo como capa</button>
+            <p class="field-note">Los logos y textos se mantienen como capas independientes al editar el fondo con IA.</p>
+          </div>
+
+          <div class="group">
+            <h3 class="group-title">Alinear</h3>
+            <div class="align-grid" role="group" aria-label="Alinear capa">
+              <button class="icon-btn" data-align="left" title="Alinear a la izquierda"><span class="align-ico">|◧</span></button>
+              <button class="icon-btn" data-align="hcenter" title="Centrar horizontal"><span class="align-ico">◧◨</span></button>
+              <button class="icon-btn" data-align="right" title="Alinear a la derecha"><span class="align-ico">◨|</span></button>
+              <button class="icon-btn" data-align="top" title="Alinear arriba"><span class="align-ico">⬒</span></button>
+              <button class="icon-btn" data-align="vcenter" title="Centrar vertical"><span class="align-ico">⬓</span></button>
+              <button class="icon-btn" data-align="bottom" title="Alinear abajo"><span class="align-ico">⬓</span></button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── PRODUCTO Y MODA ── -->
+        <section class="tabpane" data-pane="product" hidden>
+          <div class="notice notice-info">
+            <svg class="ico ico-sm"><use href="#i-info"/></svg>
+            <span>Los resultados son <strong>propuestas editables</strong>. No se garantiza fidelidad exacta de prendas, rostros o productos; revísalos antes de publicar.</span>
+          </div>
+          <div class="group">
+            <h3 class="group-title">Puesta en escena</h3>
+            <div class="field">
+              <label for="scenePreset">Escenario</label>
+              <select id="scenePreset">
+                <option value="">Elige un escenario…</option>
+                <option value="Estudio fotográfico con fondo infinito gris claro y luz suave difusa">Estudio neutro</option>
+                <option value="Interior de tienda moderna con luz cálida y estanterías desenfocadas">Interior de tienda</option>
+                <option value="Exterior urbano al atardecer con luz dorada y fondo desenfocado">Exterior urbano</option>
+                <option value="Superficie de mármol con sombras naturales y vegetación suave al fondo">Bodegón</option>
+              </select>
+            </div>
+            <button class="btn btn-ghost btn-block" id="applySceneBtn" disabled>Componer escenario</button>
+            <p class="field-note">Se apoya en la capa seleccionada y en el modelo activo; requiere un proveedor configurado.</p>
+          </div>
+          <div class="group">
+            <h3 class="group-title">Prenda o producto</h3>
+            <div class="field">
+              <label for="garmentPrompt">Descripción de la prenda</label>
+              <textarea id="garmentPrompt" rows="3" placeholder="Ej.: camisa de lino blanca, cuello italiano"></textarea>
+            </div>
+            <button class="btn btn-ghost btn-block" id="tryOnBtn" disabled>Probar sobre la imagen</button>
+            <p class="field-note">Traduce la instrucción al modelo activo. Sin proveedor configurado no se envía nada.</p>
+          </div>
+        </section>
+
+        <!-- ── UTILIDADES ── -->
+        <section class="tabpane" data-pane="utilities" hidden>
+          <div class="group">
+            <h3 class="group-title">Documento</h3>
+            <dl class="kv">
+              <dt>Dimensiones</dt><dd class="mono" id="utilDims">—</dd>
+              <dt>Capas</dt><dd class="mono" id="utilLayers">—</dd>
+              <dt>Resolución de impresión</dt><dd class="mono" id="utilDpi">—</dd>
+              <dt>Tamaño físico</dt><dd class="mono" id="utilPhysical">—</dd>
+            </dl>
+            <div class="field">
+              <label for="dpiInput">DPI del documento <span class="mono" id="dpiValue">300</span></label>
+              <input type="range" id="dpiInput" min="36" max="600" step="6" value="300" />
+            </div>
+          </div>
+          <div class="group">
+            <h3 class="group-title">Proyecto</h3>
+            <button class="btn btn-ghost btn-block" id="downloadProjectBtn"><svg class="ico"><use href="#i-download"/></svg>Descargar proyecto (.uis.json)</button>
+            <button class="btn btn-ghost btn-block" id="importProjectBtn"><svg class="ico"><use href="#i-upload"/></svg>Importar proyecto</button>
+            <button class="btn btn-ghost btn-block" id="duplicateProjectBtn"><svg class="ico"><use href="#i-copy"/></svg>Duplicar proyecto</button>
+          </div>
+          <div class="group">
+            <h3 class="group-title">Almacenamiento</h3>
+            <p class="field-note" id="storageInfo">Calculando…</p>
+            <button class="btn btn-ghost btn-block" id="clearLocalBtn">Vaciar caché local</button>
+            <button class="btn btn-ghost btn-block" id="diagnosticsBtn">Diagnóstico del sistema</button>
+          </div>
+        </section>
+
+      </div>
+
+      <div class="generate-footer" id="generateFooter">
+        <div class="estimate">
+          <span class="estimate-label">Estimación</span>
+          <span class="mono" id="estimateValue">—</span>
+        </div>
+        <button class="btn btn-primary btn-block" id="generateBtn">
+          <svg class="ico"><use href="#i-sparkles"/></svg><span id="generateBtnText">GENERAR</span>
+        </button>
+        <p class="field-note" id="generateNote">El coste se comprueba en el servidor antes de enviar la solicitud.</p>
+      </div>
+    </aside>
+
+    <!-- ── Lienzo ── -->
+    <main class="canvas-area" id="stage" tabindex="-1">
+      <div class="stage-inner" id="stageInner">
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="viewCanvas" aria-label="Lienzo de composición"></canvas>
+          <canvas id="maskCanvas" class="mask-overlay" aria-hidden="true"></canvas>
+          <canvas id="overlayCanvas" class="selection-overlay" aria-hidden="true"></canvas>
+          <div class="compare-handle hidden" id="compareHandle" aria-hidden="true"><span></span></div>
+        </div>
+
+        <div class="empty-state" id="emptyState">
+          <div class="dropzone" id="dropzone">
+            <svg class="ico empty-ico"><use href="#i-image"/></svg>
+            <h2>Empieza con una imagen</h2>
+            <p>Arrastra un PNG, JPG o WebP aquí, pega desde el portapapeles o elige un archivo. Todo se queda en tu espacio privado.</p>
+            <div class="empty-actions">
+              <button class="btn btn-primary" id="importBtn"><svg class="ico"><use href="#i-upload"/></svg>Importar imagen</button>
+              <button class="btn btn-ghost" id="blankBtn">Empezar en blanco</button>
+            </div>
+            <p class="empty-hint mono">Máx. 20 MB · 8192 px de lado</p>
+          </div>
+        </div>
+
+        <div class="ai-preview hidden" id="aiPreview">
+          <img id="aiPreviewImg" alt="Vista previa del resultado de IA" />
+          <div class="ai-preview-bar">
+            <span class="ai-preview-label">Vista previa sin aplicar</span>
+            <div class="btn-row">
+              <button class="btn btn-sm btn-primary" id="aiAccept">Aceptar</button>
+              <button class="btn btn-sm btn-ghost" id="aiRegen">Regenerar</button>
+              <button class="btn btn-sm btn-ghost" id="aiVariant">Variante</button>
+              <button class="btn btn-sm btn-danger" id="aiDiscard">Descartar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="zoom-widget" role="group" aria-label="Zoom">
+        <button class="icon-btn" id="zoomOutBtn" aria-label="Alejar"><svg class="ico"><use href="#i-zoom-out"/></svg></button>
+        <button class="zoom-value mono" id="zoomValue" title="Restablecer al 100 %">100 %</button>
+        <button class="icon-btn" id="zoomInBtn" aria-label="Acercar"><svg class="ico"><use href="#i-zoom-in"/></svg></button>
+      </div>
+
+      <div class="toolbar-float" role="toolbar" aria-label="Herramienta activa">
+        <button class="tool-btn is-active" data-tool="select" title="Seleccionar y mover (V)"><svg class="ico"><use href="#i-move"/></svg></button>
+        <button class="tool-btn" data-tool="mask" title="Máscara (B)"><svg class="ico"><use href="#i-brush"/></svg></button>
+        <button class="tool-btn" data-tool="text" title="Texto (T)"><svg class="ico"><use href="#i-text"/></svg></button>
+        <button class="tool-btn" data-tool="shape" title="Forma (R)"><svg class="ico"><use href="#i-shape"/></svg></button>
+        <button class="tool-btn" data-tool="hand" title="Desplazar lienzo (H)"><svg class="ico"><use href="#i-move"/></svg></button>
+      </div>
+    </main>
+
+    <!-- ── Panel derecho ── -->
+    <aside class="panel panel-right" id="rightPanel" aria-label="Propiedades y biblioteca">
+      <div class="panel-tabs" role="tablist" aria-label="Secciones">
+        <button class="ptab is-active" role="tab" aria-selected="true" data-rtab="layers">Capas</button>
+        <button class="ptab" role="tab" aria-selected="false" data-rtab="refs">Referencias</button>
+        <button class="ptab" role="tab" aria-selected="false" data-rtab="library">Biblioteca</button>
+        <button class="ptab" role="tab" aria-selected="false" data-rtab="recipes">Recetas</button>
+        <button class="icon-btn panel-collapse" id="rightCollapse" aria-label="Plegar panel" title="Plegar panel"><svg class="ico"><use href="#i-chevron-right"/></svg></button>
+        <button class="icon-btn panel-close" data-close-panel="right" aria-label="Cerrar panel de capas" title="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+      </div>
+
+      <div class="panel-body">
+        <section class="r-pane is-active" data-rpane="layers">
+          <div class="layer-props" id="layerProps">
+            <div class="props-head">
+              <span class="props-name" id="propsName">Sin selección</span>
+              <div class="props-actions">
+                <button class="icon-btn icon-btn-sm" id="dupLayerBtn" title="Duplicar capa" aria-label="Duplicar capa" disabled><svg class="ico ico-sm"><use href="#i-copy"/></svg></button>
+                <button class="icon-btn icon-btn-sm" id="delLayerBtn" title="Eliminar capa" aria-label="Eliminar capa" disabled><svg class="ico ico-sm"><use href="#i-trash"/></svg></button>
+              </div>
+            </div>
+            <div class="field compact">
+              <label for="layerOpacity">Opacidad <span class="mono" id="opacityValue">100 %</span></label>
+              <input type="range" id="layerOpacity" min="0" max="100" step="1" value="100" disabled />
+            </div>
+            <div class="grid-2 compact-grid">
+              <div class="field compact"><label for="layerX">X</label><input type="number" id="layerX" value="0" disabled /></div>
+              <div class="field compact"><label for="layerY">Y</label><input type="number" id="layerY" value="0" disabled /></div>
+              <div class="field compact"><label for="layerW">An</label><input type="number" id="layerW" value="0" disabled /></div>
+              <div class="field compact"><label for="layerH">Al</label><input type="number" id="layerH" value="0" disabled /></div>
+            </div>
+          </div>
+          <div class="layer-list" id="layerList" role="listbox" aria-label="Capas del documento"></div>
+          <div class="layer-toolbar">
+            <button class="icon-btn" id="layerUpBtn" title="Subir capa" aria-label="Subir capa"><svg class="ico ico-sm"><use href="#i-chevron-down"/></svg></button>
+            <button class="icon-btn" id="layerDownBtn" title="Bajar capa" aria-label="Bajar capa"><svg class="ico ico-sm"><use href="#i-chevron-left"/></svg></button>
+            <span class="spacer"></span>
+            <button class="icon-btn" id="addLayerBtn" title="Añadir capa de imagen" aria-label="Añadir capa de imagen"><svg class="ico ico-sm"><use href="#i-plus"/></svg></button>
+          </div>
+        </section>
+
+        <section class="r-pane" data-rpane="refs" hidden>
+          <p class="pane-hint">Las referencias guían el estilo o el contenido. No se envían a ningún proveedor hasta que pulses generar.</p>
+          <div class="refs-grid" id="refsGrid"></div>
+          <button class="btn btn-ghost btn-block" id="refsAddBtn"><svg class="ico"><use href="#i-plus"/></svg>Añadir referencia</button>
+        </section>
+
+        <section class="r-pane" data-rpane="library" hidden>
+          <div class="pane-section">
+            <h3 class="group-title">Versiones de este documento</h3>
+            <div class="version-list" id="versionList"></div>
+            <button class="btn btn-ghost btn-block btn-sm" id="saveVersionBtn"><svg class="ico ico-sm"><use href="#i-save"/></svg>Guardar versión</button>
+          </div>
+          <div class="pane-section">
+            <h3 class="group-title">Proyectos</h3>
+            <div class="project-list" id="projectList"></div>
+          </div>
+          <div class="pane-section">
+            <h3 class="group-title">Recursos del proyecto</h3>
+            <div class="asset-grid" id="assetGrid"></div>
+          </div>
+        </section>
+
+        <section class="r-pane" data-rpane="recipes" hidden>
+          <p class="pane-hint">Una receta guarda modelo, proporción, resolución, referencias y prompt. Es independiente del documento.</p>
+          <div class="field">
+            <label for="recipeName">Nombre de la receta</label>
+            <input type="text" id="recipeName" placeholder="Ej.: Producto sobre mármol" maxlength="60" />
+          </div>
+          <button class="btn btn-ghost btn-block" id="saveRecipeBtn"><svg class="ico"><use href="#i-save"/></svg>Guardar ajustes actuales</button>
+          <div class="recipe-list" id="recipeList"></div>
+        </section>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ── Barra de estado ── -->
+  <footer class="statusbar">
+    <span class="status-item mono" id="statusDoc">—</span>
+    <span class="status-sep"></span>
+    <span class="status-item" id="statusSelection">Sin selección</span>
+    <span class="status-sep"></span>
+    <span class="status-item mono" id="statusCursor">0, 0</span>
+    <span class="status-spacer"></span>
+    <span class="status-item status-mode" id="statusMode" role="button" tabindex="0" title="Modo de almacenamiento activo. Pulsa para acceder o cerrar sesión"><span class="dot"></span><span id="statusModeText">Comprobando…</span></span>
+    <span class="status-item mono" id="statusZoom">100 %</span>
+    <span class="status-item mono" id="statusBuild" title="Versión de la aplicación en ejecución">—</span>
+  </footer>
+</div>
+
+<!-- ══════════════════════ MODALES ══════════════════════ -->
+<div class="modal-backdrop hidden" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h2 id="exportTitle">Exportar imagen</h2>
+      <button class="icon-btn" data-close="exportModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="export-layout">
+        <div class="export-form">
+          <div class="field">
+            <span class="field-label">Formato</span>
+            <div class="segmented" id="exportFormat" role="group" aria-label="Formato de exportación">
+              <button class="seg is-active" data-format="image/png" aria-pressed="true">PNG</button>
+              <button class="seg" data-format="image/jpeg" aria-pressed="false">JPG</button>
+              <button class="seg" data-format="image/webp" aria-pressed="false">WebP</button>
+            </div>
+          </div>
+          <div class="field" id="qualityField">
+            <label for="exportQuality">Calidad <span class="mono" id="exportQualityValue">92 %</span></label>
+            <input type="range" id="exportQuality" min="30" max="100" step="1" value="92" />
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="exportScale">Escala</label>
+              <select id="exportScale">
+                <option value="0.25">25 %</option><option value="0.5">50 %</option>
+                <option value="1" selected>100 % (documento)</option><option value="2">200 %</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="exportDpi">DPI <span class="hint">(metadatos)</span></label>
+              <input type="number" id="exportDpi" min="36" max="1200" step="1" value="300" />
+            </div>
+          </div>
+          <div class="field" id="bgField">
+            <label for="exportBg">Fondo para JPG <span class="hint">(no admite transparencia)</span></label>
+            <div class="color-row">
+              <input type="color" id="exportBg" value="#ffffff" />
+              <label class="switch"><input type="checkbox" id="exportTransparent" checked /> Mantener transparencia</label>
+            </div>
+          </div>
+          <div class="notice notice-info" id="exportNotice"></div>
+          <div class="export-summary mono" id="exportSummary"></div>
+        </div>
+        <div class="export-preview">
+          <div class="preview-frame"><img id="exportPreviewImg" alt="Vista previa de la exportación" /></div>
+          <span class="hint mono" id="exportDims">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="copyBtn"><svg class="ico"><use href="#i-copy"/></svg>Copiar</button>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" data-close="exportModal">Cancelar</button>
+      <button class="btn btn-primary" id="doExportBtn"><svg class="ico"><use href="#i-download"/></svg>Exportar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="cropModal" role="dialog" aria-modal="true" aria-labelledby="cropTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="cropTitle">Recortar documento</h2>
+      <button class="icon-btn" data-close="cropModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div class="field"><label for="cropX">X</label><input type="number" id="cropX" min="0" step="1" value="0" /></div>
+        <div class="field"><label for="cropY">Y</label><input type="number" id="cropY" min="0" step="1" value="0" /></div>
+        <div class="field"><label for="cropW">Ancho</label><input type="number" id="cropW" min="1" step="1" value="1024" /></div>
+        <div class="field"><label for="cropH">Alto</label><input type="number" id="cropH" min="1" step="1" value="1024" /></div>
+      </div>
+      <p class="field-note" id="cropNote">Ajusta el área visible del documento. Las capas conservan su posición relativa.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="cropModal">Cancelar</button>
+      <button class="btn btn-primary" id="doCropBtn">Recortar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="resizeModal" role="dialog" aria-modal="true" aria-labelledby="resizeTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="resizeTitle">Redimensionar documento</h2>
+      <button class="icon-btn" data-close="resizeModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div class="field"><label for="resizeW">Ancho (px)</label><input type="number" id="resizeW" min="16" max="8192" step="1" value="1024" /></div>
+        <div class="field"><label for="resizeH">Alto (px)</label><input type="number" id="resizeH" min="16" max="8192" step="1" value="1024" /></div>
+      </div>
+      <label class="switch"><input type="checkbox" id="resizeKeepRatio" checked /> Mantener proporción</label>
+      <p class="field-note">Se reescala la composición completa. Los originales no se modifican.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="resizeModal">Cancelar</button>
+      <button class="btn btn-primary" id="doResizeBtn">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="projectModal" role="dialog" aria-modal="true" aria-labelledby="projectTitle">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h2 id="projectTitle">Proyectos</h2>
+      <button class="icon-btn" data-close="projectModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="project-modal-list" id="projectModalList"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="newProjectBtn"><svg class="ico"><use href="#i-plus"/></svg>Nuevo proyecto</button>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" data-close="projectModal">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="budgetModal" role="dialog" aria-modal="true" aria-labelledby="budgetTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="budgetTitle">Presupuesto</h2>
+      <button class="icon-btn" data-close="budgetModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <p class="field-note">Los importes son estimaciones: el proveedor no informa del coste real. El servidor comprueba el presupuesto, incluidos los trabajos en curso, antes de enviar cada solicitud.</p>
+      <div class="grid-2">
+        <div class="field"><label for="budgetSession">Presupuesto por sesión (€)</label><input type="number" id="budgetSession" min="0" step="0.5" value="5" /></div>
+        <div class="field"><label for="budgetProject">Presupuesto por proyecto (€)</label><input type="number" id="budgetProject" min="0" step="0.5" value="20" /></div>
+      </div>
+      <div class="field"><label for="budgetOperation">Límite por operación (€)</label><input type="number" id="budgetOperation" min="0" step="0.1" value="1.5" /></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="budgetModal">Cancelar</button>
+      <button class="btn btn-primary" id="saveBudgetBtn">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h2 id="helpTitle">Atajos y ayuda</h2>
+      <button class="icon-btn" data-close="helpModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="help-grid">
+        <div>
+          <h3 class="group-title">Herramientas</h3>
+          <dl class="kv">
+            <dt><kbd>V</kbd></dt><dd>Seleccionar y mover</dd>
+            <dt><kbd>B</kbd></dt><dd>Pincel de máscara</dd>
+            <dt><kbd>E</kbd></dt><dd>Borrar máscara</dd>
+            <dt><kbd>T</kbd></dt><dd>Texto</dd>
+            <dt><kbd>R</kbd></dt><dd>Forma</dd>
+            <dt><kbd>H</kbd> / <kbd>Espacio</kbd></dt><dd>Desplazar lienzo</dd>
+          </dl>
+        </div>
+        <div>
+          <h3 class="group-title">Vista</h3>
+          <dl class="kv">
+            <dt><kbd>Shift</kbd>+<kbd>1</kbd></dt><dd>Ajustar al espacio</dd>
+            <dt><kbd>Shift</kbd>+<kbd>2</kbd></dt><dd>Ver al 100 %</dd>
+            <dt><kbd>C</kbd></dt><dd>Comparar antes/después</dd>
+            <dt><kbd>+</kbd> / <kbd>−</kbd></dt><dd>Zoom</dd>
+            <dt><kbd>0</kbd></dt><dd>Centrar</dd>
+          </dl>
+        </div>
+        <div>
+          <h3 class="group-title">Edición</h3>
+          <dl class="kv">
+            <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd></dt><dd>Deshacer</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></dt><dd>Rehacer</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>S</kbd></dt><dd>Guardar ahora</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>E</kbd></dt><dd>Exportar</dd>
+            <dt><kbd>Ctrl</kbd>+<kbd>O</kbd></dt><dd>Proyectos</dd>
+            <dt><kbd>Supr</kbd></dt><dd>Eliminar capa</dd>
+          </dl>
+        </div>
+        <div>
+          <h3 class="group-title">Privacidad</h3>
+          <p class="field-note">Los originales y el estado editable se guardan en tu espacio privado. Solo se envían a un proveedor de IA las imágenes que tú incluyes al generar, y únicamente cuando pulsas Generar.</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot"><span class="mono hint" id="buildStamp"></span><span class="spacer"></span><button class="btn btn-primary" data-close="helpModal">Entendido</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <h2 id="confirmTitle">Confirmar</h2>
+      <button class="icon-btn" data-close="confirmModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body"><p id="confirmText">¿Seguro?</p></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="confirmCancel">Cancelar</button>
+      <button class="btn btn-primary" id="confirmOk">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden auth-modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="modal modal-sm auth-modal-content">
+    <div class="modal-head">
+      <h2 id="loginTitle">Acceso privado</h2>
+      <button class="icon-btn" data-close="loginModal" aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <p class="field-note" style="margin-bottom:14px">Esta aplicación es privada. Introduce la contraseña del servidor para guardar proyectos, usar la biblioteca y enviar trabajos a los proveedores de IA.</p>
+      <div class="field">
+        <label for="loginPassword">Contraseña</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" />
+      </div>
+      <p class="field-note" id="loginError" style="color:#ff9b95"></p>
+      <p class="field-note">Usa la contraseña de acceso del proyecto (<code>PW_ACCESS</code>), la misma que en el resto de apps. Si no aparece este formulario al abrir la app, es que el servidor no responde: pulsa «Reintentar conexión» o abre <code>api.php?action=state</code>.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="link-btn" id="retryServer">Reintentar conexión</button>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" data-close="loginModal">Seguir en local</button>
+      <button class="btn btn-primary" id="loginBtn">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Overlays ── -->
+<div class="loading-overlay hidden" id="loadingOverlay" role="status" aria-live="polite" aria-busy="true">
+  <div class="spinner-triple"><div class="ring ring-1"></div><div class="ring ring-2"></div><div class="ring ring-3"></div></div>
+  <p class="loading-text" id="loadingText">IA generando lo solicitado...</p>
+  <div class="loading-panel">
+    <div class="loading-bar" role="progressbar" aria-label="Progreso de la operación" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+  </div>
+  <p class="secondary-status" id="loadingSecondary">Enviando la solicitud al proveedor.</p>
+</div>
+
+<!-- Visor ampliado: se engancha con lightbox-zoom.js (rueda, arrastre, pellizco). -->
+<div class="lightbox hidden" id="antigravity-lightbox" role="dialog" aria-modal="true" aria-label="Imagen ampliada" aria-hidden="true">
+  <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Cerrar imagen ampliada">✕</button>
+  <img id="lightbox-img" src="" alt="Imagen ampliada" draggable="false" />
+  <p class="lightbox-caption" id="lightboxCaption"></p>
+</div>
+
+<div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
+
+<input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" aria-label="Importar imagen al lienzo" hidden />
+<input type="file" id="refInput" accept="image/png,image/jpeg,image/webp" aria-label="Añadir imágenes de referencia" hidden multiple />
+<input type="file" id="projectInput" accept=".json,application/json" aria-label="Importar proyecto (.uis.json)" hidden />
+
+<script type="module" src="assets/js/app.js?v=1"></script>
+<script src="lightbox-zoom.js?v=20261026" defer></script>
+<script src="assets/js/lightbox.js?v=1" defer></script>
+<script src="/apps/_shared/password-eye.js?v=20261025b" defer></script>
+</body>
+</html>

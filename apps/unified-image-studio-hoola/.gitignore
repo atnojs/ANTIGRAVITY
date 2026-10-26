@@ -1,0 +1,10 @@
+# Datos privados de la app: nunca se versionan.
+storage/*
+!storage/.htaccess
+*.log
+
+# Los .htaccess de la app no contienen claves: protegen la caché/MIME y niegan
+# el acceso directo a lib/ y storage/. El .gitignore raíz ignora .htaccess, así
+# que se re-incluyen explícitamente (igual que en la app original).
+!.htaccess
+!lib/.htaccess
