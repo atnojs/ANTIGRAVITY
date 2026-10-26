@@ -68,7 +68,8 @@ const MODEL_LABELS = {
     'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
-    'qwen-pro': 'QWEN 3 PRO'
+    'qwen-pro': 'QWEN 3 PRO',
+    'upscaler': 'UPSCALER'
 };
 const getModelLabel = (m) => MODEL_LABELS[m] || m || '—';
 
@@ -108,6 +109,105 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
             resolve(canvas.toDataURL('image/jpeg', quality));
         };
     });
+};
+
+// --- UPSCALER LOCAL (2K / 4K / 8K) ---
+// Amplía con remuestreo progresivo por pasos de 2x (evita el aliasing de un
+// único drawImage) y aplica un enfoque suave (unsharp mask) al final. El
+// archivo de salida tiene las dimensiones reales solicitadas.
+const loadImageElement = (src) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('No se pudo cargar la imagen para ampliarla.'));
+    img.src = src;
+});
+
+const sharpenCanvas = (canvas) => {
+    const width = canvas.width;
+    const height = canvas.height;
+    // Por encima de ~48 MP el enfoque exige demasiada memoria: se omite.
+    if (width * height > 48000000) return;
+    const ctx = canvas.getContext('2d');
+    const frame = ctx.getImageData(0, 0, width, height);
+    const src = frame.data;
+    const out = new Uint8ClampedArray(src.length);
+    const amount = 0.32;
+    const center = 1 + 4 * amount;
+    const stride = width * 4;
+    for (let y = 0; y < height; y++) {
+        const row = y * stride;
+        for (let x = 0; x < width; x++) {
+            const i = row + x * 4;
+            if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
+                out[i] = src[i];
+                out[i + 1] = src[i + 1];
+                out[i + 2] = src[i + 2];
+                out[i + 3] = src[i + 3];
+                continue;
+            }
+            out[i] = src[i] * center - amount * (src[i - stride] + src[i + stride] + src[i - 4] + src[i + 4]);
+            out[i + 1] = src[i + 1] * center - amount * (src[i - stride + 1] + src[i + stride + 1] + src[i - 3] + src[i + 5]);
+            out[i + 2] = src[i + 2] * center - amount * (src[i - stride + 2] + src[i + stride + 2] + src[i - 2] + src[i + 6]);
+            out[i + 3] = src[i + 3];
+        }
+    }
+    ctx.putImageData(new ImageData(out, width, height), 0, 0);
+};
+
+const upscaleDataUrl = async (src, longEdge, onProgress = () => {}) => {
+    const img = await loadImageElement(src);
+    const sourceWidth = img.naturalWidth;
+    const sourceHeight = img.naturalHeight;
+    if (!sourceWidth || !sourceHeight) throw new Error('La imagen no tiene dimensiones válidas.');
+
+    // Nunca se reduce: si la imagen ya supera el objetivo se devuelve tal cual.
+    const scale = Math.max(1, longEdge / Math.max(sourceWidth, sourceHeight));
+    const targetWidth = Math.max(1, Math.round(sourceWidth * scale));
+    const targetHeight = Math.max(1, Math.round(sourceHeight * scale));
+
+    let canvas = document.createElement('canvas');
+    canvas.width = sourceWidth;
+    canvas.height = sourceHeight;
+    let ctx = canvas.getContext('2d');
+    // Fondo blanco: evita que un PNG con transparencia acabe en negro al pasar a JPEG.
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, sourceWidth, sourceHeight);
+    ctx.drawImage(img, 0, 0);
+
+    const totalSteps = Math.max(1, Math.ceil(Math.log2(Math.max(targetWidth / sourceWidth, targetHeight / sourceHeight))));
+    let step = 0;
+    while (canvas.width < targetWidth || canvas.height < targetHeight) {
+        const nextWidth = Math.min(targetWidth, canvas.width * 2);
+        const nextHeight = Math.min(targetHeight, canvas.height * 2);
+        const next = document.createElement('canvas');
+        next.width = nextWidth;
+        next.height = nextHeight;
+        const nextCtx = next.getContext('2d');
+        nextCtx.imageSmoothingEnabled = true;
+        nextCtx.imageSmoothingQuality = 'high';
+        nextCtx.drawImage(canvas, 0, 0, nextWidth, nextHeight);
+        canvas = next;
+        step++;
+        onProgress(Math.min(80, Math.round((step / totalSteps) * 80)), `Ampliando… ${nextWidth}×${nextHeight}`);
+        await new Promise(resolve => setTimeout(resolve, 0));
+    }
+
+    onProgress(85, 'Aplicando enfoque…');
+    sharpenCanvas(canvas);
+
+    onProgress(92, 'Codificando imagen…');
+    let quality = 0.92;
+    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+    // Presupuesto del historial: 24 MB de imagen como máximo. El data URL en
+    // base64 ocupa ~4/3, así que se limita a 20 millones de caracteres.
+    const MAX_DATA_URL_CHARS = 20 * 1024 * 1024;
+    while (dataUrl.length > MAX_DATA_URL_CHARS && quality > 0.55) {
+        quality -= 0.07;
+        dataUrl = canvas.toDataURL('image/jpeg', quality);
+    }
+
+    return { dataUrl, width: canvas.width, height: canvas.height, quality };
 };
 
 const STYLE_GROUPS = {
@@ -198,13 +298,85 @@ const ASPECT_RATIOS = [
 // píxeles (mínimo 1 MP, tope 4 MP), así que 512 acaba en 1 MP y 4096 en el tope.
 const RESOLUTIONS = [512, 1024, 2048, 4096];
 
+// Upscaler: lado largo real de salida. 2K/4K/8K son ampliaciones locales de alta
+// calidad (remuestreo progresivo + enfoque); no añaden detalle que no exista en
+// el origen, pero el archivo resultante sí tiene esas dimensiones.
+const UPSCALE_TARGETS = [
+    { id: 2048, label: '2K', longEdge: 2048 },
+    { id: 3840, label: '4K', longEdge: 3840 },
+    { id: 7680, label: '8K', longEdge: 7680 }
+];
+
 // Etiqueta de resolución para la tarjeta y el lightbox. Tolera el valor
 // heredado '1K' de las imágenes guardadas antes de existir este selector.
+const SIZE_LABELS = { 2048: '2K', 3840: '4K', 4096: '4K', 7680: '8K' };
 const getSizeLabel = (size) => {
     const value = String(size === undefined || size === null ? '' : size).trim();
     if (value === '') return '—';
-    return /^\d+$/.test(value) ? `${value}px` : value;
+    return SIZE_LABELS[value] || (/^\d+$/.test(value) ? `${value}px` : value);
 };
+
+// Mejorador de prompt con 4 enfoques por modo. Cada botón genera UNA variante
+// (no las 4 de golpe) y queda cacheada mientras no cambie la imagen de base.
+// En Editar los enfoques son ángulos de edición sobre la imagen; en Generar son
+// estilos de redacción del prompt. Los nombres no se inventan: son los cuatro
+// tipos que ya devolvía el mejorador original de la app.
+const PROMPT_STYLES = {
+    remix: [
+        {
+            id: 'iluminacion',
+            label: 'Iluminación',
+            hint: 'Luz, sombras y ambiente',
+            system: 'Eres un experto en edición de imágenes con IA. Analiza la imagen adjunta y escribe UNA instrucción de edición en español centrada en la iluminación: dirección, calidad y temperatura de la luz, sombras y atmósfera. Debe ser un cambio concreto, visual y aplicable, sin inventar personajes nuevos ni cambiar el contenido principal. Respeta la identidad y la composición. Devuelve SOLO la instrucción de edición, en una sola frase rica en detalles, sin comillas ni explicaciones.'
+        },
+        {
+            id: 'fondo',
+            label: 'Fondo',
+            hint: 'Entorno y escenario',
+            system: 'Eres un experto en edición de imágenes con IA. Analiza la imagen adjunta y escribe UNA instrucción de edición en español centrada en el fondo y el entorno: escenario, profundidad, materiales y coherencia con el sujeto. Debe ser un cambio concreto, visual y aplicable, sin inventar personajes nuevos ni cambiar el sujeto principal. Respeta la identidad y la composición. Devuelve SOLO la instrucción de edición, en una sola frase rica en detalles, sin comillas ni explicaciones.'
+        },
+        {
+            id: 'detalles',
+            label: 'Detalles',
+            hint: 'Texturas y acabados',
+            system: 'Eres un experto en edición de imágenes con IA. Analiza la imagen adjunta y escribe UNA instrucción de edición en español centrada en los detalles: texturas, materiales, acabados, accesorios y pequeños elementos que enriquezcan la escena. Debe ser un cambio concreto, visual y aplicable, sin inventar personajes nuevos ni cambiar la composición. Respeta la identidad. Devuelve SOLO la instrucción de edición, en una sola frase rica en detalles, sin comillas ni explicaciones.'
+        },
+        {
+            id: 'calidad',
+            label: 'Calidad',
+            hint: 'Nitidez y definición',
+            system: 'Eres un experto en edición de imágenes con IA. Analiza la imagen adjunta y escribe UNA instrucción de edición en español centrada en la calidad técnica: nitidez, definición, reducción de ruido, rango dinámico y acabado profesional, manteniendo el aspecto natural. Debe ser un cambio concreto y aplicable, sin inventar personajes nuevos ni cambiar el contenido. Respeta la identidad y la composición. Devuelve SOLO la instrucción de edición, en una sola frase rica en detalles, sin comillas ni explicaciones.'
+        }
+    ],
+    'text-to-image': [
+        {
+            id: 'descriptiva',
+            label: 'Descriptiva',
+            hint: 'Rica en detalles',
+            system: 'Eres un experto en prompts para generación de imágenes. Reescribe la idea del usuario como un prompt descriptivo rico y detallado: sujeto, acción, composición, entorno, iluminación, colores, materiales y estilo. Respeta estrictamente la intención del usuario: no inventes sujetos nuevos ni cambies el entorno drásticamente. Trabaja siempre en español. Devuelve SOLO el prompt final, sin comillas, sin etiquetas y sin explicaciones.'
+        },
+        {
+            id: 'cinematografica',
+            label: 'Cinematográfica',
+            hint: 'Cine y luz dramática',
+            system: 'Eres un experto en prompts para generación de imágenes. Reescribe la idea del usuario como un prompt con estilo de cine: iluminación dramática, composición cinematográfica, profundidad de campo, paleta de color cuidada y acabado de película. Respeta estrictamente la intención del usuario: no inventes sujetos nuevos ni cambies el entorno drásticamente. Trabaja siempre en español. Devuelve SOLO el prompt final, sin comillas, sin etiquetas y sin explicaciones.'
+        },
+        {
+            id: 'artistica',
+            label: 'Artística',
+            hint: 'Pictórica o ilustrada',
+            system: 'Eres un experto en prompts para generación de imágenes. Reescribe la idea del usuario como un prompt con interpretación creativa: estilo pictórico o ilustrado, texturas de pintura, trazo expresivo y una atmósfera artística coherente. Respeta estrictamente la intención del usuario: no inventes sujetos nuevos ni cambies el entorno drásticamente. Trabaja siempre en español. Devuelve SOLO el prompt final, sin comillas, sin etiquetas y sin explicaciones.'
+        },
+        {
+            id: 'minimalista',
+            label: 'Minimalista',
+            hint: 'Esencial y directa',
+            system: 'Eres un experto en prompts para generación de imágenes. Reescribe la idea del usuario como un prompt limpio, esencial y directo: solo los elementos imprescindibles, composición clara y sin adornos innecesarios. Respeta estrictamente la intención del usuario: no inventes sujetos nuevos ni cambies el entorno drásticamente. Trabaja siempre en español. Devuelve SOLO el prompt final, sin comillas, sin etiquetas y sin explicaciones.'
+        }
+    ]
+};
+
+const getPromptStyles = (mode) => PROMPT_STYLES[mode] || PROMPT_STYLES.remix;
 
 // El contrato canónico solo traduce 'resolution' a tamaño real en los modelos
 // OpenAI (size en píxeles). Gemini y Qwen fijan 1K internamente, así que el
@@ -260,6 +432,9 @@ const loadHistoryFromDb = async (mode) => {
                 aspectRatio: (item.data && item.data.aspectRatio) || '1:1',
                 model: item.model || (item.data && item.data.model) || 'desconocido',
                 size: (item.data && item.data.size) || '1K',
+                width: (item.data && item.data.width) || null,
+                height: (item.data && item.data.height) || null,
+                upscaled: !!(item.data && item.data.upscaled),
                 mode: (item.data && item.data.mode) || 'remix',
                 createdAt: item.createdAt
             }));
@@ -280,7 +455,10 @@ const saveHistoryItemToDb = async (item) => {
             aspectRatio: item.aspectRatio,
             model: item.model,
             mode: item.mode,
-            size: item.size
+            size: item.size,
+            width: item.width || null,
+            height: item.height || null,
+            upscaled: !!item.upscaled
         },
         imageData: item.url,
         createdAt: new Date(item.createdAt || Date.now()).toISOString()
@@ -363,43 +541,30 @@ const callProxy = async (model, contents, config = {}, promptText = '') => {
     throw new Error(lastError);
 };
 
-const enhancePrompt = async (basePrompt) => {
-    try {
-        const systemInstructions = `Eres un experto en mejora de prompts para generación de imágenes.
-Regla de oro: respeta estrictamente la intención del usuario.
-Instrucciones:
-1. NO inventes sujetos nuevos.
-2. NO cambies el entorno drásticamente.
-3. Añade detalles técnicos de calidad para que el prompt sea más efectivo.
-4. Trabaja siempre en español.
+// Limpia la respuesta del modelo: bloques markdown, comillas y etiquetas.
+const cleanPromptText = (raw) => {
+    let text = String(raw || '').trim();
+    text = text.replace(/^```[a-zA-Z]*\s*/, '').replace(/```\s*$/, '').trim();
+    text = text.replace(/^(prompt|instrucci[oó]n)\s*:\s*/i, '').trim();
+    text = text.replace(/^["“'«]+/, '').replace(/["”'»]+$/, '').trim();
+    return text;
+};
 
-Genera 4 variantes del prompt "${basePrompt}" siguiendo estas reglas estrictas:
-- Descriptiva: descripción rica y detallada de la escena.
-- Cinematográfica: estilo de cine, iluminación y composición dramáticas.
-- Artística: interpretación creativa con estilo pictórico o ilustrado.
-- Minimalista: versión limpia, esencial y directa.
-
-Responde SOLO con un JSON válido, sin texto adicional, con esta estructura:
-[{"type":"Descriptiva","text":"..."},{"type":"Cinematográfica","text":"..."},{"type":"Artística","text":"..."},{"type":"Minimalista","text":"..."}]`;
-        const result = await callProxy('', [], {
-            action: 'text',
-            system: systemInstructions,
-            model: 'xiaomi/mimo-v2.6-pro',
-            temperature: 0.7,
-            max_tokens: 2000
-        }, basePrompt);
-        if (!result?.success || !result?.text) return [];
-        const raw = String(result.text || '').trim();
-        // Extraer el array JSON de la respuesta (puede venir rodeado de texto/markdown)
-        const match = raw.match(/\[[\s\S]*\]/);
-        const jsonText = match ? match[0] : raw;
-        const parsed = JSON.parse(jsonText);
-        if (!Array.isArray(parsed)) return [];
-        return parsed.filter(p => p && p.type && p.text);
-    } catch (e) {
-        console.error("Failed to enhance prompt", e);
-        return [];
+const enhancePromptVariant = async ({ basePrompt, style, imageBase64 }) => {
+    const result = await callProxy('', [], {
+        action: 'text',
+        system: style.system,
+        model: 'xiaomi/mimo-v2.6-pro',
+        temperature: 0.7,
+        max_tokens: 1200,
+        ...(imageBase64 ? { imagen: imageBase64 } : {})
+    }, basePrompt || 'Analiza la imagen y propón la mejor edición posible.');
+    if (!result?.success || !result?.text) {
+        throw new Error(result?.error?.message || 'No se pudo mejorar el prompt.');
     }
+    const text = cleanPromptText(result.text);
+    if (!text) throw new Error('El mejorador devolvió un prompt vacío.');
+    return text;
 };
 
 const generateImage = async (params) => {
@@ -409,6 +574,9 @@ const generateImage = async (params) => {
     // 'reference' = la imagen acompaña a la instrucción de texto (modo Generar).
     // Cualquier otro valor conserva la transformación completa del modo Editar.
     const asReference = params.sourceRole === 'reference';
+    // Editar con imagen de referencia: la primera imagen es la base que se
+    // transforma; las demás solo guían estilo, sujeto o colores.
+    const asTransformReference = params.sourceRole === 'transform-reference';
     // Referencias admitidas: una o varias imágenes (el proxy canónico acepta hasta 8).
     // Se mantiene 'sourceImage' por compatibilidad con las llamadas de una sola imagen.
     const sourceImages = (Array.isArray(params.sourceImages)
@@ -424,15 +592,19 @@ const generateImage = async (params) => {
                 ? (manySources
                     ? `${sizeInfo} Use the ${sourceImages.length} attached images as visual references (subjects, identity, composition, colors and style), combining what each one contributes. Create a new complete, high-quality image that follows this instruction: ${fullStylePrompt}. Fill the ${params.aspectRatio} format perfectly.`
                     : `${sizeInfo} Use the attached image as visual reference (subject, identity, composition, colors and style). Create a new complete, high-quality image that follows this instruction: ${fullStylePrompt}. Fill the ${params.aspectRatio} format perfectly.`)
-                : (manySources
-                    ? `${sizeInfo} TRANSFORM these ${sourceImages.length} images, merging them into one, into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`
-                    : `${sizeInfo} TRANSFORM this entire image into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`);
+                : (asTransformReference
+                    ? `${sizeInfo} Use the FIRST attached image as the base to edit. Edit it following this instruction: ${fullStylePrompt}. Use the remaining attached image(s) only as a visual reference for subject, identity, style, colors and materials, without copying their composition. Keep the base image's main subject coherent. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`
+                    : (manySources
+                        ? `${sizeInfo} TRANSFORM these ${sourceImages.length} images, merging them into one, into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`
+                        : `${sizeInfo} TRANSFORM this entire image into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`));
         } else {
             finalPrompt = asReference
                 ? (manySources
                     ? `${sizeInfo} Combine the ${sourceImages.length} attached images into a single, complete and natural image, keeping their subjects, identity, colors and style. The result must fill the ${params.aspectRatio} format perfectly.`
                     : `${sizeInfo} Improve and complete the attached image keeping its original subject, identity, colors and style. The result must be a complete, natural image that fills the ${params.aspectRatio} format perfectly.`)
-                : `${sizeInfo} Fill any empty areas seamlessly maintaining the original style and context of the image. The result must be a complete, natural image.`;
+                : (asTransformReference
+                    ? `${sizeInfo} Improve and complete the FIRST attached image keeping its original subject and composition, using the remaining attached image(s) as a visual reference for style, colors and details. The result must be a complete, natural image that fills the ${params.aspectRatio} format perfectly.`
+                    : `${sizeInfo} Fill any empty areas seamlessly maintaining the original style and context of the image. The result must be a complete, natural image.`);
         }
     } else {
         finalPrompt = fullStylePrompt || 'A beautiful high-quality image';
@@ -481,14 +653,14 @@ const editImageConversation = async (params) => {
 // --- COMPONENTS ---
 const ApiKeyChecker = ({ children }) => <>{children}</>;
 
-const LoadingOverlay = ({ status = '' }) => (
+const LoadingOverlay = ({ status = '', title = 'IA generando lo solicitado...' }) => (
     <div className="loading-overlay" role="status" aria-live="polite" aria-busy="true">
         <div className="spinner-triple">
             <div className="ring ring-1"></div>
             <div className="ring ring-2"></div>
             <div className="ring ring-3"></div>
         </div>
-        <p className="loading-text">IA generando lo solicitado...</p>
+        <p className="loading-text">{title}</p>
         <div className="progress-panel">
             <div className="progress-bar-track">
                 <div className="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
@@ -698,13 +870,23 @@ const App = () => {
     const [view, setView] = useState('splash');
     const [mode, setMode] = useState('remix');
     const [prompt, setPrompt] = useState('');
-    const [enhancedPrompts, setEnhancedPrompts] = useState([]);
+    // El prompt solo se muestra y edita tras elegir uno de los 4 enfoques (o tras
+    // pulsar "Escribir mi prompt"). Los borradores de cada enfoque se conservan
+    // al generar la imagen para poder volver a usarlos.
+    const [promptOpen, setPromptOpen] = useState(false);
+    const [promptDrafts, setPromptDrafts] = useState({});
+    const [activePromptStyle, setActivePromptStyle] = useState(null);
+    const [enhancingStyle, setEnhancingStyle] = useState(null);
+    const isEnhancing = !!enhancingStyle;
     const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.fotografia[1]);
     const [selectedEra, setSelectedEra] = useState(HISTORICAL_ERAS[0]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
     const [selectedRes, setSelectedRes] = useState(1024);
     const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
+    // Imagen de referencia opcional del modo Editar: no se transforma, guía la
+    // edición de la imagen base (estilo, sujeto, colores o materiales).
+    const [remixRef, setRemixRef] = useState(null);
     // Imagen de referencia opcional del modo Generar: permite usar un prompt de
     // texto junto a una imagen (imagen + instrucción), igual que al editar.
     const [genSource, setGenSource] = useState(null);
@@ -712,7 +894,8 @@ const App = () => {
     // (por ejemplo sujeto + prenda u objeto) en una sola generación.
     const [genSource2, setGenSource2] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [isEnhancing, setIsEnhancing] = useState(false);
+    const [isUpscaling, setIsUpscaling] = useState(false);
+    const [lastUpscale, setLastUpscale] = useState(null);
     const [editImage, setEditImage] = useState(null);
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
@@ -730,6 +913,10 @@ const App = () => {
     const fileInputRef = useRef(null);
     // Entrada de archivo propia de la segunda imagen de referencia (modo Generar).
     const fileInput2Ref = useRef(null);
+    // Entrada de archivo de la imagen de referencia del modo Editar.
+    const fileInputEditRef = useRef(null);
+    // Textarea del prompt: recibe el foco al revelarse tras elegir un enfoque.
+    const promptRef = useRef(null);
     // Contenedor del historial con scroll propio: dos filas visibles.
     const historyScrollRef = useRef(null);
 
@@ -818,27 +1005,33 @@ const App = () => {
         // Al cambiar de modo se limpia el prompt para que la edición y la generación no se mezclen.
         setPrompt('');
         setEditInstruction('');
-        setEnhancedPrompts([]);
+        setPromptOpen(false);
+        setPromptDrafts({});
+        setActivePromptStyle(null);
+        setEnhancingStyle(null);
+        setLastUpscale(null);
         // Cada modo conserva su propia imagen: al entrar en uno se libera la del otro.
-        if (m === 'text-to-image') setRemixSource(null);
+        if (m === 'text-to-image') { setRemixSource(null); setRemixRef(null); }
         if (m === 'remix') { setGenSource(null); setGenSource2(null); }
         setError(null);
     };
 
     // La imagen subida pertenece al modo activo (base al Editar, referencias al Generar).
-    // slot: 'base' (Editar), 'ref1' o 'ref2' (Generar).
+    // slot: 'base' o 'refedit' (Editar), 'ref1' o 'ref2' (Generar).
     const handleFileUpload = (e, slot = 'base') => {
         const file = e.target.files[0];
         if (!file) return;
         const applySource = (value) => {
-            if (mode === 'remix') setRemixSource(value);
-            else if (slot === 'ref2') setGenSource2(value);
+            if (mode === 'remix') {
+                if (slot === 'refedit') setRemixRef(value);
+                else setRemixSource(value);
+            } else if (slot === 'ref2') setGenSource2(value);
             else setGenSource(value);
         };
         // El formato de salida se deduce solo de la PRIMERA imagen del modo: una
         // segunda referencia (prenda, objeto, estilo) no debe cambiar el lienzo.
         const isFirstSource = mode === 'remix'
-            ? !remixSource
+            ? (slot !== 'refedit' && !remixSource)
             : (slot === 'ref2' ? !genSource : !genSource2);
         const reader = new FileReader();
         reader.onload = (f) => {
@@ -846,7 +1039,9 @@ const App = () => {
             img.onload = () => {
                 if (isFirstSource) setSelectedAR(getClosestAspectRatio(img.width, img.height));
                 applySource(f.target.result);
-                setEnhancedPrompts([]);
+                // Cambiar de imagen invalida los prompts generados para la anterior.
+                setPromptDrafts({});
+                setActivePromptStyle(null);
             };
             img.src = f.target.result;
         };
@@ -855,64 +1050,124 @@ const App = () => {
         e.target.value = '';
     };
 
-    // Limpia la imagen de un campo concreto: 'base' (Editar), 'ref1' o 'ref2' (Generar).
+    // Limpia la imagen de un campo concreto: 'base' o 'refedit' (Editar), 'ref1' o 'ref2' (Generar).
     const clearSource = (slot = 'base') => (e) => {
         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-        if (mode === 'remix' || slot === 'base') setRemixSource(null);
-        else if (slot === 'ref2') setGenSource2(null);
+        if (mode === 'remix') {
+            if (slot === 'refedit') setRemixRef(null);
+            else setRemixSource(null);
+        } else if (slot === 'ref2') setGenSource2(null);
         else setGenSource(null);
-        setEnhancedPrompts([]);
+        setPromptDrafts({});
+        setActivePromptStyle(null);
     };
 
     // Imagen activa del modo: en Editar es la base, en Generar la referencia principal
     // (con la segunda como respaldo si solo se subio esa).
     const activeSource = mode === 'remix' ? remixSource : (genSource || genSource2);
 
-    const handleEnhance = async () => {
+    // Imagen que amplía el upscaler: la última del historial del modo o, si aún
+    // no hay ninguna, la imagen subida como base.
+    const upscaleSource = (images[0] && images[0].url) || remixSource || genSource || genSource2 || null;
+
+    // Genera UNA variante del prompt para el enfoque pulsado y la deja visible y
+    // editable. Si ya existe un borrador de ese enfoque se reutiliza al instante
+    // (así los 4 prompts siguen disponibles después de generar).
+    const handleEnhance = async (style, options = {}) => {
+        if (!style) return;
+        const force = options.force === true;
+        const cached = promptDrafts[style.id];
+        if (cached && !force) {
+            setPrompt(cached);
+            setActivePromptStyle(style.id);
+            setPromptOpen(true);
+            setError(null);
+            setTimeout(() => promptRef.current?.focus(), 50);
+            return;
+        }
         if (mode === 'remix' && !remixSource) {
             setError("Sube una imagen antes de mejorar el prompt.");
             return;
         }
         if (mode === 'text-to-image' && !prompt.trim() && !genSource && !genSource2) {
-            setError("Escribe una descripción o sube una imagen de referencia antes de mejorar.");
+            setPromptOpen(true);
+            setError("Escribe tu idea y vuelve a pulsar la opción para mejorarla.");
+            setTimeout(() => promptRef.current?.focus(), 50);
             return;
         }
-        setIsEnhancing(true);
+        setEnhancingStyle(style.id);
+        setError(null);
         try {
-            let enhanced;
-            if (activeSource) {
-                // Con imagen (base o referencia): analizarla con visión para proponer variantes.
-                // Con dos referencias se analiza la principal; la segunda sigue viajando en la generación.
-                const compressedImage = await resizeImage(activeSource, 1024, 0.85);
-                const base64Data = compressedImage.split(',')[1];
-                const systemInstructions = `Eres un experto en edición de imágenes con IA. Analiza esta imagen y genera 4 variantes de prompts para editarla en español. Cada variante debe describir un cambio específico y útil (mejorar iluminación, cambiar fondo, añadir elementos, mejorar calidad). Respeta el contenido principal de la imagen. Responde SOLO con un JSON válido: [{"type":"Iluminación","text":"..."},{"type":"Fondo","text":"..."},{"type":"Detalles","text":"..."},{"type":"Calidad","text":"..."}]`;
-                const result = await callProxy('', [], {
-                    action: 'text',
-                    system: systemInstructions,
-                    model: 'xiaomi/mimo-v2.6-pro',
-                    temperature: 0.7,
-                    max_tokens: 2000,
-                    imagen: base64Data
-                }, prompt.trim() || 'Analiza esta imagen y sugiere mejoras');
-                if (!result?.success || !result?.text) {
-                    enhanced = [];
-                } else {
-                    const raw = String(result.text || '').trim();
-                    const match = raw.match(/\[[\s\S]*\]/);
-                    const jsonText = match ? match[0] : raw;
-                    try {
-                        const parsed = JSON.parse(jsonText);
-                        enhanced = Array.isArray(parsed) ? parsed.filter(p => p && p.type && p.text) : [];
-                    } catch (e) {
-                        enhanced = [];
-                    }
-                }
-            } else {
-                // En modo generación, mejorar el texto del prompt
-                enhanced = await enhancePrompt(prompt);
+            // Con imagen (base o referencia) se analiza con visión; la segunda
+            // referencia del modo Generar sigue viajando en la generación.
+            const compressed = activeSource ? await resizeImage(activeSource, 1024, 0.85) : '';
+            const text = await enhancePromptVariant({
+                basePrompt: prompt.trim(),
+                style,
+                imageBase64: compressed ? compressed.split(',')[1] : ''
+            });
+            setPromptDrafts(prev => ({ ...prev, [style.id]: text }));
+            setPrompt(text);
+            setActivePromptStyle(style.id);
+            setPromptOpen(true);
+            setTimeout(() => promptRef.current?.focus(), 50);
+        } catch (err) {
+            console.error(err);
+            setError(err.message || "No se pudo mejorar el prompt.");
+        } finally {
+            setEnhancingStyle(null);
+        }
+    };
+
+    // Amplía la imagen activa a 2K, 4K u 8K reales y la guarda como nueva entrada
+    // del historial, conservando el prompt de la imagen de origen.
+    const handleUpscale = async (target) => {
+        if (!upscaleSource) {
+            setError("Genera o sube una imagen antes de ampliarla.");
+            return;
+        }
+        setIsUpscaling(true);
+        setError(null);
+        setProgress(0);
+        setProgressStatus(`Preparando ampliación a ${target.label}...`);
+        try {
+            const result = await upscaleDataUrl(upscaleSource, target.longEdge, (value, status) => {
+                setProgress(value);
+                setProgressStatus(status);
+            });
+            const base = images[0] || null;
+            const item = {
+                id: 'up_' + Math.random().toString(36).substring(2, 9),
+                url: result.dataUrl,
+                prompt: (base && base.prompt) || prompt.trim() || 'Imagen ampliada',
+                style: (base && base.style) || selectedStyle,
+                era: (base && base.era) || selectedEra,
+                aspectRatio: (base && base.aspectRatio) || selectedAR,
+                model: 'upscaler',
+                size: Math.max(result.width, result.height),
+                width: result.width,
+                height: result.height,
+                upscaled: true,
+                mode: mode,
+                createdAt: Date.now()
+            };
+            setProgress(90);
+            setProgressStatus('Guardando ampliación...');
+            try {
+                await saveHistoryItemToDb(item);
+            } catch (saveError) {
+                console.warn('No se pudo guardar la ampliación:', saveError);
+                setError('La imagen se amplió, pero no se pudo guardar en el historial.');
             }
-            setEnhancedPrompts(enhanced);
-        } catch (err) { console.error(err); setEnhancedPrompts([]); } finally { setIsEnhancing(false); }
+            setImages(prev => [item, ...prev]);
+            setLastUpscale(target.id);
+        } catch (err) {
+            console.error(err);
+            setError(err.message || "No se pudo ampliar la imagen.");
+        } finally {
+            setIsUpscaling(false);
+            setTimeout(() => { setProgress(0); setProgressStatus(''); }, 400);
+        }
     };
 
     const handleGenerate = async (finalPrompt = prompt) => {
@@ -934,9 +1189,14 @@ const App = () => {
         try {
             const eraSuffix = (selectedEra && selectedEra.promptSuffix || '').trim();
             const styleSuffix = `${eraSuffix} ${(selectedStyle.promptSuffix || '').trim()}`.trim();
-            // Imagenes del modo: base obligatoria al Editar, hasta dos referencias al Generar.
-            let finalSources = (mode === 'remix' ? [remixSource] : [genSource, genSource2]).filter(Boolean);
-            const sourceRole = mode === 'remix' ? 'transform' : 'reference';
+            // Imagenes del modo: base obligatoria al Editar (con su referencia
+            // opcional), hasta dos referencias al Generar.
+            let finalSources = (mode === 'remix'
+                ? [remixSource, remixRef]
+                : [genSource, genSource2]).filter(Boolean);
+            const sourceRole = mode === 'remix'
+                ? (remixRef ? 'transform-reference' : 'transform')
+                : 'reference';
 
             finalSources = await Promise.all(finalSources.map(img => resizeImage(img, 1024, 0.85)));
 
@@ -1008,11 +1268,12 @@ const App = () => {
 
     const handleRegenerate = (img) => {
         setPrompt(img.prompt);
+        setPromptOpen(true);
         if (img.style) setSelectedStyle(img.style);
         if (img.era) setSelectedEra(img.era);
         setSelectedAR(img.aspectRatio);
-        if (img.model) setSelectedModel(img.model);
-        if (/^\d+$/.test(String(img.size || ''))) setSelectedRes(Number(img.size));
+        if (img.model && img.model !== 'upscaler') setSelectedModel(img.model);
+        if (RESOLUTIONS.includes(Number(img.size))) setSelectedRes(Number(img.size));
         handleGenerate(img.prompt);
     };
 
@@ -1039,14 +1300,21 @@ const App = () => {
         } catch (err) { setError("Error de edición"); } finally { setIsGenerating(false); }
     };
 
-    const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !prompt.trim() && !genSource && !genSource2) || (mode === 'remix' && !remixSource);
-    // El mejorador necesita texto o imagen: con imagen propone variantes analizándola.
+    const isGenerateDisabled = isGenerating || isUpscaling || (mode === 'text-to-image' && !prompt.trim() && !genSource && !genSource2) || (mode === 'remix' && !remixSource);
+    // El mejorador necesita texto o imagen: con imagen propone la variante analizándola.
     const canEnhance = !!prompt.trim() || !!activeSource;
+    const promptStyles = getPromptStyles(mode);
+    const activeStyle = promptStyles.find(style => style.id === activePromptStyle) || null;
     const resolutionApplies = supportsResolution(selectedModel);
 
     return (
         <ApiKeyChecker>
-            {isGenerating && <LoadingOverlay status={progressStatus} />}
+            {(isGenerating || isUpscaling) && (
+                <LoadingOverlay
+                    status={progressStatus}
+                    title={isUpscaling ? 'Ampliando imagen…' : 'IA generando lo solicitado...'}
+                />
+            )}
             <div className="min-h-screen custom-scrollbar overflow-y-auto">
                 {view === 'splash' ? (
                     <Splash onSelect={handleStart} />
@@ -1066,7 +1334,7 @@ const App = () => {
                             >
                                 ← Volver
                             </button>
-                            {/* Imagen base del modo Editar (obligatoria). */}
+                            {/* Imagen base del modo Editar (obligatoria) y su referencia opcional. */}
                             {mode === 'remix' && (
                                 <div className="space-y-4 animate-in">
                                     <div className="flex items-center justify-between gap-3">
@@ -1097,48 +1365,156 @@ const App = () => {
                                             </span>
                                         )}
                                     </button>
+
+                                    {/* Referencia opcional: no se transforma, guía la edición de la base. */}
+                                    <div className="space-y-2">
+                                        <span className="btn-canon text-[10px] text-cyan-400">Imagen de Referencia (Opcional)</span>
+                                        <div className="edit-ref-card">
+                                            <button
+                                                type="button"
+                                                onClick={() => fileInputEditRef.current?.click()}
+                                                aria-label={remixRef ? 'Cambiar la imagen de referencia de la edición' : 'Subir una imagen de referencia para la edición'}
+                                                className="edit-ref-main"
+                                            >
+                                                <span className="edit-ref-thumb">
+                                                    {remixRef
+                                                        ? <img src={remixRef} alt="Imagen de referencia para la edición" />
+                                                        : <Upload size={18} />}
+                                                </span>
+                                                <span className="edit-ref-copy">
+                                                    <span className="edit-ref-title">{remixRef ? 'Referencia cargada' : 'Añadir referencia'}</span>
+                                                    <span className="model-quality-hint">
+                                                        {remixRef
+                                                            ? 'Guía el estilo, el sujeto o los colores.'
+                                                            : 'Opcional: estilo, sujeto o colores.'}
+                                                    </span>
+                                                </span>
+                                            </button>
+                                            {remixRef && (
+                                                <button
+                                                    type="button"
+                                                    onClick={clearSource('refedit')}
+                                                    className="ar-effect edit-ref-remove"
+                                                    title="Quitar imagen de referencia"
+                                                    aria-label="Quitar imagen de referencia"
+                                                >
+                                                    <X size={11} /> Quitar
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
                             <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
                             <input type="file" ref={fileInput2Ref} onChange={(e) => handleFileUpload(e, 'ref2')} className="hidden" accept="image/*" />
+                            <input type="file" ref={fileInputEditRef} onChange={(e) => handleFileUpload(e, 'refedit')} className="hidden" accept="image/*" />
 
-                            <div className="space-y-4">
-                                <label className="btn-canon text-[11px] text-cyan-400">{mode === 'remix' ? 'Especifica los detalles a editar' : 'Describe tu imagen'}</label>
-                                <div className="relative">
-                                    <textarea
-    value={prompt}
-    onChange={(e) => setPrompt(e.target.value)}
-    placeholder="Detalla lo que deseas ver en tu imagen..."
-    className="w-full h-48 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none custom-scrollbar focus:border-cyan-400 placeholder:text-cyan-400 transition-all shadow-inner"
-/>
-                                    <button
-                                        onClick={handleEnhance}
-                                        disabled={isEnhancing || !canEnhance}
-                                        title="mejorar prompt con IA"
-                                        className="absolute bottom-4 right-4 p-3 bg-cyan-500/20 text-cyan-400 rounded-2xl hover:bg-cyan-500/30 transition-all z-30"
-                                    >
-                                        {isEnhancing ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-                                    </button>
+                            <div className="space-y-4" aria-busy={isEnhancing}>
+                                <div className="flex items-center justify-between gap-2">
+                                    <label htmlFor={promptOpen ? 'prompt-input' : undefined} className="btn-canon text-[11px] text-cyan-400">
+                                        {mode === 'remix' ? 'Especifica los detalles a editar' : 'Describe tu imagen'}
+                                    </label>
+                                    {promptOpen && activeStyle && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleEnhance(activeStyle, { force: true })}
+                                            disabled={isEnhancing || !canEnhance}
+                                            className="prompt-refresh"
+                                            title="Volver a generar esta variante"
+                                            aria-label="Volver a generar esta variante"
+                                        >
+                                            <RefreshCw size={12} className={isEnhancing ? 'animate-spin' : ''} /> Regenerar
+                                        </button>
+                                    )}
                                 </div>
 
-                                {enhancedPrompts.length > 0 && (
-                                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-2 duration-300">
-                                        {enhancedPrompts.map((p, i) => (
+                                {/* 4 enfoques: cada botón crea UNA variante y revela el prompt editable. */}
+                                <div className="prompt-enhance-grid" role="group" aria-label="Mejorar prompt con IA">
+                                    {promptStyles.map((style) => (
+                                        <button
+                                            key={style.id}
+                                            type="button"
+                                            onClick={() => handleEnhance(style)}
+                                            disabled={isEnhancing || isUpscaling || !canEnhance}
+                                            aria-pressed={activePromptStyle === style.id}
+                                            className={`prompt-enhance-option ${activePromptStyle === style.id ? 'active' : ''}`}
+                                        >
+                                            <span className="prompt-enhance-label">
+                                                {style.label}
+                                                {enhancingStyle === style.id && <Loader2 size={12} className="animate-spin" />}
+                                            </span>
+                                            <span className="prompt-enhance-hint">{style.hint}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <span className="model-quality-hint">4 enfoques · el prompt se abre editable al elegir uno.</span>
+
+                                {!promptOpen ? (
+                                    <div className="prompt-gate">
+                                        <Sparkles size={18} />
+                                        <p>Elige un enfoque para crear tu prompt con IA.</p>
+                                        <button
+                                            type="button"
+                                            className="prompt-manual"
+                                            onClick={() => {
+                                                setPromptOpen(true);
+                                                setTimeout(() => promptRef.current?.focus(), 50);
+                                            }}
+                                        >
+                                            Escribir mi prompt
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="relative">
+                                        <textarea
+                                            id="prompt-input"
+                                            ref={promptRef}
+                                            value={prompt}
+                                            onChange={(e) => setPrompt(e.target.value)}
+                                            placeholder={mode === 'remix' ? 'Detalla los cambios que quieres aplicar...' : 'Detalla lo que deseas ver en tu imagen...'}
+                                            className="w-full h-48 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none custom-scrollbar focus:border-cyan-400 placeholder:text-cyan-400 transition-all shadow-inner"
+                                        />
+                                    </div>
+                                )}
+                                <div className="sr-only" aria-live="polite">
+                                    {isEnhancing
+                                        ? 'Generando prompt con IA.'
+                                        : (promptOpen && activeStyle ? `Prompt de ${activeStyle.label} disponible para editar.` : '')}
+                                </div>
+                            </div>
+
+                            {/* Upscaler del modo Editar: 2K/4K/8K reales a partir de la última imagen. */}
+                            {mode === 'remix' && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="btn-canon text-[11px] text-cyan-400">Upscaler</span>
+                                        {upscaleSource && (
+                                            <img src={upscaleSource} alt="Imagen que se va a ampliar" className="upscale-thumb" />
+                                        )}
+                                    </div>
+                                    <div className="model-toggle-group" role="group" aria-label="Seleccionar resolución de ampliación">
+                                        {UPSCALE_TARGETS.map((target) => (
                                             <button
-                                                key={i}
-                                                onClick={() => {
-                                                    setPrompt(p.text);
-                                                }}
-                                                className="text-[10px] text-left p-3 glass-light border border-white/5 rounded-2xl text-gray-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all leading-tight group"
+                                                key={target.label}
+                                                type="button"
+                                                onClick={() => handleUpscale(target)}
+                                                disabled={isUpscaling || isGenerating || !upscaleSource}
+                                                aria-pressed={lastUpscale === target.id}
+                                                className={`model-toggle ${lastUpscale === target.id ? 'active' : ''}`}
+                                                title={`Ampliar a ${target.label} (${target.longEdge} px de lado largo)`}
                                             >
-                                                <div className="font-bold text-[9px] uppercase tracking-tighter text-gray-500 group-hover:text-cyan-500 mb-1">{p.type}</div>
-                                                <div className="line-clamp-2 italic opacity-80">{p.text}</div>
+                                                {target.label}
                                             </button>
                                         ))}
                                     </div>
-                                )}
-                            </div>
+                                    <span className="model-quality-hint upscale-hint">
+                                        {upscaleSource
+                                            ? '2K / 4K / 8K reales · 8K = 7680 px de lado largo. No añade detalle nuevo.'
+                                            : 'Genera o sube una imagen para ampliarla.'}
+                                    </span>
+                                </div>
+                            )}
 
                             {/* Imagenes de referencia del modo Generar (opcionales): van despues del
                                 texto, que es la instruccion principal del prompt. Con dos imagenes
@@ -1394,7 +1770,7 @@ const App = () => {
                                         {lightboxImage.era && lightboxImage.era.shortName && lightboxImage.era.shortName !== 'Sin Era' ? <span className="text-cyan-400">{lightboxImage.era.shortName}</span> : null}
                                         <span className="text-cyan-400">{lightboxImage.aspectRatio}</span>
                                         <span className="text-cyan-400">{getModelLabel(lightboxImage.model)}</span>
-                                        <span>RES: {getSizeLabel(lightboxImage.size)}</span>
+                                        <span>RES: {getSizeLabel(lightboxImage.size)}{lightboxImage.width ? ` · ${lightboxImage.width}×${lightboxImage.height}` : ''}</span>
                                         <span className="text-gray-600">ID: {lightboxImage.id}</span>
                                     </div>
                                 </div>
