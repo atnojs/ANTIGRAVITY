@@ -147,6 +147,18 @@ El sistema `history-server` proporciona:
 #lightbox-img { max-width: 90%; max-height: 80vh; object-fit: contain; cursor: zoom-out; }
 ```
 
+**Zoom con la rueda (OBLIGATORIO, no opcional):** copiar `apps/_shared/lightbox-zoom.js` a la
+carpeta de la app y cargarlo antes de `</body>`:
+
+```html
+<script src="lightbox-zoom.js?v=20261025" defer></script>
+```
+
+Añade zoom continuo con la rueda (1x–8x, anclado al cursor), arrastre para moverse, doble clic y
+tecla `0` para volver a 1x, pellizco en táctil, y restablecimiento automático al cerrar. Se
+engancha solo al lightbox que ya exista: no hay que reescribir `openLightbox`. Detalle y
+comprobación en `skills/SKILL_MAESTRA.md` §3c-bis.
+
 ### Paso 4: Revisión Visual y Funcional (OBLIGATORIO)
 
 1. Abrir `index.html` en navegador.

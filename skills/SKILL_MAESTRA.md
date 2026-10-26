@@ -397,6 +397,38 @@ window._openLightbox = function (url) {
 };
 ```
 
+#### 3c-bis. Zoom con la rueda del ratón en el visor grande (OBLIGATORIO)
+
+Ver una imagen «en grande» no basta: el visor tiene que permitir **seguir ampliando con la
+rueda del ratón**. Regla fija del usuario (2026-10-25): **todas las apps y webs** que muestran
+imágenes generadas o editadas en grande deben permitirlo.
+
+No se duplica el código del zoom en cada app. Se copia el módulo canónico
+**`apps/_shared/lightbox-zoom.js`** a la carpeta pública de la app y se carga con `defer`:
+
+```html
+<script src="lightbox-zoom.js?v=20261025" defer></script>
+```
+
+El módulo se engancha solo, sea cual sea el lightbox que ya tenga la app (`#antigravity-lightbox`,
+`#lightbox-antigravity`, `.lightbox`, o un visor propio): busca el overlay fijo a pantalla
+completa con una imagen dentro y le añade el comportamiento. No hay que tocar `_openLightbox`.
+
+Comportamiento que debe cumplir el visor:
+
+- **Rueda del ratón**: zoom continuo de 1x a 8x, anclado al punto donde está el cursor.
+- **Arrastrar**: desplaza la imagen ampliada (con umbral de 5 px, para no confundirlo con un clic).
+- **Doble clic** o tecla **0**: vuelve a 1x. **+** y **-**: ampliar y alejar.
+- **Escape** y el botón de cerrar siguen funcionando; al cerrar, el zoom se restablece solo.
+- Con la imagen ampliada, un clic sobre ella **no** cierra el visor (el fondo y el botón ✕ sí).
+- La rueda sobre el visor **no** hace scroll de la página (`preventDefault`).
+- En táctil: pellizco con dos dedos.
+- Aviso discreto al abrir: `Rueda: zoom · Arrastra: mover · Doble clic: 1x`.
+
+Comprobación obligatoria antes de entregar (en navegador, no leyendo el código): abrir el visor
+con una imagen real, girar la rueda y confirmar que la imagen crece; girar en sentido contrario y
+que vuelve a 1x; arrastrar y que se desplaza; pulsar ✕ y que cierra.
+
 #### 3d. Limpiar todo el historial
 
 ```js
@@ -459,6 +491,8 @@ Al clonar el historial en una app nueva o existente:
 8. ✅ Verificar que el panel tiene scroll propio (no scrollea la página entera).
 9. ✅ Confirmar que en móvil el panel pasa al flujo normal (ancho completo, sin sticky).
 10. ✅ Comprobar que el título "Historial" y el botón "Limpiar" solo aparecen cuando hay items.
+11. ✅ Copiar `apps/_shared/lightbox-zoom.js` a la app y cargarlo con `defer`; probar en navegador
+    que el visor grande amplía con la rueda (ver §3c-bis).
 
 ## Reglas para apps de generación o edición de imágenes
 

@@ -138,6 +138,22 @@ document.addEventListener('keydown', (e) => {
 });
 ```
 
+**Zoom con la rueda del ratón (OBLIGATORIO).** Toda app o web que muestre imágenes generadas o
+editadas en grande debe permitir ampliar más con la rueda. No se reescribe el lightbox de la app:
+se copia `apps/_shared/lightbox-zoom.js` junto a la página y se carga antes de `</body>`:
+
+```html
+<script src="lightbox-zoom.js?v=20261025" defer></script>
+```
+
+El módulo detecta el overlay a pantalla completa (el que ya tenga la app) y añade rueda 1x–8x
+anclada al cursor, arrastre, doble clic/`0` para volver a 1x, pellizco táctil y restablecimiento al
+cerrar. Si la app es de versiones antiguas sin ningún visor grande, no se inventa: se avisa.
+
+Comprobación en navegador antes de dar el paso por hecho: rueda hacia arriba → la imagen crece;
+rueda hacia abajo → vuelve a 1x; arrastrar → se desplaza; ✕ y Escape → cierran. Detalle en
+`skills/SKILL_MAESTRA.md` §3c-bis.
+
 ### Paso 7: Auditoría Final
 
 Si la edición afecta estructura HTML, estilos CSS o lógica de interacción, ejecutar skill `auditor-lighthouse-accesibilidad`.
