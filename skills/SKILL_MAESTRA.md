@@ -414,6 +414,12 @@ El módulo se engancha solo, sea cual sea el lightbox que ya tenga la app (`#ant
 `#lightbox-antigravity`, `.lightbox`, o un visor propio): busca el overlay fijo a pantalla
 completa con una imagen dentro y le añade el comportamiento. No hay que tocar `_openLightbox`.
 
+**Si cambias el módulo, cámbiale el nombre** (`lightbox-zoom.20261026.js`) y actualiza la
+referencia en el HTML. Reutilizar el mismo `?v=` **no sirve**: la caché —la del navegador y la de
+Hostinger— se indexa por ruta y sigue sirviendo la versión vieja; ya pasó y Antonio lo detectó como
+«esta app no se ha actualizado». El nombre del módulo no se reutiliza entre versiones, y el fichero
+antiguo se deja publicado porque los HTML ya cacheados lo siguen pidiendo.
+
 Comportamiento que debe cumplir el visor:
 
 - **Rueda del ratón**: zoom continuo de 1x a 8x, anclado al punto donde está el cursor.
