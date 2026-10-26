@@ -1,3 +1,3 @@
 2.0.2-hoola 2026-10-26
 Verificación final: CSP propia con blob, importación y exportación comprobadas en producción.
-Autoevaluación A1–A10: 93,7 (ver docs/VERIFICACION.md).
+Autoevaluación A1–A10: 93,9 (ver docs/VERIFICACION.md).
