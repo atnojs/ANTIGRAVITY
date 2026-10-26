@@ -1,0 +1,16 @@
+﻿{
+  "fecha": "2026-10-26",
+  "app": "apps/flow_studio_hoola",
+  "commit": "c2e327ad",
+  "pruebas": {
+    "local_ui_y_cola": "43/43 PASS (Chrome headless + php -S, mp4 real de 15.136.391 B)",
+    "worker_pc_simulado": "12/12 PASS (flow_studio_worker.py real, flow.py simulado)",
+    "cola_compartida_hoola_flow_studio": "PASS (hoola encola, flow_studio reclama/sube, hoola sirve el mp4)",
+    "produccion_ui": "9/9 PASS (1440/768/393, consola limpia)",
+    "produccion_php": "subida 19,2 MB base64 en 1,4 s; sirve video/mp4; Range 206; rechaza no-video"
+  },
+  "no_verificado": [
+    "Generacion real de un video con Veo en Flow desde el PC (consume 10 puntos y requiere la sesion de Chrome de Flow; no se ha lanzado para no gastar cuota).",
+    "El worker del PC procesa el trabajo con flow.py real (probado con flow.py simulado y la misma cola)."
+  ]
+}
