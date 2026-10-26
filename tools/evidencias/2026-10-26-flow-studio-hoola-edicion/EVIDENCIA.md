@@ -84,6 +84,23 @@ Cubre: editar sin imagen → 400; editar con imagen → 1 trabajo; `claim` con `
 
 Prueba ligera posterior (`prodlight.mjs`) → **5/5 PASS**: versión d, escalado 1600×1200, descarga JPEG de 78.710 B, 393 px y consola limpia.
 
+## Verificación independiente
+
+Subagente verificador con contexto separado y sin editar archivos, sobre el código `be0a0d65` y esta evidencia:
+**PASS — 93,3/100**.
+
+| A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8 | A9 | A10 | Total |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 9,7 | 9,4 | 9,2 | 9,3 | 9,2 | 9,0 | 9,6 | 9,2 | 9,0 | 9,4 | **93,3** |
+
+Reprodujo por su cuenta: alcance de los 4 commits, `php -l` de los dos PHP, cola PHP aislada **13/13**, suite local **35/35**, producción ligera **5/5**, hashes servidos, CSP, 8× de 6400×4800, accesibilidad básica y los tres anchos. No re-ejecutó la edición real con Flow (coste; queda como evidencia declarada) ni el borrado/lightbox/zoom (fuera del diff).
+
+Defectos menores declarados y aceptados:
+
+- **D2:** `#queueNote` no lleva `aria-live`; los avisos del escalado no se anuncian solos. Mitigado porque `#grid` sí es `aria-live="polite"` y anuncia la tarjeta nueva.
+- **D3:** al cerrar el menú de escalado (clic fuera o Escape) el foco no vuelve al botón que lo abrió.
+- **D1 (resuelto):** al cerrar la verificación, la evidencia estaba 1 commit por delante y con dos viñetas sin commitear. Se publicó en `6161295a` y `git log origin/main..HEAD` quedó vacío.
+
 ## Capturas
 
 - `local-01…11`: escritorio generar/editar/resultado, menú de escalado, 2×, 8×, editar desde tarjeta, portátil 1440×768, tablet 820 y móvil 393 (generar y editar).
