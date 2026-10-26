@@ -16,7 +16,8 @@ Configuración (agente.json, en esta misma carpeta; fuera de git):
       "base": "https://atnojs.es/apps/unified-image-studio/api.php",
       "token": "...",                        # credencial del agente
       "flow_profile": "E:/herramientas/google-flow/session/flowbot-profile",
-      "out_dir": ""                          # vacío = outputs/ del agente
+      "out_dir": "",                          # vacío = outputs/ del agente
+      "tmp_dir": ""                           # opcional: temporal propio si TEMP está restringido
     }
 
 Reglas de seguridad:
@@ -242,6 +243,15 @@ def child_env(cfg: dict) -> dict:
     # La sesión de Flow se reutiliza del sitio donde ya esté iniciada.
     if cfg.get('flow_profile'):
         env['FLOW_CHROME_PROFILE'] = str(cfg['flow_profile'])
+    # Chrome y Playwright necesitan escribir archivos temporales. Si la carpeta
+    # temporal del sistema está restringida (políticas, sandbox), se puede
+    # apuntar a una propia con "tmp_dir" en agente.json.
+    tmp = str(cfg.get('tmp_dir') or '').strip()
+    if tmp:
+        os.makedirs(tmp, exist_ok=True)
+        env['TEMP'] = tmp
+        env['TMP'] = tmp
+        env['TMPDIR'] = tmp
     return env
 
 
@@ -249,21 +259,33 @@ def chrome_using_profile(profile: str) -> int:
     """Cuenta los Chrome que tienen abierto el perfil de Flow.
 
     Playwright no puede abrir un perfil persistente en uso: si hay alguno, la
-    generación muere en dos segundos con un error de asyncio poco claro.
+    generación muere con un error de «ProcessSingleton» poco claro. La ruta se
+    normaliza porque en agente.json se escribe con «/» y Chrome la recibe con «\».
     """
     if os.name != 'nt' or not profile:
         return 0
+    buscado = os.path.normcase(os.path.normpath(profile))
     try:
         script = (
             "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | "
-            "Where-Object { $_.CommandLine -like '*%s*' } | Measure-Object | "
-            "Select-Object -ExpandProperty Count" % profile.replace("'", "''")
+            "ForEach-Object { $_.CommandLine }"
         )
         proc = subprocess.run(
             ['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', script],
             capture_output=True, text=True, timeout=60, encoding='utf-8', errors='replace',
         )
-        return int((proc.stdout or '0').strip() or 0)
+        cuenta = 0
+        for linea in (proc.stdout or '').splitlines():
+            if 'user-data-dir' not in linea:
+                continue
+            # Se extrae el valor de --user-data-dir y se compara normalizado.
+            for trozo in linea.split():
+                if not trozo.lower().startswith('--user-data-dir='):
+                    continue
+                valor = trozo.split('=', 1)[1].strip('"')
+                if os.path.normcase(os.path.normpath(valor)) == buscado:
+                    cuenta += 1
+        return cuenta
     except Exception:
         return 0
 

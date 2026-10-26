@@ -182,10 +182,13 @@ skills/diag_mic.py
 # credencial del agente, la sesión de Chrome y los resultados generados NO. Un
 # fichero con el token en Git es un token publicado (el repo es público).
 tools/flow-agent/agente.json
+tools/flow-agent/token*.txt
 tools/flow-agent/flow_agent.lock
 tools/flow-agent/outputs/
 tools/flow-agent/session/
 tools/flow-agent/__pycache__/
+tools/flow-agent/.venv/
+tools/flow-agent/tmp/
 tools/flow-agent/flow_provider/__pycache__/
 
 # Rescatados de sitios raros (p. ej. apps/dev/null). No se publican: son material

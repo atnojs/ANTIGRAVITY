@@ -18,6 +18,32 @@ Móvil / otro PC  ──►  servidor (cola en SQLite)  ◄──  agente de est
   (`E:/herramientas/google-flow/session/flowbot-profile`).
 - La credencial del agente, que se genera **en el servidor** (ver abajo).
 
+## 0. Ya está preparado en este PC (2026-10-26)
+
+- Entorno propio del agente: `tools/flow-agent/.venv` (Python 3.11 + Playwright + Pillow).
+  No usa el Python del sistema ni el de Hermes.
+- `agente.json` creado y apuntando a producción, con `tmp_dir` propio
+  (`tools/flow-agent/tmp`) porque Chrome necesita escribir temporales y en algunos
+  entornos la carpeta temporal del sistema está restringida.
+- Lanzadores: `iniciar-agente.bat` (manual) e `iniciar-agente-oculto.vbs` (sin ventana,
+  para la carpeta Inicio).
+- **Falta un solo paso**: poner el token en el servidor (ver §1).
+
+## 0-bis. Importante: no compartas el perfil de Chrome
+
+El perfil `session/flowbot-profile` solo lo puede usar **un** Chrome a la vez. El worker
+antiguo de Flow Studio (`E:\herramientas\google-flow\flow_studio_worker.py`, tarea
+`FlowStudioWorker`) usa ese mismo perfil. Si los dos coinciden, uno de los dos fallará con
+`Failed to create a ProcessSingleton`. Opciones:
+
+1. **Recomendado:** desactivar el worker antiguo si ya usas el estudio unificado.
+   ```powershell
+   Disable-ScheduledTask -TaskName 'FlowStudioWorker'
+   Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*flow_studio_worker*' } |
+     ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+   ```
+2. Convivir con ambos y aceptar que alguno falle de vez en cuando (el agente avisa con un
+   mensaje claro: «hay N Chrome con el perfil de Flow abierto»).
 ## 1. Credencial del agente
 
 El token debe coincidir con el del servidor. Se admite de dos formas:
@@ -51,22 +77,28 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 ## 2. Comprobar que todo responde
 
 ```powershell
-python flow_agent.py --status
+cd E:\ANTIGRAVITY\tools\flow-agent
+.\.venv\Scripts\python.exe flow_agent.py --status
 ```
+
+O simplemente: doble clic en `iniciar-agente.bat --status`.
 
 Debe decir `credencial: OK`, los trabajos pendientes, si el perfil de Chrome
 está libre y el estado de la sesión de Flow.
 
 ## 3. Ejecutarlo
 
-- Una pasada (para el Programador de tareas):
+- **Lo normal:** doble clic en `iniciar-agente.bat`. Trabaja 25 minutos y se cierra.
+- Una sola pasada (para tareas programadas):
   ```powershell
-  python flow_agent.py --once
+  iniciar-agente.bat --once
   ```
-- Servicio continuo durante un rato:
+- Servicio continuo:
   ```powershell
-  python flow_agent.py --minutes 25
+  iniciar-agente.bat --minutes 25
   ```
+- Sin ventana, al encender el PC: acceso directo a `iniciar-agente-oculto.vbs` en
+  `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup` (el propio VBS evita duplicados).
 
 El agente toma **un trabajo cada vez**, lo genera con `flow.py`, comprime la
 imagen a JPEG (~1400 px) o sube el MP4, y avisa al servidor. Si el PC se apaga a
@@ -86,7 +118,7 @@ reenvía solo, para no gastar dos veces la generación.
 ## Instalar como tarea programada (opcional)
 
 ```powershell
-$py = "C:\Users\atnojs\AppData\Local\Programs\Python\Python312\python.exe"
+$py = "E:\ANTIGRAVITY\tools\flow-agent\.venv\Scripts\pythonw.exe"
 $accion = New-ScheduledTaskAction -Execute $py `
   -Argument "flow_agent.py --minutes 6" `
   -WorkingDirectory "E:\ANTIGRAVITY\tools\flow-agent"
@@ -103,3 +135,6 @@ Register-ScheduledTask -TaskName "UisFlowAgent" -Action $accion -Trigger $dispar
 | `Flow no reconoce el modelo` | Google renombró el modelo | Revisar `MODEL_ALIASES` en `flow_agent.py` |
 | El trabajo se queda en cola | El agente no corre o no llega al servidor | `--status` y revisar la conexión |
 | `pendiente de comprobar` en la web | El PC se apagó generando | Comprobar en Flow si salió y pulsar «Reintentar» |
+| `Failed to create a ProcessSingleton` | Otro Chrome usa el perfil de Flow (el worker antiguo) | Desactivar `FlowStudioWorker` (ver §0-bis) |
+| `EPERM: operation not permitted, mkdtemp` | La carpeta temporal del sistema está restringida | Rellenar `tmp_dir` en `agente.json` |
+| `credencial rechazada (HTTP 401)` tras pegar el token | El servidor no lo ha recibido todavía | Comprobar `SetEnv` y que no haya espacios ni comillas de más |
