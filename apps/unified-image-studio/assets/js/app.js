@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v1.5.0 · 2026-10-26 · google flow integrado';
+const BUILD = 'v1.6.0 · 2026-10-26 · modelos protegidos por contraseña';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -1632,6 +1632,19 @@ function saveRecipe() {
 }
 
 function applyRecipe(recipe) {
+  // Una receta puede apuntar a un modelo protegido: se pide la contraseña igual
+  // que al pulsar el botón, para que la compuerta no se pueda saltar por aquí.
+  const gate = window.ModelGate;
+  if (gate && typeof gate.isLocked === 'function' && gate.isLocked(recipe.model) && !gate.isUnlocked()) {
+    gate.request(recipe.model)
+      .then(() => applyRecipeUnlocked(recipe))
+      .catch(() => toast('La receta usa un modelo protegido: introduce la contraseña para aplicarla.', 'warn'));
+    return;
+  }
+  applyRecipeUnlocked(recipe);
+}
+
+function applyRecipeUnlocked(recipe) {
   setActiveModel(recipe.model);
   $('aspectSelect').value = recipe.aspect;
   $('resolutionSelect').value = String(recipe.resolution);

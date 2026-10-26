@@ -588,3 +588,37 @@ Cómo funciona:
 Detalle técnico: la columna `cancel_requested` se añade con una migración **idempotente** que se
 ejecuta siempre (`uis_migrate_flow_cancel`), porque la base de producción ya estaba en la versión 2
 y el bloque de migración antiguo no se volvía a ejecutar.
+
+---
+
+## 23. Modelos protegidos por contraseña (2026-10-26)
+
+La app carga `../_shared/model-gate.20261026.js` (Model Gate 1.1.0) antes del módulo de la app.
+Protege todo el selector **salvo** los modelos de Flow, IMAGE 2 LOW/MEDIUM y los dos vídeos ligeros.
+
+| Qué se comprobó | Resultado |
+|---|---|
+| Compuerta cargada (`ModelGate.version` = `1.1.0`) | PASS |
+| 12 candados exactos: 10 de imagen + `VEO 3.1 QUALITY` + `OMNI FLASH` | PASS · ni falta ni sobra ninguno |
+| IMAGE 2 LOW se selecciona sin contraseña | PASS |
+| OPENAI 2.5 MEDIUM abre «Modelo protegido» y **no** cambia la selección | PASS |
+| Contraseña incorrecta: sigue bloqueado y muestra el error | PASS |
+| Contraseña correcta: desbloquea y aplica el clic pendiente | PASS · MEDIUM activo y 0 candados |
+| El desbloqueo persiste al recargar la pestaña | PASS |
+| Pestaña nueva: VEO 3.1 QUALITY vuelve a pedir contraseña | PASS |
+| Cancelar cierra el modal sin cambiar de modelo | PASS |
+| VEO 3.1 LITE se selecciona sin contraseña | PASS |
+| Un `fetch` con `"model":"openai-high"` abre la compuerta antes de salir | PASS |
+| Tras desbloquear, la petición continúa y llega al servidor | PASS · `HTTP 503` del banco de pruebas |
+| Sintaxis de `app.js` y del módulo | PASS · `node --check` |
+
+Cómo se probó: servidor estático local de `apps/` (sin PHP, la app arranca en modo local) y
+**Chrome real headless** manejado por CDP con clics y envío del formulario, no eventos simulados
+desde el propio código. Suites y capturas: `tools/evidencias/2026-10-26-uis-model-gate/`
+(`01-arranque-bloqueado.png`, `02-modal-modelo-protegido.png`, `03-desbloqueado.png`,
+`04-video-quality-protegido.png`); 13/13 PASS.
+
+Límites declarados: la compuerta es de interfaz (la contraseña vive en el archivo compartido, igual
+que en las otras 40 apps que lo usan) y el servidor mantiene su propia exigencia de sesión
+`PW_ACCESS`. Las recetas ya guardadas con un modelo protegido pasan por la compuerta al aplicarse.
+

@@ -56,6 +56,33 @@ apps/unified-image-studio/
   apagó a mitad: no se reenvía solo para no gastar dos veces la generación).
 - Instalación y diagnóstico del agente: [`tools/flow-agent/LEEME.md`](../../tools/flow-agent/LEEME.md).
 
+## 1-ter. Modelos protegidos por contraseña (2026-10-26)
+
+Los modelos caros piden contraseña antes de seleccionarse. La compuerta es el módulo compartido
+del proyecto, cargado al final de `index.html`:
+
+```html
+<script src="../_shared/model-gate.20261026.js"></script>
+```
+
+| Sin contraseña | Con contraseña |
+|---|---|
+| Flow: `NANO BANANA 2`, `NANO BANANA PRO`, `NANO BANANA 2 LITE` | `OPENAI 2.5`: MEDIUM, HIGH, MAX FLARE, XHIGH, MAX SUNBURST |
+| IMAGE 2: `LOW` y `MEDIUM` | `GEMINI`: 2, 3.1 FLASH, 3 PRO · `QWEN 3 PRO` · IMAGE 2 `HIGH` |
+| Vídeo: `VEO 3.1 LITE` y `VEO 3.1 FAST` | Vídeo: `VEO 3.1 QUALITY` y `OMNI FLASH` |
+
+- Al pulsar un modelo protegido aparece **Modelo protegido**; la selección no cambia hasta
+  escribir la contraseña del proyecto (la misma del resto de apps, `05`). Al acertar, el modelo
+  pulsado se aplica solo y desaparecen los candados.
+- El desbloqueo dura la pestaña (`sessionStorage`): al recargar se mantiene; en una pestaña nueva
+  se vuelve a pedir. `ModelGate.lock()` lo revoca a mano.
+- Además del clic hay un **guardián de envío**: si una receta, un proyecto restaurado o un envío
+  intenta usar un modelo protegido sin desbloquear, la petición queda en espera y se pide la
+  contraseña antes de salir al servidor.
+- **Límite declarado:** es una compuerta de interfaz, como en el resto de apps del proyecto. La
+  contraseña viaja en el propio archivo compartido y no sustituye a la autenticación del servidor:
+  para generar sigue siendo obligatoria la sesión `PW_ACCESS`.
+
 
 ## 2. Requisitos
 
