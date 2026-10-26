@@ -23,17 +23,26 @@ const sinHandler = !app.includes('if (flowFrames)');
 ok('D3 sin manejador huérfano', sinHandler);
 
 // ── D7: el visor no muestra «?×?» ──
-// Invariante real: la etiqueta del visor usa la variable `medidas`, que solo
-// incluye dimensiones cuando se conocen, y nunca recurre a `|| '?'`.
-ok('D7 sin dimensiones inventadas', !app.includes("job.width || '?'") && !app.includes("job.height || '?'"));
-ok('D7 visor con medidas condicionales', app.includes('flowLightboxMeta') && /\$\{medidas\}/.test(app));
+// Se valida la línea real de asignación, no cualquier aparición de `medidas`:
+// una comprobación que acepta un `console.debug` deja pasar el defecto.
+const lineaVisor = app.split('\n').find((linea) => linea.includes("$('flowLightboxMeta').textContent")) || '';
+ok('D7 asigna la etiqueta del visor', lineaVisor !== '');
+ok('D7 etiqueta con medidas condicionales', /\$\{medidas\}/.test(lineaVisor));
+ok('D7 sin dimensión incondicional', !lineaVisor.includes("|| '?'") && !/\}\s*×\s*\$\{/.test(lineaVisor));
+ok('D7 sin interrogantes en ninguna etiqueta', !/\?\s*×\s*\?/.test(app));
 
-// ── D8: sin código muerto exportado ──
+// ── D8: sin código muerto exportado y sin importaciones sin uso ──
 const flow = leer('assets/js/flow.js');
 const muertos = ['flowModelById', 'isFlowModel', 'FLOW_VIDEO_MODELS', 'FLOW_VIDEO_RATIOS', 'waitForFlowJobs', 'flowRequestKey', 'lastImageJob', 'watching', 'countSelect'];
 for (const simbolo of muertos) {
   ok(`D8 sin ${simbolo}`, !flow.includes(simbolo) && !app.includes(simbolo));
 }
+// Lo que flow.js exporta debe consumirse en app.js (o ser parte del arranque).
+const exportados = [...flow.matchAll(/^export (?:const|async function|function) ([A-Za-z0-9_]+)/gm)].map((m) => m[1]);
+const sinConsumo = exportados.filter((nombre) => !new RegExp(`\\b${nombre}\\b`).test(app));
+ok('D8 sin exports de flow.js sin consumo', sinConsumo.length === 0, sinConsumo.join(', '));
+// Una constante local de flow.js no debe exportarse si solo se usa dentro.
+ok('D8 modelo inicial de imagen es interno', !flow.includes('export const DEFAULT_FLOW_IMAGE_MODEL'));
 
 // ── D6: sin restos de coste en la interfaz ──
 const html = leer('index.html');

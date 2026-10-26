@@ -15,7 +15,7 @@ import { server } from './persist.js?v=12';
    iniciales, que coinciden con lib/flow-engine.php. */
 export const FLOW_IMAGE_RATIOS = ['1:1', '16:9', '4:3', '3:4', '9:16'];
 
-export const DEFAULT_FLOW_IMAGE_MODEL = 'flow-nano-banana-2';
+const DEFAULT_FLOW_IMAGE_MODEL = 'flow-nano-banana-2';
 export const DEFAULT_FLOW_VIDEO_MODEL = 'veo-3.1-lite';
 
 /* ── Estado del motor y del agente del PC ── */

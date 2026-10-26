@@ -30,7 +30,7 @@ import {
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
 } from './ai.js?v=12';
 import {
-  FLOW_IMAGE_RATIOS, DEFAULT_FLOW_IMAGE_MODEL, DEFAULT_FLOW_VIDEO_MODEL,
+  FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
   flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
   statusFlowJobs, retryFlowJob, deleteFlowJob, downloadFlowJob, fetchFlowBlob,
 } from './flow.js?v=12';
