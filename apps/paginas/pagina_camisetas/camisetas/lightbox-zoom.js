@@ -136,8 +136,17 @@
   }
 
   function clampT() {
-    var maxX = Math.max(0, (baseW * scale) / 2 - 60);
-    var maxY = Math.max(0, (baseH * scale) / 2 - 60);
+    // Se puede arrastrar hasta que el borde de la imagen toque el borde del visor:
+    // así el zoom nunca deja la imagen fuera de la pantalla sin poder recuperarla.
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    if (host && host.getBoundingClientRect) {
+      var hr = host.getBoundingClientRect();
+      if (hr.width > 0) { vw = hr.width; }
+      if (hr.height > 0) { vh = hr.height; }
+    }
+    var maxX = Math.max(0, (baseW * scale - vw) / 2) + 8;
+    var maxY = Math.max(0, (baseH * scale - vh) / 2) + 8;
     if (tx > maxX) { tx = maxX; }
     if (tx < -maxX) { tx = -maxX; }
     if (ty > maxY) { ty = maxY; }
@@ -154,11 +163,13 @@
       img.style.transformOrigin = '';
       img.style.willChange = '';
       img.style.cursor = '';
+      img.style.touchAction = '';
       return;
     }
     img.style.transformOrigin = '50% 50%';
     img.style.willChange = 'transform';
     img.style.cursor = dragging ? 'grabbing' : 'grab';
+    img.style.touchAction = 'none';
     img.style.transform = 'translate(' + tx.toFixed(2) + 'px,' + ty.toFixed(2) + 'px) scale(' + scale.toFixed(4) + ')';
   }
 
@@ -190,6 +201,7 @@
       img.style.transformOrigin = '';
       img.style.willChange = '';
       img.style.cursor = '';
+      img.style.touchAction = '';
     }
   }
 
@@ -223,7 +235,7 @@
         'transition:opacity .25s ease',
         'z-index:2147483000'
       ].join(';');
-      hintEl.textContent = 'Rueda: zoom · Arrastra: mover · Doble clic: 1x';
+      hintEl.textContent = 'Rueda: zoom · Arrastra: mover · Clic: cerrar';
     }
     if (hintEl.parentNode !== h) { h.appendChild(hintEl); }
   }
@@ -258,6 +270,14 @@
       img = im;
       imgSrc = im.src;
       resetState();
+      // Un <img> es arrastrable por defecto. Sin esto, al arrastrar el navegador
+      // inicia un arrastre nativo, deja de enviar pointermove y la imagen se queda
+      // clavada a los pocos píxeles (el zoom no se podía mover).
+      im.draggable = false;
+      im.setAttribute('draggable', 'false');
+      im.style.webkitUserDrag = 'none';
+      im.style.userSelect = 'none';
+      im.style.touchAction = 'none';
       recomputeBase();
       attachHint(h);
       if (!baseReady && !im.dataset.lbzHooked) {
@@ -340,25 +360,67 @@
 
   /* ------------------------------------------------------------------ clic */
 
+  var CLOSE_BTN_SEL = '#lb-close,.lightbox-close,[data-lightbox-close],' +
+    '[aria-label*="Cerrar"],[aria-label*="cerrar"],' +
+    '[title*="Cerrar"],[title*="cerrar"]';
+
+  /** Cierra el visor con la API de la app si la hay; si no, pulsa su ✕ o lo oculta. */
+  function forceClose(h) {
+    try {
+      if (window.AntigravityLightbox && typeof window.AntigravityLightbox.close === 'function') {
+        window.AntigravityLightbox.close();
+        if (!isShown(h)) { return; }
+      }
+    } catch (e) { /* noop */ }
+
+    var btn = null;
+    try { btn = h.querySelector(CLOSE_BTN_SEL); } catch (e) { btn = null; }
+    if (btn) {
+      try { btn.click(); } catch (e) { /* noop */ }
+      if (!isShown(h)) { return; }
+    }
+
+    h.style.display = 'none';
+    if (h.classList) { h.classList.add('hidden'); }
+    h.setAttribute('aria-hidden', 'true');
+    resetState();
+    host = null;
+    img = null;
+    imgSrc = '';
+  }
+
   function onClickCapture(e) {
-    // Un arrastre no debe cerrar el visor.
+    // Un arrastre no debe cerrar el visor: soltar tras mover no es un clic.
     if (swallowClick) {
       e.stopPropagation();
       e.preventDefault();
       swallowClick = false;
       return;
     }
-    // Con la imagen ampliada, un clic sobre ella no la cierra (sí el fondo o ✕).
-    if (scale > MIN_SCALE + 0.001 && img && (e.target === img)) {
-      e.stopPropagation();
-      e.preventDefault();
-      return;
+
+    var t = e.target;
+    var onControl = !!(t && t.closest && t.closest('button,a,input,select,textarea'));
+
+    if (!onControl) {
+      var h = (host && isShown(host)) ? host : null;
+      if (h && img && isShown(img)) {
+        var onImage = (t === img) || (img.contains && img.contains(t));
+        // Con zoom, un clic sobre la imagen cierra y devuelve al historial.
+        // A 1x se respeta el comportamiento propio de cada app.
+        if (!onImage || scale > MIN_SCALE + 0.001) {
+          var snapshot = h;
+          setTimeout(function () {
+            if (snapshot && isShown(snapshot)) { forceClose(snapshot); }
+          }, 0);
+        }
+      }
     }
-    // Al abrir: preparar el visor y enseñar el aviso.
+
+    // Detectar apertura / cierre del visor y enseñar el aviso la primera vez.
     setTimeout(function () {
-      var h = findOpenLightbox();
-      if (h) {
-        ensureTarget(h);
+      var open = findOpenLightbox();
+      if (open) {
+        ensureTarget(open);
         recomputeBase();
         showHint();
       } else if (host) {
@@ -378,6 +440,19 @@
     resetState();
     recomputeBase();
     apply();
+  }
+
+  /**
+   * Bloquea el arrastre nativo de la imagen mientras el visor está abierto.
+   * Es la causa de que el zoom no se pudiera desplazar arrastrando.
+   */
+  function onDragStart(e) {
+    if (!host) { return; }
+    var h = findHost(e.target);
+    if (h && h === host) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
   }
 
   /* ------------------------------------------------------------------ teclado */
@@ -462,6 +537,7 @@
     document.addEventListener('pointercancel', onPointerUp, true);
     document.addEventListener('click', onClickCapture, true);
     document.addEventListener('dblclick', onDblClick, true);
+    document.addEventListener('dragstart', onDragStart, true);
     document.addEventListener('keydown', onKeyDown, true);
     document.addEventListener('touchstart', onTouchStart, { passive: true, capture: true });
     document.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });

@@ -154,10 +154,11 @@ carpeta de la app y cargarlo antes de `</body>`:
 <script src="lightbox-zoom.js?v=20261025" defer></script>
 ```
 
-Añade zoom continuo con la rueda (1x–8x, anclado al cursor), arrastre para moverse, doble clic y
-tecla `0` para volver a 1x, pellizco en táctil, y restablecimiento automático al cerrar. Se
-engancha solo al lightbox que ya exista: no hay que reescribir `openLightbox`. Detalle y
-comprobación en `skills/SKILL_MAESTRA.md` §3c-bis.
+Añade zoom continuo con la rueda (1x–8x, anclado al cursor), arrastre para moverse (limitado a los
+bordes de la imagen, y con el `<img>` en `draggable="false"` para que el arrastre nativo no se coma
+el gesto), clic sin arrastrar para cerrar y volver al historial, pellizco en táctil, y
+restablecimiento automático al cerrar. Se engancha solo al lightbox que ya exista: no hay que
+reescribir `openLightbox`. Detalle y comprobación en `skills/SKILL_MAESTRA.md` §3c-bis.
 
 ### Paso 4: Revisión Visual y Funcional (OBLIGATORIO)
 

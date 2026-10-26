@@ -147,12 +147,15 @@ se copia `apps/_shared/lightbox-zoom.js` junto a la página y se carga antes de 
 ```
 
 El módulo detecta el overlay a pantalla completa (el que ya tenga la app) y añade rueda 1x–8x
-anclada al cursor, arrastre, doble clic/`0` para volver a 1x, pellizco táctil y restablecimiento al
-cerrar. Si la app es de versiones antiguas sin ningún visor grande, no se inventa: se avisa.
+anclada al cursor, arrastre limitado a los bordes de la imagen (con el `<img>` en
+`draggable="false"`, o el arrastre nativo deja de enviar `pointermove`), clic sin arrastrar para
+cerrar y volver al historial, pellizco táctil y restablecimiento al cerrar. Si la app es de
+versiones antiguas sin ningún visor grande, no se inventa: se avisa.
 
-Comprobación en navegador antes de dar el paso por hecho: rueda hacia arriba → la imagen crece;
-rueda hacia abajo → vuelve a 1x; arrastrar → se desplaza; ✕ y Escape → cierran. Detalle en
-`skills/SKILL_MAESTRA.md` §3c-bis.
+Comprobación en navegador **con ratón real**: rueda hacia arriba → la imagen crece; arrastrar →
+se desplaza todo el recorrido; soltar sin mover → no cierra; clic → cierra y vuelve al historial.
+Los eventos sintéticos no reproducen el arrastre nativo, así que no sirven para probar esto.
+Detalle en `skills/SKILL_MAESTRA.md` §3c-bis.
 
 ### Paso 7: Auditoría Final
 

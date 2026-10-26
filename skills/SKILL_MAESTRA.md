@@ -418,16 +418,23 @@ Comportamiento que debe cumplir el visor:
 
 - **Rueda del ratón**: zoom continuo de 1x a 8x, anclado al punto donde está el cursor.
 - **Arrastrar**: desplaza la imagen ampliada (con umbral de 5 px, para no confundirlo con un clic).
-- **Doble clic** o tecla **0**: vuelve a 1x. **+** y **-**: ampliar y alejar.
+  El desplazamiento se **limita a los bordes de la imagen**: al llegar al borde se detiene, así nunca
+  se queda fuera de la pantalla sin poder recuperarla.
+- **Clic sin arrastrar**: cierra el visor y devuelve al historial. Soltar después de arrastrar
+  **no** cierra (es un arrastre, no un clic).
+- **El `<img>` debe ser `draggable="false"`**: por defecto el navegador inicia un arrastre nativo,
+  deja de enviar `pointermove` y la imagen solo se mueve unos píxeles (fallo ya cometido).
 - **Escape** y el botón de cerrar siguen funcionando; al cerrar, el zoom se restablece solo.
-- Con la imagen ampliada, un clic sobre ella **no** cierra el visor (el fondo y el botón ✕ sí).
+- Tecla **0** y **doble clic**: vuelven a 1x. **+** y **-**: ampliar y alejar.
 - La rueda sobre el visor **no** hace scroll de la página (`preventDefault`).
 - En táctil: pellizco con dos dedos.
-- Aviso discreto al abrir: `Rueda: zoom · Arrastra: mover · Doble clic: 1x`.
+- Aviso discreto al abrir: `Rueda: zoom · Arrastra: mover · Clic: cerrar`.
 
-Comprobación obligatoria antes de entregar (en navegador, no leyendo el código): abrir el visor
-con una imagen real, girar la rueda y confirmar que la imagen crece; girar en sentido contrario y
-que vuelve a 1x; arrastrar y que se desplaza; pulsar ✕ y que cierra.
+Comprobación obligatoria antes de entregar (en navegador y con ratón real, no leyendo el código ni
+con eventos sintéticos, que no reproducen el arrastre nativo): abrir el visor con una imagen real,
+girar la rueda y confirmar que crece; arrastrar y que la imagen se desplaza de verdad todo el
+recorrido del ratón; soltar sin mover y que **no** se cierre; hacer clic y que se cierre y vuelva al
+historial; comprobar que el zoom no deja la imagen fuera de la pantalla.
 
 #### 3d. Limpiar todo el historial
 
