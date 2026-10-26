@@ -1,0 +1,29 @@
+=== VERSION DEL AGENTE ===
+flow_agent.py bytes: 24598
+sha256: ae64b8d01b9493e2
+python: 3.11.15
+playwright: OK
+pillow: 13.0.0
+
+=== CONFIGURACION ===
+base: https://atnojs.es/apps/unified-image-studio/api.php
+perfil: E:/herramientas/google-flow/session/flowbot-profile
+tmp_dir: E:/ANTIGRAVITY/tools/flow-agent/tmp
+token: presente
+FLOW_CHROME_PROFILE: E:/herramientas/google-flow/session/flowbot-profile
+
+=== CREDENCIAL EN EL SERVIDOR ===
+HTTP 200: el servidor ACEPTA este token.
+(Comprobación de solo lectura: no marca el PC como conectado.)
+Siguiente paso: doble clic en iniciar-agente.bat
+
+=== PERFIL DE CHROME ===
+Chrome usando el perfil: 0
+
+=== SESION DE FLOW ===
+OK: sesion presente en E:/herramientas/google-flow/session/flowbot-profile
+
+=== GENERACION REAL DE PRUEBA ===
+(generacion omitida en esta comprobacion)
+Codigo de salida: 0
+=== FIN DEL DIAGNOSTICO ===

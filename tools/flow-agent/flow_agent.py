@@ -46,6 +46,8 @@ CONFIG_FILE = os.path.join(AGENT_DIR, 'agente.json')
 LOCKFILE = os.path.join(AGENT_DIR, 'flow_agent.lock')
 FLOW_PY = os.path.join(AGENT_DIR, 'flow.py')
 LOCK_STALE_SEC = 3 * 60 * 60
+# Sello del build: permite saber qué versión está corriendo cuando hay dudas.
+AGENT_BUILD = 'v1.2.0 · 2026-10-26 · aplazamiento, logs y reintento'
 MAX_SIDE = 1400
 JPEG_QUALITY = 88
 MAX_REFS = 2
@@ -639,6 +641,7 @@ def main() -> int:
     args = parser.parse_args()
 
     cfg = load_config()
+    print('Agente de Flow · %s' % AGENT_BUILD)
     if args.status:
         return show_status(cfg)
     if not os.path.isfile(FLOW_PY):
