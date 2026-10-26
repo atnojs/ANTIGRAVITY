@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v1.6.0 · 2026-10-26 · modelos protegidos por contraseña';
+const BUILD = 'v1.6.1 · 2026-10-26 · modelos protegidos con la contraseña de acceso';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -2496,6 +2496,20 @@ async function submitLogin() {
     button.disabled = false;
   }
 }
+
+/* La compuerta de modelos acepta la contraseña de acceso de la app y, si es
+   válida, inicia sesión en el servidor. Aquí se refresca el estado para que
+   guardar, la biblioteca y la generación funcionen sin volver a pedirla. */
+document.addEventListener('ag-model-gate:access', async () => {
+  const probe = await server.probe();
+  if (!probe?.authenticated) return;
+  closeModal('loginModal');
+  await loadCatalog();
+  await refreshFlowState();
+  paintFlowAgent();
+  updateTopbar();
+  toast('Sesión iniciada con la contraseña de acceso.', 'ok');
+});
 
 function updateUtilities() {
   const doc = state.doc;
