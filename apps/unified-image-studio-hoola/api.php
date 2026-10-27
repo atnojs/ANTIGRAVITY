@@ -557,8 +557,16 @@ switch ($action) {
 
     case 'agent.cancelled':
         // El agente pregunta si debe parar. Es barato y no toca el latido.
+        // El identificador llega en el cuerpo JSON (POST), así que se lee de ahí:
+        // leyendo solo $_GET o $_POST respondía «cancela» siempre y mataba cada
+        // generación al empezar.
         uis_flow_require_agent();
-        $id = (string)($_GET['id'] ?? ($_POST['id'] ?? ''));
+        $id = (string)($_GET['id'] ?? '');
+        if ($id === '') {
+            $isMultipart = str_contains(strtolower((string)($_SERVER['CONTENT_TYPE'] ?? '')), 'multipart/form-data');
+            $body = $isMultipart ? $_POST : uis_read_json();
+            $id = (string)($body['id'] ?? ($_POST['id'] ?? ''));
+        }
         uis_json(200, ['ok' => true, 'cancel' => uis_flow_cancelled($db, $id)]);
         break;
     case 'flow.retry':

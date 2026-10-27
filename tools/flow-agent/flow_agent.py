@@ -39,6 +39,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -100,7 +101,7 @@ def load_config() -> dict:
 
 
 def api(cfg: dict, action: str, payload: dict | None = None, timeout: int = 60) -> dict:
-    url = '%s?action=%s' % (cfg['base'].strip(), action)
+    url = '%s?action=%s%s' % (cfg['base'].strip(), action, extra_query)
     data = json.dumps(payload or {}).encode('utf-8')
     req = urllib.request.Request(url, data=data, method='POST', headers={
         'Content-Type': 'application/json',
@@ -111,11 +112,11 @@ def api(cfg: dict, action: str, payload: dict | None = None, timeout: int = 60) 
         return json.loads(resp.read().decode('utf-8'))
 
 
-def api_retry(cfg: dict, action: str, payload: dict | None = None, attempts: int = 4, timeout: int = 90) -> dict:
+def api_retry(cfg: dict, action: str, payload: dict | None = None, attempts: int = 4, timeout: int = 90, extra_query: str = '') -> dict:
     last = None
     for i in range(attempts):
         try:
-            return api(cfg, action, payload, timeout=timeout)
+            return api(cfg, action, payload, timeout=timeout, extra_query=extra_query)
         except urllib.error.HTTPError as exc:
             detail = ''
             try:
@@ -487,7 +488,10 @@ def cancel_requested(cfg: dict, jid: str) -> bool:
     el servidor dice explícitamente que sí.
     """
     try:
-        datos = api_retry(cfg, 'agent.cancelled', {'id': jid}, attempts=1, timeout=10)
+        datos = api_retry(
+            cfg, 'agent.cancelled', {'id': jid}, attempts=1, timeout=10,
+            extra_query='&id=' + urllib.parse.quote(jid, safe=''),
+        )
         return bool(datos.get('cancel'))
     except Exception:  # noqa: BLE001 - nunca interrumpir por un fallo de red
         return False
@@ -721,14 +725,20 @@ def main() -> int:
         while time.time() < deadline:
             global _postponed
             _postponed = False
-            if work_once(cfg):
-                time.sleep(1)
-            elif _postponed:
-                # El perfil estaba ocupado: se da tiempo a que se libere.
-                print('  espero 15 s antes de reintentar')
-                time.sleep(15)
-            else:
-                time.sleep(6)
+            try:
+                if work_once(cfg):
+                    time.sleep(1)
+                elif _postponed:
+                    # El perfil estaba ocupado: se da tiempo a que se libere.
+                    print('  espero 15 s antes de reintentar')
+                    time.sleep(15)
+                else:
+                    time.sleep(6)
+            except Exception as exc:  # noqa: BLE001
+                # Un fallo inesperado no debe tumbar el servicio: se anota y se
+                # sigue. Si es la red, el próximo ciclo lo resolverá.
+                print('ciclo con error (%s): %s — sigo' % (type(exc).__name__, str(exc)[:160]))
+                time.sleep(10)
         return 0
     finally:
         drop_lock()

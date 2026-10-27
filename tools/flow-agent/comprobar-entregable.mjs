@@ -81,6 +81,13 @@ ok('cancelar: el agente mata el proceso al cancelar', agentePy.includes('proc.ki
 ok('cancelar: la biblioteca ofrece Parar/Quitar', app.includes('data-flow-cancel'));
 ok('cancelar: los cancelados no se listan', leer('api.php').includes("WHERE status <> 'cancelled'"));
 ok('cancelar: columna nueva con migración idempotente', leer('lib/bootstrap.php').includes('uis_migrate_flow_cancel'));
+// ── Agente siempre activo y cancelación bien cableada ──
+const apiHoola = fs.readFileSync('apps/unified-image-studio-hoola/api.php', 'utf8');
+ok('servicio: instalador de tarea permanente', fs.readFileSync('tools/flow-agent/instalar-tarea.ps1', 'utf8').includes('UisFlowAgent'));
+ok('servicio: la tarea se repite cada 2 minutos', fs.readFileSync('tools/flow-agent/instalar-tarea.ps1', 'utf8').includes('-RepetitionInterval'));
+ok('cancelar: el endpoint lee el id del cuerpo JSON', apiHoola.includes("$body['id'] ?? ($_POST['id'] ?? '')"));
+ok('cancelar: el agente manda el id también en la URL', agentePy.includes('extra_query='));
+ok('cancelar: un fallo de red no aborta la generación', agentePy.includes('nunca interrumpir por un fallo de red'));
 // ── D5: autoevaluación y ronda de rework documentadas ──
 const doc = leer('docs/VERIFICACION.md');
 ok('D5 con autoevaluación A1-A10', doc.includes('Autoevaluación A1–A10'));
