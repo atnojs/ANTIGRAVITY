@@ -8,32 +8,32 @@ import {
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
-} from './core.js?v=20';
-import { renderer } from './render.js?v=20';
-import { initTools, setTool } from './tools.js?v=20';
+} from './core.js?v=21';
+import { renderer } from './render.js?v=21';
+import { initTools, setTool } from './tools.js?v=21';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
   showLoading, hideLoading, updateTopbar, updateSaveState, updateViewportUI, setEmptyState,
   renderLayers, renderLayerProps, renderRefs, renderVersions, renderProjects, renderAssets,
   renderRecipes, setActiveModel, switchLeftTab, switchRightTab, setToolUI, paintStorageInfo,
-} from './ui.js?v=20';
+} from './ui.js?v=21';
 import {
   server, saveNow, scheduleSave, listProjects, loadProject, deleteProject, saveVersion,
   listVersions, deleteVersion, storageInfo, clearLocalCache, uploadResource, lastProjectId, idb,
   fetchVersionDoc,
-} from './persist.js?v=20';
+} from './persist.js?v=21';
 import {
   downloadExport, copyToClipboard, downloadProject, exportImage, canvasToBlob, estimateExport,
-} from './exporter.js?v=20';
+} from './exporter.js?v=21';
 import {
   MODELS, modelById, loadCatalog, catalog, generate,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
-} from './ai.js?v=20';
+} from './ai.js?v=21';
 import {
   FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
   flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
   statusFlowJobs, retryFlowJob, deleteFlowJob, cancelFlowJob, downloadFlowJob, fetchFlowBlob,
-} from './flow.js?v=20';
+} from './flow.js?v=21';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
@@ -1237,6 +1237,37 @@ function showResultPreview(result) {
 async function acceptResult(mode) {
   const result = pendingResult;
   if (!result) return;
+
+  // Inpainting y quitar fondo son EDICIONES de la capa: el resultado debe
+  // sustituir los píxeles de esa misma capa, conservando su posición y tamaño.
+  // Antes se añadía como capa nueva y centrada, y por eso aparecía donde quería.
+  const edicion = ['inpaint', 'remove-background'].includes(result.job?.kind);
+  const destino = edicion ? getLayer() : null;
+  if (edicion && destino) {
+    const blobEdicion = dataUrlToBlob(result.dataUrl);
+    const dimsEdicion = await readImageDimensions(blobEdicion);
+    const recurso = addResource({
+      name: `${result.job.kind}-${Date.now()}.png`,
+      mime: 'image/png',
+      blob: blobEdicion,
+      width: dimsEdicion.width,
+      height: dimsEdicion.height,
+    });
+    void uploadResource(recurso);
+    const anterior = destino.resourceId;
+    mutate(result.job.kind === 'inpaint' ? 'aplicar inpainting' : 'aplicar fondo quitado', () => {
+      destino.resourceId = recurso.id;
+    });
+    if (result.job.kind === 'inpaint') destino.aspectOriginal = anterior;
+    renderLayers();
+    renderAssets();
+    renderer.requestRender('edicion-aplicada');
+    scheduleSave('edicion');
+    discardResult();
+    toast('Resultado aplicado sobre la misma capa, en su sitio.', 'ok');
+    return;
+  }
+
   const blob = dataUrlToBlob(result.dataUrl);
   const dims = await readImageDimensions(blob);
   const resource = addResource({ name: `${mode === 'variant' ? 'variante' : 'ia'}-${Date.now()}.png`, mime: 'image/png', blob, width: dims.width, height: dims.height });
@@ -1398,9 +1429,16 @@ async function removeBackgroundAi() {
   if (!dataUrl) { toast('No se pudo leer la imagen.', 'error'); return; }
   showLoading('Quitando el fondo con IA…', 'Se envía la imagen seleccionada al proveedor.');
   try {
+    // Igual que el inpainting: si hay un modelo de Flow elegido, el servidor lo
+    // rechaza (Flow no hace estas ediciones). Se usa IMAGE 2 y se avisa.
+    const elegidoFondo = modelById(state.ui.model);
+    const modeloFondo = elegidoFondo?.provider === 'flow' ? 'openai-image-2-low' : state.ui.model;
+    if (elegidoFondo?.provider === 'flow') {
+      toast('Para quitar el fondo se usa IMAGE 2: el motor de Flow no hace esta edición.', 'warn', { duration: 8000 });
+    }
     const job = await generate({
       prompt: 'Elimina por completo el fondo de esta imagen y devuelve solo el sujeto sobre fondo transparente. Todo texto o audio generado debe estar obligatoriamente en español.',
-      model: state.ui.model,
+      model: modeloFondo,
       aspect: '1:1',
       images: [dataUrl],
       kind: 'remove-background',
