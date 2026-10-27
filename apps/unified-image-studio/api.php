@@ -362,6 +362,18 @@ switch ($action) {
         uis_json(200, ['ok' => true, 'job' => $job, 'deduplicated' => $deduplicated]);
         break;
 
+    case 'job.cancel':
+        // Cancelar un trabajo en curso (los proveedores directos no tienen otra salida
+        // que esperar 15 minutos al barrido). Queda como fallido con motivo claro.
+        uis_require_auth();
+        if ($method !== 'POST') uis_fail(405, 'Método no permitido.');
+        $body = uis_read_json();
+        $id = (string)($body['id'] ?? '');
+        if (!uis_safe_id($id)) uis_fail(400, 'Identificador no válido.');
+        $stmt = $db->prepare("UPDATE jobs SET status = 'failed', error = 'Cancelado desde la app.', updated_at = ?, completed_at = ? WHERE id = ? AND status IN ('queued','running')");
+        $stmt->execute([time(), time(), $id]);
+        uis_json(200, ['ok' => true, 'cancelled' => $stmt->rowCount() > 0]);
+        break;
     case 'job.get':
         uis_require_auth();
         uis_jobs_sweep($db);
