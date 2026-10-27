@@ -1403,13 +1403,18 @@
 
     async function addRefFile(file, index) {
         if (!file || index < 0 || index >= REF_MAX_FILES) return;
+        // Se fija el modo AL ELEGIR el archivo: si la persona cambia de modo
+        // mientras se prepara la imagen, la referencia cae en su propio juego y
+        // no se cuela en el modo nuevo (el bug que motivó separar las referencias).
+        const mode = state.mode;
+        const target = refsByMode[mode];
         setRefsNote('Preparando la imagen…');
         try {
             const dataUrl = await prepareRef(file);
-            state.refs[index] = { dataUrl, name: file.name || '' };
-            updateRefsUI();
+            target[index] = { dataUrl, name: file.name || '' };
+            if (state.mode === mode) updateRefsUI();
         } catch (err) {
-            setRefsNote(err.message, true);
+            if (state.mode === mode) setRefsNote(err.message, true);
         }
     }
 
