@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- assets versionados 20261027b: modelos directos + compuerta de contraseña -->
+<!-- assets versionados 20261027c: modelos directos + compuerta de contraseña -->
 <title>Flow Studio · Genera imágenes y vídeos con Google Flow y modelos directos</title>
 <meta name="description" content="Genera imágenes y vídeos con Google Flow en tu PC o con los modelos directos (OpenAI, Gemini y Qwen), elige formato y resolución, edita o anima una imagen y escala el resultado 2×, 4× u 8×. Los modelos caros se protegen con la contraseña de acceso.">
 <meta name="theme-color" content="#001018">
@@ -222,14 +222,14 @@
             </fieldset>
 
             <fieldset class="control" id="resolutionControl">
-                <legend>Resolución <span class="legend-hint">solo modelos directos</span></legend>
-                <select id="resolutionSelect" class="select" aria-label="Resolución de salida en píxeles">
-                    <option value="512">512</option>
-                    <option value="1024" selected>1024</option>
-                    <option value="2048">2048</option>
-                    <option value="4096">4096</option>
+                <legend>Resolución <span class="legend-hint">solo modelos directos · hasta ≈4 MP</span></legend>
+                <select id="resolutionSelect" class="select" aria-label="Resolución solicitada; el tamaño final depende del formato">
+                    <option value="512">512 · ≈1 MP</option>
+                    <option value="1024" selected>1024 · ≈1 MP</option>
+                    <option value="2048">2048 · ≈4 MP</option>
+                    <option value="4096">4096 · se ajusta a ≈4 MP</option>
                 </select>
-                <p class="refs-note">Con Flow no se elige: genera a su resolución nativa (~1K).</p>
+                <p class="refs-note">El servidor ajusta al formato: mínimo ≈1 MP y máximo ≈4 MP. En 1:1, 512 y 1024 salen a 1024, y 4096 se entrega a 2048. Con Flow no se elige: usa su resolución nativa (~1K).</p>
             </fieldset>
 
             <fieldset class="control" id="countControl">
@@ -336,7 +336,7 @@
 <script src="history-manager.js"></script>
 <!-- Compuerta compartida de modelos: contraseña de acceso al pulsar los caros -->
 <script src="../_shared/model-gate.20261026b.js"></script>
-<script src="app.20261027b.js"></script>
+<script src="app.20261027c.js"></script>
 
 <!-- Ojo para ver/ocultar la contraseña en el modal de acceso y en la compuerta -->
 <script src="../_shared/password-eye.js?v=20261025b" defer></script>
