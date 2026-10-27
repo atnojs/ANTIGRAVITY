@@ -8,32 +8,32 @@ import {
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
-} from './core.js?v=16';
-import { renderer } from './render.js?v=16';
-import { initTools, setTool } from './tools.js?v=16';
+} from './core.js?v=17';
+import { renderer } from './render.js?v=17';
+import { initTools, setTool } from './tools.js?v=17';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
   showLoading, hideLoading, updateTopbar, updateSaveState, updateViewportUI, setEmptyState,
   renderLayers, renderLayerProps, renderRefs, renderVersions, renderProjects, renderAssets,
   renderRecipes, setActiveModel, switchLeftTab, switchRightTab, setToolUI, paintStorageInfo,
-} from './ui.js?v=16';
+} from './ui.js?v=17';
 import {
   server, saveNow, scheduleSave, listProjects, loadProject, deleteProject, saveVersion,
   listVersions, deleteVersion, storageInfo, clearLocalCache, uploadResource, lastProjectId, idb,
   fetchVersionDoc,
-} from './persist.js?v=16';
+} from './persist.js?v=17';
 import {
   downloadExport, copyToClipboard, downloadProject, exportImage, canvasToBlob, estimateExport,
-} from './exporter.js?v=16';
+} from './exporter.js?v=17';
 import {
   MODELS, modelById, loadCatalog, catalog, generate,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
-} from './ai.js?v=16';
+} from './ai.js?v=17';
 import {
   FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
   flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
   statusFlowJobs, retryFlowJob, deleteFlowJob, cancelFlowJob, downloadFlowJob, fetchFlowBlob,
-} from './flow.js?v=16';
+} from './flow.js?v=17';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
@@ -363,6 +363,61 @@ async function importFiles(files, { asReference = false, asLayer = true } = {}) 
   }
 }
 
+
+/* ── Deslizadores: que la pista marque el valor real ──
+   El CSS pinta la parte recorrida con la variable --fill; sin esto se quedaba
+   siempre a la mitad, que es justo lo que no cuadraba con la etiqueta. */
+function pintarRellenoRango(input) {
+  const min = Number(input.min || 0);
+  const max = Number(input.max || 100);
+  const valor = Number(input.value || 0);
+  const pct = max > min ? ((valor - min) / (max - min)) * 100 : 0;
+  input.style.setProperty('--fill', `${Math.max(0, Math.min(100, pct))}%`);
+}
+
+function sincronizarRangos() {
+  for (const input of $$('input[type="range"]')) pintarRellenoRango(input);
+  // Etiquetas de pincel y dureza, siempre con el valor real del control.
+  const pincel = $('brushSize');
+  const dureza = $('brushHardness');
+  if (pincel && $('brushSizeValue')) $('brushSizeValue').textContent = `${pincel.value} px`;
+  if (dureza && $('brushHardnessValue')) $('brushHardnessValue').textContent = `${dureza.value} %`;
+  state.ui.brushSize = pincel ? Number(pincel.value) : state.ui.brushSize;
+  state.ui.brushHardness = dureza ? Number(dureza.value) : state.ui.brushHardness;
+}
+
+document.addEventListener('input', (event) => {
+  const input = event.target;
+  if (input instanceof HTMLInputElement && input.type === 'range') pintarRellenoRango(input);
+}, true);
+
+/* ── Cursor del pincel: un círculo del tamaño real, no una cruz ── */
+function refrescarCursorPincel(event) {
+  const el = $('brushCursor');
+  if (!el) return;
+  const dentro = event && event.target instanceof Element && event.target.closest('#stageInner');
+  const activo = Boolean(state.doc) && state.selection.tool === 'mask' && dentro;
+  el.classList.toggle('is-visible', activo);
+  el.classList.toggle('is-eraser', state.ui.maskMode === 'erase');
+  const stage = $('stageInner');
+  if (stage) stage.style.cursor = state.selection.tool === 'mask' && dentro ? 'none' : '';
+  if (!activo) return;
+  const diametro = Math.max(6, (state.ui.brushSize || 80) * renderer.zoom);
+  el.style.width = `${diametro}px`;
+  el.style.height = `${diametro}px`;
+  el.style.left = `${event.clientX}px`;
+  el.style.top = `${event.clientY}px`;
+}
+
+window.__uisCursorPincel = (event) => refrescarCursorPincel(event);
+window.__uisOcultarCursorPincel = () => ocultarCursorPincel();
+
+function ocultarCursorPincel() {
+  const el = $('brushCursor');
+  if (el) el.classList.remove('is-visible');
+  const stage = $('stageInner');
+  if (stage) stage.style.cursor = '';
+}
 function fitInside(width, height, maxW, maxH) {
   const scale = Math.min(maxW / width, maxH / height, 1);
   return { w: Math.max(1, Math.round(width * scale)), h: Math.max(1, Math.round(height * scale)) };
@@ -2645,7 +2700,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('uis:tab', (event) => switchLeftTab(event.detail.tab));
   setInterval(() => { if (state.flags.dirty && !state.ui.saving) scheduleSave('interval', 0); }, 30000);
   setInterval(updateUtilities, 4000);
+  // Deslizadores: la pista debe marcar el valor real desde el primer momento.
+  sincronizarRangos();
 });
 
 // Exponer un mínimo para depuración en consola (sin datos sensibles).
 window.__UIS__ = { state, renderer, importFiles, saveNow, exportImage, serializeProject, build: BUILD };
+window.__uisSincronizarRangos = () => sincronizarRangos();

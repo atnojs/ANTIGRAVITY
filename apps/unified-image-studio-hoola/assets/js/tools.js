@@ -5,8 +5,8 @@
 import {
   state, emit, getLayer, selectLayer, clamp, makeTextLayer, makeShapeLayer, addLayer,
   pushHistory, markDirty,
-} from './core.js?v=16';
-import { renderer, hitTestHandle, pointInLayer } from './render.js?v=16';
+} from './core.js?v=17';
+import { renderer, hitTestHandle, pointInLayer } from './render.js?v=17';
 
 const SNAP_DEG = 15;
 const MIN_SIZE = 8;
@@ -33,6 +33,8 @@ export function initTools({ stageInner }) {
   stageInner.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('blur', () => { if (typeof window.__uisOcultarCursorPincel === 'function') window.__uisOcultarCursorPincel(); });
+  if (stageInner) stageInner.addEventListener('pointerleave', () => { if (typeof window.__uisOcultarCursorPincel === 'function') window.__uisOcultarCursorPincel(); });
   window.addEventListener('pointercancel', onPointerUp);
   stageInner.addEventListener('wheel', onWheel, { passive: false });
   stageInner.addEventListener('dblclick', onDoubleClick);
@@ -196,6 +198,8 @@ function startShape(event, point) {
 
 /* ── Pointer move ── */
 function onPointerMove(event) {
+  // El círculo del pincel sigue al ratón (lo dibuja app.js sobre el DOM).
+  if (typeof window.__uisCursorPincel === 'function') window.__uisCursorPincel(event);
   if (!state.doc) return;
   const point = renderer.screenToDoc(event.clientX, event.clientY);
   emit('pointer:doc', { x: Math.round(point.x), y: Math.round(point.y) });
