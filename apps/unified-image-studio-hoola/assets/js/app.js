@@ -1791,7 +1791,13 @@ function settleFlowWaiters() {
   for (const waiter of flowWatch.waiters) {
     const jobs = [...waiter.ids].map((id) => flowWatch.jobs.get(id)).filter(Boolean);
     waiter.onUpdate?.(jobs);
-    const pending = jobs.some((job) => job.status === 'queued' || job.status === 'running');
+    // Sigue pendiente si su id continúa en seguimiento y su estado es de
+    // trabajo. Un estado terminal (done, failed, unknown o cancelado) lo cierra
+    // aunque el servidor haya dejado de devolver ese id.
+    const pending = [...waiter.ids].some((id) => {
+      const job = flowWatch.jobs.get(id);
+      return flowWatch.ids.has(id) && (!job || job.status === 'queued' || job.status === 'running');
+    });
     if (pending) waiting.push(waiter);
     else waiter.resolve(jobs);
   }
