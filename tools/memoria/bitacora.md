@@ -2369,3 +2369,21 @@ Antonio: «quiero que cuando clique en generar aparezca el overly de los 3 aros,
 - **Commits:** el de esta entrada (vuelta al overlay bloqueante sobre `0af019cb`); antes,
   `cd97b10a` y `838dbd1d` (primera versión), `a189af25` (versión breve) y `7aa41afd` (re-disparo).
   Evidencia en `tools/evidencias/2026-10-26-uis-overlay-generar/`.
+
+## 2026-10-27 (tarde) — Enjambre de verificación y dos bloqueantes corregidos
+
+- **Enjambre:** 16 áreas × (verificador + inspector independiente) = 28 agentes contra producción.
+  Resultado de partida: 0 áreas PASS, 11 REWORK, 4 BLOCKED, 1 sin informe; 3 defectos bloqueantes,
+  23 mayores, 28 medios, 34 menores (evidencias en `tools/evidencias/2026-10-27-swarm/`).
+- **Bloqueante 1 (Flow):** la subida del agente fallaba con HTTP 307 del edge y marcaba el trabajo
+  como fallido aunque la imagen estuviera generada. Arreglado en `flow_agent.py` (`api_upload` sigue
+  3xx y reintenta 408/429/5xx). Verificado: 8 trabajos en `done`.
+- **Bloqueante 2 (inpainting):** la máscara se quedaba en el servidor y el proveedor regeneraba la
+  imagen entera. Arreglado en `lib/canonical-image-model.php` (rama OpenAI: `image` + `mask` a
+  `/v1/images/edits`) y en el cliente (`construirMascaraProveedor`: alfa transparente = zona a
+  editar). Verificado: diff dentro de la máscara 99,7 vs 4,1 fuera (24×), imagen de evidencia
+  `tools/evidencias/2026-10-27-verificacion-bloqueantes/c-resultado.png`.
+- **Mayores corregidos:** aviso honesto de «quitar fondo local» (umbral 5 %), validación de
+  transparencia real en «quitar fondo con IA», renombrar capa con doble clic en propiedades.
+- **Pendiente:** repetir el enjambre sobre v=22, invertir la vista de la máscara y revisar la
+  compuerta de modelos (el código de desbloqueo está en JS público).
