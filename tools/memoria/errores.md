@@ -1,3 +1,22 @@
+## 2026-10-27 — Verificar una app en «modo local» es no verificar nada
+
+- **Qué pasó:** la app `unified-image-studio-hoola` se dio por verificada con 12 pruebas ejecutadas
+  sobre un servidor estático con `*.php` → 503 («modo local»). Pasó el gate de calidad.
+- **Qué estaba roto en realidad contra el servidor:** la importación no creaba capa visible, el ojo
+  de capas no repintaba, el inpainting y «quitar el fondo con IA» devolvían 400 por usar el modelo de
+  Flow, el resultado de la máscara se aplicaba centrado como capa nueva, los deslizadores no marcaban
+  su valor y el pincel mostraba una cruz. Ninguna de esas cosas era visible en local.
+- **Agravante propio:** al subir la versión de caché del frontend solo se cambió `app.js`; los
+  módulos internos seguían con `?v=12`. Eso cargó **dos copias** de `core.js` y, con ellas, dos
+  estados: la capa entraba en uno y la pantalla leía el otro.
+- **Reglas que quedan escritas:** en `skills/SKILL_AUTOCALIDAD_90.md` §8-bis (prohibido verificar en
+  modo local; comprobar producción tras desplegar; una sola copia de cada módulo; persistencia real)
+  y en `skills/SKILL_VERIFICACION_PLAYWRIGHT.md` (contar módulos, comprobar el efecto del clic).
+- **Prueba permanente:** `tools/pruebas/humo-uis-hoola.mjs` comprueba contra producción las cuatro
+  cosas que fallaron: versión única de módulos, importación visible, máscara pintada y envío del
+  trabajo de inpainting.
+
+---
 ## 2026-10-27 — Cancelación que mataba cada generación al empezar
 
 - **Síntoma:** los trabajos se quedaban en `running` para siempre, sin Chrome y sin archivo.

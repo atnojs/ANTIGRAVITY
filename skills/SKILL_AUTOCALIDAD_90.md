@@ -107,6 +107,38 @@ Declaración: no hay evidencia inventada; todo se reproduce desde el informe y e
 
 Si el entorno impide la verificación real, **no se declara verificado**: BLOCKED.
 
+## 8-bis. Prohibido verificar en modo local (regla dura, 2026-10-27)
+
+**Una app con backend NUNCA se da por verificada en "modo local".** Vale igual que esté en un
+servidor estático, con `*.php` devolviendo 503, o con la base de datos desconectada: eso solo prueba
+la pintura de la interfaz, no el producto.
+
+Antes de dar un PASS en una web o app:
+
+1. **Servidor real.** La app se sirve con su PHP y su base de datos (local con SQLite o producción).
+   Los flujos que tocan servidor —importar, generar, editar con máscara, quitar fondo, guardar,
+   historial, biblioteca— se ejecutan contra ese servidor, no con respuestas simuladas.
+2. **Producción después de desplegar.** Después del push, se comprueba que la versión servida es la
+   nueva (marcador de versión en el HTML o hash del fichero) y se recorre el flujo al menos una vez
+   en la URL pública. Un cambio que no está desplegado no existe.
+3. **Una sola copia de cada módulo.** En apps con ES modules: todos los `import` deben llevar la
+   misma versión (`?v=N`). Dos versiones distintas cargan **dos veces** el mismo módulo y, con él,
+   dos estados: la capa entra en uno y la pantalla lee el otro. Comprobarlo contando los recursos
+   `/assets/js/` de una carga (cada fichero debe aparecer **una** vez).
+4. **Persistencia real.** Recargar la página y comprobar que lo hecho sigue ahí; y comprobar el
+   estado en el servidor (API), no solo lo que pinta el DOM.
+5. **El fallo se reproduce antes, y el arreglo se prueba después.** Si no existe un comando o una
+   prueba que falle cuando el defecto vuelve, el arreglo no está cerrado.
+
+**Caso real que motivó la regla (2026-10-27, Unified Image Studio · Hoola):** la app se verificó con
+12 pruebas en modo local (`*.php` → 503). Pasó el gate. Sin embargo, contra el servidor real estaban
+roto: la importación no creaba capa visible, el ojo de capas no repintaba, el inpainting devolvía
+error 400 con el modelo de Flow, «quitar el fondo con IA» por lo mismo, el resultado de la máscara
+se aplicaba centrado en vez de sobre la capa, los deslizadores no marcaban su valor y el pincel
+mostraba una cruz en lugar de un círculo del tamaño pedido. Además, una subida parcial de versiones
+dejó dos estados cargados a la vez. Ninguna de esas cosas se podía ver en local.
+
+**Si el servidor real no está disponible, el veredicto es BLOCKED, no PASS.**
 ## 9. Entrega
 
 - Tabla de tareas: dueño, verificador, nota, veredicto y evidencia.
