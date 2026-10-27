@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------------------------------------------------------------------
+ * Estilos propios de Unified Studio.
+ * Recuperados del CSS compilado (dist/assets/index-5inXWfPF.css) y expresados
+ * con @apply para que Tailwind los vuelva a generar con la configuración del
+ * proyecto (tailwind.config.js).
+ *
+ * Se declaran dentro de @layer utilities para conservar el mismo orden y la
+ * misma prioridad que tenían en el bundle de producción.
+ * ---------------------------------------------------------------------- */
+@layer utilities {
+  :root {
+    --neon-cyan: #2ee8ff;
+    --neon-pink: #ff4ecd;
+    --neon-purple: #d54cff;
+    --glow-strong: rgba(46, 232, 255, 0.4);
+  }
+
+  body {
+    @apply min-h-screen bg-main-gradient font-poppins text-slate-200 antialiased bg-fixed;
+  }
+
+  /* Tarjeta translúcida base de la interfaz */
+  .glass {
+    @apply border border-white/10 bg-slate-900/40 shadow-2xl backdrop-blur-xl;
+  }
+
+  .glass-hover {
+    @apply transition-all duration-300;
+  }
+
+  .glass-hover:hover {
+    @apply -translate-y-1 scale-[1.01] border-neon-cyan bg-white/10 shadow-[0_15px_45px_0_rgba(46,232,255,0.15)];
+  }
+
+  /* Degradado aplicado al texto (títulos grandes) */
+  .gradient-text {
+    @apply bg-gradient-to-r from-neon-cyan via-purple-400 to-neon-pink bg-clip-text text-transparent font-extrabold;
+  }
+
+  /* Botón con reflejo al pasar el ratón */
+  .btn-3d {
+    @apply relative overflow-hidden transition-all duration-150 z-[1];
+  }
+
+  .btn-3d:active {
+    @apply scale-95;
+  }
+
+  .btn-3d:before {
+    content: "";
+    @apply absolute top-0 -left-full h-full w-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-all duration-500 -z-[1];
+  }
+
+  .btn-3d:hover:before {
+    @apply left-full;
+  }
+
+  /* Scrollbar fina y degradada */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 0.5rem;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-black/20;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply rounded-full border-2 border-transparent bg-gradient-to-b from-blue-900 to-neon-cyan bg-clip-content;
+  }
+}
+
+/* Texto con brillo neón. Fuera de @layer utilities para que Tailwind no lo
+   purgue mientras no se use en el markup (el bundle original lo incluía). */
+.neon-text {
+  @apply text-neon-cyan;
+  text-shadow: 0 0 10px var(--glow-strong);
+}
+

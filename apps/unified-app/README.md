@@ -42,13 +42,44 @@ npm run dev          # http://localhost:5173/apps/unified-app/index.dev.html
 ## Compilar y publicar
 
 ```powershell
-npm run publish:app            # publica el dist/ actual
-npm run deploy:app             # vite build + publicar
+npm run publish:app              # publica el dist/ actual
+npm run publish:app -- --dry-run # ensaya sin escribir nada
+npm run deploy:app               # vite build + publicar
 ```
 
 `scripts/publish.mjs` copia el build a `assets/app.<fecha-hora>.js|css`, normaliza la
 ruta del proxy a `proxy.php` y actualiza `index.html`. Los assets viejos no se borran:
 los navegadores con HTML cacheado los siguen pidiendo.
+
+> **En este equipo, compila con TEMP/TMP fuera de `C:\...\Temp`**: esbuild falla al borrar
+> sus temporales ahí (`Acceso denegado`) y el build muere al minificar. Receta:
+> ```powershell
+> New-Item -ItemType Directory -Force E:\ANTIGRAVITY\.tmp-build\esb | Out-Null
+> $env:TEMP='E:\ANTIGRAVITY\.tmp-build\esb'; $env:TMP=$env:TEMP
+> npm run build
+> ```
+
+## Código fuente
+
+`src/` fue reconstruido desde el bundle el 2026-10-27 (se había perdido por completo):
+
+```
+src/
+├── main.jsx, App.jsx, index.css
+├── lib/        firebase.js (proyecto nanobanana-cbb2d), api.js (fetch("proxy.php"))
+└── components/ AILab, EditStudio, MaskEditorModal, ProEffects,
+                AuthScreen, AdminPanel, SplashScreen, SelectField, StatCard
+```
+
+Verificado contra el bundle original: **443/443 reglas CSS idénticas**, **2.465/2.465 strings
+idénticos** y capturas de login / registro / error con **SHA-256 idéntico** (0 píxeles de
+diferencia). `npm run build` termina con exit 0. Las variables internas de cada componente
+conservan los nombres cortos del minificado (hay comentarios con el alias original).
+
+> **Producción sigue sirviendo el build original verificado** (`assets/app.20261027.js`,
+> commit `df7b661b`) porque pasó la verificación independiente. Cuando se quiera que
+> producción y `src/` coincidan, ejecutar `npm run deploy:app`, publicar el `index.html` +
+> `assets/` nuevos y volver a verificar en la URL real.
 
 ## Historial del arreglo (2026-10-27)
 
@@ -69,6 +100,7 @@ el que usan las apps vivas del catálogo (`generar_imagenes`, `imagenes_ia`,
 > Si Antonio quiere conservar el proyecto antiguo, hay que **regenerar su apiKey** en
 > Google Cloud/Firebase y volver a publicar; hoy no sirve.
 
-> Pendiente conocido: el árbol `src/` original no está en git ni en backups. Se está
-> reconstruyendo desde el bundle; hasta que esté verificado, el build publicado es la
-> referencia funcional.
+> Pendiente: la generación de imágenes responde error de Google (facturación/cuota de la
+> clave `A` del servidor: 403 «outstanding balance» o 429 «cuota free tier 0»). Es externo
+> al código; el proxy y la ruta están correctos.
+

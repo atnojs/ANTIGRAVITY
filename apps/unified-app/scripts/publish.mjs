@@ -56,18 +56,22 @@ if (build) {
 if (!fs.existsSync(distHtml)) fail('No existe dist/index.dev.html. Ejecuta `npm run build` o `npm run publish:app -- --build`.')
 
 const html = fs.readFileSync(distHtml, 'utf8')
-const jsMatch = html.match(/(?:\.\/|\/apps\/unified-app\/|\)?assets\/)assets\/index-[\w-]+\.js|assets\/index-[\w-]+\.js/)
-const cssMatch = html.match(/assets\/index-[\w-]+\.css/)
 
-// Fallback: la referencia siempre contiene "assets/index-<hash>.js|css".
-const jsRef = (jsMatch && jsMatch[0].slice(jsMatch[0].indexOf('assets/'))) || (html.match(/assets\/index-[\w-]+\.js/) || [])[0]
-const cssRef = (cssMatch && cssMatch[0]) || null
-if (!jsRef) fail('No encuentro la referencia al JS compilado en dist/index.dev.html.')
+// Vite emite el chunk de entrada como `assets/index-<hash>.js` y, desde la entrada
+// index.dev.html, como `assets/index.dev-<hash>.js`. Aceptamos las dos formas (y el
+// CSS, que siempre sale `assets/index-<hash>.css`).
+const jsRef = (html.match(/assets\/index(?:\.dev)?-[\w-]+\.js/) || [])[0]
+const cssRef = (html.match(/assets\/index(?:\.dev)?-[\w-]+\.css/) || [])[0]
+if (!jsRef) fail('No encuentro la referencia al JS compilado en dist/index.dev.html (¿cambió entryFileNames?).')
 if (!cssRef) fail('No encuentro la referencia al CSS compilado en dist/index.dev.html.')
+if (!fs.existsSync(path.join(distDir, jsRef))) fail(`La referencia ${jsRef} no existe dentro de dist/.`)
+if (!fs.existsSync(path.join(distDir, cssRef))) fail(`La referencia ${cssRef} no existe dentro de dist/.`)
 
 const stampStr = stamp()
 const jsName = `app.${stampStr}.js`
 const cssName = `app.${stampStr}.css`
+
+const dryRun = process.argv.includes('--dry-run')
 
 let js = fs.readFileSync(path.join(distDir, jsRef), 'utf8')
 const css = fs.readFileSync(path.join(distDir, cssRef), 'utf8')
@@ -83,15 +87,24 @@ if (absolutasRestantes) {
 }
 
 fs.mkdirSync(assetsDir, { recursive: true })
-fs.writeFileSync(path.join(assetsDir, jsName), js, 'utf8')
-fs.writeFileSync(path.join(assetsDir, cssName), css, 'utf8')
-
 let prod = fs.readFileSync(prodHtmlPath, 'utf8')
 if (!/assets\/app\.[\w-]+\.js/.test(prod) || !/assets\/app\.[\w-]+\.css/.test(prod)) {
   fail('index.html no tiene las referencias versionadas a assets/app.<fecha>.js|css.')
 }
 const anteriorJs = (prod.match(/assets\/app\.[\w-]+\.js/) || [])[0]
 const anteriorCss = (prod.match(/assets\/app\.[\w-]+\.css/) || [])[0]
+
+if (dryRun) {
+  console.log('▸ Simulación (--dry-run): no se escribe nada.')
+  console.log(`  origen JS:  dist/${jsRef}  (${js.length} B)`)
+  console.log(`  origen CSS: dist/${cssRef} (${css.length} B)`)
+  console.log(`  destino:    assets/${jsName} y assets/${cssName}`)
+  console.log(`  index.html: ${anteriorJs} → assets/${jsName} ; ${anteriorCss} → assets/${cssName}`)
+  process.exit(0)
+}
+
+fs.writeFileSync(path.join(assetsDir, jsName), js, 'utf8')
+fs.writeFileSync(path.join(assetsDir, cssName), css, 'utf8')
 prod = prod.replace(/assets\/app\.[\w-]+\.js/g, `assets/${jsName}`).replace(/assets\/app\.[\w-]+\.css/g, `assets/${cssName}`)
 fs.writeFileSync(prodHtmlPath, prod, 'utf8')
 
