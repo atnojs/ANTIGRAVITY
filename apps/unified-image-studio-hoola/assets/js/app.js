@@ -8,32 +8,32 @@ import {
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
-} from './core.js?v=21';
-import { renderer } from './render.js?v=21';
-import { initTools, setTool } from './tools.js?v=21';
+} from './core.js?v=22';
+import { renderer } from './render.js?v=22';
+import { initTools, setTool } from './tools.js?v=22';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
   showLoading, hideLoading, updateTopbar, updateSaveState, updateViewportUI, setEmptyState,
   renderLayers, renderLayerProps, renderRefs, renderVersions, renderProjects, renderAssets,
   renderRecipes, setActiveModel, switchLeftTab, switchRightTab, setToolUI, paintStorageInfo,
-} from './ui.js?v=21';
+} from './ui.js?v=22';
 import {
   server, saveNow, scheduleSave, listProjects, loadProject, deleteProject, saveVersion,
   listVersions, deleteVersion, storageInfo, clearLocalCache, uploadResource, lastProjectId, idb,
   fetchVersionDoc,
-} from './persist.js?v=21';
+} from './persist.js?v=22';
 import {
   downloadExport, copyToClipboard, downloadProject, exportImage, canvasToBlob, estimateExport,
-} from './exporter.js?v=21';
+} from './exporter.js?v=22';
 import {
   MODELS, modelById, loadCatalog, catalog, generate,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
-} from './ai.js?v=21';
+} from './ai.js?v=22';
 import {
   FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
   flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
   statusFlowJobs, retryFlowJob, deleteFlowJob, cancelFlowJob, downloadFlowJob, fetchFlowBlob,
-} from './flow.js?v=21';
+} from './flow.js?v=22';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
@@ -598,6 +598,11 @@ function bindLeftPanel() {
   $('rotateCcwBtn').addEventListener('click', () => rotateDocument(-90));
   $('flipHBtn').addEventListener('click', flipDocument);
   $('inpaintBtn').addEventListener('click', () => runInpaint());
+  const nombreCapa = $('propsName');
+  if (nombreCapa) {
+    nombreCapa.addEventListener('dblclick', renombrarCapaDesdePropiedades);
+    nombreCapa.style.cursor = 'text';
+  }
   $('removeBgBtn').addEventListener('click', removeBackgroundLocal);
   $('removeBgAiBtn')?.addEventListener('click', removeBackgroundAi);
 
@@ -1332,7 +1337,7 @@ async function runInpaint() {
   showLoading('Rellenando la máscara…', 'Se envía la composición y la máscara al proveedor.');
   try {
     const composite = renderer.compositeToCanvas();
-    const mask = renderer.maskToCanvas(layer);
+    const mask = construirMascaraProveedor(layer);
     const job = await generate({
       prompt,
       model: modeloInpaint,
@@ -1349,6 +1354,68 @@ async function runInpaint() {
   } finally {
     hideLoading();
   }
+}
+
+
+/* Máscara para el proveedor: el modelo edita donde hay TRANSPARENCIA.
+   El lienzo de la máscara pinta blanco sobre negro (todo opaco), así que aquí se
+   invierte el alfa: lo pintado queda transparente = zona a editar. Si la máscara
+   está invertida, se hace lo contrario. */
+function construirMascaraProveedor(layer) {
+  const doc = state.doc;
+  const canvas = document.createElement('canvas');
+  canvas.width = doc.width;
+  canvas.height = doc.height;
+  const ctx = canvas.getContext('2d');
+  const pintado = renderer.maskCanvasFor(layer);
+  const invertida = Boolean(layer.mask?.inverted);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (invertida) {
+    // Se edita todo menos lo pintado: lo pintado se deja opaco.
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(pintado, 0, 0);
+  } else {
+    // Fondo opaco y lo pintado se recorta del alfa.
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.drawImage(pintado, 0, 0);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  return canvas;
+}
+
+/* Renombrar la capa desde el panel de propiedades (antes era un texto fijo). */
+function renombrarCapaDesdePropiedades() {
+  const layer = getLayer();
+  const etiqueta = $('propsName');
+  if (!layer || !etiqueta) return;
+  if (etiqueta.dataset.editando === '1') return;
+  etiqueta.dataset.editando = '1';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = layer.name;
+  input.className = 'props-name-input';
+  Object.assign(input.style, { width: '100%', fontSize: '12px', padding: '3px 6px', borderRadius: '6px' });
+  etiqueta.replaceWith(input);
+  input.focus();
+  input.select();
+  const terminar = (guardar) => {
+    const nuevo = input.value.trim();
+    input.replaceWith(etiqueta);
+    delete etiqueta.dataset.editando;
+    if (guardar && nuevo && nuevo !== layer.name) {
+      mutate('renombrar capa', () => { layer.name = nuevo; });
+      renderLayers();
+      renderLayerProps();
+      toast('Capa renombrada.', 'ok');
+    }
+  };
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') { event.preventDefault(); terminar(true); }
+    if (event.key === 'Escape') { event.preventDefault(); terminar(false); }
+  });
+  input.addEventListener('blur', () => terminar(true));
 }
 
 /* ── Quitar fondo (local, por color) ── */
@@ -1380,11 +1447,39 @@ async function removeBackgroundLocal() {
     renderAssets();
     renderer.requestRender('bg');
     scheduleSave('bg');
-    toast(removed > 0 ? `Fondo eliminado (${removed.toLocaleString('es-ES')} píxeles).` : 'No se detectó un fondo uniforme en las esquinas.', removed ? 'ok' : 'warn');
+    const total = canvas.width * canvas.height;
+    const porcentaje = total > 0 ? (removed / total) * 100 : 0;
+    // Antes se anunciaba "Fondo eliminado" aunque solo se quitara el 0,002 %.
+    if (porcentaje < 5) {
+      toast(`No se detectó un fondo uniforme: solo se han quitado ${porcentaje.toFixed(1)} % de los píxeles. Prueba con «Quitar fondo con IA».`, 'warn', { duration: 9000 });
+    } else {
+      toast(`Fondo eliminado (${porcentaje.toFixed(1)} % de la imagen).`, 'ok');
+    }
   } catch (error) {
     toast(`No se pudo quitar el fondo: ${error.message}`, 'error');
   } finally {
     hideLoading();
+  }
+}
+
+
+/* Devuelve el porcentaje de píxeles transparentes de una imagen, o null si no se
+   puede medir. Sirve para no presentar como "fondo quitado" un PNG opaco. */
+async function medirTransparencia(dataUrl) {
+  try {
+    const img = new Image();
+    await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = dataUrl; });
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0);
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let transparentes = 0;
+    for (let i = 3; i < data.length; i += 4) if (data[i] < 24) transparentes += 1;
+    return (transparentes / (data.length / 4)) * 100;
+  } catch {
+    return null;
   }
 }
 
@@ -1444,7 +1539,15 @@ async function removeBackgroundAi() {
       kind: 'remove-background',
     });
     if (job?.error) throw new Error(job.error);
-    pendingResult = { job, dataUrl: job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}` };
+    const dataUrlFondo = job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}`;
+    // El proveedor a veces devuelve un PNG OPACO con el damero pintado: si no hay
+    // ni un píxel transparente, es un fondo sin quitar y hay que decirlo.
+    const transparencia = await medirTransparencia(dataUrlFondo);
+    if (transparencia !== null && transparencia < 1) {
+      toast('El modelo devolvió una imagen opaca: no ha quitado el fondo. Usa «Quitar fondo por color» o repite con otra imagen.', 'error', { duration: 10000 });
+      return;
+    }
+    pendingResult = { job, dataUrl: dataUrlFondo };
     showResultPreview(pendingResult);
     toast('Resultado listo: acéptalo para sustituir el fondo sin tocar textos ni logos.', 'ok');
   } catch (error) {

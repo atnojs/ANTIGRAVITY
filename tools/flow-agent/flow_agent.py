@@ -156,11 +156,32 @@ def api_upload(cfg: dict, action: str, job_id: str, field: str, raw: bytes, atte
         'X-UIS-Agent': cfg['token'],
     }
     last = None
+    # El edge de Hostinger (hcdn) devuelve a veces un 307/308 al subir. urllib no
+    # los sigue en POST, así que el archivo se quedaba sin entregar y el trabajo
+    # terminaba en "failed" aunque la imagen ya estuviera generada. Se siguen las
+    # redirecciones (hasta 3 saltos) y los 3xx se reintentan como los 5xx.
+    destino = url
     for i in range(attempts):
         try:
-            req = urllib.request.Request(url, data=body, method='POST', headers=headers)
-            with urllib.request.urlopen(req, timeout=600) as resp:
-                return json.loads(resp.read().decode('utf-8'))
+            saltos = 0
+            while True:
+                req = urllib.request.Request(destino, data=body, method='POST', headers=headers)
+                try:
+                    with urllib.request.urlopen(req, timeout=600) as resp:
+                        return json.loads(resp.read().decode('utf-8'))
+                except urllib.error.HTTPError as exc:
+                    if exc.code in (301, 302, 303, 307, 308) and saltos < 3:
+                        ubicacion = ''
+                        try:
+                            ubicacion = exc.headers.get('Location') or ''
+                        except Exception:
+                            ubicacion = ''
+                        if ubicacion:
+                            destino = urllib.parse.urljoin(destino, ubicacion)
+                            saltos += 1
+                            last = 'HTTP %d -> %s' % (exc.code, destino)
+                            continue
+                    raise
         except urllib.error.HTTPError as exc:
             detail = ''
             try:
@@ -170,13 +191,14 @@ def api_upload(cfg: dict, action: str, job_id: str, field: str, raw: bytes, atte
             if exc.code in (401, 403):
                 raise RuntimeError('credencial rechazada al subir (HTTP %d)' % exc.code) from exc
             last = 'HTTP %d %s' % (exc.code, detail)
-            if exc.code < 500:
+            # 408, 429 y los 3xx que no se pudieron seguir son transitorios.
+            if exc.code < 500 and exc.code not in (301, 302, 303, 307, 308, 408, 429):
                 raise RuntimeError('el servidor rechazó el archivo: %s' % last) from exc
         except (urllib.error.URLError, OSError, ValueError) as exc:
             last = '%s: %s' % (type(exc).__name__, exc)
         if i < attempts - 1:
             time.sleep(2 ** i)
-    raise RuntimeError(str(last))
+    raise RuntimeError('no se pudo subir el archivo tras %d intentos: %s' % (attempts, last))
 
 
 def _pid_alive(pid: int) -> bool:
