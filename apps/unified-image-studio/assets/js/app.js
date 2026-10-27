@@ -1212,13 +1212,20 @@ async function runInpaint() {
     toast('El inpainting necesita el proxy del servidor y una clave configurada.', 'error');
     return;
   }
+  // El relleno de máscara lo hacen los proveedores directos: el motor de Flow no
+  // admite máscaras. Si hay un modelo de Flow elegido, se usa IMAGE 2 y se avisa.
+  const elegido = modelById(state.ui.model);
+  const modeloInpaint = elegido?.provider === 'flow' ? 'openai-image-2-low' : state.ui.model;
+  if (elegido?.provider === 'flow') {
+    toast('Para rellenar la máscara se usa IMAGE 2: el motor de Flow no admite máscaras.', 'warn', { duration: 8000 });
+  }
   showLoading('Rellenando la máscara…', 'Se envía la composición y la máscara al proveedor.');
   try {
     const composite = renderer.compositeToCanvas();
     const mask = renderer.maskToCanvas(layer);
     const job = await generate({
       prompt,
-      model: state.ui.model,
+      model: modeloInpaint,
       aspect: '1:1',
       images: [composite.toDataURL('image/png')],
       mask: mask.toDataURL('image/png'),
