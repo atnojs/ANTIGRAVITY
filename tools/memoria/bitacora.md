@@ -4,6 +4,15 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-27 (noche) — Flow Studio: modelos directos, compuerta, refs por modo y máscara circular
+
+- **Encargo (dos tandas):** integrar “tal cual” los modelos de IA de `apps/unified-image-studio-hoola` en `apps/flow_studio_hoola`, con la contraseña en los modelos; después, edición con **máscara** (círculo ajustable con deslizador) que limite el cambio al área marcada.
+- **Qué se hizo:** `api.php` + `lib/` (auth del proyecto, SQLite, jobs y catálogo canónico) con `storage/` protegido; catálogo de 15 modelos de imagen y 4 de vídeo con los mismos ids; compuerta compartida 1.2.0; resolución 512–4096 (tope real ≈4 MP, declarado); cantidad solo con Flow; referencias exclusivas por modo; máscara circular por composición (el resultado se recorta al círculo y fuera se conserva el original); el login de «Acceso» desbloquea la compuerta y el logout repinta candados; assets fechados `a/b/c/d` para romper la caché de Hostinger.
+- **Verificación:** producción `d` servida con SHA-256 idéntico al repo; 30/32 comprobaciones E2E (los 2 FAIL eran del método de comparación de píxeles: re-decodificaba el original con otra ruta; corregido con PIL, **0 píxeles distintos fuera** en OpenAI, Gemini y Flow); generaciones reales `openai-image-2-low`, `gemini-2` y `flow-nano-banana-2` con máscara; descargas válidas; historial; recarga; 390/768/360 sin scroll; consola sin errores propios; Lighthouse móvil 90/100/100/100 y escritorio 99/100/100/100; verificador independiente PASS (scorecard en la evidencia).
+- **Commits:** `155d0a8b` (modelos + compuerta), `fecdfefe` (carrera de referencias), `d26928a1` (asset b), `cf091860` (acceso/resolución), `b09b4f8a` (máscara). Hostinger tardó en desplegar; se re-disparó el webhook con commits vacíos.
+- **Límites:** la máscara es composición en cliente y el resultado conserva el tamaño de la fuente; no se recupera si se recarga a mitad; el `PASS_CODE` fijo del Model Gate es heredado y UI-only; la cola de Flow sigue sin auth de servidor; no hay `pricing.json` (sin tope de gasto); `history.php` lista sin sesión; el CDN sirve el PNG del historial como WebP al navegador.
+
+---
 ## 2026-10-27 (tarde) — editar_generar: campo de prompt, 4 propuestas fieles y prompts que sobreviven a la imagen
 
 - **Encargo de Antonio:** «añade el campo donde poner el prompt y elimina las 4 tarjetas de enfoque;
@@ -2414,7 +2423,7 @@ los agentes. En producción `https://atnojs.es/apps/unified-app/` servía ese HT
 
 | Fichero | Papel |
 |---|---|
-| `apps/unified-app/index.html` | Página de producción (925 B): lang es, título real y refs `./assets/app.20261027.js|css`. La genera `scripts/publish.mjs`. |
+| `apps/unified-app/index.html` | Página de producción (**930 B**): lang es, título real y refs `./assets/app.20261027.js|css`. La genera `scripts/publish.mjs`. |
 | `apps/unified-app/index.dev.html` | Entrada de Vite (dev/build); carga `/src/main.jsx`. Así el index de desarrollo no vuelve a desplegarse nunca. |
 | `apps/unified-app/assets/app.20261027.js` / `.css` | El build que ya funcionaba (597.037 B / 35.742 B), **byte a byte** el servido; proxy relativo `proxy.php`; config de Firebase cambiada a `nanobanana-cbb2d`. |
 | `apps/unified-app/proxy.php` | `Unified Proxy` que traía el `dist/` (tareas `enhancePrompt`, `generateImage`, `inpainting`, `applyStyle`, `upscale`). Clave solo por entorno. `config.php` **no** se versiona (`.gitignore`). |
@@ -2454,4 +2463,29 @@ nueva para volver.
 - La clave de Firebase viaja en el JS (identificador público de Firebase, no un secreto); la clave de
   Google para IA sigue solo en el servidor.
 
-**Commit:** `df7b661b`. Memoria y README en el commit de documentación siguiente.
+**Commit:** `df7b661b`. Memoria y README en el commit de documentación siguiente (`66f68f5b`).
+
+**Cierre con verificación independiente (PASS).** El verificador reprodujo todo sobre la URL real
+con hashes de los bytes servidos: index **930 B** `8deb636d…` (idéntico al local), JS **597.037 B**
+`75d74b92…`, CSS **35.742 B** `cc55b178…`; login completo, **0 errores** de consola en carga y
+recarga, 3 anchos sin desborde, `index.dev.html`/`package.json`/scripts → 403, asset inexistente →
+404, `proxy.php` GET 405 JSON y POST con JSON controlado, `editar_generar` 200 sin daño colateral, y
+el popup de Google llega a `accounts.google.com` con `context_uri=https://atnojs.es` (dominio
+autorizado, sin `unauthorized-domain`). **Veredicto: PASS 92,9/100** (A1 9,2 · A2 9,5 · A3 9,6 ·
+A4 9,5 · A5 9,2 · A6 9,0 · A7 8,8 · A8 9,2 · A9 9,5 · A10 9,5), sin defectos bloqueantes, mayores
+ni medios. Informe: `tools/evidencias/2026-10-27-unified-app/informe-verificacion.md`;
+autoevaluación del autor: `…/autoevaluacion.md` (93,4).
+
+**Correcciones que dejó el verificador (documentación, no código).**
+- **D-01:** `config.php` da **404** y es lo correcto: está en `.gitignore:30` (política de secretos),
+  no se versiona y `proxy.php` resuelve la clave por entorno. Mi mensaje al verificador decía que se
+  publicaba: era falso y queda corregido aquí.
+- **D-02:** `lightbox.js` **no se publica** (404) y nadie lo referencia (0 coincidencias en el index y
+  en el bundle): se retiró a propósito porque su overlay tapaba la app.
+- **Proxy:** el POST de salud devolvió **403** «outstanding balance» en mi ronda y **429** «cuota free
+  tier, limit 0» en la del verificador. Son dos caras del mismo bloqueo externo de Google (facturación
+  o cuota de la clave `A` del servidor); el proxy está bien y devuelve JSON controlado.
+- **Extra menor aceptado:** al pulsar Google ID el SDK de Firebase registra 2 avisos
+  `Cross-Origin-Opener-Policy policy would block the window.closed call`; el popup abre bien. Es
+  comportamiento conocido del SDK, no bloquea.
+
