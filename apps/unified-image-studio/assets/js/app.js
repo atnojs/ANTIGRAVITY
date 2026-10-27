@@ -1115,10 +1115,10 @@ async function runGeneration() {
         model: state.ui.model,
         ratio: $('aspectSelect').value,
         images,
-        // Con una referencia se edita (una sola salida); sin ella se generan
-        // tantas variantes como se hayan pedido.
+        // Con referencias se edita y sin ellas se genera, pero en los dos casos
+        // se respeta la cantidad elegida: cada trabajo es una variante.
         mode: images.length ? 'edit' : 'generate',
-        count: images.length ? 1 : flowUi.imageCount,
+        count: flowUi.imageCount,
       });
       return;
     }
@@ -2233,11 +2233,18 @@ function syncFlowControls() {
     }
   }
   if (variantsNote) {
-    variantsNote.textContent = isFlow
-      ? (flowUi.imageCount > 1
-        ? `${flowUi.imageCount} imágenes: Flow las genera una detrás de otra en tu PC.`
-        : 'Con Flow, cada imagen es una generación: se hacen una detrás de otra en tu PC.')
-      : 'Solo disponible con los modelos de Flow. Los proveedores directos generan una imagen por envío.';
+    const referencias = (state.ui.refs?.length || 0) + (state.ui.useCanvasRef && state.doc?.layers?.length ? 1 : 0);
+    if (!isFlow) {
+      variantsNote.textContent = 'Solo disponible con los modelos de Flow. Los proveedores directos generan una imagen por envío.';
+    } else if (flowUi.imageCount > 1 && referencias > 0) {
+      variantsNote.textContent = `${flowUi.imageCount} variantes de la referencia: cada una es una edición.`;
+    } else if (flowUi.imageCount > 1) {
+      variantsNote.textContent = `${flowUi.imageCount} imágenes: Flow las genera una detrás de otra en tu PC.`;
+    } else if (referencias > 0) {
+      variantsNote.textContent = 'Con referencia se edita la imagen cargada.';
+    } else {
+      variantsNote.textContent = 'Con Flow, cada imagen es una generación: se hacen una detrás de otra en tu PC.';
+    }
   }
   const btnText = $('generateBtnText');
   if (btnText) {

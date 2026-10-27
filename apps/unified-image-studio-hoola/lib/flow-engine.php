@@ -248,7 +248,9 @@ function uis_flow_create(PDO $db, array $body): array
         $count = max(1, min(4, $count));
         if ($mode === 'edit') {
             if ($refs === []) throw new InvalidArgumentException('Necesito la imagen que quieres editar.', 400);
-            $count = 1;
+            // Se permiten varias ediciones de la misma referencia: cada trabajo
+            // lleva su propia copia y produce una variante. (Antes se forzaba a 1
+            // y la cantidad elegida se ignoraba en silencio.)
         }
         if ($mode === 'generate' && count($refs) > UIS_FLOW_REFS_MAX) {
             $refs = array_slice($refs, 0, UIS_FLOW_REFS_MAX);
