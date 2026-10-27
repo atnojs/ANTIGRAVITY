@@ -5,6 +5,20 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
+## 🖼️ Flow Studio — límites heredados y siguientes pasos (2026-10-27)
+
+- **Gasto sin tope:** no existe `storage/pricing.json`; `uis_check_budget()` devuelve `known=false`. Siguiente paso: copiar `pricing.example.json` del estudio a `storage/pricing.json` y fijar límites si se quiere presupuesto.
+- **Cola de Flow:** `request/status/img/ping` son públicos; `claim/complete/fail` exigen `QUEUE_TOKEN`, que está en el PHP versionado. Siguiente paso: mover el token al entorno, rotarlo y exigir sesión en `request` solo para los modelos protegidos.
+- **Historial sin auth:** `history.php` lista sin sesión y además permite `delete`/`clear` sin auth (riesgo de borrado). Siguiente paso: exigir la sesión del proyecto al menos para borrar y para listar si se publican imágenes privadas.
+- **Máscara y recarga:** si se recarga la pestaña mientras un trabajo de Flow está en curso, el trabajo se recupera pero la máscara no. Siguiente paso: guardar `mask` + `source` por job en IndexedDB y aplicarla en `restorePending`.
+- **Círculo solo con puntero:** el tamaño se ajusta con el deslizador (accesible), pero mover el círculo requiere arrastre. Siguiente paso: flechas del teclado con el canvas enfocado.
+- **Fallos de composición silenciosos:** si `composeMaskedUrl` fallara, solo hay `console.warn` y la tarjeta muestra el resultado completo. Siguiente paso: aviso visible y marcar la tarjeta como «sin máscara».
+- **Etiqueta «Máscara» no persiste:** el historial guarda prompt/ratio/modo, no `mask`; al recargar se pierde la etiqueta. Siguiente paso: añadir `mask` al `data` de `saveToHistory` (y migrar sin romper lo existente).
+- **Etiquetas de vídeo en Title Case:** el estudio las usa en mayúsculas; ids/orden son idénticos. Siguiente paso: unificar si se exige literalidad visual.
+- **Descarga del historial en WebP:** el CDN de Hostinger convierte el PNG a WebP según `Accept`; la descarga desde una tarjeta recuperada del historial sale `.webp` con pérdida. Siguiente paso: servir el original forzando `Accept: image/png` o una ruta de descarga propia.
+
+---
+
 ## 🔍 Auditoría semanal 2026-10-25 — hallazgos abiertos
 
 - **Estado:** auditoría automática de las 164 páginas propias (`/`, `webs/*`, `apps/*`): todas

@@ -1,3 +1,18 @@
+## 2026-10-27 — Flow Studio: máscara circular por composición en cliente
+
+- **Decisión:** la máscara de edición se aplica **después** de generar: se dibuja el original, se recorta el resultado al círculo y se pega dentro; fuera del círculo quedan los píxeles del original.
+- **Por qué:** Flow (PC) y los proveedores directos no aceptan la misma máscara (OpenAI la admite en `/images/edits`; Gemini/Qwen no; Flow no la expone). Componer garantiza el límite con cualquier motor y se puede verificar píxel a píxel.
+- **Contrapartida:** el resultado conserva el tamaño de la imagen original (preparada a 1600 px como máximo) y el modelo trabaja sobre la imagen completa: el prompt no ve el círculo. Si se recarga mientras se genera, el trabajo de Flow se recupera pero la máscara no.
+- **Implementación:** `<dialog>` nativo (un overlay fijo a pantalla completa hacía que el visor con zoom lo tratara como lightbox y lo cerrara al primer clic), canvas con aro cian y zona oscurecida, deslizador de diámetro 5–100 %, arrastre del círculo y `composeMaskedUrl()` en `app.20261027d.js`.
+- **Verificación:** PIL sobre descargas reales (OpenAI y Flow) y sobre Gemini guardado en el historial: **0 píxeles distintos fuera** del círculo y miles de muestras cambiadas dentro. Evidencia en `tools/evidencias/2026-10-27-flow-studio-modelos/`.
+
+## 2026-10-27 — Flow Studio adopta el catálogo y la compuerta del estudio
+
+- **Decisión:** copiar a `apps/flow_studio_hoola` el catálogo de 15 modelos y la compuerta Model Gate 1.2.0 de `apps/unified-image-studio-hoola`, con `api.php` + `lib/` del contrato canónico, y conservar la cola de Flow existente (`flow_queue.php` + worker del PC).
+- **Por qué:** el usuario pidió integrarlos “tal cual”, con la contraseña en los modelos, sin tocar el worker ni perder historial, visor, escalado o mejorador de prompts.
+- **Detalles:** el frontend manda los ids canónicos y `flow_queue.php` los traduce al nombre del menú de Flow para el worker; las referencias son tres juegos independientes (`refsByMode`), con captura del modo al elegir el archivo para cerrar la carrera de cambio de modo; entrar por «Acceso» desbloquea también la compuerta en esa pestaña.
+- **Contrapartida:** conviven dos motores Flow (ya documentado en la entrada del 2026-10-27) y la compuerta sigue siendo de interfaz: el servidor exige sesión para los modelos directos.
+
 ## 2026-10-27 — Conviven dos sistemas de Flow (estudio nuevo y app antigua)
 
 - **Decisión:** mantener activos a la vez `UisFlowAgent` (app nueva) y `FlowStudioWorker` (apps

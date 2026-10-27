@@ -3,6 +3,33 @@
 Comandos que **funcionan aquí** (probados). Si uno deja de funcionar, se anota en
 `errores.md` y se actualiza esta lista.
 
+## Servidor PHP local real (SQLite + curl) para probar apps del repo
+
+El PHP de WinGet no carga `php.ini` por defecto: sin esto, `pdo_sqlite`, `curl` y `mbstring`
+no existen y los `api.php` responden 503. Los DLL están en `<php>\ext`.
+
+```powershell
+$php=(Get-Command php).Source; $ext=Join-Path (Split-Path $php) 'ext'
+$ca='C:\Users\atnojs\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\certifi\cacert.pem'
+$env:PW_ACCESS='<clave-de-prueba>'      # solo entorno del proceso de prueba
+& $php -d extension_dir="$ext" -d extension=php_pdo_sqlite.dll -d extension=php_curl.dll `
+  -d extension=php_mbstring.dll -d extension=php_openssl.dll `
+  -d curl.cainfo="$ca" -d openssl.cafile="$ca" `
+  -S 127.0.0.1:8102 -t E:\ANTIGRAVITY\apps
+```
+
+- **Docroot en `apps`** si la app carga `../_shared/...`; con `-t <app>` esas rutas dan 404.
+- `curl.cainfo`/`openssl.cafile` evitan `SSL certificate problem: unable to get local issuer`.
+- Las claves van por entorno del proceso; nunca a un fichero versionado.
+- `php -l` funciona sin extensiones; úsalo siempre tras editar PHP.
+
+## CDN de Hostinger convierte PNG a WebP
+
+Al pedir una imagen con `Accept: image/webp` (Chrome), el CDN devuelve WebP (pierde calidad) y
+la descarga sale `.webp`; con `Accept: image/png` devuelve el PNG original. Cachea por ruta, así
+que `?cb=` no siempre cambia la variante. Para comparar píxeles exactos, pide el PNG o usa
+`urllib` sin Accept; para verificar una descarga del usuario, acepta también WebP.
+
 ## OCR de imágenes con el motor nativo de Windows (sin instalar nada)
 
 Sirve para cazar texto en otro idioma, rótulos y erratas en cientos de imágenes. No hay
