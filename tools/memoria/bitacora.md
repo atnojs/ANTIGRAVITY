@@ -4,6 +4,25 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-27 — Agente de Flow siempre conectado (servicio permanente)
+
+- **Encargo:** «flow no tiene conexión todo el rato para usar la app desde cualquier PC o móvil;
+  que esté SIEMPRE conectado», y que los cambios fueran en `apps/unified-image-studio-hoola`.
+- **Qué se hizo:** tarea programada `UisFlowAgent` (al iniciar sesión + repetición cada 2 min,
+  turnos de 6 min, `IgnoreNew`, 3 reintentos, `StartWhenAvailable`, sin ventanas). Instalador
+  idempotente con `-Estado` y `-Quitar` que **verifica la credencial contra la app antes de instalar**.
+- **Dos fallos propios corregidos:** (1) el agente apuntaba a `unified-image-studio` en vez de a la
+  app hoola; (2) `agent.cancelled` leía el id solo de `$_GET`/`$_POST` y el agente lo manda en el
+  cuerpo JSON, así que respondía «cancela» siempre y **mataba cada generación al empezar**. Además
+  `api()` no aceptaba `extra_query`, con lo que la consulta de cancelación fallaba en silencio.
+- **Verificación en producción:** `workerOnline: true`, indicador «Flow: conectado», generación real
+  `eeea0973ff744f71` → `done` 145 KB 1024x1024, y parada real `fdc6d85eecf7e931` → `cancelled` sin
+  archivo y con Chrome cerrado. Detalle en `apps/unified-image-studio-hoola/docs/VERIFICACION.md`.
+- **Límite:** con el PC apagado o la sesión cerrada no hay agente. Con el portátil enchufado la
+  suspensión está a 0 (nunca); con batería, a los 10 minutos.
+
+---
+
 ## 2026-10-26 (noche) — Copia Hoola v3: todo el estudio con el estilo al 100 %
 
 - **Encargo:** «una copia de la app con el estilo hoola al 100 %».

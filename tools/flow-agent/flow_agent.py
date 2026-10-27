@@ -48,7 +48,7 @@ LOCKFILE = os.path.join(AGENT_DIR, 'flow_agent.lock')
 FLOW_PY = os.path.join(AGENT_DIR, 'flow.py')
 LOCK_STALE_SEC = 3 * 60 * 60
 # Sello del build: permite saber qué versión está corriendo cuando hay dudas.
-AGENT_BUILD = 'v1.3.1 · 2026-10-26 · lock huerfano por PID reciclado'
+AGENT_BUILD = 'v1.4.0 · 2026-10-27 · servicio permanente, cancelación fiable y lock robusto'
 # Cada cuánto se pregunta al servidor si hay que parar (segundos).
 CANCEL_POLL_SEC = 3
 # Se activa cuando el último trabajo se aplazó por el perfil ocupado: conviene
@@ -100,7 +100,7 @@ def load_config() -> dict:
     return cfg
 
 
-def api(cfg: dict, action: str, payload: dict | None = None, timeout: int = 60) -> dict:
+def api(cfg: dict, action: str, payload: dict | None = None, timeout: int = 60, extra_query: str = '') -> dict:
     url = '%s?action=%s%s' % (cfg['base'].strip(), action, extra_query)
     data = json.dumps(payload or {}).encode('utf-8')
     req = urllib.request.Request(url, data=data, method='POST', headers={

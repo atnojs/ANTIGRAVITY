@@ -1,3 +1,19 @@
+## 2026-10-27 — Cancelación que mataba cada generación al empezar
+
+- **Síntoma:** los trabajos se quedaban en `running` para siempre, sin Chrome y sin archivo.
+- **Causa:** el agente pregunta cada 3 s `agent.cancelled` mandando `{"id": …}` en el cuerpo JSON,
+  pero el endpoint leía el id de `$_GET`/`$_POST`; con el id vacío `uis_safe_id('')` falla y
+  `uis_flow_cancelled('')` devuelve `true` → el agente mataba la generación recién nacida.
+  En paralelo, `api()` no aceptaba el parámetro `extra_query` con el que se enviaba el id en la URL,
+  así que esa consulta lanzaba `TypeError` y se tragaba en un `except`.
+- **Lección:** cuando un endpoint recibe datos del agente, hay que aceptar **cuerpo JSON y
+  formulario**, no solo `$_REQUEST`. Y una pregunta de tipo «¿cancelo?» debe **fallar en cerrado
+  del lado seguro**: si el id no es válido, responder «no canceles» es más seguro que «cancela».
+- **Corregido:** el endpoint lee el cuerpo JSON (y `$_GET`), el agente manda el id también en la URL
+  (funciona con servidor nuevo y antiguo) y `api()` acepta `extra_query`. Verificado con generación
+  real en producción y con parada real.
+
+---
 ## 2026-10-26 — Chrome no puede escribir el bloqueo del perfil de Flow: «Acceso denegado (0x5)»
 
 - **Síntoma:** el agente falla siempre con `RuntimeError: Event loop is closed`; dentro del log,

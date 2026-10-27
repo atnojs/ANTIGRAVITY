@@ -147,7 +147,28 @@ reenvía solo, para no gastar dos veces la generación.
   manual, además de en la biblioteca del estudio.
 - Este agente **nunca** guarda el token en logs ni lo imprime.
 
-## Instalar como tarea programada (opcional)
+## Dejarlo siempre conectado (recomendado)
+
+```powershell
+cd E:\ANTIGRAVITY\tools\flow-agent
+powershell -NoProfile -ExecutionPolicy Bypass -File .\instalar-tarea.ps1
+```
+
+Registra la tarea `UisFlowAgent`: arranca al iniciar sesión y se repite cada 2 minutos, con turnos
+de 6 minutos, así que **siempre hay uno trabajando**. Se recupera tras suspensión o apagado y
+reintenta si el proceso falla. Comprobar el estado en cualquier momento:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\instalar-tarea.ps1 -Estado
+```
+
+Y para quitarlo:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\instalar-tarea.ps1 -Quitar
+```
+
+## Instalar como tarea programada (alternativa manual)
 
 ```powershell
 $py = "E:\ANTIGRAVITY\tools\flow-agent\.venv\Scripts\pythonw.exe"

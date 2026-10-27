@@ -84,3 +84,69 @@ mensaje.
 - La generación real con Flow depende de un agente encendido en el PC de Flow; no se lanzaron
   generaciones (coste real).
 - La base SQLite es propia de esta copia: no comparte proyectos con el original.
+
+---
+
+## Agente de Flow siempre conectado (2026-10-27)
+
+El agente solo vivía mientras hubiera una ventana abierta: al cerrarla, la app decía «Flow: sin
+conexión» y los trabajos se quedaban en cola. Ahora es un **servicio permanente**.
+
+### Qué se instaló
+
+Tarea programada `UisFlowAgent`:
+
+| Ajuste | Valor | Para qué |
+|---|---|---|
+| Disparador | al iniciar sesión + repetición cada 2 min | cobertura continua y arranque tras reiniciar |
+| Acción | `pythonw.exe flow_agent.py --minutes 6` | 6 min de trabajo con solape de 4 min: nunca hay hueco |
+| Varias instancias | `IgnoreNew` | el candado del agente evita duplicados |
+| Reintentos | 3, cada minuto | si el proceso muere, vuelve |
+| `StartWhenAvailable` | activo | se recupera tras suspensión o apagado |
+| Ventana de consola | ninguna (`pythonw` + `CREATE_NO_WINDOW`) | no molesta |
+
+Instalación y comprobación:
+
+```powershell
+cd E:\ANTIGRAVITY\tools\flow-agent
+powershell -NoProfile -ExecutionPolicy Bypass -File .\instalar-tarea.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\instalar-tarea.ps1 -Estado
+powershell -NoProfile -ExecutionPolicy Bypass -File .\instalar-tarea.ps1 -Quitar
+```
+
+El instalador **comprueba la credencial contra la app antes de instalar** y muestra a qué URL apunta
+el agente: así no se instala un servicio que no puede funcionar.
+
+### Dos fallos propios corregidos por el camino
+
+1. **El agente apuntaba a `unified-image-studio`**, no a esta app, así que su cola no se atendía.
+   Ahora `agente.json` apunta a `unified-image-studio-hoola`.
+2. **El endpoint `agent.cancelled` leía mal el identificador**: el agente lo manda en el cuerpo
+   JSON y el servidor solo miraba `$_GET`/`$_POST`, así que respondía «cancela» **siempre** y
+   mataba cada generación al empezar. Se corrigió en las dos apps, y el agente manda además el id
+   en la URL para no depender del orden del despliegue.
+3. De paso: `api()` no aceptaba el parámetro `extra_query` que usaba la consulta de cancelación, así
+   que la pregunta fallaba en silencio y la parada no funcionaba. Corregido y verificado.
+
+### Verificación
+
+| Prueba | Resultado |
+|---|---|
+| Credencial del agente contra la app | HTTP 200 |
+| Tarea registrada y en ejecución | `Running`, próxima ejecución cada 2 min |
+| Agente vivo con el servicio | 2 procesos, sin ventanas |
+| `flow.state` desde la app | `workerOnline: true` |
+| Indicador en la interfaz | **«Flow: conectado»** |
+| Generación real desde producción | trabajo `eeea0973ff744f71` → `done`, 145.392 B, 1024×1024 |
+| Parada de una generación en producción | trabajo `fdc6d85eecf7e931` → `cancelled`, sin archivo, Chrome cerrado |
+| Descarga del resultado | JPEG válido desde la tarjeta de la biblioteca |
+
+Evidencias: `30-31-produccion-conectado.png`, `32-produccion-biblioteca.png`,
+`33-produccion-parada.png`, más `29-hoola-biblioteca.png` de la prueba local con descarga real.
+
+### Límite honesto
+
+Si el PC está apagado, suspendido o con la sesión cerrada, **no hay agente**: no hay nada que
+ejecute Flow. Con el portátil enchufado, la suspensión automática está a 0 (nunca); con batería,
+a los 10 minutos. Para uso desde el móvil a cualquier hora, el PC debe estar encendido y con sesión
+iniciada.
