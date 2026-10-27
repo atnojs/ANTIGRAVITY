@@ -6,8 +6,8 @@
    desde cualquier ordenador, y cerrar la pestaña no cancela el trabajo.
    ============================================================ */
 
-import { emit } from './core.js?v=18';
-import { server } from './persist.js?v=18';
+import { emit } from './core.js?v=19';
+import { server } from './persist.js?v=19';
 
 /* Contrato mínimo del cliente con el motor Flow. El catálogo visible de modelos
    vive en ai.js (selector y notas) y la autoridad de nombres es el servidor;

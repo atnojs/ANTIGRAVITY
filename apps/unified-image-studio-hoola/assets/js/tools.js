@@ -5,8 +5,8 @@
 import {
   state, emit, getLayer, selectLayer, clamp, makeTextLayer, makeShapeLayer, addLayer,
   pushHistory, markDirty,
-} from './core.js?v=18';
-import { renderer, hitTestHandle, pointInLayer } from './render.js?v=18';
+} from './core.js?v=19';
+import { renderer, hitTestHandle, pointInLayer } from './render.js?v=19';
 
 const SNAP_DEG = 15;
 const MIN_SIZE = 8;
@@ -208,7 +208,9 @@ function onPointerMove(event) {
     if (!isTyping(event.target)) {
       const tool = state.selection.tool;
       if (tool === 'hand' || spaceDown) setCursor('grab');
-      else if (tool === 'mask') setCursor('crosshair');
+      // Con el pincel de máscara no se muestra cruz: la app dibuja un círculo del
+  // tamaño del pincel, así que el cursor del sistema se oculta.
+  else if (tool === 'mask') setCursor('none');
       else if (tool === 'text') setCursor('text');
       else if (tool === 'shape') setCursor('crosshair');
       else setCursor('default');
