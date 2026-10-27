@@ -333,8 +333,8 @@
             inputEl.focus();
             return;
         }
-        if (code === PASS_CODE) { grant('\u2705 Modelos desbloqueados'); return; }
-
+        // El código de desbloqueo ya NO está escrito en el JS: se valida contra
+        // el servidor con la contraseña de acceso de la app.
         setChecking(true);
         errorEl.textContent = '';
         var done = function () { setChecking(false); };

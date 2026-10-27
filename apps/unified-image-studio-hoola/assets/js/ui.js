@@ -6,8 +6,8 @@ import {
   state, emit, on, getLayer, selectLayer, removeLayer, duplicateLayer, reorderLayer,
   moveLayerTo, mutate, getResource, fmtDate, fmtBytes, canUndo, canRedo,
   clamp, LIMITS,
-} from './core.js?v=22';
-import { modelById, catalog } from './ai.js?v=22';
+} from './core.js?v=23';
+import { modelById, catalog } from './ai.js?v=23';
 
 export const $ = (id) => document.getElementById(id);
 export const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));

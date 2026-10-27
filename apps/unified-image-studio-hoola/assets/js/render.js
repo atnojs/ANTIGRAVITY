@@ -2,7 +2,7 @@
    render.js — motor de dibujo, viewport y composición
    ============================================================ */
 
-import { state, clamp, getResource, imageFor, getLayer } from './core.js?v=22';
+import { state, clamp, getResource, imageFor, getLayer } from './core.js?v=23';
 
 const HANDLE_DEFS = [
   ['nw', -1, -1], ['n', 0, -1], ['ne', 1, -1],
@@ -357,14 +357,25 @@ class Renderer {
     if (show) {
       if (layer.mask?.strokes?.length > 0) {
         const canvas = this.maskCanvasFor(layer);
-        ctx.globalAlpha = 0.55;
+        if (layer.mask?.inverted) {
+          // Vista de la máscara invertida: se muestra el complemento de lo pintado.
+          ctx.globalAlpha = 0.35;
+          ctx.fillStyle = 'rgba(46,232,255,.55)';
+          ctx.fillRect(0, 0, doc.width, doc.height);
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.drawImage(canvas, 0, 0, doc.width, doc.height);
+          ctx.globalCompositeOperation = 'source-over';
+        } else {
+          ctx.globalAlpha = 0.55;
         ctx.drawImage(canvas, 0, 0, doc.width, doc.height);
         // Tinte cian sobre la máscara pintada.
         ctx.globalCompositeOperation = 'source-in';
         ctx.fillStyle = 'rgba(46,232,255,.55)';
         ctx.fillRect(0, 0, doc.width, doc.height);
         ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 1;
+          ctx.globalAlpha = 1;
+        }
       }
       if (live) {
         ctx.save();

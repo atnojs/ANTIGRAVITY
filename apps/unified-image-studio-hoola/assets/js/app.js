@@ -8,32 +8,32 @@ import {
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
-} from './core.js?v=22';
-import { renderer } from './render.js?v=22';
-import { initTools, setTool } from './tools.js?v=22';
+} from './core.js?v=23';
+import { renderer } from './render.js?v=23';
+import { initTools, setTool } from './tools.js?v=23';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
   showLoading, hideLoading, updateTopbar, updateSaveState, updateViewportUI, setEmptyState,
   renderLayers, renderLayerProps, renderRefs, renderVersions, renderProjects, renderAssets,
   renderRecipes, setActiveModel, switchLeftTab, switchRightTab, setToolUI, paintStorageInfo,
-} from './ui.js?v=22';
+} from './ui.js?v=23';
 import {
   server, saveNow, scheduleSave, listProjects, loadProject, deleteProject, saveVersion,
   listVersions, deleteVersion, storageInfo, clearLocalCache, uploadResource, lastProjectId, idb,
   fetchVersionDoc,
-} from './persist.js?v=22';
+} from './persist.js?v=23';
 import {
   downloadExport, copyToClipboard, downloadProject, exportImage, canvasToBlob, estimateExport,
-} from './exporter.js?v=22';
+} from './exporter.js?v=23';
 import {
   MODELS, modelById, loadCatalog, catalog, generate,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
-} from './ai.js?v=22';
+} from './ai.js?v=23';
 import {
   FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
   flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
   statusFlowJobs, retryFlowJob, deleteFlowJob, cancelFlowJob, downloadFlowJob, fetchFlowBlob,
-} from './flow.js?v=22';
+} from './flow.js?v=23';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
