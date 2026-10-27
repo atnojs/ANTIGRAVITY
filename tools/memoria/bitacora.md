@@ -2489,3 +2489,25 @@ autoevaluación del autor: `…/autoevaluacion.md` (93,4).
   `Cross-Origin-Opener-Policy policy would block the window.closed call`; el popup abre bien. Es
   comportamiento conocido del SDK, no bloquea.
 
+**Fuente reconstruida (`src/`) — commit `d9c849fe`.** Ya existe árbol editable en
+`apps/unified-app/src/` (13 ficheros): `main.jsx`, `App.jsx`, `index.css`, `lib/firebase.js`
+(config **`nanobanana-cbb2d`**, `browserSessionPersistence`), `lib/api.js` (`fetch("proxy.php")`
+relativo) y 9 componentes (`AILab`, `EditStudio`, `MaskEditorModal`, `ProEffects`, `AuthScreen`,
+`AdminPanel`, `SplashScreen`, `SelectField`, `StatCard`). Reconstruido desde el bundle con JSX real,
+35/35 iconos de lucide por nombre y constantes semánticas; conserva el alias minificado original en
+las cabeceras.
+
+- **Build reproducible:** con TEMP/TMP en `E:\ANTIGRAVITY\.tmp-build\esb`, `npm run build` → exit 0
+  (vite 7.3.0, 1727 módulos, 4,66 s) y **mismo SHA-256** que obtuvo el compañero
+  (`dist/assets/index.dev-CA3L_FSO.js`, 597.140 B, `1F72B879…7BEF`): el build es determinista.
+- **Paridad:** CSS **443/443 reglas** con las mismas declaraciones (única diferencia semánticamente
+  nula: `background-attachment:fixed` cambia de posición dentro de `body`); capturas de login,
+  registro y error con **SHA-256 idéntico** al bundle original; 2.465/2.465 strings.
+- **`publish.mjs` corregido** (lo detectó el compañero): acepta `assets/index.dev-<hash>.js` además de
+  `assets/index-<hash>.js`, valida que el fichero exista y añade `--dry-run` (`npm run publish:app --
+  --dry-run`). Antes abortaba con «No encuentro la referencia al JS compilado».
+- **Producción NO se ha vuelto a publicar**: sigue sirviendo el build verificado por el verificador
+  independiente (`assets/app.20261027.js`, commit `df7b661b`). Para alinear producción con `src/`:
+  `npm run deploy:app`, commit de `index.html` + `assets/`, push y re-verificar en la URL real.
+
+
