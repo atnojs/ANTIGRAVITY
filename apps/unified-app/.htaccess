@@ -1,0 +1,48 @@
+# Unified Studio — apps/unified-app
+# Hostinger sirve esta carpeta en https://atnojs.es/apps/unified-app/
+
+# --- Seguridad: no exponer el andamiaje de desarrollo ---
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /apps/unified-app/
+
+  # Nada de scripts de publicación ni de entradas de desarrollo por web.
+  RewriteRule ^scripts/ - [F,L]
+  RewriteRule ^package(-lock)?\.json$ - [F,L]
+  RewriteRule ^vite\.config\.js$ - [F,L]
+  RewriteRule ^tailwind\.config\.js$ - [F,L]
+  RewriteRule ^postcss\.config\.js$ - [F,L]
+  RewriteRule ^eslint\.config\.js$ - [F,L]
+  RewriteRule ^index\.dev\.html$ - [F,L]
+
+  # SPA: solo las rutas sin extensión caen en index.html (así los 404 de assets
+  # siguen siendo 404 y no un HTML con tipo JavaScript).
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !\.[A-Za-z0-9]{1,5}$
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # CSP ya probada con Firebase Auth (Google) + Firestore. Se mantiene idéntica a la
+  # que traía el build original; solo se añaden cabeceras de refuerzo.
+  Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://*.firebaseapp.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.googleusercontent.com https://*.gstatic.com https://www.gstatic.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' data: blob: https://*.googleapis.com https://*.firebaseio.com https://*.firebasestorage.app https://*.replicate.com; frame-src 'self' https://*.firebaseapp.com;"
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# --- Caché: el HTML siempre fresco; los assets versionados pueden cachearse ---
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresDefault "access plus 1 day"
+</IfModule>
+
+# --- Claves: siempre por entorno del servidor, nunca en archivos versionados ---
+# SetEnv A_OLD "no usar: la clave A se define en el .htaccess privado de Hostinger"
