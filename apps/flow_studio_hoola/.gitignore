@@ -8,3 +8,11 @@ flow_store/ai_rate_*.json
 history_store/
 history_data/
 *.log
+
+# Base de datos y copias de los modelos directos (la crea PHP en el servidor).
+storage/*
+!storage/.htaccess
+
+# Los .htaccess internos no llevan claves: protegen lib/ y storage/. El
+# .gitignore raíz ignora .htaccess, así que se re-incluyen aquí.
+!lib/.htaccess

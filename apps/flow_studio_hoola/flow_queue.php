@@ -23,6 +23,20 @@ const MAX_VIDEO_BYTES = 32 * 1024 * 1024;  // 32 MB por vídeo ya decodificado
 const MAX_VIDEO_QUEUE = 2;          // vídeos pendientes a la vez (cada uno gasta puntos)
 const VIDEO_MODELS = ['Veo 3.1 - Lite', 'Veo 3.1 - Fast', 'Veo 3.1 - Quality', 'Omni Flash'];
 const VIDEO_RATIOS = ['16:9', '9:16'];  // la UI de Flow solo ofrece estos dos en vídeo
+// Identificadores canónicos del proyecto (los mismos que usa la compuerta de
+// modelos) → nombre literal que espera el menú de Google Flow. La interfaz
+// manda el id; el worker del PC sigue recibiendo el nombre de siempre.
+const IMAGE_MODEL_ALIASES = [
+    'flow-nano-banana-2' => 'Nano Banana 2',
+    'flow-nano-banana-pro' => 'Nano Banana Pro',
+    'flow-nano-banana-2-lite' => 'Nano Banana 2 Lite',
+];
+const VIDEO_MODEL_ALIASES = [
+    'veo-3.1-lite' => 'Veo 3.1 - Lite',
+    'veo-3.1-fast' => 'Veo 3.1 - Fast',
+    'veo-3.1-quality' => 'Veo 3.1 - Quality',
+    'omni-flash' => 'Omni Flash',
+];
 const STALE_RUNNING = 0;        // 0 = nunca reencolar: sin límite de tiempo (2026-10-22)
 const WORKER_FRESH = 600;       // 10 min sin señales = worker desconectado
 
@@ -360,6 +374,7 @@ if ($reqAction === 'request') {
             $ratio = '16:9';
         }
         $model = (string) ($body['model'] ?? 'Veo 3.1 - Lite');
+        $model = VIDEO_MODEL_ALIASES[$model] ?? $model;
         if (!in_array($model, VIDEO_MODELS, true)) {
             $model = 'Veo 3.1 - Lite';
         }
@@ -371,6 +386,7 @@ if ($reqAction === 'request') {
             $ratio = '1:1';
         }
         $model = (string) ($body['model'] ?? 'Nano Banana 2');
+        $model = IMAGE_MODEL_ALIASES[$model] ?? $model;
         if (!in_array($model, ['Nano Banana 2', 'Nano Banana Pro', 'Nano Banana 2 Lite'], true)) {
             $model = 'Nano Banana 2';
         }

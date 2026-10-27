@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- assets versionados 20261026g: modo vídeo con las opciones de Flow -->
-<title>Flow Studio · Genera imágenes y vídeos con Google Flow</title>
-<meta name="description" content="Genera imágenes y vídeos gratis con Google Flow. Elige modelo, formato y fotogramas, edita o anima una imagen y escala el resultado 2×, 4× u 8× en tu PC.">
+<!-- assets versionados 20261027a: modelos directos + compuerta de contraseña -->
+<title>Flow Studio · Genera imágenes y vídeos con Google Flow y modelos directos</title>
+<meta name="description" content="Genera imágenes y vídeos con Google Flow en tu PC o con los modelos directos (OpenAI, Gemini y Qwen), elige formato y resolución, edita o anima una imagen y escala el resultado 2×, 4× u 8×. Los modelos caros se protegen con la contraseña de acceso.">
 <meta name="theme-color" content="#001018">
-<meta property="og:title" content="Flow Studio · Genera imágenes y vídeos con Google Flow">
-<meta property="og:description" content="Describe la imagen o el vídeo, elige modelo y formato, añade fotogramas y descarga el resultado. Tu PC lo hace con Google Flow, sin claves.">
+<meta property="og:title" content="Flow Studio · Flow y modelos directos de imagen">
+<meta property="og:description" content="Flow gratis en tu PC y, si lo necesitas, OpenAI, Gemini y Qwen desde el servidor. Elige modelo, formato y resolución; los modelos protegidos piden la contraseña de acceso.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300D0D0'/%3E%3Cstop offset='1' stop-color='%2326C626'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%230a0b0d'/%3E%3Cpath d='M20 44V20h22v7H28v5h11v7H28v5z' fill='url(%23g)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.hoola.20261026g.css">
+<link rel="stylesheet" href="app.hoola.20261027a.css">
 </head>
 <body>
 
@@ -22,14 +22,15 @@
     <div class="brand">
         <span class="brand-dot" aria-hidden="true"></span>
         <h1>FLOW <span>STUDIO</span></h1>
-        <span class="tag-free">GRATIS</span>
+        <span class="tag-free">FLOW GRATIS</span>
     </div>
     <div class="topbar-actions">
         <div id="workerStatus" class="status-pill" role="status" aria-live="polite">
             <span class="dot" aria-hidden="true"></span>
             <span class="txt">Comprobando PC…</span>
         </div>
-        <button id="btnHistory" class="ghost-btn" aria-controls="historyPanel" aria-expanded="false">
+        <button id="btnAccess" class="ghost-btn" type="button" aria-label="Iniciar sesión con la contraseña de acceso">Acceso</button>
+        <button id="btnHistory" class="ghost-btn" type="button" aria-controls="historyPanel" aria-expanded="false">
             Historial
         </button>
     </div>
@@ -41,7 +42,7 @@
         <div class="composer-scroll">
             <div class="composer-head">
                 <h2 id="composerTitle">Describe la imagen</h2>
-                <p id="composerSub">Añade hasta 2 imágenes de referencia. Se genera en tu PC con Google Flow, sin claves y sin coste por imagen.</p>
+                <p id="composerSub">Flow se ejecuta en tu PC (gratis); los modelos directos, en el servidor y con la contraseña de acceso. Hasta 2 imágenes de referencia.</p>
             </div>
 
             <div class="mode-switch" role="group" aria-label="Modo de trabajo">
@@ -160,23 +161,53 @@
             </fieldset>
 
             <fieldset class="control" id="imageModelControl">
-                <legend>Modelo</legend>
-                <div class="chips" id="modelChips">
-                    <button type="button" class="chip is-active" data-model="Nano Banana 2" aria-pressed="true">Nano Banana 2</button>
-                    <button type="button" class="chip" data-model="Nano Banana Pro" aria-pressed="false">Nano Banana Pro</button>
-                    <button type="button" class="chip" data-model="Nano Banana 2 Lite" aria-pressed="false">2 Lite</button>
+                <legend>Modelo <span class="legend-hint">Flow en tu PC o proveedor de API</span></legend>
+                <div class="model-groups" id="modelChips">
+                    <p class="model-group-title">FLOW · GOOGLE <span class="legend-hint">en tu PC · gratis</span></p>
+                    <div class="chips">
+                        <button type="button" class="chip is-active" data-model="flow-nano-banana-2" aria-pressed="true">NANO BANANA 2</button>
+                        <button type="button" class="chip" data-model="flow-nano-banana-pro" aria-pressed="false">NANO BANANA PRO</button>
+                        <button type="button" class="chip" data-model="flow-nano-banana-2-lite" aria-pressed="false">NANO BANANA 2 LITE</button>
+                    </div>
+                    <p class="model-group-title">OPENAI 2.5 <span class="legend-hint">de menor a mayor calidad · API</span></p>
+                    <div class="chips">
+                        <button type="button" class="chip" data-model="openai-medium" aria-pressed="false">MEDIUM</button>
+                        <button type="button" class="chip" data-model="openai-high" aria-pressed="false">HIGH</button>
+                        <button type="button" class="chip" data-model="openai-max-flare" aria-pressed="false">MAX FLARE</button>
+                        <button type="button" class="chip" data-model="openai-xhigh" aria-pressed="false">XHIGH</button>
+                        <button type="button" class="chip" data-model="openai-max-sunburst" aria-pressed="false">MAX SUNBURST</button>
+                    </div>
+                    <div class="model-group">
+                        <p class="model-group-title">GEMINI</p>
+                        <div class="chips">
+                            <button type="button" class="chip" data-model="gemini-2" aria-pressed="false">GEMINI 2</button>
+                            <button type="button" class="chip" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
+                            <button type="button" class="chip" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+                        </div>
+                        <p class="model-group-title">QWEN</p>
+                        <div class="chips">
+                            <button type="button" class="chip" data-model="qwen-pro" aria-pressed="false">QWEN 3 PRO</button>
+                        </div>
+                        <p class="model-group-title">IMAGE 2</p>
+                        <div class="chips">
+                            <button type="button" class="chip" data-model="openai-image-2-low" aria-pressed="false">LOW</button>
+                            <button type="button" class="chip" data-model="openai-image-2" aria-pressed="false">MEDIUM</button>
+                            <button type="button" class="chip" data-model="openai-image-2-high" aria-pressed="false">HIGH</button>
+                        </div>
+                    </div>
                 </div>
+                <p class="refs-note" id="modelNote" aria-live="polite">Flow se genera en tu PC, sin clave y sin coste por imagen.</p>
             </fieldset>
 
             <fieldset class="control" id="videoModelControl" hidden>
                 <legend>Modelo de vídeo <span class="legend-hint">de menor a mayor capacidad</span></legend>
                 <div class="chips" id="videoModelChips">
-                    <button type="button" class="chip is-active" data-vmodel="Veo 3.1 - Lite" aria-pressed="true" title="10 puntos por vídeo · 5 al día con los 50 de la cuenta">Veo 3.1 Lite</button>
-                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Fast" aria-pressed="false" title="El importe exacto lo marca Flow antes de generar">Veo 3.1 Fast</button>
-                    <button type="button" class="chip" data-vmodel="Veo 3.1 - Quality" aria-pressed="false" title="El importe exacto lo marca Flow antes de generar">Veo 3.1 Quality</button>
-                    <button type="button" class="chip" data-vmodel="Omni Flash" aria-pressed="false" title="El importe exacto lo marca Flow antes de generar">Omni Flash</button>
+                    <button type="button" class="chip is-active" data-vmodel="veo-3.1-lite" aria-pressed="true" title="10 puntos por vídeo · 5 al día con los 50 de la cuenta">Veo 3.1 Lite</button>
+                    <button type="button" class="chip" data-vmodel="veo-3.1-fast" aria-pressed="false" title="El importe exacto lo marca Flow antes de generar">Veo 3.1 Fast</button>
+                    <button type="button" class="chip" data-vmodel="veo-3.1-quality" aria-pressed="false" title="Protegido: pide la contraseña de acceso">Veo 3.1 Quality</button>
+                    <button type="button" class="chip" data-vmodel="omni-flash" aria-pressed="false" title="Protegido: pide la contraseña de acceso">Omni Flash</button>
                 </div>
-                <p class="refs-note" id="videoHint">Veo 3.1 Lite gasta 10 puntos por vídeo (5 al día con los 50). En Fast, Quality y Omni Flash, Flow marca el importe antes de generar.</p>
+                <p class="refs-note" id="videoHint">Veo 3.1 Lite gasta 10 puntos por vídeo (5 al día con los 50). En Fast, Quality y Omni Flash, Flow marca el importe antes de generar. QUALITY y OMNI FLASH piden la contraseña de acceso.</p>
             </fieldset>
 
             <fieldset class="control">
@@ -190,8 +221,19 @@
                 </div>
             </fieldset>
 
+            <fieldset class="control" id="resolutionControl">
+                <legend>Resolución <span class="legend-hint">solo modelos directos</span></legend>
+                <select id="resolutionSelect" class="select" aria-label="Resolución de salida en píxeles">
+                    <option value="512">512</option>
+                    <option value="1024" selected>1024</option>
+                    <option value="2048">2048</option>
+                    <option value="4096">4096</option>
+                </select>
+                <p class="refs-note">Con Flow no se elige: genera a su resolución nativa (~1K).</p>
+            </fieldset>
+
             <fieldset class="control" id="countControl">
-                <legend>Cantidad</legend>
+                <legend>Cantidad <span class="legend-hint" id="countHint">solo con Flow · 1–4</span></legend>
                 <div class="chips" id="countChips">
                     <button type="button" class="chip is-active" data-count="1" aria-pressed="true">1</button>
                     <button type="button" class="chip" data-count="2" aria-pressed="false">2</button>
@@ -239,7 +281,7 @@
 
 </main>
 
-<aside id="historyPanel" class="history-panel" aria-label="Historial de imágenes" aria-hidden="true">
+<aside id="historyPanel" class="history-panel" aria-label="Historial de imágenes" aria-hidden="true" inert>
     <div class="history-head">
         <h2>Historial</h2>
         <button type="button" id="btnHistoryClose" class="ghost-btn small">Cerrar</button>
@@ -248,6 +290,27 @@
         <p class="history-empty">Cargando historial…</p>
     </div>
 </aside>
+
+<div id="accessModal" class="access-modal hidden" role="dialog" aria-modal="true" aria-labelledby="accessTitle" aria-describedby="accessDesc">
+    <div class="access-backdrop" data-access-close="1"></div>
+    <div class="access-card">
+        <button type="button" id="accessClose" class="access-close" aria-label="Cerrar">×</button>
+        <h2 id="accessTitle">Acceso privado</h2>
+        <p id="accessDesc" class="access-desc">Escribe la contraseña de acceso del proyecto. Con sesión se usan los modelos directos (OpenAI, Gemini y Qwen); Flow funciona sin ella.</p>
+        <form id="accessForm" novalidate>
+            <label class="access-label" for="accessPassword">Contraseña de acceso</label>
+            <input type="password" id="accessPassword" class="access-input" autocomplete="current-password"
+                maxlength="128" spellcheck="false">
+            <p id="accessError" class="access-error" role="alert" aria-live="assertive"></p>
+            <div class="access-actions">
+                <button type="button" id="accessCancel" class="ghost-btn">Seguir sin sesión</button>
+                <button type="submit" id="accessSubmit" class="access-submit">Entrar</button>
+            </div>
+        </form>
+        <button type="button" id="accessLogout" class="access-submit access-logout" hidden>Cerrar sesión</button>
+        <p class="access-note">Es la misma contraseña de la compuerta de modelos. El desbloqueo dura esta pestaña del navegador.</p>
+    </div>
+</div>
 
 <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Imagen ampliada">
     <button type="button" id="lightboxClose" class="lightbox-close" aria-label="Cerrar">×</button>
@@ -271,7 +334,12 @@
 </noscript>
 
 <script src="history-manager.js"></script>
-<script src="app.20261026g.js"></script>
+<!-- Compuerta compartida de modelos: contraseña de acceso al pulsar los caros -->
+<script src="../_shared/model-gate.20261026b.js"></script>
+<script src="app.20261027a.js"></script>
+
+<!-- Ojo para ver/ocultar la contraseña en el modal de acceso y en la compuerta -->
+<script src="../_shared/password-eye.js?v=20261025b" defer></script>
 
 <!-- Zoom con la rueda del raton en el visor de imagen grande -->
 <script src="lightbox-zoom.20261026.js?v=20261026" defer></script>
