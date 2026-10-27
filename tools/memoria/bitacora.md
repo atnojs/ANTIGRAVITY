@@ -2266,3 +2266,28 @@ Antonio: «esta app: apps/flow_studio_hoola me ha dado este error: `RuntimeError
 - **Límite:** no se grabó un recorrido nuevo en Chrome para esta entrada; los pasos se extrajeron del
   marcado y del código de la app (build `3.0.0-hoola`). Si cambian etiquetas o flujos, la skill se
   actualiza en el mismo encargo (tiene su propia sección de mantenimiento).
+
+---
+
+## 2026-10-26 (noche) — UIS Hoola: el overlay de 3 aros vuelve al pulsar GENERAR
+
+Antonio: «quiero que cuando clique en generar aparezca el overly de los 3 aros, como se recoge en la skill».
+
+- **Causa:** `runGeneration()` devolvía antes de `showLoading()` cuando el modelo era de Flow (el
+  inicial de la app); el botón solo cambiaba a «PROCESANDO…» y aparecía el aviso compacto de cola,
+  así que el overlay canónico nunca se veía.
+- **Arreglo final:** `showLoading()` al entrar en la generación, para Flow y modelos directos. Con
+  Flow el overlay cubre solo el encolado (mínimo visible de 900 ms) y se oculta al quedar en cola;
+  el seguimiento continúa con `#flowProgress` y la app queda libre. Se conserva la decisión del
+  26-oct de no bloquear la cola hasta 30 minutos. El overlay bloquea el scroll (`html.is-loading`)
+  y lo restaura al ocultarse; `aria-busy` se alterna.
+- **Verificación:** Chrome headless sobre la app local con respuestas de Flow simuladas: overlay
+  visible con 3 aros y «IA generando imagen…» durante el envío, `overflow:hidden`; a los 3 s overlay
+  oculto, `overflow:visible` y `#flowProgress` visible. La misma prueba con IMAGE 2 LOW (modelo
+  directo) mantiene el overlay hasta la respuesta. Producción sirve los tres archivos idénticos a
+  HEAD (SHA-256) tras el despliegue.
+- **Límite:** no se lanzó una generación real de Flow para no gastar puntos; el cambio no toca el
+  contrato con el servidor ni el worker.
+- **Commits:** `cd97b10a` (primera versión, bloqueante), `838dbd1d` y `a189af25` (corrección final:
+  overlay breve y UI libre), más `7aa41afd` de re-disparo. Evidencia en
+  `tools/evidencias/2026-10-26-uis-overlay-generar/`.

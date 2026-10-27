@@ -174,9 +174,10 @@ de lado». Con archivos muy grandes, reducir antes de subir.
    Solo se envían al generar.
 7. Si quiere partir de lo que ya hay en el lienzo: **«Usar lienzo como referencia»**.
 8. Pulsar **«GENERAR»**.
-9. Esperar: overlay **«IA generando imagen…»** con barra indeterminada y el aviso
-   «Enviando la solicitud al proveedor. No cierres esta pestaña.». No se puede lanzar otra mientras
-   dura.
+9. Al pulsar aparece el overlay **«IA generando imagen…»** con los tres aros y la barra
+   indeterminada. Con los modelos directos se mantiene hasta que llega la imagen; **con Flow solo
+   cubre el envío**: al quedar el trabajo en cola se oculta y el avance se sigue en el aviso
+   compacto y en **Biblioteca**. No se puede lanzar otra mientras se está enviando.
 10. En **«Resultado de IA»**: **«Aceptar»** (entra como capa nueva), **«Regenerar»**,
     **«Guardar variante»** o **«Descartar»**.
 
@@ -364,6 +365,8 @@ saber que la app está trabajando y no colgada:
 | Componer escenario | «Componiendo escenario…» | «Propuesta editable, no una reproducción exacta.» |
 | Probar prenda | «Probando la prenda…» | «Propuesta editable; revisa el resultado antes de publicar.» |
 
+Con **Flow**, el overlay de «Generar imagen» solo cubre el envío: al quedar el trabajo en cola se
+oculta, la app sigue libre y el avance se sigue en el aviso compacto y en **Biblioteca**.
 El vídeo no usa este overlay: se encola y su progreso se sigue en **Biblioteca** («En cola…»).
 
 ## Modelos: cuál recomendar y por qué
