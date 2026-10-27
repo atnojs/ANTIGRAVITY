@@ -73,7 +73,7 @@
     };
 
     /* Contraseña (fuera de texto plano para que no salte en un vistazo/grep) */
-    var PASS_CODE = String.fromCharCode(48, 53);
+    /* El código de desbloqueo ya no vive en el JS público: se valida en el servidor. */
 
     var STORE_KEY = 'ag_model_gate_v1';
     var BYPASS = '__agModelGateBypass';
@@ -572,12 +572,24 @@
             return true;
         },
         unlock: function (code) {
-            if (String(code) === PASS_CODE) {
+            /* Solo el servidor decide: se reenvía la contraseña al endpoint de acceso. */
+            var self = this;
+            return fetch(LOGIN_URL, {
+                method: 'POST',
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ password: String(code == null ? '' : code) })
+            }).then(function (response) {
+                if (!response.ok) return false;
                 rememberUnlock();
                 scan(document);
                 return true;
-            }
-            return false;
+            }).catch(function () { return false; });
         },
         /* Repinta los candados según el estado actual (por si la app reescribe su selector). */
         refresh: function () { scan(document); },
