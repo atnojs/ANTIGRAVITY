@@ -879,7 +879,7 @@
   border: 1.5px solid rgba(234, 255, 255, .95);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, .55), 0 0 10px rgba(0, 208, 208, .45);
   pointer-events: none;
-  z-index: 70;
+  z-index: 9999;
   display: none;
 }
 .brush-cursor.is-visible { display: block; }
