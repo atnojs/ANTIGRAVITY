@@ -1,3 +1,22 @@
+## 2026-10-27 — El mejorador de prompts volcaba JSON crudo cuando el modelo devolvía objetos sin corchetes
+
+- **Síntoma:** en Editar Imagen, al pulsar «Mejorar instrucción», la propuesta 1 aparecía como
+  `Iluminación","text":"…` y al aplicarla el campo recibía 945 caracteres de JSON; el resto eran
+  textos de respaldo.
+- **Causa:** `parsePromptVariants` solo probaba `JSON.parse` del array entre `[ ]` y del texto
+  completo. `xiaomi/mimo-v2.6-pro` devolvió legítimamente los 4 objetos sueltos
+  `{"type":"Iluminación","text":"…"},{"type":"Fondo",…}` sin corchetes; ambos intentos fallaban y
+  el código caía al parser por líneas, que interpretaba el JSON como texto.
+- **Solución:** envolver desde el primer `{` hasta el último `}` en `[]` antes de parsear, extraer
+  objetos equilibrados como red de seguridad y descartar cualquier texto que empiece por `{`/`[` o
+  contenga `"type":` (también en el filtro final de `normalizePromptVariants`).
+- **Verificación:** mock local con la respuesta cruda (objetos sin corchetes) → 4 propuestas limpias;
+  producción real Editar 4/4 limpias, campo editable y GENERAR EDICIÓN correcto (capturas 30–32 de
+  `tools/evidencias/2026-10-27-prompt-fiel/`).
+- **Commit:** `812fe360`.
+- **Lección:** un parser de salida de IA debe aceptar listas y objetos sueltos, y el fallback línea a
+  línea nunca debe ejecutarse sin haber descartado JSON.
+
 ## 2026-10-27 — Verificar una app en «modo local» es no verificar nada
 
 - **Qué pasó:** la app `unified-image-studio-hoola` se dio por verificada con 12 pruebas ejecutadas

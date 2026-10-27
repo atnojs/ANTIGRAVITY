@@ -4,6 +4,31 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-27 (tarde) — editar_generar: campo de prompt, 4 propuestas fieles y prompts que sobreviven a la imagen
+
+- **Encargo de Antonio:** «añade el campo donde poner el prompt y elimina las 4 tarjetas de enfoque;
+  solo un botón de mejorar el prompt que al pulsarlo muestre 4 botones (prompt 1, 2…); al pulsar uno
+  el prompt debe aparecer editable en el campo; al generar la imagen los prompts deben seguir siendo
+  utilizables para comparar; creativos pero fieles al prompt inicial (si digo hombre, no mujer; si
+  digo ciudad, no campo)».
+- **Qué se hizo:** en `apps/editar_generar` se sustituyó el bloque de 4 enfoques por un textarea
+  `#prompt-input` siempre visible, un único botón «Mejorar prompt» y, al pulsarlo, 4 propuestas
+  (`Prompt 1..4`) con su tipo y preview; al pulsar una se vuelca en el campo (editable, con foco) y
+  las 4 se mantienen después de generar. El mejorador pide las 4 variantes en una sola llamada
+  (`xiaomi/mimo-v2.6-pro` vía proxy) con reglas estrictas de fidelidad y un guard determinista
+  (sexo del sujeto, ciudad vs naturaleza, número de personas) más una ronda de reparación; si falla,
+  recompone la propuesta desde la idea original. Archivos nuevos con fecha por la caché de Hostinger:
+  `app.20261027b.js` y `app.20261027b.css` (los `app.js`/`app.css` viejos quedan intactos).
+- **Verificación:** Chrome real contra producción (API real, sin mocks): 4/4 prompts fieles en
+  «hombre + ciudad», «mujer + bosque» y «dos niños + playa»; tras generar las 4 propuestas siguen
+  usables y el prompt queda en la tarjeta/historial; Editar sube imagen, propone 4 instrucciones
+  limpias y genera la edición; 0 errores de consola; 1440/768/393 sin scroll horizontal.
+- **Gate:** PASS del verificador independiente 93,0/100 (A1–A6 ≥ 9,0; cero defectos). Evidencias en
+  `tools/evidencias/2026-10-27-prompt-fiel/` y comparativa `tools/comparativa_prompt_editar_generar.png`.
+- **Commits:** `99e75914` (implementación), `a7daf753` (CSS b), `812fe360` (parser JSON sin corchetes).
+- **Lección de despliegue:** con la CDN de Hostinger, subir `?v=` no basta para `app.js`/`app.css`;
+  hay que renombrar el asset con fecha y comprobar el marcador en producción con cache-buster.
+
 ## 2026-10-27 (tarde) — App antigua (flow_studio_hoola) con Flow siempre activo
 
 - **Encargo:** «haz el mismo trabajo con apps/flow_studio_hoola: quiero que flow esté siempre activo».
