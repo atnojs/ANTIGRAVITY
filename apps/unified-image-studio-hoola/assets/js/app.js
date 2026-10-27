@@ -8,32 +8,32 @@ import {
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
-} from './core.js?v=17';
-import { renderer } from './render.js?v=17';
-import { initTools, setTool } from './tools.js?v=17';
+} from './core.js?v=18';
+import { renderer } from './render.js?v=18';
+import { initTools, setTool } from './tools.js?v=18';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
   showLoading, hideLoading, updateTopbar, updateSaveState, updateViewportUI, setEmptyState,
   renderLayers, renderLayerProps, renderRefs, renderVersions, renderProjects, renderAssets,
   renderRecipes, setActiveModel, switchLeftTab, switchRightTab, setToolUI, paintStorageInfo,
-} from './ui.js?v=17';
+} from './ui.js?v=18';
 import {
   server, saveNow, scheduleSave, listProjects, loadProject, deleteProject, saveVersion,
   listVersions, deleteVersion, storageInfo, clearLocalCache, uploadResource, lastProjectId, idb,
   fetchVersionDoc,
-} from './persist.js?v=17';
+} from './persist.js?v=18';
 import {
   downloadExport, copyToClipboard, downloadProject, exportImage, canvasToBlob, estimateExport,
-} from './exporter.js?v=17';
+} from './exporter.js?v=18';
 import {
   MODELS, modelById, loadCatalog, catalog, generate,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
-} from './ai.js?v=17';
+} from './ai.js?v=18';
 import {
   FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
   flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
   statusFlowJobs, retryFlowJob, deleteFlowJob, cancelFlowJob, downloadFlowJob, fetchFlowBlob,
-} from './flow.js?v=17';
+} from './flow.js?v=18';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
@@ -2481,7 +2481,9 @@ function bindFlowUI() {
 
 /* ══════════════════════ Persistencia y atajos ══════════════════════ */
 function bindPersistence() {
-  on('doc:change', () => { scheduleSave('doc'); updateTopbar(); });
+  // Cualquier cambio del documento repinta el lienzo. Sin esto, ocultar una capa
+  // con el ojo (o bloquearla) no se veía hasta el siguiente cambio de zoom.
+  on('doc:change', () => { scheduleSave('doc'); updateTopbar(); renderer.requestRender('doc'); });
   on('save:state', ({ state: value, at }) => updateSaveState(value, { at }));
   window.addEventListener('beforeunload', (event) => {
     if (!state.flags.dirty) return;
