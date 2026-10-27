@@ -4,6 +4,24 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-27 (tarde) — App antigua (flow_studio_hoola) con Flow siempre activo
+
+- **Encargo:** «haz el mismo trabajo con apps/flow_studio_hoola: quiero que flow esté siempre activo».
+- **Qué se hizo:** reactivada y re-registrada la tarea `FlowStudioWorker` (al iniciar sesión +
+  repetición cada 2 min, turnos de 6 min, `IgnoreNew`, 3 reintentos, `StartWhenAvailable`). Nuevo
+  instalador versionado `tools/flow-agent/instalar-tarea-antigua.ps1` con `-Estado` y `-Quitar`.
+- **Comprobado de punta a punta:** imagen real `75d3ea4215ef571a` (regadera, 1:1) `done`; y el
+  worker completó además un vídeo que estaba en cola desde antes (`f6a981d5b5ff3a21`, Veo 3.1
+  Fast 9:16). La app muestra «PC conectado» y la cola `worker: true`, `pending: 0`.
+- **Sustos y aclaraciones:** el vídeo que apareció generándose era un trabajo **viejo** de la cola
+  antigua (quedó esperando desde que se desactivó el worker el 26/10), no un cruce con la app nueva.
+  Verificado que las apps no comparten nada: la antigua usa `flow_store/` y la nueva
+  `storage/studio.sqlite`, y ninguna llama a la otra.
+- **Aceptado por Antonio:** conviven los dos servicios (dos perfiles de Chrome, misma cuenta de
+  Google). Si ambos generan a la vez compiten por la cuota: es el precio de tener las dos apps.
+
+---
+
 ## 2026-10-27 (tarde) — Cantidad de imágenes ignorada al editar con referencia
 
 - **Síntoma:** pedía 3 imágenes y solo generaba 1, en la app hoola.

@@ -189,6 +189,7 @@ tools/flow-agent/session/
 tools/flow-agent/__pycache__/
 tools/flow-agent/.venv/
 tools/flow-agent/tmp/
+tools/flow-agent/logs/
 tools/flow-agent/flow_provider/__pycache__/
 
 # Rescatados de sitios raros (p. ej. apps/dev/null). No se publican: son material

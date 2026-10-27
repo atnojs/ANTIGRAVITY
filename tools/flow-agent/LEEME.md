@@ -147,6 +147,37 @@ reenvía solo, para no gastar dos veces la generación.
   manual, además de en la biblioteca del estudio.
 - Este agente **nunca** guarda el token en logs ni lo imprime.
 
+## Dos trabajadores conviviendo (estudio nuevo + app antigua)
+
+En este PC hay **dos** servicios de Flow activos a la vez, cada uno con su cola:
+
+| Servicio | Atiende | Tarea | Intérprete |
+|---|---|---|---|
+| Agente nuevo | `unified-image-studio-hoola` (cola SQLite propia) | `UisFlowAgent` | `.venv` del agente (`tools/flow-agent`) |
+| Worker antiguo | `flow_studio` y `flow_studio_hoola` (comparten `flow_store/`) | `FlowStudioWorker` | venv de Hermes |
+
+Se llevan bien porque usan **perfiles de Chrome distintos**: el agente nuevo trabaja sobre
+`tools/flow-agent/session/flowbot-profile` (copia) y el antiguo sobre
+`E:\herramientas\google-flow\session\flowbot-profile`. Ninguno bloquea al otro.
+
+Lo que sí comparten es la **cuenta de Google**: si los dos generan a la vez compiten por la cuota y
+pueden tardar más. Es el precio de tener las dos apps activas; se aceptó el 2026-10-27.
+
+Cada uno se instala y se comprueba por separado:
+
+```powershell
+# Estudio nuevo
+powershell -NoProfile -ExecutionPolicy Bypass -File .\instalar-tarea.ps1 -Estado
+
+# App antigua
+powershell -NoProfile -ExecutionPolicy Bypass -File .\instalar-tarea-antigua.ps1 -Estado
+```
+
+Los dos aceptan `-Quitar` para desactivarlos sin borrar nada del worker.
+
+**Ojo con la app antigua:** su cola puede tener trabajos viejos esperando (de cuando el worker
+estaba parado). Al activar el worker se generan todos. Si no se quieren, hay que vaciarlos desde la
+propia app antes de activarlo.
 ## Dejarlo siempre conectado (recomendado)
 
 ```powershell

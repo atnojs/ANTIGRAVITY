@@ -1,3 +1,17 @@
+## 2026-10-27 — Conviven dos sistemas de Flow (estudio nuevo y app antigua)
+
+- **Decisión:** mantener activos a la vez `UisFlowAgent` (app nueva) y `FlowStudioWorker` (apps
+  antiguas), cada uno con su cola y su perfil de Chrome.
+- **Por qué:** Antonio sigue usando las dos apps y quería Flow siempre disponible en ambas.
+- **Cómo conviven sin romperse:** perfiles de Chrome distintos (el agente nuevo usa una copia dentro
+  del repo; el antiguo, el original de `E:\herramientas\google-flow`). Cada uno tiene su candado y su
+  tarea programada con repetición cada 2 minutos.
+- **Contrapartida aceptada:** comparten la misma cuenta de Google. Si generan a la vez, compiten por
+  la cuota y pueden tardar más.
+- **Si algún día se quiere simplificar:** desactivar el worker antiguo con
+  `instalar-tarea-antigua.ps1 -Quitar` y vaciar su cola desde la app.
+
+---
 # Decisiones tomadas y por qué
 
 Registro de cosas que **parecen raras a propósito**. Antes de cambiarlas, lee el motivo;
