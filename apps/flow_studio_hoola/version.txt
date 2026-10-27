@@ -1,5 +1,6 @@
-20261027a-flow-studio 2026-10-27
+20261027b-flow-studio 2026-10-27
 Flow Studio con el catálogo del estudio: 15 modelos de imagen (Flow, OpenAI 2.5,
 Gemini, Qwen e Image 2), 4 de vídeo, resolución 512-4096 en los modelos directos
 (api.php + SQLite) y la compuerta de contraseña compartida (Model Gate 1.2.0).
+Las referencias son exclusivas de cada modo (generar, editar y vídeo).
 La cola de Google Flow sigue siendo la de siempre (flow_queue.php + worker del PC).
