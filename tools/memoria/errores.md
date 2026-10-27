@@ -1001,10 +1001,11 @@ Ampliación con datos de la entrada del 2026-10-16:
   mientras hay un trabajo pendiente.
 - **Regla que queda:** un overlay modal solo para operaciones que bloquean de verdad el trabajo del
   usuario (segundos). Para colas o agentes externos, aviso no bloqueante.
-- **Actualización (2026-10-27):** Antonio pidió recuperar el overlay de 3 aros al pulsar «GENERAR».
-  Se muestra solo durante el encolado (mínimo visible de 900 ms) y se oculta en cuanto el trabajo
-  queda en cola; después sigue el aviso compacto y la interfaz libre. Así se cumple el gesto pedido
-  sin volver al bloqueo de 30 minutos que originó esta entrada.
+- **Actualización (2026-10-27):** Antonio pidió recuperar el overlay de 3 aros al pulsar «GENERAR»
+  y, tras probar la versión breve, pidió expresamente que se quede **hasta que Flow termine**,
+  aceptando el bloqueo. Se mantiene visible durante toda la generación, con un tope de seguridad de
+  10 minutos; si se alcanza, se libera la interfaz y el trabajo sigue en Biblioteca. Es una decisión
+  del usuario frente a la regla anterior, no una regresión accidental.
 
 ### [2026-10-26] Ocultar el rail con `display:none` rompió la rejilla del estudio
 

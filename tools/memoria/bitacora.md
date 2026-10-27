@@ -2276,18 +2276,19 @@ Antonio: «quiero que cuando clique en generar aparezca el overly de los 3 aros,
 - **Causa:** `runGeneration()` devolvía antes de `showLoading()` cuando el modelo era de Flow (el
   inicial de la app); el botón solo cambiaba a «PROCESANDO…» y aparecía el aviso compacto de cola,
   así que el overlay canónico nunca se veía.
-- **Arreglo final:** `showLoading()` al entrar en la generación, para Flow y modelos directos. Con
-  Flow el overlay cubre solo el encolado (mínimo visible de 900 ms) y se oculta al quedar en cola;
-  el seguimiento continúa con `#flowProgress` y la app queda libre. Se conserva la decisión del
-  26-oct de no bloquear la cola hasta 30 minutos. El overlay bloquea el scroll (`html.is-loading`)
-  y lo restaura al ocultarse; `aria-busy` se alterna.
+- **Arreglo final (petición expresa de Antonio, 2026-10-27):** `showLoading()` al entrar en la
+  generación, para Flow y modelos directos. Con Flow el overlay se mantiene hasta que el PC
+  termina, con el segundo aviso actualizado («en cola» / «generando» / «listas»). Tope de
+  seguridad de 10 minutos: si se alcanza, se libera la interfaz y el trabajo sigue en segundo
+  plano desde Biblioteca. El overlay bloquea el scroll (`html.is-loading`) y lo restaura al
+  ocultarse; `aria-busy` se alterna.
 - **Verificación:** Chrome headless sobre la app local con respuestas de Flow simuladas: overlay
-  visible con 3 aros y «IA generando imagen…» durante el envío, `overflow:hidden`; a los 3 s overlay
-  oculto, `overflow:visible` y `#flowProgress` visible. La misma prueba con IMAGE 2 LOW (modelo
-  directo) mantiene el overlay hasta la respuesta. Producción sirve los tres archivos idénticos a
-  HEAD (SHA-256) tras el despliegue.
+  visible con 3 aros a los 0,6 s y a los 10 s («Generando en tu PC…»), `overflow:hidden`; al pasar
+  el trabajo a `done`, overlay oculto y `overflow:visible`. La misma prueba con IMAGE 2 LOW
+  (modelo directo) mantiene el overlay hasta la respuesta. Producción sirve los tres archivos
+  idénticos a HEAD (SHA-256) tras el despliegue.
 - **Límite:** no se lanzó una generación real de Flow para no gastar puntos; el cambio no toca el
   contrato con el servidor ni el worker.
-- **Commits:** `cd97b10a` (primera versión, bloqueante), `838dbd1d` y `a189af25` (corrección final:
-  overlay breve y UI libre), más `7aa41afd` de re-disparo. Evidencia en
-  `tools/evidencias/2026-10-26-uis-overlay-generar/`.
+- **Commits:** el de esta entrada (vuelta al overlay bloqueante sobre `0af019cb`); antes,
+  `cd97b10a` y `838dbd1d` (primera versión), `a189af25` (versión breve) y `7aa41afd` (re-disparo).
+  Evidencia en `tools/evidencias/2026-10-26-uis-overlay-generar/`.
