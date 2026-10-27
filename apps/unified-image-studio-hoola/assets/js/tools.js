@@ -5,8 +5,8 @@
 import {
   state, emit, getLayer, selectLayer, clamp, makeTextLayer, makeShapeLayer, addLayer,
   pushHistory, markDirty,
-} from './core.js?v=23';
-import { renderer, hitTestHandle, pointInLayer } from './render.js?v=23';
+} from './core.js?v=24';
+import { renderer, hitTestHandle, pointInLayer } from './render.js?v=24';
 
 const SNAP_DEG = 15;
 const MIN_SIZE = 8;
@@ -67,6 +67,9 @@ function setCursor(cursor) {
 
 /* ── Pointer down ── */
 function onPointerDown(event) {
+  // Los botones de la vista previa y los diálogos están sobre el lienzo: si el
+  // clic viene de ahí, no debe empezar un trazo de máscara (antes añadía uno).
+  if (event.target instanceof Element && event.target.closest('#resultTray, #aiPreview, .modal, .modal-backdrop, .dialog, #confirmDialog')) return;
   if (!state.doc) return;
   if (event.button === 1 || (event.button === 0 && (spaceDown || state.selection.tool === 'hand'))) {
     event.preventDefault();

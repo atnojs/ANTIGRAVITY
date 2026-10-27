@@ -2,8 +2,8 @@
    ai.js — catálogo de modelos y trabajos de los proveedores directos
    ============================================================ */
 
-import { state, emit, uid, getResource, blobToBase64, dataUrlToBlob } from './core.js?v=23';
-import { server } from './persist.js?v=23';
+import { state, emit, uid, getResource, blobToBase64, dataUrlToBlob } from './core.js?v=24';
+import { server } from './persist.js?v=24';
 
 /* Catálogo espejo del contrato canónico del servidor
    (lib/canonical-image-model.php) más el motor Flow, que se ejecuta en el PC.

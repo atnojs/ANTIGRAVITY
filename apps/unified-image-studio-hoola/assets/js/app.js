@@ -8,32 +8,32 @@ import {
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
-} from './core.js?v=23';
-import { renderer } from './render.js?v=23';
-import { initTools, setTool } from './tools.js?v=23';
+} from './core.js?v=24';
+import { renderer } from './render.js?v=24';
+import { initTools, setTool } from './tools.js?v=24';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
   showLoading, hideLoading, updateTopbar, updateSaveState, updateViewportUI, setEmptyState,
   renderLayers, renderLayerProps, renderRefs, renderVersions, renderProjects, renderAssets,
   renderRecipes, setActiveModel, switchLeftTab, switchRightTab, setToolUI, paintStorageInfo,
-} from './ui.js?v=23';
+} from './ui.js?v=24';
 import {
   server, saveNow, scheduleSave, listProjects, loadProject, deleteProject, saveVersion,
   listVersions, deleteVersion, storageInfo, clearLocalCache, uploadResource, lastProjectId, idb,
   fetchVersionDoc,
-} from './persist.js?v=23';
+} from './persist.js?v=24';
 import {
   downloadExport, copyToClipboard, downloadProject, exportImage, canvasToBlob, estimateExport,
-} from './exporter.js?v=23';
+} from './exporter.js?v=24';
 import {
   MODELS, modelById, loadCatalog, catalog, generate,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
-} from './ai.js?v=23';
+} from './ai.js?v=24';
 import {
   FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
   flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
   statusFlowJobs, retryFlowJob, deleteFlowJob, cancelFlowJob, downloadFlowJob, fetchFlowBlob,
-} from './flow.js?v=23';
+} from './flow.js?v=24';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
@@ -1260,8 +1260,17 @@ async function acceptResult(mode) {
     });
     void uploadResource(recurso);
     const anterior = destino.resourceId;
+    let recursoFinal = null;
+    if (result.job.kind === 'inpaint') {
+      // El proveedor devuelve la imagen entera y puede mover cosas fuera de la
+      // máscara. Se compone: original fuera de la máscara + resultado dentro.
+      const parche = await componerInpaintingSobreCapa(destino, result.dataUrl);
+      if (parche) {
+        recursoFinal = parche;
+      }
+    }
     mutate(result.job.kind === 'inpaint' ? 'aplicar inpainting' : 'aplicar fondo quitado', () => {
-      destino.resourceId = recurso.id;
+      destino.resourceId = (typeof recursoFinal !== "undefined" && recursoFinal ? recursoFinal.id : recurso.id);
     });
     if (result.job.kind === 'inpaint') destino.aspectOriginal = anterior;
     renderLayers();
@@ -1389,9 +1398,9 @@ function construirMascaraProveedor(layer) {
 function renombrarCapaDesdePropiedades() {
   const layer = getLayer();
   const etiqueta = $('propsName');
-  if (!layer || !etiqueta) return;
-  if (etiqueta.dataset.editando === '1') return;
+  if (!layer || !etiqueta || etiqueta.dataset.editando === '1') return;
   etiqueta.dataset.editando = '1';
+
   const input = document.createElement('input');
   input.type = 'text';
   input.value = layer.name;
@@ -1400,22 +1409,78 @@ function renombrarCapaDesdePropiedades() {
   etiqueta.replaceWith(input);
   input.focus();
   input.select();
+
+  let terminado = false;
   const terminar = (guardar) => {
+    // Sin esta bandera, el blur posterior repetía la operación: guardaba al
+    // pulsar Escape y lanzaba un error al sustituir un input ya desmontado.
+    if (terminado) return;
+    terminado = true;
     const nuevo = input.value.trim();
-    input.replaceWith(etiqueta);
+    if (input.parentNode) input.replaceWith(etiqueta);
     delete etiqueta.dataset.editando;
     if (guardar && nuevo && nuevo !== layer.name) {
-      mutate('renombrar capa', () => { layer.name = nuevo; });
+      mutate('renombrar capa', () => {
+        const viva = getLayer(layer.id);
+        if (viva) viva.name = nuevo;
+      });
       renderLayers();
       renderLayerProps();
       toast('Capa renombrada.', 'ok');
+    } else if (!guardar) {
+      renderLayerProps();
     }
   };
+
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') { event.preventDefault(); terminar(true); }
-    if (event.key === 'Escape') { event.preventDefault(); terminar(false); }
+    if (event.key === 'Escape') { event.preventDefault(); terminado = true; terminar(false); }
   });
   input.addEventListener('blur', () => terminar(true));
+}
+
+
+/* Compone el resultado del proveedor SOLO dentro de la máscara de la capa:
+   el resto del lienzo se queda exactamente como estaba. Evita que el "drift"
+   del modelo reescriba zonas que el usuario no había pintado. */
+async function componerInpaintingSobreCapa(layer, dataUrlResultado) {
+  try {
+    const doc = state.doc;
+    const original = imageFor(layer.aspectOriginal || layer.resourceId);
+    if (!original || !doc) return null;
+    const cargar = (src) => new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+    const proveedor = await cargar(dataUrlResultado);
+
+    // 1) Resultado escalado al documento
+    const parche = document.createElement('canvas');
+    parche.width = doc.width;
+    parche.height = doc.height;
+    const pctx = parche.getContext('2d');
+    pctx.drawImage(proveedor, 0, 0, doc.width, doc.height);
+
+    // 2) Solo la zona pintada
+    pctx.globalCompositeOperation = 'destination-in';
+    pctx.drawImage(renderer.maskCanvasFor(layer), 0, 0, doc.width, doc.height);
+    pctx.globalCompositeOperation = 'source-over';
+
+    // 3) Nueva imagen de la capa: original + parche en su sitio
+    const lienzo = document.createElement('canvas');
+    lienzo.width = Math.max(1, Math.round(layer.w));
+    lienzo.height = Math.max(1, Math.round(layer.h));
+    const lctx = lienzo.getContext('2d');
+    lctx.drawImage(original, 0, 0, lienzo.width, lienzo.height);
+    lctx.drawImage(parche, layer.x, layer.y, layer.w, layer.h, 0, 0, lienzo.width, lienzo.height);
+
+    const blob = await canvasToBlob(lienzo, 'image/png');
+    return addResource({ name: 'inpaint-' + Date.now() + '.png', mime: 'image/png', blob, width: lienzo.width, height: lienzo.height });
+  } catch (error) {
+    return null;
+  }
 }
 
 /* ── Quitar fondo (local, por color) ── */
@@ -1433,7 +1498,20 @@ async function removeBackgroundLocal() {
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(img, 0, 0);
     const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    // Se cuenta solo lo que se quita AHORA: antes se sumaban los píxeles que ya
+    // eran transparentes y el porcentaje mentía.
+    const transparentesAntes = (() => {
+      let n = 0;
+      for (let i = 3; i < data.data.length; i += 4) if (data.data[i] < 24) n += 1;
+      return n;
+    })();
     const removed = floodCorners(data);
+    const transparentesDespues = (() => {
+      let n = 0;
+      for (let i = 3; i < data.data.length; i += 4) if (data.data[i] < 24) n += 1;
+      return n;
+    })();
+    const quitadosAhora = Math.max(0, transparentesDespues - transparentesAntes);
     ctx.putImageData(data, 0, 0);
     const blob = await canvasToBlob(canvas, 'image/png');
     const resource = addResource({ name: `${layer.name}-sin-fondo.png`, mime: 'image/png', blob, width: canvas.width, height: canvas.height });
@@ -1448,7 +1526,7 @@ async function removeBackgroundLocal() {
     renderer.requestRender('bg');
     scheduleSave('bg');
     const total = canvas.width * canvas.height;
-    const porcentaje = total > 0 ? (removed / total) * 100 : 0;
+    const porcentaje = total > 0 ? (quitadosAhora / total) * 100 : 0;
     // Antes se anunciaba "Fondo eliminado" aunque solo se quitara el 0,002 %.
     if (porcentaje < 5) {
       toast(`No se detectó un fondo uniforme: solo se han quitado ${porcentaje.toFixed(1)} % de los píxeles. Prueba con «Quitar fondo con IA».`, 'warn', { duration: 9000 });
@@ -1543,7 +1621,7 @@ async function removeBackgroundAi() {
     // El proveedor a veces devuelve un PNG OPACO con el damero pintado: si no hay
     // ni un píxel transparente, es un fondo sin quitar y hay que decirlo.
     const transparencia = await medirTransparencia(dataUrlFondo);
-    if (transparencia !== null && transparencia < 1) {
+    if (transparencia !== null && transparencia < 5) {
       toast('El modelo devolvió una imagen opaca: no ha quitado el fondo. Usa «Quitar fondo por color» o repite con otra imagen.', 'error', { duration: 10000 });
       return;
     }
@@ -1669,7 +1747,7 @@ function updateExportOptions() {
   $('exportQualityValue').textContent = `${Math.round(options.quality * 100)} %`;
   $('bgField').style.display = jpeg ? 'block' : 'none';
   $('exportTransparent').disabled = jpeg;
-  if (jpeg) $('exportTransparent').checked = false;
+  if (jpeg) { $('exportTransparent').dataset.previo = $('exportTransparent').checked ? '1' : '0'; $('exportTransparent').checked = false; } else if ($('exportTransparent').dataset.previo === '1') { $('exportTransparent').checked = true; }
   $('exportQuality').disabled = options.format === 'image/png';
 
   const estimate = estimateExport(options);
@@ -2624,6 +2702,9 @@ function bindFlowUI() {
 function bindPersistence() {
   // Cualquier cambio del documento repinta el lienzo. Sin esto, ocultar una capa
   // con el ojo (o bloquearla) no se veía hasta el siguiente cambio de zoom.
+  // persist.js emite avisos (incluidos los errores de guardado) y nadie los
+  // mostraba: un fallo del servidor acababa con un toast verde «Guardado.».
+  on('toast', (detalle) => { if (detalle && detalle.message) toast(detalle.message, detalle.tone || 'error'); });
   on('doc:change', () => { scheduleSave('doc'); updateTopbar(); renderer.requestRender('doc'); });
   on('save:state', ({ state: value, at }) => updateSaveState(value, { at }));
   window.addEventListener('beforeunload', (event) => {

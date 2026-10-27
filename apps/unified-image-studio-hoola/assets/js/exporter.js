@@ -2,8 +2,8 @@
    exporter.js — formatos, escala, DPI real y portapapeles
    ============================================================ */
 
-import { state, emit, fmtBytes, serializeProject, clamp } from './core.js?v=23';
-import { renderer } from './render.js?v=23';
+import { state, emit, fmtBytes, serializeProject, clamp } from './core.js?v=24';
+import { renderer } from './render.js?v=24';
 
 const MIME_EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 const FORMAT_LABEL = { 'image/png': 'PNG', 'image/jpeg': 'JPG', 'image/webp': 'WebP' };
