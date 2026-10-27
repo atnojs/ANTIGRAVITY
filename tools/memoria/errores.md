@@ -1099,3 +1099,57 @@ Ampliación con datos de la entrada del 2026-10-16:
 - **Regla que queda:** una corrección no está hecha hasta que un comando falla si se deshace. Toda
   tabla de correcciones debe citar ese comando, no la intención. Y al sustituir texto en lote,
   comprobar siempre que la sustitución ocurrió antes de dar nada por cerrado.
+
+### [2026-10-27] Pantalla en blanco porque el index desplegado era el de desarrollo
+
+- **Síntoma:** `https://atnojs.es/apps/unified-app/` en blanco. En Chrome: `#root` vacío,
+  `body.innerText` vacío y un único `<script src="https://atnojs.es/src/main.jsx">` que da **404**.
+- **Causa:** el `index.html` del repo era el de **desarrollo** de Vite (`/src/main.jsx`) y la carpeta
+  `src/` no existía (nunca se versionó). El build compilado estaba en `dist/` (ignorado por
+  `.gitignore`), así que producción solo recibía el HTML de desarrollo. Un `HTTP 200` en la URL
+  ocultaba el fallo: el fichero se servía, la app no existía.
+- **Solución:** publicar el build en la raíz de la app con nombre versionado
+  (`assets/app.20261027.js|css`), dejar `index.html` como página de producción y mover la entrada de
+  Vite a `index.dev.html` (`vite.config.js` → `rollupOptions.input`, `server.open`). Publicar con
+  `scripts/publish.mjs` (`npm run publish:app` / `deploy:app`), que además normaliza la ruta del
+  proxy a `proxy.php` y reescribe el index.
+- **Cómo comprobarlo:** en Chrome `document.getElementById('root').children.length > 0` y
+  `document.body.innerText.trim().length > 0`; en red, que los assets del index devuelvan 200 y que
+  ningún `<script src>` apunte a `/src/...`.
+- **Regla:** un `index.html` con `/src/main.jsx` no puede ser la página publicada. Antes de dar una
+  app por desplegada, abrir la URL y comprobar que el DOM tiene contenido, no solo que da 200.
+
+### [2026-10-27] `lightbox.js` genérico tapaba toda la app con un velo negro
+
+- **Síntoma:** la app (React) renderizaba el login pero se veía un overlay oscuro a pantalla completa
+  con «Imagen ampliada», botones Descargar/Cerrar y el formulario debajo, sin poder usar nada.
+- **Causa:** `dist/index.html` cargaba el `lightbox.js` compartido de Antigravity. Ese script crea el
+  overlay con `lightbox.className = 'lightbox hidden'` **y** `lightbox.style.cssText =
+  '… display:flex …'`; el `display:flex` en línea gana al `.lightbox.hidden{display:none}` de la hoja,
+  así que el visor nace visible y bloquea la UI. La app React ya tiene su propio visor.
+- **Solución:** no publicar `lightbox.js` en esta app (quitado del `index.html` y el fichero no se
+  copió a la raíz).
+- **Cómo comprobarlo:** `document.querySelectorAll('#lightbox-antigravity').length === 0` y captura
+  de la pantalla de login sin velo.
+- **Regla:** antes de reutilizar un script compartido, comprobar en captura que no pinta overlays
+  permanentes; una clase `hidden` no sirve si el estilo va en línea.
+
+### [2026-10-27] Firebase: `auth/api-key-not-valid` — la apiKey del build estaba revocada
+
+- **Síntoma:** el login de `unified-app` fallaba siempre con «Credenciales inválidas o error de red.»;
+  en consola `FirebaseError: Error (auth/api-key-not-valid.-please-pass-a-valid-api-key.)` y un 400 de
+  `identitytoolkit.googleapis.com`.
+- **Causa:** el proyecto `generacion-de-imagenes-6e624` que traía el bundle tiene la **apiKey
+  revocada o eliminada**. Comprobado con un POST directo a
+  `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=<key>`: responde
+  `API_KEY_INVALID` con cualquier `Referer`/`Origin` (no era restricción de dominio ni de APIs).
+- **Solución:** usar la configuración del proyecto Firebase **`nanobanana-cbb2d`** (el de las apps
+  vivas del catálogo). Con esa clave el mismo POST responde **`INVALID_LOGIN_CREDENTIALS`**, que es lo
+  correcto para un usuario inexistente; el login ya devuelve `auth/invalid-credential` en vez de
+  `api-key-not-valid`.
+- **Cómo distinguirlos:** si el error es `API_KEY_INVALID`/`auth/api-key-not-valid`, el proyecto está
+  muerto o la clave revocada (no se arregla desde el frontend); si es
+  `INVALID_LOGIN_CREDENTIALS`/`auth/invalid-credential`, la clave es válida y lo que falla son las
+  credenciales.
+- **Pendiente del dueño:** si quiere conservar el proyecto antiguo, hay que regenerar su apiKey y
+  volver a publicar.

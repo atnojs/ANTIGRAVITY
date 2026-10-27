@@ -18,6 +18,7 @@ sin desplegar"**, no para certificar que cada app funciona.
 
 | Fecha del index | Apps |
 |---|---|
+| 2026-10-27 | `unified-app` (**arreglada la pantalla blanca**: build versionado `assets/app.20261027.js|css` + `index.html` de producción + `proxy.php`; Firebase movido a `nanobanana-cbb2d`; verificado en el origen, SHA-256 del JS idéntico al local; ver `bitacora.md`) |
 | 2026-10-23 | `trickvault` (**carpeta «Restauración de fotos antiguas»**: se retiran las 10 tarjetas duplicadas del carrusel del 22 y quedan las 3 canónicas —restaurar / colorear / imprimir—; verificado en producción) |
 | 2026-10-21 | `agenda` (**recreada**: app React del modelo portada a PHP + OpenAI en `/apps/agenda/`) |
 | 2026-10-21 | `trickvault` (35 códigos de texto de la infografía de 100 códigos de ChatGPT; aviso en «Últimas» con enlace a la tanda de texto; 1339 trucos) |
@@ -41,7 +42,7 @@ sin desplegar"**, no para certificar que cada app funciona.
 | 2025-10-21 | `paginas/apps_imagenes`, `paginas/generar_prompts` |
 | 2025-11-07 / 11-23 | `paginas/web_apps`, `paginas/web_app` |
 | 2025-12-11 | `pagina_camisetas`, `paginas/pagina_camisetas` |
-| 2025-12-24 / 12-25 | `unified-app`, `paginas/nueva_pestaña`, `tutoriales/*` (4) |
+| 2025-12-24 / 12-25 | `paginas/nueva_pestaña`, `tutoriales/*` (4) |
 | 2026-01-07 / 01-27 | `nueva_pestaña`, `1` |
 | 2026-04-24 | `amd-video-optimizer` |
 | 2026-06-10 | `compilar`, `promptbox` |
@@ -95,3 +96,20 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "E:\ANTIGRAVITY\tools\ve
 # detecta apps con index.html y comprueba su codigo HTTP + fecha del index
 Get-ChildItem E:\ANTIGRAVITY\apps -Directory | ForEach-Object { ... }   # ver bitacora 2026-10-15
 ```
+
+## `unified-app` — foto del 2026-10-27 (tras el arreglo de la pantalla blanca)
+
+| Comprobación | Resultado |
+|---|---|
+| `GET /apps/unified-app/` | 200, **925 B** (index nuevo con refs `./assets/app.20261027.js|css`), `x-hcdn-cache-status: DYNAMIC` |
+| `GET assets/app.20261027.js` | 200, **597.037 B**, SHA-256 `75d74b92…` = idéntico al local |
+| `GET assets/app.20261027.css` | 200, 35.742 B |
+| `GET /apps/unified-app/index.dev.html`, `package.json`, `scripts/*` | **403** (denegados por `.htaccess`; correcto) |
+| `proxy.php` GET | **405** JSON `{"error":"Método no permitido"}` (correcto por diseño) |
+| `proxy.php` POST `{"task":"enhancePrompt"}` | **403** JSON de Google: «Your billing account has an outstanding balance» → **bloqueante externo** para generar imágenes: revisar la clave `A`/facturación en hPanel |
+| Login (credenciales falsas) | UI «Credenciales inválidas o error de red.» + `auth/invalid-credential` (correcto; antes daba `auth/api-key-not-valid`) |
+
+**No verificado (declarado):** el interior de la app tras el login (AI Lab / Edit Studio /
+Pro Effects) porque no hay credenciales de usuario disponibles y no se crean cuentas en producción;
+y la generación real de imagen, bloqueada por la facturación externa. `src/` está en
+reconstrucción desde el bundle.

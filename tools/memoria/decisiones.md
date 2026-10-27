@@ -343,3 +343,49 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 - **Contrapartida:** `budget.get/set` y la tabla `ledger` siguen en el backend, sin interfaz que los
   use. Se conservan para no romper la base de datos ni el histórico; si se quiere limpiar del todo,
   es un cambio de esquema aparte.
+### [2026-10-27] `unified-app`: el build publicado vive en la raíz y el index de Vite pasa a `index.dev.html`
+
+- **Contexto:** la app es Vite + React, pero en esta Hostinger la carpeta de la app es la raíz
+  pública (`/apps/unified-app/`) y `dist/` está en `.gitignore`. El repo solo tenía el
+  `index.html` de desarrollo → producción recibía un HTML que pedía `/src/main.jsx` (404) y la
+  pantalla quedaba en blanco.
+- **Decisión:** `index.html` es la **página de producción** (la genera `scripts/publish.mjs` con
+  refs `./assets/app.<fecha-hora>.js|css`) y la entrada de Vite se mueve a **`index.dev.html`**
+  (`rollupOptions.input`, `server.open`), con `base: '/apps/unified-app/'`.
+- **Por qué:** es la única forma de que convivan en el mismo directorio el HTML que se sirve y el
+  grafo de módulos sin que uno pise al otro; y el nombre versionado por fecha evita la caché de la
+  CDN de Hostinger, que indexa **por ruta** e ignora `?v=`.
+- **Contrapartida:** en desarrollo la URL es `…/apps/unified-app/index.dev.html` (documentado en el
+  README) y el `.htaccess` deniega `index.dev.html`, `scripts/` y los `package*.json` en producción.
+- **Verificación:** `npm run publish:app` reescribe el index y copia los assets; el servido en
+  producción tiene el mismo SHA-256 que el local (`75d74b92…`) y `index.dev.html` responde 403.
+
+### [2026-10-27] `unified-app`: el login usa el proyecto Firebase `nanobanana-cbb2d`
+
+- **Contexto:** el build traía el proyecto `generacion-de-imagenes-6e624`, cuya apiKey está revocada
+  (`API_KEY_INVALID` en `identitytoolkit` con cualquier Referer). Sin clave válida, el login falla
+  siempre y la app es inútil aunque la pantalla ya no esté en blanco.
+- **Decisión:** usar la configuración de **`nanobanana-cbb2d`** (`AIzaSyAlTZgo…`), la misma de las
+  apps vivas del catálogo (`generar_imagenes`, `imagenes_ia`, `prompts_predeterminados`,
+  `viaje_tiempo`), sin tocar nada más del bundle.
+- **Por qué:** es el único proyecto del que consta una clave que hoy responde
+  (`INVALID_LOGIN_CREDENTIALS` con credenciales falsas = clave válida), y es el que ya usan los
+  usuarios reales de Antonio, así que los inicios de sesión existentes sirven.
+- **Contrapartida:** si el proyecto antiguo se recupera (apiKey nueva), habría que volver a cambiar
+  la config y republicar; los usuarios que solo existan en el proyecto viejo no podrán entrar.
+- **Cómo se comprueba:** POST directo a
+  `identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=<clave>` → con la vieja
+  `API_KEY_INVALID`, con la nueva `INVALID_LOGIN_CREDENTIALS`; y en la UI, credenciales falsas
+  devuelven «Credenciales inválidas o error de red.» con `auth/invalid-credential` en consola.
+
+### [2026-10-27] `unified-app`: se retira el `lightbox.js` genérico del build publicado
+
+- **Contexto:** el `dist/index.html` cargaba el visor compartido `lightbox.js`; su overlay nace con
+  `display:flex` en línea y tapa a pantalla completa la app al cargar.
+- **Decisión:** no publicar ese script en esta app. El visor propio de React (modal de máscara y
+  ampliación de resultados) se conserva intacto.
+- **Por qué:** el script compartido está pensado para apps vanilla que no tienen visor propio; aquí
+  duplica función y rompe la interfaz. Se prefiere no incluir antes que retocar un módulo compartido
+  que usan otras apps.
+- **Cómo se comprueba:** en producción no existe `#lightbox-antigravity` en el DOM y la pantalla de
+  login se ve sin velo (`document.querySelectorAll('#lightbox-antigravity').length === 0`).

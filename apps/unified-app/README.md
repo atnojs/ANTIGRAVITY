@@ -58,6 +58,17 @@ compilado sí funcionaba. Se publicó ese build en la raíz de la app (versionad
 proxy relativo), se separó la entrada de desarrollo y se dejó `scripts/publish.mjs` para
 que la publicación sea reproducible.
 
+Además se corrigió la configuración de Firebase del build publicado: el proyecto
+`generacion-de-imagenes-6e624` que traía el bundle tiene el **apiKey revocado/inexistente**
+(`API_KEY_INVALID`, comprobado contra `identitytoolkit.googleapis.com`), de modo que el
+login fallaba siempre. Se cambió a la configuración del proyecto **`nanobanana-cbb2d`**,
+el que usan las apps vivas del catálogo (`generar_imagenes`, `imagenes_ia`,
+`prompts_predeterminados`, `viaje_tiempo`) y cuya clave responde correctamente
+(`auth/invalid-credential` con credenciales falsas, `auth/unauthorized-domain` no).
+
+> Si Antonio quiere conservar el proyecto antiguo, hay que **regenerar su apiKey** en
+> Google Cloud/Firebase y volver a publicar; hoy no sirve.
+
 > Pendiente conocido: el árbol `src/` original no está en git ni en backups. Se está
 > reconstruyendo desde el bundle; hasta que esté verificado, el build publicado es la
 > referencia funcional.

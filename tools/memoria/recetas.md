@@ -440,6 +440,23 @@ backend en PHP). Pasos:
 los PHP; y el despliegue de Hostinger puede tardar >10 min o servir un commit anterior (ver
 `errores.md`: reempujar; y **borrar una carpeta a mano no la borra**).
 
+**Vite 7 en ESTE equipo: `Access denied` al borrar temporales de esbuild (verificado 2026-10-27 en
+`apps/unified-app`).** `npm run build` muere al minificar con
+`remove C:\Users\atnojs\AppData\Local\Temp\esbuild-<hash>: Acceso denegado`, aunque el código esté
+bien. **No es la versión de esbuild** (pasa con 0.27.2 y 0.27.7); es Defender/sandbox bloqueando el
+borrado del temporal. Solución: mover TEMP/TMP a una carpeta del proyecto antes de compilar:
+
+```powershell
+cd E:\ANTIGRAVITY\apps\unified-app
+New-Item -ItemType Directory -Force E:\ANTIGRAVITY\.tmp-build\esb | Out-Null
+$env:TEMP='E:\ANTIGRAVITY\.tmp-build\esb'; $env:TMP=$env:TEMP
+npm run build     # OK también con entradas de 1-2 MB
+```
+
+`.tmp-build/` está en `.gitignore`, así que no ensucia el árbol. Reproducción mínima sin Vite:
+`node -e "require('esbuild').transform('var a=1;/*'+'x'.repeat(1048676)+'*/',{loader:'js',target:'es2015'}).then(()=>console.log('OK')).catch(e=>console.log('FAIL',e.message))"`.
+
+
 ## Ver/ocultar contraseña en las apps y webs (password-eye) — verificado 2026-10-25
 
 El componente vive en `apps/_shared/password-eye.js` y se incluye en cada página con

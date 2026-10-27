@@ -2387,3 +2387,71 @@ Antonio: «quiero que cuando clique en generar aparezca el overly de los 3 aros,
   transparencia real en «quitar fondo con IA», renombrar capa con doble clic en propiedades.
 - **Pendiente:** repetir el enjambre sobre v=22, invertir la vista de la máscara y revisar la
   compuerta de modelos (el código de desbloqueo está en JS público).
+
+## 2026-10-27 (noche) — `unified-app`: de la pantalla en blanco a app publicada
+
+Antonio: «edita esta app: apps/unified-app solo veo la pantalla en blanco. corrigelo.»
+
+**Causa raíz (reproducida, no supuesta).** `apps/unified-app/index.html` seguía siendo el index de
+**desarrollo** de Vite (`<script type="module" src="/src/main.jsx">`) y **la carpeta `src/` no
+existe**: no está en el repo, ni en el historial de git, ni en backups, ni en las transcripciones de
+los agentes. En producción `https://atnojs.es/apps/unified-app/` servía ese HTML (360 B): el 404 de
+`/src/main.jsx` dejaba `#root` vacío → pantalla blanca. Medido en Chrome: `root.innerHTML.length = 0`,
+`body.innerText = ''`, único `<script>` = `https://atnojs.es/src/main.jsx` (404).
+
+**Tres causas secundarias que también había que corregir:**
+1. El build (`dist/assets/index-C7Ht2PdI.js`) estaba compilado con `base: '/apps/generar_editar/'`
+   (ruta que da **404** en producción) y llamaba al proxy por ruta absoluta
+   `/apps/generar_editar/proxy.php`.
+2. `dist/index.html` cargaba `lightbox.js`, el visor genérico compartido: inyecta un overlay con
+   `style.cssText = '… display:flex …'` (inline) y clase `lightbox hidden`, pero el **inline gana** al
+   `.lightbox.hidden{display:none}` del CSS → un velo negro a pantalla completa tapaba la app. La app
+   React tiene su propio visor; el genérico sobraba.
+3. El `apiKey` de Firebase del bundle (proyecto `generacion-de-imagenes-6e624`) está **revocado**:
+   `identitytoolkit` responde `API_KEY_INVALID` con cualquier Referer → el login fallaba siempre.
+
+**Qué se publicó** (commit `df7b661b`, push a `main`, desplegado y verificado en el origen):
+
+| Fichero | Papel |
+|---|---|
+| `apps/unified-app/index.html` | Página de producción (925 B): lang es, título real y refs `./assets/app.20261027.js|css`. La genera `scripts/publish.mjs`. |
+| `apps/unified-app/index.dev.html` | Entrada de Vite (dev/build); carga `/src/main.jsx`. Así el index de desarrollo no vuelve a desplegarse nunca. |
+| `apps/unified-app/assets/app.20261027.js` / `.css` | El build que ya funcionaba (597.037 B / 35.742 B), **byte a byte** el servido; proxy relativo `proxy.php`; config de Firebase cambiada a `nanobanana-cbb2d`. |
+| `apps/unified-app/proxy.php` | `Unified Proxy` que traía el `dist/` (tareas `enhancePrompt`, `generateImage`, `inpainting`, `applyStyle`, `upscale`). Clave solo por entorno. `config.php` **no** se versiona (`.gitignore`). |
+| `apps/unified-app/scripts/publish.mjs` | Publicación reproducible: copia el build a `assets/app.<fecha-hora>.js|css`, normaliza la ruta del proxy y reescribe `index.html`. Los assets viejos no se borran (CDN por ruta). |
+| `apps/unified-app/vite.config.js` | `base: '/apps/unified-app/'`, entrada `index.dev.html`, `outDir: dist`. |
+| `apps/unified-app/.htaccess` | CSP probada de Firebase/Google, `Expires` (HTML 0 s), `nosniff`/`Referrer-Policy`/`X-Frame-Options` y deny de `index.dev.html`, `scripts/`, `package*.json` y configs. |
+
+**Firebase (decisión, ver `decisiones.md`).** Se pasó al proyecto **`nanobanana-cbb2d`** (clave
+`AIzaSyAlTZgo…`), el que usan las apps vivas (`generar_imagenes`, `imagenes_ia`,
+`prompts_predeterminados`, `viaje_tiempo`) y que valida correctamente (`auth/invalid-credential` con
+credenciales falsas; `auth/api-key-not-valid` ya no aparece). El proyecto antiguo necesita clave
+nueva para volver.
+
+**Verificación.**
+- Local, sirviendo la carpeta en la ruta real `/apps/unified-app/`: login visible, **0 errores de
+  consola** (solo el VERBOSE de autocomplete), 200 en index/JS/CSS/`vite.svg`/icono de Google,
+  1440/768/393 sin scroll horizontal (`scrollWidth == innerWidth`), credenciales falsas → mensaje
+  «Credenciales inválidas o error de red.» y `auth/invalid-credential`.
+- Producción (`df7b661b`, `Last-Modified` 19:35:45 GMT, `x-hcdn-cache-status: DYNAMIC`): el index
+  sirve las refs nuevas; el JS descargado tiene **SHA-256 `75d74b92…` idéntico al local** (597.037 B);
+  recarga sin errores; credenciales falsas → error en UI + `auth/invalid-credential`; `proxy.php`
+  `GET` → **405 JSON** («Método no permitido», correcto) y `POST enhancePrompt` → **403 JSON** de
+  Google por facturación pendiente de la clave (externo, ver limitaciones).
+- `GET /apps/unified-app/index.dev.html` y `package.json` → **403** (denegados por `.htaccess`).
+- Capturas: `tools/evidencias/2026-10-27-unified-app/` (`00-antes-blanco-1440.png` vs
+  `10-prod-login-1440.png`, `11-prod-login-768.png`, `12-prod-login-393.png`).
+
+**Limitaciones declaradas.**
+- **No se pudo recorrer el flujo post-login** (AI Lab / Edit Studio / Pro Effects): no hay
+  credenciales de usuario disponibles y crear cuentas en producción no es aceptable. Queda como
+  verificación pendiente del dueño.
+- **La generación de imagen no funciona hoy**: el proxy responde `403` de Google
+  («Your billing account has an outstanding balance»). Es externo al arreglo; el proxy y la ruta
+  están correctos.
+- **`src/` sigue sin existir**: la app publicada es el build. Se está reconstruyendo `src/` desde el
+  bundle en esta misma sesión; hasta que se valide, el build publicado es la referencia funcional.
+- La clave de Firebase viaja en el JS (identificador público de Firebase, no un secreto); la clave de
+  Google para IA sigue solo en el servidor.
+
+**Commit:** `df7b661b`. Memoria y README en el commit de documentación siguiente.
