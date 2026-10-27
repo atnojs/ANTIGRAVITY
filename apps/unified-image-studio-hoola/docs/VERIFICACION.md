@@ -150,3 +150,37 @@ Si el PC está apagado, suspendido o con la sesión cerrada, **no hay agente**: 
 ejecute Flow. Con el portátil enchufado, la suspensión automática está a 0 (nunca); con batería,
 a los 10 minutos. Para uso desde el móvil a cualquier hora, el PC debe estar encendido y con sesión
 iniciada.
+
+---
+
+## Cantidad de imágenes: se respeta también al editar (2026-10-27)
+
+**Síntoma reportado:** «he clicado dos veces en generaciones en las que quería 3 imágenes y solo ha
+generado 1».
+
+**Causa:** con una referencia cargada, la app envía `mode: 'edit'` y el cliente forzaba
+`count = 1`; el servidor hacía lo mismo. La cantidad elegida se ignoraba **en silencio**: la
+interfaz mostraba «GENERAR 3» y llegaba una sola imagen.
+
+Los dos encargos afectados quedaron en el registro como `mode: edit` con una sola imagen cada uno.
+
+**Corrección:**
+
+- El servidor ya **no** fuerza `count = 1` en modo edición: cada trabajo lleva su propia copia de la
+  referencia y produce una variante.
+- El cliente envía siempre la cantidad elegida (`count: flowUi.imageCount`), con o sin referencia.
+- La nota del panel dice la verdad: «3 variantes de la referencia: cada una es una edición».
+
+**Verificación:**
+
+| Prueba | Resultado |
+|---|---|
+| Servidor: 3 ediciones con referencia | 3 trabajos creados, `mode: edit` |
+| Agente real con Flow: 3 ediciones | 3 `done` · 263.331 B, 283.164 B, 261.366 B · 1024×1024 |
+| Navegador en producción con referencia (contador = 1) | etiqueta «GENERAR 3» y nota correcta |
+| Petición enviada por el navegador | `count: 3`, `mode: edit`, 1 referencia |
+| Trabajos creados en el servidor | 3 (se cancelaron después para no gastar generaciones) |
+| Sin referencia (caso ya probado antes) | sigue creando 3 |
+
+Cuidado con el cambio: los invariantes de `tools/flow-agent/comprobar-entregable.mjs` apuntaban al
+texto antiguo y **fallaron** al aplicar el arreglo, lo que confirmó que la comprobación sirve.

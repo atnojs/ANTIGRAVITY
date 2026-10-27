@@ -4,6 +4,21 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-27 (tarde) — Cantidad de imágenes ignorada al editar con referencia
+
+- **Síntoma:** pedía 3 imágenes y solo generaba 1, en la app hoola.
+- **Causa:** con una referencia cargada se envía `mode: edit`, y tanto el cliente como el servidor
+  forzaban `count = 1`. La interfaz mostraba «GENERAR 3» y la elección se perdía sin aviso.
+- **Arreglo:** se permite 1–4 también en edición (cada trabajo lleva su copia de la referencia), el
+  cliente envía siempre la cantidad y la nota distingue «variantes de la referencia» de «imágenes».
+- **Verificación:** 3 ediciones reales con Flow (263/283/261 KB), y en producción el navegador
+  manda `count: 3` con referencia y el servidor crea 3. Los invariantes del comprobador fallaron al
+  aplicar el cambio y se actualizaron: la comprobación detecta de verdad las regresiones.
+- **Lección:** un control que se puede pulsar y que el sistema ignora en silencio es peor que no
+  tenerlo. Si una combinación no está soportada, se avisa; si se puede soportar, se soporta.
+
+---
+
 ## 2026-10-27 — Agente de Flow siempre conectado (servicio permanente)
 
 - **Encargo:** «flow no tiene conexión todo el rato para usar la app desde cualquier PC o móvil;

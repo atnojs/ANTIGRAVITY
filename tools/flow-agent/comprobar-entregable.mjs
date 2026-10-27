@@ -58,7 +58,9 @@ ok('D6 sin bloque @media vacío de coste', !css.includes('medidor de coste'));
 // ── Cantidad de imágenes por encolado (1–4) ──
 const enginePhp = leer('lib/flow-engine.php');
 ok('cantidad: 4 botones en la interfaz', (html.match(/data-count="[1-4]"/g) || []).length === 4);
-ok('cantidad: el cliente envía count', app.includes('count: images.length ? 1 : flowUi.imageCount'));
+ok('cantidad: el cliente envía siempre la cantidad elegida', app.includes('count: flowUi.imageCount'));
+ok('cantidad: se respeta también al editar con referencia', enginePhp.includes('varias ediciones de la misma referencia'));
+ok('cantidad: la nota distingue edición de generación', app.includes('variantes de la referencia'));
 ok('cantidad: el servidor limita a 1..4', enginePhp.includes('max(1, min(4, $count))'));
 ok('cantidad: la cola no se desborda al encolar varias', enginePhp.includes('$pending + $count > UIS_FLOW_QUEUE_MAX'));
 ok('cantidad: se desactiva con proveedores directos', app.includes('button.disabled = !isFlow'));
