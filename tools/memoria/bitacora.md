@@ -2613,3 +2613,24 @@ las cabeceras.
   implantación (conector, conexión permanente, píldora de estado, modelos libres, **1-4
   imágenes por generación**, límites de referencias/formato/resolución y verificación en
   producción), a petición expresa de Antonio.
+
+## 2026-10-28 (noche) — Fidelidad prompt/imágenes: Flow literal y OpenAI con todas las imágenes (4712b74, de9e9f05)
+
+- **Síntoma del usuario:** «los modelos no siguen ni el prompt ni las imágenes dadas».
+- **Causa 1 — la app envolvía el prompt de Flow.** `buildFlowPrompt` añadía «Combine the N
+  attached reference images… the first reference is the scene/background…» en inglés, encima del
+  envoltorio que ya pone `flow.py`. El modelo recibía una intención distinta. Ahora viaja el
+  texto del usuario **literal** + «Formato X.» (verificado en el payload de la cola).
+- **Causa 2 — OpenAI solo recibía UNA imagen.** `callOpenAI` usa como referencia el fondo o
+  `images[0]`; con dos fotos la segunda se descartaba (era el modelo por defecto, IMAGE 2 LOW).
+  Ahora, con modelos `openai-*` y más de una imagen, el frontend compone un **collage numerado**
+  y el prompt explica que no debe devolver el collage. Probado en producción con dos imágenes
+  (letra A / letra B): el resultado sale con **A a la izquierda y B a la derecha sobre negro**.
+- **Causa 3 — worker parado por un lock zombi.** El lock guardaba el PID y `_pid_alive` daba por
+  vivo un PID **reciclado** por un `powershell`: el worker salía con «otro worker en marcha»
+  durante 30 min y la cola acumulaba trabajos. `flow_studio_worker.py` usa ahora bloqueo de
+  fichero con `msvcrt` (el SO lo libera al morir el proceso). Lock borrado y compilado con
+  `py_compile`.
+- **Pendiente declarado:** el worker no está corriendo en el PC de trabajo (`ping` con
+  `worker:false` y 3 trabajos en cola); sin él no hay generación con FLOW. Verificado lo demás:
+  payload literal, referencias a 2048 px y el camino OpenAI de punta a punta.

@@ -69,5 +69,18 @@ Patrón ya implantado en `apps/editar_generar` y en `apps/imagenes_ia/combinar_i
   `running` hasta las 2 h. Si una generación se cuelga de verdad, se cancela a mano.
 - ANTES DE GENERAR: ningún Chrome puede estar usando `session/flowbot-profile` (Playwright no abre
   un perfil persistente en uso; `flow.py` muere en 2 s). Cerrar esos procesos primero.
-- Locks con PID: `flow_studio_worker.lock` guarda el PID y se libera si el proceso ya no existe
-  (un lock huérfano dejaba el worker mudo hasta 30 min).
+- Locks del worker: `flow_studio_worker.lock` se bloquea con `msvcrt.locking` (Windows), así que
+  el sistema lo libera al morir el proceso. **No se decide por PID**: un PID reciclado por otro
+  programa (2026-10-28: el lock apuntaba a un `powershell`) dejaba la cola muda hasta 30 min y el
+  usuario veía generaciones que no llegaban o resultados de otro encargo.
+- Si la cola no avanza: comprobar `flow_queue.php?action=ping` (si `lastSeen` no cambia, el worker
+  no está corriendo), que no haya un Chrome usando `session/flowbot-profile`, y el lock. Recordar
+  que el worker y la tarea `FlowStudioWorker` viven en el PC de trabajo, no en el portátil: desde
+  otro equipo solo se puede mirar la cola, no arrancarlo.
+- PROMPT: el texto que viaja a Flow es **el del usuario, literal**. `flow.py` ya antepone «Usando
+  las imágenes adjuntas como referencia, combina su contenido…»; envolverlo otra vez en la app
+  (roles inventados tipo «la primera es el fondo», plantillas del proxy en inglés) cambia la
+  intención y el resultado deja de seguir lo pedido. Solo se añade el formato cuando hace falta.
+- Referencias: enviarlas a **2048 px / JPEG 0.92** (tope 6 MB por referencia). Bajarlas a 1280
+  hacía que textos y caras llegaran ilegibles y el modelo "no siguiera" la imagen.
+
