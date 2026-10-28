@@ -2573,3 +2573,26 @@ las cabeceras.
   píldora «Flow conectado · 1 en cola»; generación real con Nano Banana 2 (faro,
   1:1) y edición real por «Variar» (acuarela), sin errores de consola. Capturas en
   `tools/evidencias/2026-10-28-editar-generar-flow/`.
+
+## 2026-10-28 (tarde) — combinar_imagenes: modelo FLOW y conexión permanente (8ad19366)
+
+- **Modelo FLOW en el selector**: grupo nuevo con `flow-nano-banana-2`,
+  `flow-nano-banana-pro` y `flow-nano-banana-2-lite`, libres de contraseña
+  (`model-gate.20261028.js`). No pasan por `proxy.php`: se encolan en
+  `apps/flow_studio/flow_queue.php` y genera el worker del PC (gratis, sin clave).
+- **Conexión permanente** (`flow-client.20261028.js`): mismo conector que en
+  `editar_generar`; aquí la resolución de la cola se calcula buscando `/apps/`
+  en la ruta, porque esta app está anidada en `apps/imagenes_ia/`. Latido cada
+  15 s visible / 45 s en segundo plano, reintento 4 s → 20 s sin rendirse,
+  reconexión al volver a la pestaña, `online`, foco y bfcache.
+- **Píldora de estado** en el encabezado (bajo el subtítulo): «Flow conectado ·
+  N en cola» / «Flow sin conexión · Reintentar»; al pulsarla reintenta la conexión.
+- **Límites de Flow en la UI**: con FLOW activo la resolución se desactiva y el
+  aviso explica la resolución nativa (~1K), las 2 referencias y el mapeo de
+  formatos (3:2→4:3, 4:5→3:4, 21:9→16:9). Las referencias se reducen a JPEG de
+  1280 px antes de encolar (la cola rechaza más de 6 MB por referencia).
+- **Verificado en producción** (`https://atnojs.es/apps/imagenes_ia/combinar_imagenes/`):
+  píldora «Flow conectado · 1 en cola»; combinación real de dos imágenes de prueba
+  con Nano Banana 2 → 1024×1024 con el objeto en la playa, historial guardado y
+  0 errores de consola. Capturas en
+  `tools/evidencias/2026-10-28-combinar-imagenes-flow/`.
