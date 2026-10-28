@@ -1,3 +1,10 @@
+## 2026-10-28 — dibujo_lineas_copia arranca con FLOW · NANO BANANA 2
+
+- **Decisión:** el modelo por defecto de `apps/dibujo_lineas_copia` es `flow-nano-banana-2`, por petición expresa de Antonio (2026-10-28).
+- **Por qué:** es gratis (se genera en el PC), es el motor preferente de la app y evita gasto de API en el caso de uso principal.
+- **Alcance:** solo esa app. El resto del proyecto mantiene `openai-image-2-low` por la política vigente; no se tocó `POLITICA_modelos-imagen.md`, ni el catálogo, ni las demás apps.
+- **Contrapartida:** sin PC/Flow conectado el trabajo se queda en cola y el pill lo avisa («PC sin conexión»); el usuario puede cambiar a un modelo directo con un clic.
+
 ## 2026-10-28 — dibujo_lineas_copia usa la cola de flow_studio en vez de crear otra
 
 - **Decisión:** los modelos Flow de `apps/dibujo_lineas_copia` llaman por URL relativa a la cola pública de `apps/flow_studio` (`request`/`status`/`img`/`ping`), atendida por `FlowStudioWorker` y `E:\herramientas\google-flow\flow_studio_worker.py`.

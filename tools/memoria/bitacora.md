@@ -4,6 +4,15 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-28 (tarde) — dibujo_lineas_copia: modelo por defecto FLOW · NANO BANANA 2
+
+- **Encargo:** «quiero que el modelo por defecto sea "nano banana 2"».
+- **Qué se hizo:** `DEFAULT_MODEL = 'flow-nano-banana-2'` en `app.20261028c.js` y estado inicial coherente en el selector (`#model-flow-nb2` con `active`/`aria-pressed="true"`, `#model-image-2-low` inactivo). Es una **excepción de esta app**: el resto del proyecto mantiene `openai-image-2-low` y `POLITICA_modelos-imagen.md` no se tocó. `app.20261028b.js` queda publicado como histórico.
+- **Verificación:** producción sirve `app.20261028c.js`; activo Flow al cargar y tras recargar; generación real **sin tocar el selector** en 92,5 s → NANO BANANA 2 1376×768 e historial OK; IMAGE 2 LOW sigue seleccionable; 10 protegidos con candado; 0 errores de consola; 1440/768/393 sin scroll; `FlowStudioWorker`/`UisFlowAgent` activos y ping `worker:true`.
+- **Commits:** `c6259f0a` (app), `efcf526f` (re-disparo); esta entrada se publica en el commit de documentación de la ronda.
+- **Gate:** verificador independiente **PASS 93,7/100** (7/7 comprobaciones, A1–A6 ≥ 9,0, 0 defectos B/M/Med; O1 de documentación cerrada con esta entrada). Informe: `tools/evidencias/2026-10-28-dibujo-flow/VERIFICACION_DEFECTO_FLOW.md`.
+
+---
 ## 2026-10-28 — dibujo_lineas_copia: modelos de Google Flow con cola del PC y estado «siempre conectado»
 
 - **Encargo:** «edita esta app: apps/dibujo_lineas_copia y añade los modelos de flow. Recuerda que flow debe estar siempre conectado.»
