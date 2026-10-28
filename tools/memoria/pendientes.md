@@ -17,6 +17,7 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 - **Etiquetas de vídeo en Title Case:** el estudio las usa en mayúsculas; ids/orden son idénticos. Siguiente paso: unificar si se exige literalidad visual.
 - **Descarga del historial en WebP:** el CDN de Hostinger convierte el PNG a WebP según `Accept`; la descarga desde una tarjeta recuperada del historial sale `.webp` con pérdida. Siguiente paso: servir el original forzando `Accept: image/png` o una ruta de descarga propia.
 - **dibujo_lineas_copia sin botón Parar:** los trabajos Flow de esa app no se pueden cancelar; si uno se cuelga hay que esperar al tope de 15 min de la interfaz o limpiar la cola a mano. Siguiente paso: botón «Parar» como en `flow_studio_hoola` (marcar `cancel_requested` en la cola y que el worker mate el proceso).
+- **dibujo_lineas_copia — observaciones menores del verificador (2026-10-28, PASS 94,2):** (O1) el `title` del pill escribe «1 trabajo(s) en cola»; siguiente paso: plural correcto. (O2) el selector queda en 3 filas al sacar FLOW de `.model-provider-row`; es decisión de diseño y cumple el mínimo de 2 líneas. (O3) heredado: GEMINI/QWEN/IMAGE 2 no tienen el `model-quality-hint` invisible de alineación y el panel re-renderiza hasta 200 miniaturas; no se tocó en este encargo.
 
 ---
 
