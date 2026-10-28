@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=21" />
+  <link rel="stylesheet" href="app.20261028.css?v=20261028" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -55,6 +55,18 @@
             <button type="button" id="model-openai-maxflare" class="model-toggle" data-model="openai-max-flare" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-flare · calidad máxima del modelo flare">MAX FLARE</button>
             <button type="button" id="model-openai-xhigh" class="model-toggle" data-model="openai-xhigh" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-sunburst · precisión en edición y consistencia (rostros y cara)">XHIGH</button>
             <button type="button" id="model-openai-maxsunburst" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-sunburst · calidad máxima del modelo sunburst">MAX SUNBURST</button>
+          </div>
+        </div>
+        <div class="model-provider-column model-provider-flow">
+          <span class="model-provider-title">FLOW</span>
+          <span id="flow-status" class="flow-status is-checking" role="status" aria-live="polite" title="Comprobando la conexión con el PC de Flow…">
+            <span class="flow-status-dot" aria-hidden="true"></span>
+            <span id="flow-status-text">Comprobando…</span>
+          </span>
+          <div class="model-toggle-group">
+            <button type="button" id="model-flow-nb2" class="model-toggle" data-model="flow-nano-banana-2" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Flow · Nano Banana 2 (gratis en el PC) · usa tu foto como referencia para el dibujo lineal">NANO BANANA 2</button>
+            <button type="button" id="model-flow-nbpro" class="model-toggle" data-model="flow-nano-banana-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Flow · Nano Banana Pro · más detalle en el dibujo, algo más lento">NANO BANANA PRO</button>
+            <button type="button" id="model-flow-nb2lite" class="model-toggle" data-model="flow-nano-banana-2-lite" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Flow · Nano Banana 2 Lite · el más rápido, gratis en el PC">NANO BANANA 2 LITE</button>
           </div>
         </div>
         <div class="model-provider-row">
@@ -122,9 +134,9 @@
 
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
   <script src="history-manager.js?v=8"></script>
-    <script src="app.js?v=22"></script>
+    <script src="app.20261028.js?v=20261028"></script>
   <!-- Bloqueo de modelos avanzados: IMAGE 2 LOW y MEDIUM libres, el resto pide contraseña -->
-  <script src="../_shared/model-gate.js?v=3"></script>
+  <script src="../_shared/model-gate.20261028.js?v=20261028"></script>
 <script src="/apps/_shared/password-eye.js?v=20261025b" defer></script>
 
 <!-- Zoom con la rueda del raton en el visor de imagen grande -->
