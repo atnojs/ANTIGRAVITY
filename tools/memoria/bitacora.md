@@ -2671,3 +2671,6 @@ las cabeceras.
 - **Límite**: hay que ejecutarlo en el PC de trabajo (el del share `\\Principal`). Desde otro
   equipo no se puede: RPC/WinRM y los recursos administrativos están cerrados; el script lo
   detecta y se niega con un mensaje claro (probado en seco: exit 2).
+- **Cierre**: la tarea `FlowStudioWorker` quedó instalada en el PC de trabajo y **confirmada por
+  Antonio** (2026-10-28, 20:22). Comprobado desde aquí: `ping` con `worker:true` y `lastSeen`
+  avanzando cada ~60 s mientras `pending` baja. La cola se procesa sola.
