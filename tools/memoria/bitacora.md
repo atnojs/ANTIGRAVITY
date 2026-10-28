@@ -2596,3 +2596,20 @@ las cabeceras.
   con Nano Banana 2 → 1024×1024 con el objeto en la playa, historial guardado y
   0 errores de consola. Capturas en
   `tools/evidencias/2026-10-28-combinar-imagenes-flow/`.
+
+## 2026-10-28 (tarde) — combinar_imagenes: hasta 4 imágenes por generación (89e175f5)
+
+- **Selector «Cantidad de Imágenes» 1-4** en el panel de control. Solo está activo con FLOW:
+  la cola admite `count` de 1 a 4 y encola esa cantidad en **una sola** petición. Con los
+  modelos de pago (vía `proxy.php`) se desactiva con el aviso «Solo con FLOW: el resto de
+  modelos genera 1 imagen por solicitud».
+- **Espera y guardado**: todos los ids se sondean con **una** consulta `status` por vuelta
+  (`waitFlowJobs`), el avance se muestra por imagen («Flow: generando en el PC (1 de 3
+  listas)…») y cada resultado entra en el historial. Si alguna falla, se guardan las demás y
+  se avisa del fallo sin perderlas.
+- **Probado en local** con cola simulada: con modelo de pago los 4 botones están desactivados;
+  con FLOW se habilitan, se eligen 3 y llegan 3 tarjetas al historial sin errores de consola.
+- **Skill actualizada**: `skills/SKILL_GOOGLE_FLOW.md` incorpora el patrón obligatorio de
+  implantación (conector, conexión permanente, píldora de estado, modelos libres, **1-4
+  imágenes por generación**, límites de referencias/formato/resolución y verificación en
+  producción), a petición expresa de Antonio.

@@ -1,6 +1,6 @@
 ---
 name: google-flow
-description: "SOLO para videos gratis (Veo) vía Google Flow con la CLI instalada en E:/herramientas/google-flow. Activar cuando Antonio pida videos 'con Flow' o 'con Veo', o un guion con escenas de video. Para selectores de generación o edición de imágenes, usar la referencia canónica de apps/dibujo_lineas_copia."
+description: "SOLO para videos gratis (Veo) vía Google Flow con la CLI instalada en E:/herramientas/google-flow, y para IMPLANTAR el modelo `flow` en una app (cola del PC, conexión permanente y 1-4 imágenes por generación). Activar cuando Antonio pida videos 'con Flow' o 'con Veo', un guion con escenas de video, o añadir el modelo flow a una app. Para selectores de generación o edición de imágenes, usar la referencia canónica de apps/dibujo_lineas_copia."
 ---
 
 # Google Flow (labs.google) — herramienta instalada
@@ -15,6 +15,35 @@ referencia es `apps/flow_studio/` (cola propia, historial, lightbox y descarga) 
 `FlowStudioWorker` cada 2 minutos. El frontend hace `request` y polea `status`; el worker reclama
 con `claim`, genera con Flow y sube con `complete` (o `fail`). Publicada en
 `https://atnojs.es/apps/flow_studio/`.
+
+## Implantación del modelo Flow en una app (patrón obligatorio)
+
+Patrón ya implantado en `apps/editar_generar` y en `apps/imagenes_ia/combinar_imagenes`
+(2026-10-28). Toda app que ofrezca el modelo `flow` debe cumplirlo:
+
+1. **Conector propio por app**: copiar `flow-client.20261028.js` a la carpeta de la app y cargarlo
+   antes del JS principal. La cola vive en `/apps/flow_studio/flow_queue.php`; el conector
+   resuelve la ruta buscando `/apps/` en `location.pathname`, así sirve también para apps
+   anidadas como `apps/imagenes_ia/<app>/`.
+2. **Conexión siempre viva**: latido cada 15 s con la pestaña visible y 45 s en segundo plano;
+   si falla, reintento con espera creciente (4 s → 20 s) que no se rinde; reconexión inmediata al
+   volver a la pestaña, al evento `online`, al foco y al restaurar desde bfcache. La espera de un
+   trabajo sobrevive a un corte de red y la petición se reintenta hasta 3 veces.
+3. **Estado visible**: píldora «Flow conectado · N en cola» / «Flow sin conexión · Reintentar» en
+   el encabezado; al pulsarla se relanza el ping.
+4. **Modelos libres**: `flow-nano-banana-2`, `flow-nano-banana-pro` y `flow-nano-banana-2-lite`
+   no piden contraseña (`model-gate.20261028.js`). En el selector viajan los ids; en el cuerpo de
+   la petición, los nombres literales que valida la cola (`Nano Banana 2`, etc.).
+5. **De 1 a 4 imágenes por generación (obligatorio)**: la cola admite `count` de 1 a 4. La app
+   debe ofrecer un selector 1-4 y encolar esa cantidad en **una sola** petición; todos los ids se
+   sondean con **una** consulta `status` por vuelta y cada resultado se guarda en el historial.
+   Con modelos de pago (vía proxy) el selector se desactiva con el aviso «Solo con FLOW: el resto
+   de modelos genera 1 imagen por solicitud».
+6. **Límites que la UI debe avisar**: 2 referencias como máximo (reducirlas a JPEG de ≤1280 px
+   antes de encolar: el tope es 6 MB por referencia), formatos 1:1 / 4:3 / 3:4 / 16:9 / 9:16
+   (3:2→4:3, 4:5→3:4, 21:9→16:9), sin resolución propia (~1K) y prompt ≤1200 caracteres.
+7. **Verificación obligatoria**: una generación real en producción con el worker encendido;
+   comprobar la píldora, el avance por imagen, el resultado, el historial y la consola.
 
 ## Instrucciones de ejecución (videos)
 
