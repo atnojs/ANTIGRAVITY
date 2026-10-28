@@ -191,9 +191,9 @@ h1{
 
 .page-guides{position:absolute;inset:0;z-index:1;pointer-events:none;display:none}
 .page.show-guides .page-guides{display:block}
-.guide-margin{position:absolute;inset:5mm;border:1px dashed rgba(0,150,170,.4);pointer-events:none}
-.guide-v{position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed rgba(0,150,170,.22)}
-.guide-h{position:absolute;top:50%;left:0;right:0;border-top:1px dashed rgba(0,150,170,.22)}
+.guide-margin{position:absolute;inset:5mm;border:calc(1.5px / var(--z)) dashed rgba(0,150,170,.5);pointer-events:none}
+.guide-v{position:absolute;left:50%;top:0;bottom:0;border-left:calc(1.5px / var(--z)) dashed rgba(0,150,170,.28)}
+.guide-h{position:absolute;top:50%;left:0;right:0;border-top:calc(1.5px / var(--z)) dashed rgba(0,150,170,.28)}
 
 .layer-items{position:absolute;inset:0;z-index:2}
 
@@ -223,10 +223,18 @@ h1{
   box-shadow:0 0 0 100vmax rgba(0,10,18,.62);
 }
 
+/* borde visible del folio: marca hasta dónde se imprime */
+.page-frame{
+  position:absolute;inset:0;z-index:5;pointer-events:none;
+  border:calc(3px / var(--z)) solid rgba(0,208,208,.95);
+  box-shadow:0 0 calc(8px / var(--z)) rgba(0,0,0,.55),
+             inset 0 0 0 calc(1px / var(--z)) rgba(0,0,0,.3);
+}
+
 /* ---------- tiradores ---------- */
 
 .handles{
-  position:absolute;z-index:4;
+  position:absolute;z-index:6;
   transform-origin:center center;
   pointer-events:none;
 }
@@ -503,6 +511,6 @@ kbd{
     width:210mm;height:297mm;
     overflow:hidden;
   }
-  .page-guides,.page-dim,.handles,.item.is-selected::after{display:none !important}
+  .page-guides,.page-dim,.page-frame,.handles,.item.is-selected::after{display:none !important}
   .item::after{display:none}
 }
