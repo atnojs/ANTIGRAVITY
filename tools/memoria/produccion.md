@@ -18,6 +18,7 @@ sin desplegar"**, no para certificar que cada app funciona.
 
 | Fecha del index | Apps |
 |---|---|
+| 2026-10-28 | `flow_studio_hoola` (**el botón de la zona a editar pasa a «Crear máscara»**: `20261028a-flow-studio`, `app.20261028a.js` (copia del `d` con una línea), «Ajustar círculo» intacto; JS servido con SHA-256 idéntico al local y Chrome sobre la URL real; verificador independiente PASS 97,6; desplegado a las 22:36 tras re-disparar el webhook; ver `bitacora.md`) |
 | 2026-10-28 | `dibujo_lineas_copia` (**modelos de Google Flow gratis con la cola del PC y estado «PC conectado»**; `app.20261028c.js|css`, `model-gate.20261028.js`, historial con `flow-nano-banana-2` y descarga real; **arranca con FLOW · NANO BANANA 2 por defecto** desde `c6259f0a`, petición expresa del 28/10; verificado en producción con Chrome; ver `bitacora.md`) |
 | 2026-10-27 | `flow_studio_hoola` (**modelos de IA del estudio, compuerta y máscara circular**: `20261027d-flow-studio`, `app.20261027d.*`, `api.php`+`lib/` con SQLite, referencias por modo y máscara con 0 píxeles distintos fuera del círculo; verificado contra el origen y en Chrome; ver `bitacora.md`) |
 | 2026-10-27 | `unified-app` (**arreglada la pantalla blanca**: build versionado `assets/app.20261027.js|css` + `index.html` de producción + `proxy.php`; Firebase movido a `nanobanana-cbb2d`; verificado en el origen, SHA-256 del JS idéntico al local; ver `bitacora.md`) |
