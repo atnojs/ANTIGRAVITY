@@ -2634,3 +2634,15 @@ las cabeceras.
 - **Pendiente declarado:** el worker no está corriendo en el PC de trabajo (`ping` con
   `worker:false` y 3 trabajos en cola); sin él no hay generación con FLOW. Verificado lo demás:
   payload literal, referencias a 2048 px y el camino OpenAI de punta a punta.
+
+## 2026-10-28 (noche) — Foto A4: compositor de fotos en folio con impresora local (e7d6921, dd0cfe2, 42bff31)
+
+- **Encargo:** app para subir fotos, colocarlas en un A4 con tiradores, rotación, espejo H/V por foto, ajustar/cubrir, varias imágenes y envío a la EPSON ET-3850 de red con sus opciones.
+- **Publicado:** `webs/foto-a4/` (estático + `proxy.php` de salud) y puente local en `tools/foto-a4-bridge/` (`server.mjs` + `print.ps1` + `iniciar.bat`). El puente sirve la app en `http://127.0.0.1:8787` y habla con el driver instalado (System.Drawing/PrintDocument), así que no depende de IPP.
+- **Hallazgo 1 — IPP no utilizable:** la ET-3850 (192.168.18.6:631) exige TLS y responde `0x0408` a cualquier Get-Printer-Attributes, incluso con URI, SNI y versión correctos; se descartó IPP y se imprimió por el spooler de Windows, que sí funciona. Verificado imprimiendo a «Microsoft Print to PDF» (PDF 38 KB, A4).
+- **Hallazgo 2 — CSP de Hostinger:** `img-src 'self' data: https:` bloquea `blob:`; en producción las fotos subidas no se veían. Se pasó a data URLs y a decodificar proyectos con `atob` (sin `fetch(data:)`, que también cae por CSP). Verificado en la URL real: fotos visibles y PDF exportado (107 KB, JPEG interno 2480×3508).
+- **Hallazgo 3 — caché por ruta:** el `app.js` publicado seguía sirviendo la versión vieja con `?cb=`; se versionaron `app.20261028b.js` y `app.20261028b.css` y el HTML pasó a apuntarles (patrón ya documentado en `errores.md`).
+- **Hallazgo 4 — impresora predeterminada:** imprimir a «Microsoft Print to PDF» dejaba esa impresora como predeterminada del sistema. `print.ps1` guarda la predeterminada antes y la restaura después con `printui /y`; comprobado que tras imprimir sigue la EPSON.
+- **Verificación:** local (Chrome real): 3 fotos cargadas, ajustar (210×210 mm), espejo, DPI 169, PDF y PNG 2480×3508, consola 0 errores; producción: carga de 2 fotos, capas, modal con la EPSON y sus opciones reales (A4, calidad, copias), export PDF y 0 errores; 1280/768/393 sin desbordes.
+- **Limitación:** la impresión directa solo funciona con el puente local (el CSP de atnojs.es bloquea `connect-src` a 127.0.0.1); desde la web se usa el diálogo de Windows. No se hizo una impresión en papel para no gastar consumibles: la ruta se validó con el driver «Microsoft Print to PDF».
+- **Commits:** `e7d6921` (feat), `dd0cfe2` (fix data URLs), `42bff31` (assets fechados). Evidencias en `tools/evidencias/2026-10-28-foto-a4/`.
