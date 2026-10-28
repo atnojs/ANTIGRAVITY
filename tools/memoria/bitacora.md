@@ -2646,3 +2646,16 @@ las cabeceras.
 - **Verificación:** local (Chrome real): 3 fotos cargadas, ajustar (210×210 mm), espejo, DPI 169, PDF y PNG 2480×3508, consola 0 errores; producción: carga de 2 fotos, capas, modal con la EPSON y sus opciones reales (A4, calidad, copias), export PDF y 0 errores; 1280/768/393 sin desbordes.
 - **Limitación:** la impresión directa solo funciona con el puente local (el CSP de atnojs.es bloquea `connect-src` a 127.0.0.1); desde la web se usa el diálogo de Windows. No se hizo una impresión en papel para no gastar consumibles: la ruta se validó con el driver «Microsoft Print to PDF».
 - **Commits:** `e7d6921` (feat), `dd0cfe2` (fix data URLs), `42bff31` (assets fechados). Evidencias en `tools/evidencias/2026-10-28-foto-a4/`.
+### Cierre de la ronda (verificado en producción, 19:30)
+
+- **FLOW, punta a punta**: con dos imágenes de referencia (letra A blanca y letra B roja) y el
+  prompt «Pon la letra A a la izquierda y la letra B a la derecha sobre un fondo negro», el
+  resultado sale con **A a la izquierda y B a la derecha sobre negro**. El prompt viaja literal y
+  las dos referencias llegan al modelo (antes la app añadía «la primera es el fondo» y el modelo
+  pintaba otra cosa).
+- **OpenAI (modelo por defecto), punta a punta**: mismo caso con `IMAGE 2 LOW`; ahora llega un
+  **collage numerado** con todas las imágenes y el resultado es nítido y correcto (A y B en su
+  sitio). Antes solo se enviaba el fondo o la primera imagen.
+- **Worker**: volvió a arrancar; `ping` con `worker:true` y la cola drenándose. El lock nuevo
+  (`msvcrt`) es el que evita que un PID reciclado lo deje mudo.
+- Capturas: `tools/evidencias/2026-10-28-fidelidad-prompt-imagenes/`.
