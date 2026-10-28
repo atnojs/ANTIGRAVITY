@@ -2683,3 +2683,11 @@ las cabeceras.
 - **Verificado en producción** (393×844 y 375×667): `docW == vw` sin desbordamiento, lienzo 351–369 px de ancho, 3 fotos cargadas, barra de selección, espejo H/V y undo paso a paso, `window.print()` invocado una vez (stub) con deselección previa, PDF descargado (128 KB, 2480×3508 interno), consola sin errores.
 - **Nota de despliegue:** el webhook tardó ~25 min en publicar este commit (los push de 19:59 y 20:03 no se vieron hasta las 20:24); se re-disparó con un commit vacío. El árbol viejo siguió sirviéndose mientras tanto, sin romper la URL.
 - **Limitación:** se eliminaron también «Ajustar al folio» y «Cubrir folio» (vivían en el panel de propiedades y el usuario pidió quitar los botones de ajuste); si los quiere de vuelta, basta un botón en la barra.
+## 2026-10-28 (noche, 3) — Foto A4: panel de propiedades y tiradores táctiles (c4198298, a9d738f4)
+
+- **Petición:** del panel de propiedades quitar solo los datos de la imagen (nombre, ancho, alto, X, Y, giro) y conservar botones y ppp; los tiradores no respondían y la selección desaparecía al tocarlos.
+- **Causa de los tiradores:** medían 13 px y el toque que fallaba caía en el lienzo, que deselecciona. Ahora son 16 px visibles con zona táctil de 44 px (`::before`, inset -14 px) y el tirador de giro pasa a 32 px; probado pulsando 12 px fuera del centro y arrastrando: redimensiona sin perder la selección.
+- **Panel:** `#props` bajo el lienzo con los ppp y los 10 botones (espejo H/V, girar 90°, ajustar, cubrir, centrar, al frente, al fondo, duplicar, eliminar), sin nombre ni medidas. Vuelven «Ajustar al folio» (198×297 mm) y «Cubrir folio» (210×315 mm).
+- **Lienzo:** padding vertical (46/18 px) para que los tiradores no se recorten cuando la foto toca los bordes; el `@page` sigue imprimiendo una sola página A4.
+- **Incidencia:** el renombrado de assets con PowerShell corrompió las tildes del HTML («AÃ±adir»); se reescribió en UTF-8 y se publicó a las 21:11. Durante ~15 min el origen sirvió un árbol antiguo (revirtió a `0cde523d`) hasta re-disparar con commit vacío: mismo patrón de despliegues atrasados de `errores.md`.
+- **Verificado en producción** (393×844): panel con 242 ppp, arrastre del tirador SE de 126 a 146,7 mm con la proporción intacta, texto correcto y 0 errores de consola.
