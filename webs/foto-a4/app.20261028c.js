@@ -144,8 +144,14 @@
 
   function renderProps() {
     const it = getSel();
-    els.props.hidden = !it;
-    if (!it) return;
+    const has = !!it;
+    els.props.classList.toggle('is-idle', !has);
+    $$('#props [data-act]').forEach((btn) => { btn.disabled = !has; });
+    if (!has) {
+      els.dpi.textContent = '—';
+      els.dpi.className = 'dpi';
+      return;
+    }
     const dpi = dpiOf(it);
     els.dpi.textContent = Math.round(dpi) + ' ppp';
     els.dpi.className = 'dpi' + (dpi >= 290 ? '' : dpi >= 150 ? ' warn' : ' low');

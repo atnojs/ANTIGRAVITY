@@ -301,7 +301,9 @@ h1{
 /* ---------- panel de propiedades (solo botones y ppp) ---------- */
 
 .props{padding-bottom:10px}
-.props[hidden]{display:none}
+
+.props.is-idle .dpi{color:var(--muted)}
+.props.is-idle .props-grid{opacity:.6}
 
 .props-head{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
