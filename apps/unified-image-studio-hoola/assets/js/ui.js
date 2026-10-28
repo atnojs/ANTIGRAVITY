@@ -6,8 +6,8 @@ import {
   state, emit, on, getLayer, selectLayer, removeLayer, duplicateLayer, reorderLayer,
   moveLayerTo, mutate, getResource, fmtDate, fmtBytes, canUndo, canRedo,
   clamp, LIMITS,
-} from './core.js?v=24';
-import { modelById, catalog } from './ai.js?v=24';
+} from './core.js?v=25';
+import { modelById, catalog } from './ai.js?v=25';
 
 export const $ = (id) => document.getElementById(id);
 export const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -326,6 +326,14 @@ export function renderLayerProps() {
   const layer = getLayer();
   const ids = ['layerOpacity', 'layerX', 'layerY', 'layerW', 'layerH', 'dupLayerBtn', 'delLayerBtn'];
   ids.forEach((id) => { $(id).disabled = !layer; });
+  // Una capa bloqueada no se mueve ni se redimensiona con los campos.
+  if (layer && layer.locked) {
+    ['layerX', 'layerY', 'layerW', 'layerH'].forEach((id) => { $(id).disabled = true; });
+  }
+  // Subir/Bajar solo tiene sentido con dos capas o más.
+  const total = state.doc?.layers?.length || 0;
+  const sinOrden = !layer || total < 2;
+  ['layerUpBtn', 'layerDownBtn'].forEach((id) => { const b = $(id); if (b) b.disabled = sinOrden; });
   $('propsName').textContent = layer ? layer.name : 'Sin selección';
   if (!layer) {
     $('opacityValue').textContent = '—';
@@ -422,7 +430,7 @@ export function renderProjects(projects = [], targetId = 'projectList', limit = 
     const current = project.id === state.project?.id;
     const row = el('div', { class: `list-row${current ? ' is-current' : ''}` }, [
       el('div', { class: 'list-row-main' }, [
-        el('div', { class: 'list-row-title', text: project.name }),
+        el('div', { class: 'list-row-title', text: project.remoto ? project.name + ' · servidor' : project.name }),
         el('div', { class: 'mono', text: `${fmtDate(project.updatedAt)} · ${project.width || 0}×${project.height || 0}` }),
       ]),
     ]);

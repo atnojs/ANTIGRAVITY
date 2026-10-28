@@ -8,32 +8,32 @@ import {
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
-} from './core.js?v=24';
-import { renderer } from './render.js?v=24';
-import { initTools, setTool } from './tools.js?v=24';
+} from './core.js?v=25';
+import { renderer } from './render.js?v=25';
+import { initTools, setTool } from './tools.js?v=25';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
   showLoading, hideLoading, updateTopbar, updateSaveState, updateViewportUI, setEmptyState,
   renderLayers, renderLayerProps, renderRefs, renderVersions, renderProjects, renderAssets,
   renderRecipes, setActiveModel, switchLeftTab, switchRightTab, setToolUI, paintStorageInfo,
-} from './ui.js?v=24';
+} from './ui.js?v=25';
 import {
   server, saveNow, scheduleSave, listProjects, loadProject, deleteProject, saveVersion,
   listVersions, deleteVersion, storageInfo, clearLocalCache, uploadResource, lastProjectId, idb,
   fetchVersionDoc,
-} from './persist.js?v=24';
+} from './persist.js?v=25';
 import {
   downloadExport, copyToClipboard, downloadProject, exportImage, canvasToBlob, estimateExport,
-} from './exporter.js?v=24';
+} from './exporter.js?v=25';
 import {
   MODELS, modelById, loadCatalog, catalog, generate,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
-} from './ai.js?v=24';
+} from './ai.js?v=25';
 import {
   FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
   flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
   statusFlowJobs, retryFlowJob, deleteFlowJob, cancelFlowJob, downloadFlowJob, fetchFlowBlob,
-} from './flow.js?v=24';
+} from './flow.js?v=25';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
@@ -80,6 +80,9 @@ async function boot() {
     statusBuild.title = BUILD;
   }
   console.info('[Unified Image Studio]', BUILD);
+  // La interfaz ya responde: el vigilante no debe saltar mientras se resuelve
+  // cualquier confirmación (cargar la versión del servidor, por ejemplo).
+  if (window.__UIS_DIAG__) window.__UIS_DIAG__.started = true;
 
   const probe = await server.probe();
   paintStorageInfo(await storageInfo());
@@ -175,7 +178,28 @@ function startNewProject({ blank = true, name = 'Proyecto sin título', width = 
 async function openProject(id, { silent = false } = {}) {
   state.resources.clear();
   clearDataUrlCache();
-  const { project, doc } = await loadProject(id);
+
+  let project = null;
+  let doc = null;
+  try {
+    const local = await loadProject(id);
+    project = local.project;
+    doc = local.doc;
+  } catch (errorLocal) {
+    // No está en este navegador: se trae del servidor (biblioteca compartida).
+    const datos = await server.call('project.get', { id }, { method: 'GET', timeout: 15000 });
+    if (!datos?.doc) throw errorLocal;
+    doc = datos.doc;
+    project = {
+      id,
+      name: doc.name || 'Proyecto del servidor',
+      docId: doc.id,
+      version: Number(datos.version || 0),
+      updatedAt: doc.updatedAt || Date.now(),
+    };
+    await hidratarRecursos(doc);
+    toast('Proyecto abierto desde el servidor.', 'ok');
+  }
   state.project = project;
   state.doc = doc;
   state.selection.layerId = doc.layers.at(-1)?.id || null;
@@ -213,6 +237,8 @@ async function openProject(id, { silent = false } = {}) {
       }
     } catch { /* el proyecto local es válido */ }
   }
+  // Al abrir desde el menú hay que recordarlo: al recargar volvía el anterior.
+  try { localStorage.setItem('uis-hoola:lastProject', id); } catch { /* sin almacenamiento */ }
   if (!silent) toast(`Proyecto «${project.name}» abierto.`, 'ok');
 }
 
@@ -261,6 +287,26 @@ async function readImageDimensions(blob) {
     };
     img.src = url;
   });
+}
+
+
+/* Descarga del servidor los recursos que referencia un documento y los registra
+   en memoria, para poder pintar un proyecto que no está en este navegador. */
+async function hidratarRecursos(doc) {
+  const ids = [...new Set((doc.layers || []).map((l) => l.resourceId).filter(Boolean))];
+  for (const id of ids) {
+    if (state.resources.has(id)) continue;
+    try {
+      const respuesta = await fetch(`api.php?action=resource&id=${encodeURIComponent(id)}`, {
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      if (!respuesta.ok) continue;
+      const blob = await respuesta.blob();
+      const dims = await readImageDimensions(blob);
+      addResource({ id, name: id, mime: blob.type || 'image/png', blob, width: dims.width, height: dims.height });
+    } catch { /* recurso no disponible: la capa se verá vacía */ }
+  }
 }
 
 async function importFiles(files, { asReference = false, asLayer = true } = {}) {
@@ -776,7 +822,8 @@ function bindRightPanel() {
       const layer = getLayer();
       if (!layer) return;
       mutate(`ajustar ${id.slice(-1).toLowerCase()}`, () => {
-        if (id === 'layerX') layer.x = Number($('layerX').value);
+        if (layer.locked) { toast('La capa está bloqueada: desbloquéala para moverla.', 'warn'); renderLayerProps(); return; }
+  if (id === 'layerX') layer.x = Number($('layerX').value);
         if (id === 'layerY') layer.y = Number($('layerY').value);
         if (id === 'layerW') layer.w = Math.max(1, Number($('layerW').value));
         if (id === 'layerH') layer.h = Math.max(1, Number($('layerH').value));
@@ -1884,9 +1931,31 @@ async function openProjectsModal() {
 }
 
 async function refreshProjectLists() {
-  const projects = await listProjects();
-  renderProjects(projects, 'projectList', 6);
-  renderProjects(projects, 'projectModalList', 50);
+  const locales = await listProjects();
+  // Un navegador nuevo no tiene nada en IndexedDB: se añaden los proyectos que
+  // el servidor sí tiene, para poder abrirlos. Antes decía "sin proyectos".
+  let remotos = [];
+  if (state.ui.mode === 'server' && server.available) {
+    try {
+      const datos = await server.call('project.list', {}, { method: 'GET', timeout: 8000 });
+      const lista = Array.isArray(datos?.projects) ? datos.projects : (Array.isArray(datos?.items) ? datos.items : []);
+      const idsLocales = new Set(locales.map((p) => p.id));
+      remotos = lista
+        .filter((p) => p && p.id && !idsLocales.has(p.id))
+        .map((p) => ({
+          id: p.id,
+          name: p.name || 'Proyecto del servidor',
+          docId: p.docId || null,
+          width: Number(p.width || 0),
+          height: Number(p.height || 0),
+          updatedAt: Number(p.updatedAt || p.updated_at || 0) * (Number(p.updatedAt || p.updated_at || 0) < 1e12 ? 1000 : 1),
+          remoto: true,
+        }));
+    } catch { /* sin sesión: solo locales */ }
+  }
+  const todos = [...locales, ...remotos].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  renderProjects(todos, 'projectList', 6);
+  renderProjects(todos, 'projectModalList', 50);
 }
 
 async function duplicateCurrentProject() {

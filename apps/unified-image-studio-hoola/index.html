@@ -49,6 +49,10 @@
   function panel() {
     if (shown) return;
     if (window.__UIS_DIAG__ && window.__UIS_DIAG__.started) return;
+    // Si hay un diálogo abierto (por ejemplo "versión más reciente en el
+    // servidor"), el aviso de arranque no debe taparlo: se reintenta luego.
+    var dialogo = document.querySelector('#confirmDialog:not(.hidden), .modal:not(.hidden), [role="dialog"]:not([hidden]), [aria-modal="true"]:not([hidden])');
+    if (dialogo) { setTimeout(panel, 2000); return; }
     shown = true;
     var box = document.createElement('div');
     box.id = 'uisBootGuard';
@@ -1030,8 +1034,8 @@
 <input type="file" id="refInput" accept="image/png,image/jpeg,image/webp" hidden multiple />
 <input type="file" id="projectInput" accept=".json,application/json" hidden />
 
-<script src="assets/js/model-gate.20261027.js?v=24"></script>
-<script type="module" src="assets/js/app.js?v=24"></script>
+<script src="assets/js/model-gate.20261027.js?v=25"></script>
+<script type="module" src="assets/js/app.js?v=25"></script>
 <script src="lightbox-zoom.20261026.js" defer></script>
 <script src="../_shared/password-eye.js?v=20261025b" defer></script>
   <div id="brushCursor" class="brush-cursor" aria-hidden="true"></div>
