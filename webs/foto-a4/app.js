@@ -346,7 +346,9 @@
   }
 
   async function addImage(file) {
-    const url = URL.createObjectURL(file);
+    // El CSP del dominio solo permite imágenes `data:` (ni blob: ni http:),
+    // así que la fuente de la imagen se guarda como data URL.
+    const url = await blobToDataURL(file);
     const el = new Image();
     el.decoding = 'async';
     try {
@@ -356,11 +358,9 @@
         el.src = url;
       });
     } catch (err) {
-      URL.revokeObjectURL(url);
       throw err;
     }
     if (!el.naturalWidth || !el.naturalHeight) {
-      URL.revokeObjectURL(url);
       throw new Error('empty');
     }
 
@@ -1059,6 +1059,18 @@
     });
   }
 
+  function dataUrlToBlob(dataUrl) {
+    const comma = dataUrl.indexOf(',');
+    const meta = comma > 0 ? dataUrl.slice(0, comma) : '';
+    const b64 = dataUrl.slice(comma + 1);
+    const match = meta.match(/data:([^;]+)/);
+    const mime = match ? match[1] : 'image/jpeg';
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+
   async function saveProject() {
     if (!items.length) { toast('No hay nada que guardar.', true); return; }
     toast('Preparando proyecto…');
@@ -1102,8 +1114,8 @@
     items = [];
     for (const im of data.images || []) {
       try {
-        const blob = await (await fetch(im.data)).blob();
-        const url = URL.createObjectURL(blob);
+        const blob = dataUrlToBlob(im.data);
+        const url = im.data;
         const el = new Image();
         el.decoding = 'async';
         await new Promise((resolve, reject) => {
@@ -1219,7 +1231,7 @@
       try {
         const blob = await idbGet('blobs', it.imgId);
         if (!blob) continue;
-        const url = URL.createObjectURL(blob);
+        const url = await blobToDataURL(blob);
         const el = new Image();
         el.decoding = 'async';
         await new Promise((resolve, reject) => {
@@ -1269,11 +1281,11 @@
   }
 
   async function detectBridge(auto) {
+    // El puente solo se busca cuando la app se sirve en local: el CSP del
+    // dominio publicado bloquea las conexiones a 127.0.0.1.
     const bases = [];
     if (isLocalHost()) {
       if (location.protocol.startsWith('http')) bases.push(location.origin);
-      bases.push('http://127.0.0.1:8787');
-    } else if (auto) {
       bases.push('http://127.0.0.1:8787');
     }
 

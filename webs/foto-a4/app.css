@@ -431,7 +431,7 @@ h1{
 .dot{width:8px;height:8px;border-radius:50%;background:rgba(153,204,204,.4);flex:none}
 .dot.ok{background:var(--acc2);box-shadow:0 0 8px var(--acc2)}
 .dot.pending{background:#ffd166}
-.dot.off{background:var(--danger)}
+.dot.off{background:rgba(153,204,204,.4)}
 
 /* ---------- modales ---------- */
 
