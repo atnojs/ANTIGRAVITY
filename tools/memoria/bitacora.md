@@ -2674,3 +2674,12 @@ las cabeceras.
 - **Cierre**: la tarea `FlowStudioWorker` quedó instalada en el PC de trabajo y **confirmada por
   Antonio** (2026-10-28, 20:22). Comprobado desde aquí: `ping` con `worker:true` y `lastSeen`
   avanzando cada ~60 s mientras `pending` baja. La cola se procesa sola.
+
+## 2026-10-28 (noche, 2) — Foto A4: rediseño móvil y retirada del puente de impresión (0cde523d)
+
+- **Petición:** la app es solo para móvil: galería al final, sin panel de propiedades, sin botones de ajuste ni zoom, lienzo siempre al ancho de la pantalla, sin impresora de red y con el diálogo del sistema al imprimir.
+- **Cambios:** una sola columna (máx. 820 px); el lienzo se escala al ancho del contenedor (`fitWidth`) y se recalcula al girar o redimensionar; fuera `.stage-bar`, inspector, modal de impresión y todo el cliente del puente; las acciones (espejo H/V, girar 90°, frente/fondo, duplicar, eliminar) pasan a una barra sticky bajo el lienzo, visible solo con una foto seleccionada; galería al final; deshacer/rehacer en la cabecera.
+- **Eliminado:** `tools/foto-a4-bridge/` (server.mjs, print.ps1, iniciar.bat) y los assets `app.js`/`app.css`/`app.20261028b.*`. La app ya no necesita Node ni servidor local.
+- **Verificado en producción** (393×844 y 375×667): `docW == vw` sin desbordamiento, lienzo 351–369 px de ancho, 3 fotos cargadas, barra de selección, espejo H/V y undo paso a paso, `window.print()` invocado una vez (stub) con deselección previa, PDF descargado (128 KB, 2480×3508 interno), consola sin errores.
+- **Nota de despliegue:** el webhook tardó ~25 min en publicar este commit (los push de 19:59 y 20:03 no se vieron hasta las 20:24); se re-disparó con un commit vacío. El árbol viejo siguió sirviéndose mientras tanto, sin romper la URL.
+- **Limitación:** se eliminaron también «Ajustar al folio» y «Cubrir folio» (vivían en el panel de propiedades y el usuario pidió quitar los botones de ajuste); si los quiere de vuelta, basta un botón en la barra.
