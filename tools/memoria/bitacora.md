@@ -2697,3 +2697,9 @@ las cabeceras.
 - `#props` deja de usar `hidden`: siempre está en el flujo. Sin selección lleva la clase `is-idle`, los 10 botones quedan `disabled`, los ppp muestran «—» y el panel se atenúa. La galería queda siempre debajo.
 - Medido en producción (393×844): `#props` a 716 px y galería a 954 px tanto con foto seleccionada como sin ella; los ppp pasan de «—» a 257 sin mover nada. 0 errores de consola.
 - Assets `app.20261028e.*` (la CDN cachea por ruta).
+## 2026-10-28 (noche, 5) — Foto A4: marco visible del folio (d3666d44)
+
+- Antonio: con la foto a sangre no se veían los bordes del lienzo y no sabía hasta dónde podía ampliar.
+- `.page-frame` (span absoluto dentro del folio, z 5) dibuja el límite de impresión: borde cian de 3 px **compensado por el zoom** (`calc(3px / var(--z))`; antes 2 px sin compensar se quedaban en ~1 px y no se veían) más sombra exterior. Se oculta en impresión.
+- Las guías (margen de 5 mm y ejes) también se compensan para que no desaparezcan con el zoom.
+- Verificado en producción (393×844): marco nítido con la foto cubriendo el folio y la parte que sobresale atenuada; la impresión sigue saliendo en 1 página A4 (594,96 × 841,92 pt) sin el marco.
