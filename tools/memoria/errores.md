@@ -1,3 +1,11 @@
+## 2026-10-28 — La CSP del sitio bloquea `blob:` en `<img>` y rompe la referencia de Flow
+
+- **Síntoma:** al generar con un modelo Flow en `dibujo_lineas_copia`, la tarjeta de error decía «No se pudo leer la imagen para enviarla a Flow» y la consola mostraba `Loading the image 'blob:https://atnojs.es/…' violates CSP directive "img-src 'self' data: https:"`.
+- **Causa:** `prepareFlowReference` creaba la referencia con `URL.createObjectURL(file)` y la cargaba en `new Image()`; la CSP del `.htaccess` raíz no permite `blob:` en `img-src`.
+- **Solución:** leer el archivo con `FileReader.readAsDataURL` (origen `data:`, sí permitido) y usar ese data URL como `img.src` antes de dibujar en el canvas.
+- **Verificación:** generación real en producción tras desplegar `0e843358` (1376×768, historial `flow-nano-banana-2`), sin errores de CSP en consola.
+- **Commit:** `0e843358`.
+
 ## 2026-10-27 — El mejorador de prompts volcaba JSON crudo cuando el modelo devolvía objetos sin corchetes
 
 - **Síntoma:** en Editar Imagen, al pulsar «Mejorar instrucción», la propuesta 1 aparecía como

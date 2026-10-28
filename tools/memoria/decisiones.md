@@ -1,3 +1,10 @@
+## 2026-10-28 — dibujo_lineas_copia usa la cola de flow_studio en vez de crear otra
+
+- **Decisión:** los modelos Flow de `apps/dibujo_lineas_copia` llaman por URL relativa a la cola pública de `apps/flow_studio` (`request`/`status`/`img`/`ping`), atendida por `FlowStudioWorker` y `E:\herramientas\google-flow\flow_studio_worker.py`.
+- **Por qué:** la cola y el worker ya existen, están siempre conectados (tarea cada 2 min) y son el patrón documentado en `SKILL_GOOGLE_FLOW.md`; duplicar cola y worker habría añadido otro Chrome, otro lock y otro punto de fallo para una sola función.
+- **Contrapartida:** la app depende de que `apps/flow_studio` siga publicada y de `FlowStudioWorker` activo; si se retira esa app habrá que migrar los tres modelos al sistema nuevo (`api.php` + `UisFlowAgent`). Comparten cuenta de Google y cuota con el resto de apps Flow.
+- **Verificación:** ping de producción `worker:true`, generación real desde la UI y trabajos `done` en la cola; evidencia en `tools/evidencias/2026-10-28-dibujo-flow/`.
+
 ## 2026-10-27 — Flow Studio: máscara circular por composición en cliente
 
 - **Decisión:** la máscara de edición se aplica **después** de generar: se dibuja el original, se recorta el resultado al círculo y se pega dentro; fuera del círculo quedan los píxeles del original.

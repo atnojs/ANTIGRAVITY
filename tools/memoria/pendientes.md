@@ -16,6 +16,7 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 - **Etiqueta «Máscara» no persiste:** el historial guarda prompt/ratio/modo, no `mask`; al recargar se pierde la etiqueta. Siguiente paso: añadir `mask` al `data` de `saveToHistory` (y migrar sin romper lo existente).
 - **Etiquetas de vídeo en Title Case:** el estudio las usa en mayúsculas; ids/orden son idénticos. Siguiente paso: unificar si se exige literalidad visual.
 - **Descarga del historial en WebP:** el CDN de Hostinger convierte el PNG a WebP según `Accept`; la descarga desde una tarjeta recuperada del historial sale `.webp` con pérdida. Siguiente paso: servir el original forzando `Accept: image/png` o una ruta de descarga propia.
+- **dibujo_lineas_copia sin botón Parar:** los trabajos Flow de esa app no se pueden cancelar; si uno se cuelga hay que esperar al tope de 15 min de la interfaz o limpiar la cola a mano. Siguiente paso: botón «Parar» como en `flow_studio_hoola` (marcar `cancel_requested` en la cola y que el worker mate el proceso).
 
 ---
 
