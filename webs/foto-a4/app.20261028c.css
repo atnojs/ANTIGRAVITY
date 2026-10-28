@@ -171,6 +171,8 @@ h1{
   background:rgba(0,10,18,.5);
   overflow:hidden;
   box-shadow:inset 0 0 40px rgba(0,0,0,.45);
+  /* deja aire arriba y abajo para que los tiradores no se recorten */
+  padding:46px 0 18px;
 }
 
 .stage-scroll{display:block;padding:0}
@@ -232,15 +234,23 @@ h1{
 
 .handle{
   position:absolute;
-  width:calc(13px / var(--z));
-  height:calc(13px / var(--z));
-  margin:calc(-6.5px / var(--z)) 0 0 calc(-6.5px / var(--z));
+  width:calc(16px / var(--z));
+  height:calc(16px / var(--z));
+  margin:calc(-8px / var(--z)) 0 0 calc(-8px / var(--z));
   background:#fff;
-  border:calc(1.5px / var(--z)) solid var(--acc);
-  border-radius:calc(2px / var(--z));
+  border:calc(2px / var(--z)) solid var(--acc);
+  border-radius:calc(3px / var(--z));
   box-shadow:0 0 calc(6px / var(--z)) rgba(0,0,0,.45);
   pointer-events:auto;
   touch-action:none;
+}
+
+/* zona táctil amplia: el dedo no necesita acertar en el cuadradito */
+.handle::before{
+  content:"";
+  position:absolute;
+  inset:calc(-14px / var(--z));
+  border-radius:50%;
 }
 
 .h-nw{left:0;top:0;cursor:nwse-resize}
@@ -253,10 +263,10 @@ h1{
 .h-w{left:0;top:50%;cursor:ew-resize}
 
 .h-rot{
-  left:50%;top:calc(-32px / var(--z));
-  width:calc(26px / var(--z));
-  height:calc(26px / var(--z));
-  margin:0 0 0 calc(-13px / var(--z));
+  left:50%;top:calc(-34px / var(--z));
+  width:calc(32px / var(--z));
+  height:calc(32px / var(--z));
+  margin:0 0 0 calc(-16px / var(--z));
   display:grid;place-items:center;
   padding:0;
   background:var(--acc);
@@ -264,6 +274,7 @@ h1{
   cursor:grab;
   box-shadow:0 0 calc(10px / var(--z)) rgba(0,208,208,.55);
 }
+.h-rot::before{inset:calc(-8px / var(--z))}
 .h-rot svg{width:60%;height:60%;fill:none;stroke:#00201c;stroke-width:2.4;stroke-linecap:round}
 .h-rot:active{cursor:grabbing}
 
@@ -287,42 +298,38 @@ h1{
 
 /* ---------- barra de la foto seleccionada ---------- */
 
-.sel-bar{
-  position:sticky;
-  bottom:8px;
-  z-index:60;
-  align-self:center;
-  width:max-content;
-  max-width:100%;
-  display:flex;
-  align-items:center;
-  gap:4px;
-  padding:5px;
-  border-radius:999px;
-  background:rgba(6,30,46,.94);
-  border:1px solid rgba(0,208,208,.5);
-  box-shadow:0 0 22px rgba(0,208,208,.28),0 12px 30px rgba(0,0,0,.5);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-}
-.sel-bar[hidden]{display:none}
+/* ---------- panel de propiedades (solo botones y ppp) ---------- */
 
-.sel-btn{
-  width:44px;height:44px;
-  display:grid;place-items:center;
-  padding:0;
-  color:var(--text);
-  background:transparent;
-  border:0;border-radius:50%;
-  cursor:pointer;
-  transition:background .16s ease,color .16s ease;
+.props{padding-bottom:10px}
+.props[hidden]{display:none}
+
+.props-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 12px 8px;
+  border-bottom:1px solid rgba(0,208,208,.18);
 }
-.sel-btn:hover{background:rgba(0,208,208,.16);color:var(--acc)}
-.sel-btn:active{background:rgba(0,208,208,.26)}
-.sel-btn:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
-.sel-btn .ico{width:20px;height:20px}
-.sel-btn-danger{color:var(--danger)}
-.sel-btn-danger:hover{background:rgba(255,138,122,.16);color:var(--danger)}
+.props-head h2{
+  margin:0;font-size:.74rem;font-weight:400;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);
+}
+
+.dpi{font-size:.86rem;letter-spacing:.03em;color:var(--acc2);white-space:nowrap}
+.dpi.warn{color:#ffd166}
+.dpi.low{color:var(--danger)}
+
+.props-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+  padding:10px 10px 8px;
+}
+.props-grid .btn{
+  width:100%;height:38px;padding:0 6px;gap:5px;
+  font-size:.72rem;letter-spacing:0;
+}
+.props-grid .ico{width:15px;height:15px}
+
+.props-delete{width:calc(100% - 20px);margin:0 10px}
 
 /* ---------- galería (al final) ---------- */
 
@@ -454,9 +461,10 @@ kbd{
 /* ---------- aviso flotante ---------- */
 
 .toast{
-  position:fixed;left:50%;bottom:calc(70px + env(safe-area-inset-bottom));
+  position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));
   transform:translateX(-50%);
   z-index:200;max-width:min(460px,90vw);
+  pointer-events:none;
   padding:9px 15px;border-radius:9px;
   background:var(--panel-strong);
   border:1px solid rgba(0,208,208,.5);
@@ -481,10 +489,10 @@ kbd{
 @media print{
   html,body{height:auto;background:#fff !important;overflow:visible !important}
   body::before{display:none !important}
-  .app-header,.action-row,.gallery,.sel-bar,.drop-hint,.modal,.toast{display:none !important}
+  .app-header,.action-row,.gallery,.props,.drop-hint,.modal,.toast{display:none !important}
   .app{display:block;max-width:none;padding:0;margin:0}
   .layout{display:block}
-  .stage{border:0;background:#fff;box-shadow:none;overflow:visible;border-radius:0}
+  .stage{border:0;background:#fff;box-shadow:none;overflow:visible;border-radius:0;padding:0}
   .stage-scroll{display:block;padding:0}
   .sheet{width:210mm !important;height:297mm !important}
   .page{

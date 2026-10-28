@@ -21,7 +21,8 @@
     sheet: $('#sheet'),
     stage: $('#stage'),
     stageScroll: $('#stage-scroll'),
-    selBar: $('#sel-bar'),
+    props: $('#props'),
+    dpi: $('#dpi'),
     galleryList: $('#gallery-list'),
     galleryEmpty: $('#gallery-empty'),
     galleryCount: $('#gallery-count'),
@@ -59,7 +60,7 @@
     els.toast.classList.toggle('err', !!isError);
     els.toast.hidden = false;
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => { els.toast.hidden = true; }, 3600);
+    toast._t = setTimeout(() => { els.toast.hidden = true; }, 2800);
   }
 
   function getSel() {
@@ -136,13 +137,18 @@
     });
 
     updateHandles();
-    renderSelBar();
+    renderProps();
   }
 
   /* ---------------- barra de selección ---------------- */
 
-  function renderSelBar() {
-    els.selBar.hidden = !getSel();
+  function renderProps() {
+    const it = getSel();
+    els.props.hidden = !it;
+    if (!it) return;
+    const dpi = dpiOf(it);
+    els.dpi.textContent = Math.round(dpi) + ' ppp';
+    els.dpi.className = 'dpi' + (dpi >= 290 ? '' : dpi >= 150 ? ' warn' : ' low');
   }
 
   function updateHistoryButtons() {
@@ -294,6 +300,36 @@
     commit(before);
   }
 
+  function fitOrCover(mode) {
+    const it = getSel();
+    if (!it) return;
+    const rec = images.get(it.imgId);
+    if (!rec) return;
+    const ratio = rec.w / rec.h;
+    const before = snapshot();
+    const w = mode === 'cover' ? Math.max(PAGE.w, PAGE.h * ratio) : Math.min(PAGE.w, PAGE.h * ratio);
+    it.w = w;
+    it.h = w / ratio;
+    it.x = PAGE.w / 2;
+    it.y = PAGE.h / 2;
+    renderItems();
+    renderGallery();
+    commit(before);
+    toast(mode === 'cover' ? 'Foto ampliada para cubrir el folio' : 'Foto ajustada al folio');
+  }
+
+  function centerItem() {
+    const it = getSel();
+    if (!it) return;
+    const before = snapshot();
+    it.x = PAGE.w / 2;
+    it.y = PAGE.h / 2;
+    layoutItem(it);
+    updateHandles();
+    commit(before);
+    toast('Foto centrada');
+  }
+
   function layerMove(toFront) {
     const it = getSel();
     if (!it) return;
@@ -348,13 +384,16 @@
     if (act === 'mirror-h') mirror('h');
     else if (act === 'mirror-v') mirror('v');
     else if (act === 'rot90') rotate90();
+    else if (act === 'fit') fitOrCover('fit');
+    else if (act === 'cover') fitOrCover('cover');
+    else if (act === 'center') centerItem();
     else if (act === 'front') layerMove(true);
     else if (act === 'back') layerMove(false);
     else if (act === 'duplicate') duplicateItem();
     else if (act === 'delete') deleteItem();
   }
 
-  $$('#sel-bar [data-act]').forEach((btn) => {
+  $$('#props [data-act]').forEach((btn) => {
     btn.addEventListener('click', () => doAction(btn.dataset.act));
   });
 
@@ -535,6 +574,7 @@
     const changed = commit(drag.before);
     drag = null;
     if (changed) renderGallery();
+    renderProps();
   }
 
   window.addEventListener('pointermove', onPointerMove, { passive: true });
@@ -1048,7 +1088,7 @@
   function boot() {
     fitWidth();
     updateHistoryButtons();
-    renderSelBar();
+    renderProps();
     restoreAutosave().finally(() => {
       renderItems();
       renderGallery();

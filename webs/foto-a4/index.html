@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Foto A4 — Tus fotos en un folio para imprimir</title>
-<meta name="description" content="Sube tus fotos, colócalas en un folio A4 con tiradores, espejo y rotación, y mándalas a la impresora desde el móvil.">
+<title>Foto A4 â€” Tus fotos en un folio para imprimir</title>
+<meta name="description" content="Sube tus fotos, colÃ³calas en un folio A4 con tiradores, espejo y rotaciÃ³n, y mÃ¡ndalas a la impresora desde el mÃ³vil.">
 <meta name="theme-color" content="#001018">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.20261028c.css">
+<link rel="stylesheet" href="app.20261028d.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23001018'/%3E%3Crect x='8' y='6' width='16' height='21' rx='2' fill='none' stroke='%2300D0D0' stroke-width='2'/%3E%3Ccircle cx='13' cy='12' r='2' fill='%2326C626'/%3E%3Cpath d='M10 22l4-5 3 3 3-4 2 3' fill='none' stroke='%2300D0D0' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -27,6 +27,9 @@
   <symbol id="i-back" viewBox="0 0 24 24"><rect x="10" y="10" width="10" height="10" rx="1"/><path d="M14 10V5a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h5"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M4 10h10a5 5 0 0 1 0 10h-4M4 10l4-4M4 10l4 4"/></symbol>
   <symbol id="i-redo" viewBox="0 0 24 24"><path d="M20 10H10a5 5 0 0 0 0 10h4M20 10l-4-4M20 10l-4 4"/></symbol>
+  <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-cover" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8M12 8v8"/></symbol>
+  <symbol id="i-center" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></symbol>
 </svg>
 
 <div class="app">
@@ -52,7 +55,7 @@
 
   <div class="action-row">
     <button class="btn btn-primary" id="btn-add" type="button">
-      <svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Añadir fotos
+      <svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>AÃ±adir fotos
     </button>
     <button class="btn" id="btn-export" type="button">
       <svg class="ico" aria-hidden="true"><use href="#i-export"/></svg>Exportar
@@ -66,7 +69,7 @@
     <section class="stage" id="stage" data-od-id="lienzo-a4" aria-label="Lienzo A4">
       <div class="stage-scroll" id="stage-scroll">
         <div class="sheet" id="sheet">
-          <div class="page show-guides" id="page" tabindex="0" aria-label="Folio A4 de 210 por 297 milímetros">
+          <div class="page show-guides" id="page" tabindex="0" aria-label="Folio A4 de 210 por 297 milÃ­metros">
             <div class="page-guides" aria-hidden="true">
               <span class="guide-margin"></span>
               <span class="guide-v"></span>
@@ -94,41 +97,56 @@
       <div class="drop-hint" aria-hidden="true">Suelta las fotos en el folio</div>
     </section>
 
-    <div class="sel-bar" id="sel-bar" hidden>
-      <button class="sel-btn" type="button" data-act="mirror-h" aria-label="Espejo horizontal" title="Espejo horizontal">
-        <svg class="ico" aria-hidden="true"><use href="#i-mirror-h"/></svg>
+    <section class="panel props" id="props" aria-label="Propiedades de la imagen" hidden>
+      <div class="props-head">
+        <h2>Propiedades</h2>
+        <span class="dpi" id="dpi">â€”</span>
+      </div>
+      <div class="props-grid">
+        <button class="btn btn-sm" type="button" data-act="mirror-h">
+          <svg class="ico" aria-hidden="true"><use href="#i-mirror-h"/></svg>Espejo H
+        </button>
+        <button class="btn btn-sm" type="button" data-act="mirror-v">
+          <svg class="ico" aria-hidden="true"><use href="#i-mirror-v"/></svg>Espejo V
+        </button>
+        <button class="btn btn-sm" type="button" data-act="rot90">
+          <svg class="ico" aria-hidden="true"><use href="#i-rotate"/></svg>Girar 90Â°
+        </button>
+        <button class="btn btn-sm" type="button" data-act="fit" title="Ajustar al folio">
+          <svg class="ico" aria-hidden="true"><use href="#i-fit"/></svg>Ajustar
+        </button>
+        <button class="btn btn-sm" type="button" data-act="cover" title="Cubrir el folio">
+          <svg class="ico" aria-hidden="true"><use href="#i-cover"/></svg>Cubrir
+        </button>
+        <button class="btn btn-sm" type="button" data-act="center">
+          <svg class="ico" aria-hidden="true"><use href="#i-center"/></svg>Centrar
+        </button>
+        <button class="btn btn-sm" type="button" data-act="front">
+          <svg class="ico" aria-hidden="true"><use href="#i-front"/></svg>Al frente
+        </button>
+        <button class="btn btn-sm" type="button" data-act="back">
+          <svg class="ico" aria-hidden="true"><use href="#i-back"/></svg>Al fondo
+        </button>
+        <button class="btn btn-sm" type="button" data-act="duplicate">
+          <svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg>Duplicar
+        </button>
+      </div>
+      <button class="btn btn-sm btn-danger props-delete" type="button" data-act="delete">
+        <svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg>Eliminar
       </button>
-      <button class="sel-btn" type="button" data-act="mirror-v" aria-label="Espejo vertical" title="Espejo vertical">
-        <svg class="ico" aria-hidden="true"><use href="#i-mirror-v"/></svg>
-      </button>
-      <button class="sel-btn" type="button" data-act="rot90" aria-label="Girar 90 grados" title="Girar 90°">
-        <svg class="ico" aria-hidden="true"><use href="#i-rotate"/></svg>
-      </button>
-      <button class="sel-btn" type="button" data-act="front" aria-label="Traer al frente" title="Traer al frente">
-        <svg class="ico" aria-hidden="true"><use href="#i-front"/></svg>
-      </button>
-      <button class="sel-btn" type="button" data-act="back" aria-label="Enviar al fondo" title="Enviar al fondo">
-        <svg class="ico" aria-hidden="true"><use href="#i-back"/></svg>
-      </button>
-      <button class="sel-btn" type="button" data-act="duplicate" aria-label="Duplicar" title="Duplicar">
-        <svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg>
-      </button>
-      <button class="sel-btn sel-btn-danger" type="button" data-act="delete" aria-label="Eliminar" title="Eliminar">
-        <svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg>
-      </button>
-    </div>
+    </section>
 
-    <aside class="panel gallery" aria-label="Imágenes del lienzo">
+    <aside class="panel gallery" aria-label="ImÃ¡genes del lienzo">
       <div class="panel-head">
-        <h2>Imágenes</h2>
+        <h2>ImÃ¡genes</h2>
         <span class="badge" id="gallery-count">0</span>
-        <button class="btn btn-sm btn-ghost push" id="btn-add-2" type="button" aria-label="Añadir fotos">
+        <button class="btn btn-sm btn-ghost push" id="btn-add-2" type="button" aria-label="AÃ±adir fotos">
           <svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>
         </button>
       </div>
       <div class="gallery-list" id="gallery-list"></div>
       <p class="gallery-empty" id="gallery-empty">
-        Arrastra fotos aquí<br><span>o pulsa «Añadir fotos»</span>
+        Arrastra fotos aquÃ­<br><span>o pulsa Â«AÃ±adir fotosÂ»</span>
       </p>
       <div class="gallery-actions">
         <button class="btn btn-sm btn-ghost" id="btn-clear" type="button">
@@ -146,49 +164,49 @@
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="export-title">
     <header class="modal-head">
       <h2 id="export-title">Exportar y guardar</h2>
-      <button class="btn btn-icon" type="button" data-close aria-label="Cerrar">×</button>
+      <button class="btn btn-icon" type="button" data-close aria-label="Cerrar">Ã—</button>
     </header>
     <div class="export-grid">
       <button class="export-card" id="btn-pdf" type="button">
         <strong>PDF a 300 ppp</strong>
-        <span>Listo para copistería o para imprimir desde el móvil.</span>
+        <span>Listo para copisterÃ­a o para imprimir desde el mÃ³vil.</span>
       </button>
       <button class="export-card" id="btn-png" type="button">
         <strong>PNG a 300 ppp</strong>
-        <span>Imagen de 2480 × 3508 px con el folio completo.</span>
+        <span>Imagen de 2480 Ã— 3508 px con el folio completo.</span>
       </button>
       <button class="export-card" id="btn-save" type="button">
         <strong>Guardar proyecto</strong>
-        <span>Archivo .json con las fotos y su colocación.</span>
+        <span>Archivo .json con las fotos y su colocaciÃ³n.</span>
       </button>
       <button class="export-card" id="btn-open" type="button">
         <strong>Abrir proyecto</strong>
-        <span>Recupera una composición guardada.</span>
+        <span>Recupera una composiciÃ³n guardada.</span>
       </button>
       <button class="export-card" id="btn-new" type="button">
-        <strong>Nueva composición</strong>
-        <span>Vacía el folio y empieza de cero.</span>
+        <strong>Nueva composiciÃ³n</strong>
+        <span>VacÃ­a el folio y empieza de cero.</span>
       </button>
     </div>
-    <p class="hint">La composición se guarda sola en este navegador: si cierras y vuelves, la encontrarás tal cual.</p>
+    <p class="hint">La composiciÃ³n se guarda sola en este navegador: si cierras y vuelves, la encontrarÃ¡s tal cual.</p>
   </div>
 </div>
 
 <div class="modal" id="modal-help" hidden>
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
     <header class="modal-head">
-      <h2 id="help-title">Cómo se usa</h2>
-      <button class="btn btn-icon" type="button" data-close aria-label="Cerrar">×</button>
+      <h2 id="help-title">CÃ³mo se usa</h2>
+      <button class="btn btn-icon" type="button" data-close aria-label="Cerrar">Ã—</button>
     </header>
     <div class="help-body">
       <h3>Colocar fotos</h3>
-      <p>Añade una o varias fotos. Cada una se coloca en el folio y se puede mover, escalar y girar por separado.</p>
+      <p>AÃ±ade una o varias fotos. Cada una se coloca en el folio y se puede mover, escalar y girar por separado.</p>
       <h3>Mover, escalar y girar</h3>
-      <p>Arrastra la foto para moverla. Las esquinas escalan manteniendo la proporción; los tiradores de los lados estiran solo ese eje. El círculo superior gira y se imanta a 0°, 90°, 180° y 270°.</p>
-      <h3>Botones de la foto</h3>
-      <p>Al seleccionar una foto aparece una barra abajo con: <b>espejo horizontal</b>, <b>espejo vertical</b>, <b>girar 90°</b>, <b>traer al frente</b>, <b>enviar al fondo</b>, <b>duplicar</b> y <b>eliminar</b>.</p>
+      <p>Arrastra la foto para moverla. Las esquinas escalan manteniendo la proporciÃ³n; los tiradores de los lados estiran solo ese eje. El cÃ­rculo superior gira y se imanta a 0Â°, 90Â°, 180Â° y 270Â°.</p>
+      <h3>Panel de propiedades</h3>
+      <p>Al seleccionar una foto aparece debajo del folio, con su <b>resoluciÃ³n impresa</b> en ppp y los botones: <b>espejo H</b>, <b>espejo V</b>, <b>girar 90Â°</b>, <b>ajustar al folio</b>, <b>cubrir folio</b>, <b>centrar</b>, <b>al frente</b>, <b>al fondo</b>, <b>duplicar</b> y <b>eliminar</b>.</p>
       <h3>Imprimir</h3>
-      <p>El botón <b>Imprimir</b> abre el diálogo del móvil: elige la impresora de red, papel <b>A4</b>, márgenes <b>ninguno</b> y escala <b>100 %</b>. Para imprimir sin bordes hay que activarlo en las opciones de la impresora.</p>
+      <p>El botÃ³n <b>Imprimir</b> abre el diÃ¡logo del mÃ³vil: elige la impresora de red, papel <b>A4</b>, mÃ¡rgenes <b>ninguno</b> y escala <b>100 %</b>. Para imprimir sin bordes hay que activarlo en las opciones de la impresora.</p>
       <h3>Atajos de teclado</h3>
       <ul class="keys">
         <li><kbd>Supr</kbd> borrar</li>
@@ -202,6 +220,6 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="app.20261028c.js" defer></script>
+<script src="app.20261028d.js" defer></script>
 </body>
 </html>
