@@ -2659,3 +2659,15 @@ las cabeceras.
 - **Worker**: volvió a arrancar; `ping` con `worker:true` y la cola drenándose. El lock nuevo
   (`msvcrt`) es el que evita que un PID reciclado lo deje mudo.
 - Capturas: `tools/evidencias/2026-10-28-fidelidad-prompt-imagenes/`.
+
+## 2026-10-28 (noche) — Instalador de la tarea FlowStudioWorker
+
+- **Qué**: `tools/flow/instalar-worker-flow.ps1` (+ `.cmd` de doble clic) crea o repara la
+  tarea que procesa la cola de Flow cada 2 minutos. Detecta el Python con Playwright y Pillow,
+  registra la tarea (`StartWhenAvailable`, `IgnoreNew`, 60 min de tope), la arranca y
+  comprueba el ping de la cola. Idempotente; sin administrador si la tarea es del usuario.
+- **Por qué**: la tarea había desaparecido del PC de trabajo y la cola se quedó con trabajos sin
+  procesar. Ahora se recrea con un solo archivo en vez de a mano.
+- **Límite**: hay que ejecutarlo en el PC de trabajo (el del share `\\Principal`). Desde otro
+  equipo no se puede: RPC/WinRM y los recursos administrativos están cerrados; el script lo
+  detecta y se niega con un mensaje claro (probado en seco: exit 2).

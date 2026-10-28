@@ -77,6 +77,10 @@ Patrón ya implantado en `apps/editar_generar` y en `apps/imagenes_ia/combinar_i
   no está corriendo), que no haya un Chrome usando `session/flowbot-profile`, y el lock. Recordar
   que el worker y la tarea `FlowStudioWorker` viven en el PC de trabajo, no en el portátil: desde
   otro equipo solo se puede mirar la cola, no arrancarlo.
+- Para (re)crear la tarea en el PC de trabajo: `tools/flow/instalar-worker-flow.ps1` (o su
+  `.cmd`, doble clic). Detecta el Python con Playwright, registra la tarea cada 2 minutos con
+  `StartWhenAvailable` e `IgnoreNew`, la arranca y comprueba el ping. Es idempotente y no
+  necesita administrador si la tarea es del propio usuario.
 - PROMPT: el texto que viaja a Flow es **el del usuario, literal**. `flow.py` ya antepone «Usando
   las imágenes adjuntas como referencia, combina su contenido…»; envolverlo otra vez en la app
   (roles inventados tipo «la primera es el fondo», plantillas del proxy en inglés) cambia la
