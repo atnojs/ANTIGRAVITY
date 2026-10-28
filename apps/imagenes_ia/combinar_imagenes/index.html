@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="web.css?v=20261025b">
+    <link rel="stylesheet" href="web.20261028.css?v=20261028">
 </head>
 
 <body>
@@ -23,6 +23,12 @@
         <header class="app-header">
             <h1>Combinar Imágenes</h1>
             <p class="subtitle">Fusiona múltiples imágenes en una composición única con IA</p>
+            <!-- Conexión permanente con el PC de Google Flow (flow-client.20261028.js) -->
+            <button type="button" class="flow-status is-checking" id="flowStatus"
+                title="Comprobando la conexión con el PC de Flow…">
+                <span class="flow-status-dot" aria-hidden="true"></span>
+                <span id="flowStatusText" role="status" aria-live="polite">Conectando con Flow…</span>
+            </button>
         </header>
 
         <!-- Layout 2 columnas -->
@@ -182,6 +188,15 @@
             <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.">HIGH</button>
                                 </div>
                             </div>
+                            <div class="model-provider-column">
+                                <span class="model-provider-title">FLOW</span>
+                                <span class="model-quality-hint" style="font-size:.7rem;">Flow usa 2 imágenes</span>
+                                <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="flow-nano-banana-2" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Flow · Nano Banana 2 · gratis en el PC. Combina hasta 2 de tus imágenes sin gastar clave de API.">NANO BANANA 2</button>
+            <button type="button" class="model-toggle" data-model="flow-nano-banana-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Flow · Nano Banana Pro · más detalle y consistencia, algo más lento. Gratis en el PC.">NANO BANANA PRO</button>
+            <button type="button" class="model-toggle" data-model="flow-nano-banana-2-lite" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Flow · Nano Banana 2 Lite · el más rápido de los tres. Gratis en el PC.">NANO BANANA 2 LITE</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -275,9 +290,11 @@
     <!-- Tooltip de modelos (popup hover) -->
 <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
 <script src="history-manager.js?v=2"></script>
-    <script src="web.js?v=9"></script>
-  <!-- Bloqueo de modelos avanzados: IMAGE 2 LOW y MEDIUM libres, el resto pide contraseña -->
-  <script src="../../_shared/model-gate.js?v=3"></script>
+    <!-- Conector de Google Flow: cola del PC (apps/flow_studio) y latido permanente -->
+    <script src="flow-client.20261028.js?v=20261028"></script>
+    <script src="web.20261028.js?v=20261028"></script>
+  <!-- Bloqueo de modelos avanzados: IMAGE 2 LOW/MEDIUM y los modelos FLOW van libres -->
+  <script src="../../_shared/model-gate.20261028.js?v=20261028"></script>
 <script src="/apps/_shared/password-eye.js?v=20261025b" defer></script>
 
 <!-- Zoom con la rueda del raton en el visor de imagen grande -->
