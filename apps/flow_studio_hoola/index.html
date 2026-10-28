@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- assets versionados 20261027d: modelos directos, compuerta y máscara de edición -->
+<!-- assets versionados 20261028a: modelos directos, compuerta y máscara de edición -->
 <title>Flow Studio · Genera y edita imágenes con Google Flow y modelos directos</title>
 <meta name="description" content="Genera imágenes y vídeos con Google Flow en tu PC o con los modelos directos (OpenAI, Gemini y Qwen), edita solo la zona que marques con una máscara circular, elige formato y resolución y escala el resultado 2×, 4× u 8×. Los modelos caros se protegen con la contraseña de acceso.">
 <meta name="theme-color" content="#001018">
@@ -97,7 +97,7 @@
                 <div class="source-mask" id="sourceMask" hidden>
                     <div class="source-mask-head">
                         <span class="source-mask-label">Zona a editar</span>
-                        <button type="button" class="chip" id="btnMaskEdit" aria-pressed="false">Marcar círculo</button>
+                        <button type="button" class="chip" id="btnMaskEdit" aria-pressed="false">Crear máscara</button>
                         <button type="button" class="link-btn" id="btnMaskClear" hidden>Quitar máscara</button>
                     </div>
                     <p class="refs-note" id="maskNote" aria-live="polite">Sin máscara: se edita toda la imagen.</p>
@@ -365,7 +365,7 @@
 <script src="history-manager.js"></script>
 <!-- Compuerta compartida de modelos: contraseña de acceso al pulsar los caros -->
 <script src="../_shared/model-gate.20261026b.js"></script>
-<script src="app.20261027d.js"></script>
+<script src="app.20261028a.js"></script>
 
 <!-- Ojo para ver/ocultar la contraseña en el modal de acceso y en la compuerta -->
 <script src="../_shared/password-eye.js?v=20261025b" defer></script>
