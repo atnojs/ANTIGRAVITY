@@ -2511,3 +2511,23 @@ las cabeceras.
   `npm run deploy:app`, commit de `index.html` + `assets/`, push y re-verificar en la URL real.
 
 
+
+## 2026-10-28 — Cierre de los cinco defectos pendientes (UIS Hoola)
+
+- **Guardián de arranque:** ya no tapa un diálogo abierto (`#confirmDialog`, modales); reintenta
+  a los 2 s. Además `__UIS_DIAG__.started` se marca en cuanto la interfaz responde, antes de
+  cualquier confirmación. Antes, con el aviso de «versión más reciente en el servidor», el guardián
+  aparecía a los 5 s y dejaba la app inutilizable.
+- **Biblioteca de proyectos:** incluye los del servidor (`project.list`) cuando no están en el
+  navegador, marcados «· servidor». Un navegador nuevo ya no dice «Sin proyectos guardados» con
+  200 en el servidor.
+- **Abrir proyecto del servidor:** si no está en IndexedDB se trae con `project.get` y se hidratan
+  los recursos desde `api.php?action=resource`. Verificado: abre un proyecto de 2 capas en contexto
+  limpio.
+- **Último proyecto:** `openProject` guarda `localStorage['uis-hoola:lastProject']`; recargar ya no
+  vuelve al anterior.
+- **Candado de capa:** los campos X/Y/An/Al se deshabilitan y el manejador rechaza el cambio con
+  aviso. Medido: capa bloqueada con X=300 no se mueve.
+- **Orden de capas:** Subir/Bajar se desactivan con menos de dos capas (antes eran clics muertos).
+- **Prueba permanente:** `tools/pruebas/verificar-cinco-uis-hoola.mjs` (7 comprobaciones contra
+  producción, todas OK con v=25).
