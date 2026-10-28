@@ -168,6 +168,31 @@ const X = ({
 }), React.createElement('path', {
   d: 'm6 6 12 12'
 }));
+const Plus = ({
+  size
+}) => React.createElement(Icon, {
+  size
+}, React.createElement('path', {
+  d: 'M5 12h14'
+}), React.createElement('path', {
+  d: 'M12 5v14'
+}));
+const Minus = ({
+  size
+}) => React.createElement(Icon, {
+  size
+}, React.createElement('path', {
+  d: 'M5 12h14'
+}));
+const RotateCcw = ({
+  size
+}) => React.createElement(Icon, {
+  size
+}, React.createElement('path', {
+  d: 'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8'
+}), React.createElement('path', {
+  d: 'M3 3v5h5'
+}));
 const STORAGE_KEY = 'illusion_diffusion_history';
 const HISTORY_APP = 'illusion_diffusion';
 
@@ -215,8 +240,10 @@ function App() {
   });
   const [history, setHistory] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [viewerImage, setViewerImage] = useState(null);
-  const [canvasViewerImage, setCanvasViewerImage] = useState(null);
+  const [lightbox, setLightbox] = useState(null); // { src, alt }
+  const [toast, setToast] = useState(null); // { message, tone }
+  const toastTimerRef = useRef(null);
+  const lightboxCloseRef = useRef(null);
   const canvasRef = useRef(null);
   const containerInputRef = useRef(null);
   const contentInputRef = useRef(null);
@@ -249,6 +276,48 @@ function App() {
     return () => {
       active = false;
     };
+  }, []);
+
+  // Aviso flotante Hoola (el propio toast lleva aria-live)
+  const notify = useCallback((message, tone = 'ok') => {
+    setToast({
+      message,
+      tone
+    });
+    clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), 3200);
+  }, []);
+  useEffect(() => () => clearTimeout(toastTimerRef.current), []);
+
+  // API de cierre para el módulo compartido lightbox-zoom.js
+  useEffect(() => {
+    window.AntigravityLightbox = {
+      close: () => setLightbox(null)
+    };
+    return () => {
+      delete window.AntigravityLightbox;
+    };
+  }, []);
+
+  // El visor atrapa el foco y se cierra con Escape
+  useEffect(() => {
+    if (!lightbox) return undefined;
+    const previousFocus = document.activeElement;
+    lightboxCloseRef.current?.focus();
+    const onKeyDown = event => {
+      if (event.key === 'Escape') setLightbox(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [lightbox]);
+  const openLightbox = useCallback((src, alt) => {
+    if (src) setLightbox({
+      src,
+      alt: alt || 'Vista ampliada'
+    });
   }, []);
 
   // Convertir imagen a blanco y negro
@@ -452,6 +521,35 @@ function App() {
     setContentScale(prev => Math.max(0.1, Math.min(5, prev + delta)));
   };
 
+  // Intercambiar las dos capas sin tocar sus ajustes de fusión
+  const swapImages = () => {
+    if (!containerImage || !contentImage) return;
+    setContainerImage(contentImage);
+    setContentImage(containerImage);
+    setContentPos({
+      x: 0,
+      y: 0
+    });
+    notify('Capas intercambiadas');
+  };
+
+  // Volver a los ajustes de partida
+  const resetAdjustments = () => {
+    setContainerOpacity(50);
+    setContentOpacity(50);
+    setContainerBW(false);
+    setContentBW(false);
+    setContentPos({
+      x: 0,
+      y: 0
+    });
+    setContentScale(1);
+    notify('Ajustes restablecidos');
+  };
+  const zoomBy = delta => {
+    setContentScale(prev => Math.max(0.1, Math.min(5, Math.round((prev + delta) * 10) / 10)));
+  };
+
   // Manejar subida de imagen
   const handleImageUpload = (e, setImage) => {
     const file = e.target.files?.[0];
@@ -504,9 +602,10 @@ function App() {
           imageData: imageData,
           createdAt: new Date(newItem.createdAt).toISOString()
         }).catch(err => console.warn('Error guardando el historial en el servidor:', err));
+        notify('Ilusión añadida al historial');
       } catch (e) {
         console.error('Error generando imagen:', e);
-        alert('Error al generar la imagen');
+        notify('No se pudo generar la imagen', 'error');
       } finally {
         setIsGenerating(false);
       }
@@ -527,6 +626,7 @@ function App() {
   const removeFromHistory = id => {
     setHistory(prev => prev.filter(item => item.id !== id));
     historyManager.delete(id).catch(err => console.warn('Error eliminando del historial:', err));
+    notify('Imagen eliminada del historial');
   };
 
   // Limpiar todo el historial
@@ -534,95 +634,130 @@ function App() {
     if (confirm('¿Eliminar todas las imágenes del historial?')) {
       setHistory([]);
       historyManager.clear().catch(err => console.warn('Error limpiando el historial:', err));
+      notify('Historial vaciado');
     }
   };
   const canGenerate = containerImage && contentImage;
+  const loadedLayers = (containerImage ? 1 : 0) + (contentImage ? 1 : 0);
   return /*#__PURE__*/React.createElement("div", {
-    className: "app-layout"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "app-main"
+    className: "app",
+    "aria-busy": isGenerating
   }, /*#__PURE__*/React.createElement("header", {
-    className: "app-header"
-  }, /*#__PURE__*/React.createElement("h1", {
-    className: "gradient-text"
-  }, "\u2728 Illusion Diffusion"), /*#__PURE__*/React.createElement("p", null, "Crea efectos de doble exposici\xF3n con control total de transparencia")), /*#__PURE__*/React.createElement("div", {
-    className: "images-grid"
+    className: "topbar",
+    role: "banner"
   }, /*#__PURE__*/React.createElement("div", {
-    className: `upload-area glass ${containerImage ? 'has-image' : ''}`,
+    className: "brand"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "brand-mark",
+    "aria-hidden": "true"
+  }, "ID"), /*#__PURE__*/React.createElement("h1", {
+    className: "brand-name"
+  }, "Illusion ", /*#__PURE__*/React.createElement("em", null, "Diffusion")), /*#__PURE__*/React.createElement("span", {
+    className: "brand-tag",
+    "aria-hidden": "true"
+  }, "Hoola")), /*#__PURE__*/React.createElement("span", {
+    className: "topbar-divider",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "topbar-tagline"
+  }, "Doble exposici\xF3n con m\xE1scara adaptativa"), /*#__PURE__*/React.createElement("div", {
+    className: "spacer"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: `status-chip ${canGenerate ? 'is-ready' : ''}`
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "dot",
+    "aria-hidden": "true"
+  }), loadedLayers, "/2 capas"), /*#__PURE__*/React.createElement("span", {
+    className: "doc-meta mono",
+    title: "Zoom del contenido"
+  }, Math.round(contentScale * 100), "%")), /*#__PURE__*/React.createElement("main", {
+    className: "workspace"
+  }, /*#__PURE__*/React.createElement("aside", {
+    className: "panel panel-left",
+    "aria-label": "Fuentes de imagen"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "panel-head"
+  }, /*#__PURE__*/React.createElement("h2", null, "Fuentes"), /*#__PURE__*/React.createElement("span", {
+    className: "panel-sub mono"
+  }, "02")), /*#__PURE__*/React.createElement("div", {
+    className: "panel-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "sources-grid"
+  }, /*#__PURE__*/React.createElement("section", {
+    className: "group"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "group-title"
+  }, "Contenedor"), /*#__PURE__*/React.createElement("div", {
+    className: `dropzone ${containerImage ? 'has-image' : ''}`
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "dropzone-open",
+    "aria-label": containerImage ? 'Cambiar la imagen del contenedor' : 'Subir la imagen del contenedor',
     onClick: () => containerInputRef.current?.click()
-  }, containerImage ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("img", {
+  }, containerImage ? /*#__PURE__*/React.createElement("img", {
     src: containerImage,
-    alt: "Contenedor"
-  }), /*#__PURE__*/React.createElement("button", {
+    alt: "Imagen del contenedor",
+    draggable: "false"
+  }) : /*#__PURE__*/React.createElement("span", {
+    className: "dropzone-empty"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "dropzone-ico"
+  }, /*#__PURE__*/React.createElement(Upload, {
+    size: 22
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "dropzone-title"
+  }, "Subir silueta"), /*#__PURE__*/React.createElement("span", {
+    className: "dropzone-hint"
+  }, "PNG o JPG \xB7 fondo claro"))), containerImage && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    className: "dropzone-badge"
+  }, "Silueta"), /*#__PURE__*/React.createElement("button", {
     className: "remove-btn",
     type: "button",
-    "aria-label": "Quitar imagen contenedor",
-    onClick: e => {
-      e.stopPropagation();
-      setContainerImage(null);
-    }
+    "aria-label": "Quitar la imagen del contenedor",
+    onClick: () => setContainerImage(null)
   }, /*#__PURE__*/React.createElement(X, {
-    size: 16
-  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Upload, {
-    className: "upload-icon",
-    size: 40
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "upload-text"
-  }, "Contenedor"), /*#__PURE__*/React.createElement("span", {
-    className: "upload-hint"
-  }, "Silueta")), /*#__PURE__*/React.createElement("input", {
+    size: 14
+  }))), /*#__PURE__*/React.createElement("input", {
     ref: containerInputRef,
     type: "file",
     accept: "image/*",
     hidden: true,
+    "aria-label": "Archivo de imagen para la silueta",
     onChange: e => handleImageUpload(e, setContainerImage)
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "preview-section glass"
-  }, /*#__PURE__*/React.createElement("h3", null, /*#__PURE__*/React.createElement(Eye, {
-    size: 18
-  }), " Vista Previa ", /*#__PURE__*/React.createElement("span", {
-    className: "zoom-indicator"
-  }, "\uD83D\uDD0D ", Math.round(contentScale * 100), "%")), /*#__PURE__*/React.createElement("div", {
-    className: "preview-canvas-container"
-  }, canGenerate ? /*#__PURE__*/React.createElement("canvas", {
-    ref: canvasRef,
-    onMouseDown: handleMouseDown,
-    onMouseMove: handleMouseMove,
-    onMouseUp: handleMouseUp,
-    onMouseLeave: handleMouseUp,
-    onWheel: handleWheel,
-    onClick: e => {
-      if (dragMovedRef.current) {
-        dragMovedRef.current = false;
-        return;
-      }
-      if (!hasMoved && canvasRef.current) {
-        setCanvasViewerImage(canvasRef.current.toDataURL());
-      }
-    },
-    style: {
-      cursor: isDragging ? 'grabbing' : 'grab'
-    }
-  }) : /*#__PURE__*/React.createElement("div", {
-    className: "no-preview"
-  }, /*#__PURE__*/React.createElement(Sparkles, {
-    size: 40,
-    style: {
-      opacity: 0.4,
-      marginBottom: 8
-    }
-  }), /*#__PURE__*/React.createElement("p", null, "Sube ambas im\xE1genes")))), /*#__PURE__*/React.createElement("div", {
-    className: `upload-area glass ${contentImage ? 'has-image' : ''}`,
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "field-note"
+  }, "La silueta recorta el contenido: usa fondo blanco o transparente.")), /*#__PURE__*/React.createElement("section", {
+    className: "group"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "group-title"
+  }, "Contenido"), /*#__PURE__*/React.createElement("div", {
+    className: `dropzone ${contentImage ? 'has-image' : ''}`
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "dropzone-open",
+    "aria-label": contentImage ? 'Cambiar la imagen de contenido' : 'Subir la imagen de contenido',
     onClick: () => contentInputRef.current?.click()
-  }, contentImage ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("img", {
+  }, contentImage ? /*#__PURE__*/React.createElement("img", {
     src: contentImage,
-    alt: "Contenido"
-  }), /*#__PURE__*/React.createElement("button", {
+    alt: "Imagen de contenido",
+    draggable: "false"
+  }) : /*#__PURE__*/React.createElement("span", {
+    className: "dropzone-empty"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "dropzone-ico"
+  }, /*#__PURE__*/React.createElement(Image, {
+    size: 22
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "dropzone-title"
+  }, "Subir contenido"), /*#__PURE__*/React.createElement("span", {
+    className: "dropzone-hint"
+  }, "PNG o JPG \xB7 imagen interior"))), contentImage && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    className: "dropzone-badge"
+  }, "Interior"), /*#__PURE__*/React.createElement("button", {
     className: "remove-btn",
     type: "button",
-    "aria-label": "Quitar imagen de contenido",
-    onClick: e => {
-      e.stopPropagation();
+    "aria-label": "Quitar la imagen de contenido",
+    onClick: () => {
       setContentImage(null);
       setContentPos({
         x: 0,
@@ -631,142 +766,357 @@ function App() {
       setContentScale(1);
     }
   }, /*#__PURE__*/React.createElement(X, {
-    size: 16
-  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Image, {
-    className: "upload-icon",
-    size: 40
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "upload-text"
-  }, "Contenido"), /*#__PURE__*/React.createElement("span", {
-    className: "upload-hint"
-  }, "Interior")), /*#__PURE__*/React.createElement("input", {
+    size: 14
+  }))), /*#__PURE__*/React.createElement("input", {
     ref: contentInputRef,
     type: "file",
     accept: "image/*",
     hidden: true,
+    "aria-label": "Archivo de imagen para el contenido",
     onChange: e => handleImageUpload(e, setContentImage)
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "field-note"
+  }, "La imagen que rellena la silueta. Arr\xE1strala y aj\xFAstala en el lienzo."))), /*#__PURE__*/React.createElement("div", {
+    className: "btn-row panel-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost",
+    type: "button",
+    onClick: swapImages,
+    disabled: !canGenerate
+  }, "Intercambiar"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost",
+    type: "button",
+    onClick: resetAdjustments
+  }, "Reiniciar")))), /*#__PURE__*/React.createElement("section", {
+    className: "stage",
+    "aria-label": "Vista previa de la ilusi\xF3n"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stage-head"
+  }, /*#__PURE__*/React.createElement("h2", null, /*#__PURE__*/React.createElement(Eye, {
+    size: 15
+  }), " Vista previa"), /*#__PURE__*/React.createElement("span", {
+    className: "badge mono"
+  }, Math.round(contentScale * 100), "%")), /*#__PURE__*/React.createElement("div", {
+    className: "canvas-area"
+  }, canGenerate ? /*#__PURE__*/React.createElement("canvas", {
+    ref: canvasRef,
+    role: "img",
+    "aria-label": "Composici\xF3n de la ilusi\xF3n con la silueta y el contenido superpuestos",
+    onMouseDown: handleMouseDown,
+    onMouseMove: handleMouseMove,
+    onMouseUp: handleMouseUp,
+    onMouseLeave: handleMouseUp,
+    onWheel: handleWheel,
+    onClick: () => {
+      if (dragMovedRef.current) {
+        dragMovedRef.current = false;
+        return;
+      }
+      if (!hasMoved && canvasRef.current) {
+        openLightbox(canvasRef.current.toDataURL(), 'Ilusión a tamaño completo');
+      }
+    },
+    style: {
+      cursor: isDragging ? 'grabbing' : 'grab'
+    }
+  }) : /*#__PURE__*/React.createElement("div", {
+    className: "stage-empty"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "stage-empty-ico"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 30
+  })), /*#__PURE__*/React.createElement("h2", null, "Empieza con dos im\xE1genes"), /*#__PURE__*/React.createElement("p", null, "Sube una silueta y el contenido que quieres ver dentro. La m\xE1scara se calcula sola."), /*#__PURE__*/React.createElement("div", {
+    className: "stage-empty-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary",
+    type: "button",
+    onClick: () => containerInputRef.current?.click()
+  }, "Elegir silueta"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost",
+    type: "button",
+    onClick: () => contentInputRef.current?.click()
+  }, "Elegir contenido")))), /*#__PURE__*/React.createElement("div", {
+    className: "stage-bar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "btn-group",
+    role: "group",
+    "aria-label": "Zoom del contenido"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "icon-btn",
+    type: "button",
+    "aria-label": "Alejar el contenido",
+    onClick: () => zoomBy(-0.1),
+    disabled: !canGenerate
+  }, /*#__PURE__*/React.createElement(Minus, {
+    size: 15
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "zoom-value mono"
+  }, Math.round(contentScale * 100), "%"), /*#__PURE__*/React.createElement("button", {
+    className: "icon-btn",
+    type: "button",
+    "aria-label": "Ampliar el contenido",
+    onClick: () => zoomBy(0.1),
+    disabled: !canGenerate
+  }, /*#__PURE__*/React.createElement(Plus, {
+    size: 15
+  }))), /*#__PURE__*/React.createElement("button", {
+    className: "link-btn",
+    type: "button",
+    onClick: () => setContentScale(1),
+    disabled: !canGenerate || contentScale === 1
+  }, "Restablecer"), /*#__PURE__*/React.createElement("div", {
+    className: "spacer"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "stage-hint"
+  }, "Arrastra para mover \xB7 Rueda para zoom \xB7 Clic para ampliar"))), /*#__PURE__*/React.createElement("aside", {
+    className: "panel panel-right",
+    "aria-label": "Ajustes e historial"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "panel-head"
+  }, /*#__PURE__*/React.createElement("h2", null, "Ajustes"), /*#__PURE__*/React.createElement("button", {
+    className: "icon-btn icon-btn-sm",
+    type: "button",
+    onClick: resetAdjustments,
+    "aria-label": "Restablecer todos los ajustes",
+    title: "Restablecer todos los ajustes"
+  }, /*#__PURE__*/React.createElement(RotateCcw, {
+    size: 14
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "controls-section glass"
+    className: "panel-body"
+  }, /*#__PURE__*/React.createElement("section", {
+    className: "group"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "group-title"
+  }, "Fusi\xF3n"), /*#__PURE__*/React.createElement("div", {
+    className: "field"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "sliders-row"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "control-group"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "control-label"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83C\uDFAD Opacidad Contenedor"), /*#__PURE__*/React.createElement("span", {
-    className: "label-badge"
+    className: "field-row"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "field-label",
+    htmlFor: "containerOpacity"
+  }, "Opacidad silueta"), /*#__PURE__*/React.createElement("span", {
+    className: "badge mono"
   }, containerOpacity, "%")), /*#__PURE__*/React.createElement("input", {
+    id: "containerOpacity",
     type: "range",
     min: "0",
     max: "100",
     value: containerOpacity,
-    onChange: e => setContainerOpacity(parseInt(e.target.value))
+    onChange: e => setContainerOpacity(parseInt(e.target.value, 10)),
+    style: {
+      '--fill': `${containerOpacity}%`
+    },
+    "aria-valuetext": `${containerOpacity} por ciento`
   })), /*#__PURE__*/React.createElement("div", {
-    className: "control-group"
+    className: "field"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "control-label"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDDBC\uFE0F Opacidad Contenido"), /*#__PURE__*/React.createElement("span", {
-    className: "label-badge"
+    className: "field-row"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "field-label",
+    htmlFor: "contentOpacity"
+  }, "Opacidad contenido"), /*#__PURE__*/React.createElement("span", {
+    className: "badge mono"
   }, contentOpacity, "%")), /*#__PURE__*/React.createElement("input", {
+    id: "contentOpacity",
     type: "range",
     min: "0",
     max: "100",
     value: contentOpacity,
-    onChange: e => setContentOpacity(parseInt(e.target.value))
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "checkbox-row"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "checkbox-item"
+    onChange: e => setContentOpacity(parseInt(e.target.value, 10)),
+    style: {
+      '--fill': `${contentOpacity}%`
+    },
+    "aria-valuetext": `${contentOpacity} por ciento`
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "switch-row"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "switch",
+    htmlFor: "containerBW"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     id: "containerBW",
     checked: containerBW,
     onChange: e => setContainerBW(e.target.checked)
-  }), /*#__PURE__*/React.createElement("label", {
-    htmlFor: "containerBW"
-  }, "\uD83C\uDFAD Contenedor en Blanco y Negro")), /*#__PURE__*/React.createElement("div", {
-    className: "checkbox-item"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "switch-track",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", null, "Silueta en blanco y negro")), /*#__PURE__*/React.createElement("label", {
+    className: "switch",
+    htmlFor: "contentBW"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     id: "contentBW",
     checked: contentBW,
     onChange: e => setContentBW(e.target.checked)
-  }), /*#__PURE__*/React.createElement("label", {
-    htmlFor: "contentBW"
-  }, "\uD83D\uDDBC\uFE0F Contenido en Blanco y Negro")))), /*#__PURE__*/React.createElement("button", {
-    className: "generate-btn",
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "switch-track",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", null, "Contenido en blanco y negro")))), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary btn-block",
+    type: "button",
     onClick: handleGenerate,
     disabled: !canGenerate || isGenerating
   }, isGenerating ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Loader2, {
     className: "animate-spin",
-    size: 24
-  }), "PROCESANDO...") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Wand2, {
-    size: 24
-  }), "GENERAR ILLUSION"))), /*#__PURE__*/React.createElement("aside", {
-    className: "history-sidebar glass"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "history-header"
-  }, /*#__PURE__*/React.createElement("h3", null, /*#__PURE__*/React.createElement(History, {
     size: 18
-  }), " Historial (", history.length, ")")), /*#__PURE__*/React.createElement("div", {
-    className: "history-scroll"
-  }, history.length > 0 ? /*#__PURE__*/React.createElement(React.Fragment, null, history.map(item => /*#__PURE__*/React.createElement("div", {
+  }), "PROCESANDO...") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Wand2, {
+    size: 18
+  }), "GENERAR ILUSI\xD3N")), /*#__PURE__*/React.createElement("div", {
+    className: "divider"
+  }), /*#__PURE__*/React.createElement("section", {
+    className: "history-block",
+    "aria-label": "Historial de ilusiones"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "history-head"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "group-title"
+  }, /*#__PURE__*/React.createElement(History, {
+    size: 13
+  }), " Historial ", /*#__PURE__*/React.createElement("span", {
+    className: "badge mono"
+  }, history.length)), history.length > 0 && /*#__PURE__*/React.createElement("button", {
+    className: "link-btn is-danger",
+    type: "button",
+    onClick: clearHistory
+  }, "Limpiar")), /*#__PURE__*/React.createElement("div", {
+    className: "history-scroll",
+    role: "list"
+  }, history.length > 0 ? history.map(item => /*#__PURE__*/React.createElement("div", {
     key: item.id,
     className: "history-item",
-    onClick: () => setViewerImage(item.data)
+    role: "listitem"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "history-open",
+    type: "button",
+    "aria-label": "Ampliar la ilusi\xF3n generada",
+    onClick: () => openLightbox(item.data, 'Ilusión generada')
   }, /*#__PURE__*/React.createElement("img", {
     src: item.data,
-    alt: `Ilusión generada ${new Date(item.createdAt).toLocaleDateString('es-ES')}`,
-    loading: "lazy"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "item-config"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83C\uDFAD", item.containerOpacity ?? 50, "%", item.containerBW ? ' B/N' : ''), /*#__PURE__*/React.createElement("span", null, "\uD83D\uDDBC\uFE0F", item.contentOpacity ?? 50, "%", item.contentBW ? ' B/N' : '')), /*#__PURE__*/React.createElement("div", {
-    className: "item-actions"
+    alt: `Ilusión del ${new Date(item.createdAt).toLocaleDateString('es-ES')}`,
+    width: "160",
+    height: "213",
+    loading: "lazy",
+    draggable: "false"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "history-meta"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "history-chip"
+  }, "A ", item.containerOpacity ?? 50, "%"), /*#__PURE__*/React.createElement("span", {
+    className: "history-chip"
+  }, "B ", item.contentOpacity ?? 50, "%"), (item.containerBW || item.contentBW) && /*#__PURE__*/React.createElement("span", {
+    className: "history-chip"
+  }, "B/N")), /*#__PURE__*/React.createElement("div", {
+    className: "history-actions"
   }, /*#__PURE__*/React.createElement("button", {
-    className: "action-btn download-btn",
+    className: "icon-btn",
     type: "button",
     "aria-label": "Descargar esta imagen del historial",
-    onClick: e => {
-      e.stopPropagation();
-      downloadImage(item.data, `illusion_${item.id}.png`);
-    }
+    onClick: () => downloadImage(item.data, `${item.id}.png`)
   }, /*#__PURE__*/React.createElement(Download, {
-    size: 14
+    size: 13
   })), /*#__PURE__*/React.createElement("button", {
-    className: "action-btn delete-btn",
+    className: "icon-btn is-danger",
     type: "button",
     "aria-label": "Eliminar esta imagen del historial",
+    onClick: () => removeFromHistory(item.id)
+  }, /*#__PURE__*/React.createElement(Trash2, {
+    size: 13
+  }))))) : /*#__PURE__*/React.createElement("div", {
+    className: "empty-line"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 20
+  }), /*#__PURE__*/React.createElement("p", null, "Sin ilusiones todav\xEDa"), /*#__PURE__*/React.createElement("span", null, "Genera la primera para verla aqu\xED."))))))), /*#__PURE__*/React.createElement("footer", {
+    className: "statusbar"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: `status-item ${canGenerate ? 'is-ready' : ''}`
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "dot",
+    "aria-hidden": "true"
+  }), canGenerate ? 'Listo para componer' : 'Esperando imágenes'), /*#__PURE__*/React.createElement("span", {
+    className: "status-sep",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "status-item status-sources"
+  }, "Silueta: ", containerImage ? 'cargada' : '—'), /*#__PURE__*/React.createElement("span", {
+    className: "status-sep status-sources",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "status-item status-sources"
+  }, "Contenido: ", contentImage ? 'cargado' : '—'), /*#__PURE__*/React.createElement("div", {
+    className: "spacer"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "mono status-pos"
+  }, Math.round(contentPos.x), " / ", Math.round(contentPos.y), " px"), /*#__PURE__*/React.createElement("span", {
+    className: "status-sep status-pos",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "mono"
+  }, "v1.1 \xB7 Hoola")), toast && /*#__PURE__*/React.createElement("div", {
+    className: `toast ${toast.tone === 'error' ? 'is-error' : ''}`,
+    role: "status",
+    "aria-live": "polite"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "toast-ico",
+    "aria-hidden": "true"
+  }, toast.tone === 'error' ? /*#__PURE__*/React.createElement(X, {
+    size: 15
+  }) : /*#__PURE__*/React.createElement(Sparkles, {
+    size: 15
+  })), /*#__PURE__*/React.createElement("span", null, toast.message), /*#__PURE__*/React.createElement("button", {
+    className: "icon-btn",
+    type: "button",
+    "aria-label": "Cerrar aviso",
+    onClick: () => setToast(null)
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 12
+  }))), lightbox && /*#__PURE__*/React.createElement("div", {
+    className: "lightbox",
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": lightbox.alt,
+    onClick: () => setLightbox(null)
+  }, /*#__PURE__*/React.createElement("button", {
+    ref: lightboxCloseRef,
+    className: "lightbox-close",
+    type: "button",
+    "aria-label": "Cerrar el visor",
     onClick: e => {
       e.stopPropagation();
-      removeFromHistory(item.id);
+      setLightbox(null);
     }
-  }, /*#__PURE__*/React.createElement(Trash2, {
-    size: 14
-  })))))) : /*#__PURE__*/React.createElement("div", {
-    className: "empty-history"
-  }, /*#__PURE__*/React.createElement(Sparkles, {
-    size: 32,
-    style: {
-      opacity: 0.4
-    }
-  }), /*#__PURE__*/React.createElement("p", null, "Sin im\xE1genes"))), history.length > 0 && /*#__PURE__*/React.createElement("button", {
-    className: "clear-history-btn",
-    onClick: clearHistory
-  }, /*#__PURE__*/React.createElement(Trash2, {
-    size: 14
-  }), "Limpiar todo")), viewerImage && /*#__PURE__*/React.createElement("div", {
-    className: "image-viewer zoom-in-cursor",
-    onClick: () => setViewerImage(null)
-  }, /*#__PURE__*/React.createElement("img", {
-    src: viewerImage,
-    alt: "Vista completa"
-  })), canvasViewerImage && /*#__PURE__*/React.createElement("div", {
-    className: "image-viewer zoom-out-cursor",
-    onClick: () => setCanvasViewerImage(null)
-  }, /*#__PURE__*/React.createElement("img", {
-    src: canvasViewerImage,
-    alt: "Vista Previa Ampliada"
-  })));
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 17
+  })), /*#__PURE__*/React.createElement("img", {
+    src: lightbox.src,
+    alt: lightbox.alt,
+    draggable: "false",
+    onClick: e => e.stopPropagation()
+  })), isGenerating && /*#__PURE__*/React.createElement("div", {
+    className: "loading-overlay",
+    role: "status",
+    "aria-live": "polite",
+    "aria-busy": "true"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "spinner-triple",
+    "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ring ring-1"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ring ring-2"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ring ring-3"
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "loading-text"
+  }, "Componiendo la ilusi\xF3n..."), /*#__PURE__*/React.createElement("p", {
+    className: "loading-sub"
+  }, "Recortando el contenido con la m\xE1scara de la silueta. No cierres esta pesta\xF1a."), /*#__PURE__*/React.createElement("div", {
+    className: "loading-panel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "loading-bar",
+    role: "progressbar",
+    "aria-valuemin": "0",
+    "aria-valuemax": "100"
+  }, /*#__PURE__*/React.createElement("span", null)))));
 }
 
 // Mount React App

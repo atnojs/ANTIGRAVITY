@@ -63,6 +63,17 @@ const X = ({ size }) => React.createElement(Icon, { size },
     React.createElement('path', { d: 'M18 6 6 18' }),
     React.createElement('path', { d: 'm6 6 12 12' })
 );
+const Plus = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('path', { d: 'M5 12h14' }),
+    React.createElement('path', { d: 'M12 5v14' })
+);
+const Minus = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('path', { d: 'M5 12h14' })
+);
+const RotateCcw = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('path', { d: 'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8' }),
+    React.createElement('path', { d: 'M3 3v5h5' })
+);
 
 const STORAGE_KEY = 'illusion_diffusion_history';
 const HISTORY_APP = 'illusion_diffusion';
@@ -103,8 +114,10 @@ function App() {
     const dragStartRef = useRef({ x: 0, y: 0 });
     const [history, setHistory] = useState([]);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [viewerImage, setViewerImage] = useState(null);
-    const [canvasViewerImage, setCanvasViewerImage] = useState(null);
+    const [lightbox, setLightbox] = useState(null); // { src, alt }
+    const [toast, setToast] = useState(null); // { message, tone }
+    const toastTimerRef = useRef(null);
+    const lightboxCloseRef = useRef(null);
 
     const canvasRef = useRef(null);
     const containerInputRef = useRef(null);
@@ -139,6 +152,40 @@ function App() {
             });
 
         return () => { active = false; };
+    }, []);
+
+    // Aviso flotante Hoola (el propio toast lleva aria-live)
+    const notify = useCallback((message, tone = 'ok') => {
+        setToast({ message, tone });
+        clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = setTimeout(() => setToast(null), 3200);
+    }, []);
+
+    useEffect(() => () => clearTimeout(toastTimerRef.current), []);
+
+    // API de cierre para el módulo compartido lightbox-zoom.js
+    useEffect(() => {
+        window.AntigravityLightbox = { close: () => setLightbox(null) };
+        return () => { delete window.AntigravityLightbox; };
+    }, []);
+
+    // El visor atrapa el foco y se cierra con Escape
+    useEffect(() => {
+        if (!lightbox) return undefined;
+        const previousFocus = document.activeElement;
+        lightboxCloseRef.current?.focus();
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') setLightbox(null);
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => {
+            window.removeEventListener('keydown', onKeyDown);
+            if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+        };
+    }, [lightbox]);
+
+    const openLightbox = useCallback((src, alt) => {
+        if (src) setLightbox({ src, alt: alt || 'Vista ampliada' });
     }, []);
 
     // Convertir imagen a blanco y negro
@@ -345,6 +392,30 @@ function App() {
         setContentScale(prev => Math.max(0.1, Math.min(5, prev + delta)));
     };
 
+    // Intercambiar las dos capas sin tocar sus ajustes de fusión
+    const swapImages = () => {
+        if (!containerImage || !contentImage) return;
+        setContainerImage(contentImage);
+        setContentImage(containerImage);
+        setContentPos({ x: 0, y: 0 });
+        notify('Capas intercambiadas');
+    };
+
+    // Volver a los ajustes de partida
+    const resetAdjustments = () => {
+        setContainerOpacity(50);
+        setContentOpacity(50);
+        setContainerBW(false);
+        setContentBW(false);
+        setContentPos({ x: 0, y: 0 });
+        setContentScale(1);
+        notify('Ajustes restablecidos');
+    };
+
+    const zoomBy = (delta) => {
+        setContentScale(prev => Math.max(0.1, Math.min(5, Math.round((prev + delta) * 10) / 10)));
+    };
+
     // Manejar subida de imagen
     const handleImageUpload = (e, setImage) => {
         const file = e.target.files?.[0];
@@ -396,9 +467,10 @@ function App() {
                     imageData: imageData,
                     createdAt: new Date(newItem.createdAt).toISOString()
                 }).catch((err) => console.warn('Error guardando el historial en el servidor:', err));
+                notify('Ilusión añadida al historial');
             } catch (e) {
                 console.error('Error generando imagen:', e);
-                alert('Error al generar la imagen');
+                notify('No se pudo generar la imagen', 'error');
             } finally {
                 setIsGenerating(false);
             }
@@ -419,6 +491,7 @@ function App() {
     const removeFromHistory = (id) => {
         setHistory(prev => prev.filter(item => item.id !== id));
         historyManager.delete(id).catch((err) => console.warn('Error eliminando del historial:', err));
+        notify('Imagen eliminada del historial');
     };
 
     // Limpiar todo el historial
@@ -426,270 +499,454 @@ function App() {
         if (confirm('¿Eliminar todas las imágenes del historial?')) {
             setHistory([]);
             historyManager.clear().catch((err) => console.warn('Error limpiando el historial:', err));
+            notify('Historial vaciado');
         }
     };
 
     const canGenerate = containerImage && contentImage;
+    const loadedLayers = (containerImage ? 1 : 0) + (contentImage ? 1 : 0);
 
     return (
-        <div className="app-layout">
-            {/* Main Content */}
-            <div className="app-main">
-                {/* Header */}
-                <header className="app-header">
-                    <h1 className="gradient-text">✨ Illusion Diffusion</h1>
-                    <p>Crea efectos de doble exposición con control total de transparencia</p>
-                </header>
+        <div className="app" aria-busy={isGenerating}>
+            <header className="topbar" role="banner">
+                <div className="brand">
+                    <span className="brand-mark" aria-hidden="true">ID</span>
+                    <h1 className="brand-name">Illusion <em>Diffusion</em></h1>
+                    <span className="brand-tag" aria-hidden="true">Hoola</span>
+                </div>
+                <span className="topbar-divider" aria-hidden="true"></span>
+                <p className="topbar-tagline">Doble exposición con máscara adaptativa</p>
+                <div className="spacer"></div>
+                <span className={`status-chip ${canGenerate ? 'is-ready' : ''}`}>
+                    <span className="dot" aria-hidden="true"></span>
+                    {loadedLayers}/2 capas
+                </span>
+                <span className="doc-meta mono" title="Zoom del contenido">{Math.round(contentScale * 100)}%</span>
+            </header>
 
-                {/* Images Grid: Container | Preview | Content */}
-                <div className="images-grid">
-                    {/* Container Image */}
-                    <div
-                        className={`upload-area glass ${containerImage ? 'has-image' : ''}`}
-                        onClick={() => containerInputRef.current?.click()}
-                    >
-                        {containerImage ? (
-                            <>
-                                <img src={containerImage} alt="Contenedor" />
-                                <button
-                                    className="remove-btn"
-                                    type="button"
-                                    aria-label="Quitar imagen contenedor"
-                                    onClick={(e) => { e.stopPropagation(); setContainerImage(null); }}
-                                >
-                                    <X size={16} />
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <Upload className="upload-icon" size={40} />
-                                <span className="upload-text">Contenedor</span>
-                                <span className="upload-hint">Silueta</span>
-                            </>
-                        )}
-                        <input
-                            ref={containerInputRef}
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            onChange={(e) => handleImageUpload(e, setContainerImage)}
-                        />
+            <main className="workspace">
+                {/* Panel izquierdo: fuentes de imagen */}
+                <aside className="panel panel-left" aria-label="Fuentes de imagen">
+                    <div className="panel-head">
+                        <h2>Fuentes</h2>
+                        <span className="panel-sub mono">02</span>
                     </div>
+                    <div className="panel-body">
+                        <div className="sources-grid">
+                            <section className="group">
+                                <h3 className="group-title">Contenedor</h3>
+                                <div className={`dropzone ${containerImage ? 'has-image' : ''}`}>
+                                    <button
+                                        type="button"
+                                        className="dropzone-open"
+                                        aria-label={containerImage ? 'Cambiar la imagen del contenedor' : 'Subir la imagen del contenedor'}
+                                        onClick={() => containerInputRef.current?.click()}
+                                    >
+                                        {containerImage ? (
+                                            <img src={containerImage} alt="Imagen del contenedor" draggable="false" />
+                                        ) : (
+                                            <span className="dropzone-empty">
+                                                <span className="dropzone-ico"><Upload size={22} /></span>
+                                                <span className="dropzone-title">Subir silueta</span>
+                                                <span className="dropzone-hint">PNG o JPG · fondo claro</span>
+                                            </span>
+                                        )}
+                                    </button>
+                                    {containerImage && (
+                                        <>
+                                            <span className="dropzone-badge">Silueta</span>
+                                            <button
+                                                className="remove-btn"
+                                                type="button"
+                                                aria-label="Quitar la imagen del contenedor"
+                                                onClick={() => setContainerImage(null)}
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </>
+                                    )}
+                                    <input
+                                        ref={containerInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        hidden
+                                        aria-label="Archivo de imagen para la silueta"
+                                        onChange={(e) => handleImageUpload(e, setContainerImage)}
+                                    />
+                                </div>
+                                <p className="field-note">La silueta recorta el contenido: usa fondo blanco o transparente.</p>
+                            </section>
 
-                    {/* Preview */}
-                    <div className="preview-section glass">
-                        <h3><Eye size={18} /> Vista Previa <span className="zoom-indicator">🔍 {Math.round(contentScale * 100)}%</span></h3>
-                        <div className="preview-canvas-container">
-                            {canGenerate ? (
-                                <canvas
-                                    ref={canvasRef}
-                                    onMouseDown={handleMouseDown}
-                                    onMouseMove={handleMouseMove}
-                                    onMouseUp={handleMouseUp}
-                                    onMouseLeave={handleMouseUp}
-                                    onWheel={handleWheel}
-                                    onClick={(e) => {
-                                        if (dragMovedRef.current) {
-                                            dragMovedRef.current = false;
-                                            return;
-                                        }
-                                        if (!hasMoved && canvasRef.current) {
-                                            setCanvasViewerImage(canvasRef.current.toDataURL());
-                                        }
-                                    }}
-                                    style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                            <section className="group">
+                                <h3 className="group-title">Contenido</h3>
+                                <div className={`dropzone ${contentImage ? 'has-image' : ''}`}>
+                                    <button
+                                        type="button"
+                                        className="dropzone-open"
+                                        aria-label={contentImage ? 'Cambiar la imagen de contenido' : 'Subir la imagen de contenido'}
+                                        onClick={() => contentInputRef.current?.click()}
+                                    >
+                                        {contentImage ? (
+                                            <img src={contentImage} alt="Imagen de contenido" draggable="false" />
+                                        ) : (
+                                            <span className="dropzone-empty">
+                                                <span className="dropzone-ico"><Image size={22} /></span>
+                                                <span className="dropzone-title">Subir contenido</span>
+                                                <span className="dropzone-hint">PNG o JPG · imagen interior</span>
+                                            </span>
+                                        )}
+                                    </button>
+                                    {contentImage && (
+                                        <>
+                                            <span className="dropzone-badge">Interior</span>
+                                            <button
+                                                className="remove-btn"
+                                                type="button"
+                                                aria-label="Quitar la imagen de contenido"
+                                                onClick={() => {
+                                                    setContentImage(null);
+                                                    setContentPos({ x: 0, y: 0 });
+                                                    setContentScale(1);
+                                                }}
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </>
+                                    )}
+                                    <input
+                                        ref={contentInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        hidden
+                                        aria-label="Archivo de imagen para el contenido"
+                                        onChange={(e) => handleImageUpload(e, setContentImage)}
+                                    />
+                                </div>
+                                <p className="field-note">La imagen que rellena la silueta. Arrástrala y ajústala en el lienzo.</p>
+                            </section>
+                        </div>
+
+                        <div className="btn-row panel-actions">
+                            <button className="btn btn-ghost" type="button" onClick={swapImages} disabled={!canGenerate}>
+                                Intercambiar
+                            </button>
+                            <button className="btn btn-ghost" type="button" onClick={resetAdjustments}>
+                                Reiniciar
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
+                {/* Escenario central */}
+                <section className="stage" aria-label="Vista previa de la ilusión">
+                    <div className="stage-head">
+                        <h2><Eye size={15} /> Vista previa</h2>
+                        <span className="badge mono">{Math.round(contentScale * 100)}%</span>
+                    </div>
+                    <div className="canvas-area">
+                        {canGenerate ? (
+                            <canvas
+                                ref={canvasRef}
+                                role="img"
+                                aria-label="Composición de la ilusión con la silueta y el contenido superpuestos"
+                                onMouseDown={handleMouseDown}
+                                onMouseMove={handleMouseMove}
+                                onMouseUp={handleMouseUp}
+                                onMouseLeave={handleMouseUp}
+                                onWheel={handleWheel}
+                                onClick={() => {
+                                    if (dragMovedRef.current) {
+                                        dragMovedRef.current = false;
+                                        return;
+                                    }
+                                    if (!hasMoved && canvasRef.current) {
+                                        openLightbox(canvasRef.current.toDataURL(), 'Ilusión a tamaño completo');
+                                    }
+                                }}
+                                style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                            />
+                        ) : (
+                            <div className="stage-empty">
+                                <span className="stage-empty-ico"><Sparkles size={30} /></span>
+                                <h2>Empieza con dos imágenes</h2>
+                                <p>Sube una silueta y el contenido que quieres ver dentro. La máscara se calcula sola.</p>
+                                <div className="stage-empty-actions">
+                                    <button className="btn btn-primary" type="button" onClick={() => containerInputRef.current?.click()}>
+                                        Elegir silueta
+                                    </button>
+                                    <button className="btn btn-ghost" type="button" onClick={() => contentInputRef.current?.click()}>
+                                        Elegir contenido
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <div className="stage-bar">
+                        <div className="btn-group" role="group" aria-label="Zoom del contenido">
+                            <button
+                                className="icon-btn"
+                                type="button"
+                                aria-label="Alejar el contenido"
+                                onClick={() => zoomBy(-0.1)}
+                                disabled={!canGenerate}
+                            >
+                                <Minus size={15} />
+                            </button>
+                            <span className="zoom-value mono">{Math.round(contentScale * 100)}%</span>
+                            <button
+                                className="icon-btn"
+                                type="button"
+                                aria-label="Ampliar el contenido"
+                                onClick={() => zoomBy(0.1)}
+                                disabled={!canGenerate}
+                            >
+                                <Plus size={15} />
+                            </button>
+                        </div>
+                        <button
+                            className="link-btn"
+                            type="button"
+                            onClick={() => setContentScale(1)}
+                            disabled={!canGenerate || contentScale === 1}
+                        >
+                            Restablecer
+                        </button>
+                        <div className="spacer"></div>
+                        <span className="stage-hint">Arrastra para mover · Rueda para zoom · Clic para ampliar</span>
+                    </div>
+                </section>
+
+                {/* Panel derecho: ajustes e historial */}
+                <aside className="panel panel-right" aria-label="Ajustes e historial">
+                    <div className="panel-head">
+                        <h2>Ajustes</h2>
+                        <button
+                            className="icon-btn icon-btn-sm"
+                            type="button"
+                            onClick={resetAdjustments}
+                            aria-label="Restablecer todos los ajustes"
+                            title="Restablecer todos los ajustes"
+                        >
+                            <RotateCcw size={14} />
+                        </button>
+                    </div>
+                    <div className="panel-body">
+                        <section className="group">
+                            <h3 className="group-title">Fusión</h3>
+
+                            <div className="field">
+                                <div className="field-row">
+                                    <label className="field-label" htmlFor="containerOpacity">Opacidad silueta</label>
+                                    <span className="badge mono">{containerOpacity}%</span>
+                                </div>
+                                <input
+                                    id="containerOpacity"
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={containerOpacity}
+                                    onChange={(e) => setContainerOpacity(parseInt(e.target.value, 10))}
+                                    style={{ '--fill': `${containerOpacity}%` }}
+                                    aria-valuetext={`${containerOpacity} por ciento`}
                                 />
+                            </div>
+
+                            <div className="field">
+                                <div className="field-row">
+                                    <label className="field-label" htmlFor="contentOpacity">Opacidad contenido</label>
+                                    <span className="badge mono">{contentOpacity}%</span>
+                                </div>
+                                <input
+                                    id="contentOpacity"
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={contentOpacity}
+                                    onChange={(e) => setContentOpacity(parseInt(e.target.value, 10))}
+                                    style={{ '--fill': `${contentOpacity}%` }}
+                                    aria-valuetext={`${contentOpacity} por ciento`}
+                                />
+                            </div>
+
+                            <div className="switch-row">
+                                <label className="switch" htmlFor="containerBW">
+                                    <input
+                                        type="checkbox"
+                                        id="containerBW"
+                                        checked={containerBW}
+                                        onChange={(e) => setContainerBW(e.target.checked)}
+                                    />
+                                    <span className="switch-track" aria-hidden="true"></span>
+                                    <span>Silueta en blanco y negro</span>
+                                </label>
+                                <label className="switch" htmlFor="contentBW">
+                                    <input
+                                        type="checkbox"
+                                        id="contentBW"
+                                        checked={contentBW}
+                                        onChange={(e) => setContentBW(e.target.checked)}
+                                    />
+                                    <span className="switch-track" aria-hidden="true"></span>
+                                    <span>Contenido en blanco y negro</span>
+                                </label>
+                            </div>
+                        </section>
+
+                        <button
+                            className="btn btn-primary btn-block"
+                            type="button"
+                            onClick={handleGenerate}
+                            disabled={!canGenerate || isGenerating}
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={18} />
+                                    PROCESANDO...
+                                </>
                             ) : (
-                                <div className="no-preview">
-                                    <Sparkles size={40} style={{ opacity: 0.4, marginBottom: 8 }} />
-                                    <p>Sube ambas imágenes</p>
-                                </div>
+                                <>
+                                    <Wand2 size={18} />
+                                    GENERAR ILUSIÓN
+                                </>
                             )}
-                        </div>
-                    </div>
+                        </button>
 
-                    {/* Content Image */}
-                    <div
-                        className={`upload-area glass ${contentImage ? 'has-image' : ''}`}
-                        onClick={() => contentInputRef.current?.click()}
-                    >
-                        {contentImage ? (
-                            <>
-                                <img src={contentImage} alt="Contenido" />
-                                <button
-                                    className="remove-btn"
-                                    type="button"
-                                    aria-label="Quitar imagen de contenido"
-                                    onClick={(e) => { e.stopPropagation(); setContentImage(null); setContentPos({ x: 0, y: 0 }); setContentScale(1); }}
-                                >
-                                    <X size={16} />
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <Image className="upload-icon" size={40} />
-                                <span className="upload-text">Contenido</span>
-                                <span className="upload-hint">Interior</span>
-                            </>
-                        )}
-                        <input
-                            ref={contentInputRef}
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            onChange={(e) => handleImageUpload(e, setContentImage)}
-                        />
-                    </div>
-                </div>
+                        <div className="divider"></div>
 
-                {/* Controls */}
-                <div className="controls-section glass">
-                    <div className="sliders-row">
-                        <div className="control-group">
-                            <div className="control-label">
-                                <span>🎭 Opacidad Contenedor</span>
-                                <span className="label-badge">{containerOpacity}%</span>
+                        <section className="history-block" aria-label="Historial de ilusiones">
+                            <div className="history-head">
+                                <h3 className="group-title"><History size={13} /> Historial <span className="badge mono">{history.length}</span></h3>
+                                {history.length > 0 && (
+                                    <button className="link-btn is-danger" type="button" onClick={clearHistory}>
+                                        Limpiar
+                                    </button>
+                                )}
                             </div>
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={containerOpacity}
-                                onChange={(e) => setContainerOpacity(parseInt(e.target.value))}
-                            />
-                        </div>
 
-                        <div className="control-group">
-                            <div className="control-label">
-                                <span>🖼️ Opacidad Contenido</span>
-                                <span className="label-badge">{contentOpacity}%</span>
+                            <div className="history-scroll" role="list">
+                                {history.length > 0 ? (
+                                    history.map((item) => (
+                                        <div key={item.id} className="history-item" role="listitem">
+                                            <button
+                                                className="history-open"
+                                                type="button"
+                                                aria-label="Ampliar la ilusión generada"
+                                                onClick={() => openLightbox(item.data, 'Ilusión generada')}
+                                            >
+                                                <img
+                                                    src={item.data}
+                                                    alt={`Ilusión del ${new Date(item.createdAt).toLocaleDateString('es-ES')}`}
+                                                    width="160"
+                                                    height="213"
+                                                    loading="lazy"
+                                                    draggable="false"
+                                                />
+                                            </button>
+                                            <div className="history-meta">
+                                                <span className="history-chip">A {item.containerOpacity ?? 50}%</span>
+                                                <span className="history-chip">B {item.contentOpacity ?? 50}%</span>
+                                                {(item.containerBW || item.contentBW) && <span className="history-chip">B/N</span>}
+                                            </div>
+                                            <div className="history-actions">
+                                                <button
+                                                    className="icon-btn"
+                                                    type="button"
+                                                    aria-label="Descargar esta imagen del historial"
+                                                    onClick={() => downloadImage(item.data, `${item.id}.png`)}
+                                                >
+                                                    <Download size={13} />
+                                                </button>
+                                                <button
+                                                    className="icon-btn is-danger"
+                                                    type="button"
+                                                    aria-label="Eliminar esta imagen del historial"
+                                                    onClick={() => removeFromHistory(item.id)}
+                                                >
+                                                    <Trash2 size={13} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="empty-line">
+                                        <Sparkles size={20} />
+                                        <p>Sin ilusiones todavía</p>
+                                        <span>Genera la primera para verla aquí.</span>
+                                    </div>
+                                )}
                             </div>
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={contentOpacity}
-                                onChange={(e) => setContentOpacity(parseInt(e.target.value))}
-                            />
-                        </div>
+                        </section>
                     </div>
+                </aside>
+            </main>
 
-                    <div className="checkbox-row">
-                        <div className="checkbox-item">
-                            <input
-                                type="checkbox"
-                                id="containerBW"
-                                checked={containerBW}
-                                onChange={(e) => setContainerBW(e.target.checked)}
-                            />
-                            <label htmlFor="containerBW">🎭 Contenedor en Blanco y Negro</label>
-                        </div>
-                        <div className="checkbox-item">
-                            <input
-                                type="checkbox"
-                                id="contentBW"
-                                checked={contentBW}
-                                onChange={(e) => setContentBW(e.target.checked)}
-                            />
-                            <label htmlFor="contentBW">🖼️ Contenido en Blanco y Negro</label>
-                        </div>
-                    </div>
-                </div>
+            <footer className="statusbar">
+                <span className={`status-item ${canGenerate ? 'is-ready' : ''}`}>
+                    <span className="dot" aria-hidden="true"></span>
+                    {canGenerate ? 'Listo para componer' : 'Esperando imágenes'}
+                </span>
+                <span className="status-sep" aria-hidden="true"></span>
+                <span className="status-item status-sources">Silueta: {containerImage ? 'cargada' : '—'}</span>
+                <span className="status-sep status-sources" aria-hidden="true"></span>
+                <span className="status-item status-sources">Contenido: {contentImage ? 'cargado' : '—'}</span>
+                <div className="spacer"></div>
+                <span className="mono status-pos">{Math.round(contentPos.x)} / {Math.round(contentPos.y)} px</span>
+                <span className="status-sep status-pos" aria-hidden="true"></span>
+                <span className="mono">v1.1 · Hoola</span>
+            </footer>
 
-                {/* Generate Button */}
-                <button
-                    className="generate-btn"
-                    onClick={handleGenerate}
-                    disabled={!canGenerate || isGenerating}
-                >
-                    {isGenerating ? (
-                        <>
-                            <Loader2 className="animate-spin" size={24} />
-                            PROCESANDO...
-                        </>
-                    ) : (
-                        <>
-                            <Wand2 size={24} />
-                            GENERAR ILLUSION
-                        </>
-                    )}
-                </button>
-            </div>
-
-            {/* Sidebar History */}
-            <aside className="history-sidebar glass">
-                <div className="history-header">
-                    <h3><History size={18} /> Historial ({history.length})</h3>
-                </div>
-
-                <div className="history-scroll">
-                    {history.length > 0 ? (
-                        <>
-                            {history.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="history-item"
-                                    onClick={() => setViewerImage(item.data)}
-                                >
-                                    <img src={item.data} alt={`Ilusión generada ${new Date(item.createdAt).toLocaleDateString('es-ES')}`} loading="lazy" />
-                                    <div className="item-config">
-                                        <span>🎭{item.containerOpacity ?? 50}%{item.containerBW ? ' B/N' : ''}</span>
-                                        <span>🖼️{item.contentOpacity ?? 50}%{item.contentBW ? ' B/N' : ''}</span>
-                                    </div>
-                                    <div className="item-actions">
-                                        <button
-                                            className="action-btn download-btn"
-                                            type="button"
-                                            aria-label="Descargar esta imagen del historial"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                downloadImage(item.data, `illusion_${item.id}.png`);
-                                            }}
-                                        >
-                                            <Download size={14} />
-                                        </button>
-                                        <button
-                                            className="action-btn delete-btn"
-                                            type="button"
-                                            aria-label="Eliminar esta imagen del historial"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                removeFromHistory(item.id);
-                                            }}
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </>
-                    ) : (
-                        <div className="empty-history">
-                            <Sparkles size={32} style={{ opacity: 0.4 }} />
-                            <p>Sin imágenes</p>
-                        </div>
-                    )}
-                </div>
-
-                {history.length > 0 && (
-                    <button className="clear-history-btn" onClick={clearHistory}>
-                        <Trash2 size={14} />
-                        Limpiar todo
+            {toast && (
+                <div className={`toast ${toast.tone === 'error' ? 'is-error' : ''}`} role="status" aria-live="polite">
+                    <span className="toast-ico" aria-hidden="true">
+                        {toast.tone === 'error' ? <X size={15} /> : <Sparkles size={15} />}
+                    </span>
+                    <span>{toast.message}</span>
+                    <button className="icon-btn" type="button" aria-label="Cerrar aviso" onClick={() => setToast(null)}>
+                        <X size={12} />
                     </button>
-                )}
-            </aside>
-
-            {/* Image Viewer Modal */}
-            {viewerImage && (
-                <div className="image-viewer zoom-in-cursor" onClick={() => setViewerImage(null)}>
-                    <img src={viewerImage} alt="Vista completa" />
                 </div>
             )}
 
-            {/* Canvas Viewer Modal */}
-            {canvasViewerImage && (
-                <div className="image-viewer zoom-out-cursor" onClick={() => setCanvasViewerImage(null)}>
-                    <img src={canvasViewerImage} alt="Vista Previa Ampliada" />
+            {lightbox && (
+                <div
+                    className="lightbox"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={lightbox.alt}
+                    onClick={() => setLightbox(null)}
+                >
+                    <button
+                        ref={lightboxCloseRef}
+                        className="lightbox-close"
+                        type="button"
+                        aria-label="Cerrar el visor"
+                        onClick={(e) => { e.stopPropagation(); setLightbox(null); }}
+                    >
+                        <X size={17} />
+                    </button>
+                    <img
+                        src={lightbox.src}
+                        alt={lightbox.alt}
+                        draggable="false"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
+
+            {isGenerating && (
+                <div className="loading-overlay" role="status" aria-live="polite" aria-busy="true">
+                    <div className="spinner-triple" aria-hidden="true">
+                        <div className="ring ring-1"></div>
+                        <div className="ring ring-2"></div>
+                        <div className="ring ring-3"></div>
+                    </div>
+                    <p className="loading-text">Componiendo la ilusión...</p>
+                    <p className="loading-sub">Recortando el contenido con la máscara de la silueta. No cierres esta pestaña.</p>
+                    <div className="loading-panel">
+                        <div className="loading-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                            <span></span>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
