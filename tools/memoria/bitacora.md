@@ -2552,3 +2552,24 @@ las cabeceras.
 - **Orden de capas:** Subir/Bajar se desactivan con menos de dos capas (antes eran clics muertos).
 - **Prueba permanente:** `tools/pruebas/verificar-cinco-uis-hoola.mjs` (7 comprobaciones contra
   producción, todas OK con v=25).
+
+## 2026-10-28 (tarde) — editar_generar: modelo FLOW y conexión permanente (7eb2ca37)
+
+- **Modelo FLOW en el selector**: grupo nuevo con `flow-nano-banana-2`,
+  `flow-nano-banana-pro` y `flow-nano-banana-2-lite`, libres de contraseña
+  (`model-gate.20261028.js`). No pasan por `proxy.php`: se encolan en
+  `apps/flow_studio/flow_queue.php` y genera el worker del PC (gratis, sin clave).
+- **Conexión permanente** (`flow-client.20261028.js`): latido cada 15 s con la
+  pestaña visible y 45 s en segundo plano; si falla, reintento con espera creciente
+  (4 s → 20 s) sin rendirse nunca; reconexión inmediata al volver a la pestaña, al
+  evento `online`, al foco y al restaurar desde bfcache. La espera del trabajo
+  sobrevive a cortes de red; la petición se reintenta hasta 3 veces.
+- **Píldora de estado** bajo el título: «Flow conectado · N en cola» /
+  «Flow sin conexión» + «Reintentar» (`role="status"` en el texto).
+- **Formato y resolución**: Flow solo admite 1:1, 4:3, 3:4, 16:9 y 9:16 (el 21:9
+  cae a 16:9, avisado en la UI) y genera a ~1K, así que la resolución se desactiva
+  con su propio aviso.
+- **Verificado en producción** (`https://atnojs.es/apps/editar_generar/`):
+  píldora «Flow conectado · 1 en cola»; generación real con Nano Banana 2 (faro,
+  1:1) y edición real por «Variar» (acuarela), sin errores de consola. Capturas en
+  `tools/evidencias/2026-10-28-editar-generar-flow/`.
