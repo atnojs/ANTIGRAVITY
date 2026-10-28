@@ -2691,3 +2691,9 @@ las cabeceras.
 - **Lienzo:** padding vertical (46/18 px) para que los tiradores no se recorten cuando la foto toca los bordes; el `@page` sigue imprimiendo una sola página A4.
 - **Incidencia:** el renombrado de assets con PowerShell corrompió las tildes del HTML («AÃ±adir»); se reescribió en UTF-8 y se publicó a las 21:11. Durante ~15 min el origen sirvió un árbol antiguo (revirtió a `0cde523d`) hasta re-disparar con commit vacío: mismo patrón de despliegues atrasados de `errores.md`.
 - **Verificado en producción** (393×844): panel con 242 ppp, arrastre del tirador SE de 126 a 146,7 mm con la proporción intacta, texto correcto y 0 errores de consola.
+## 2026-10-28 (noche, 4) — Foto A4: paneles fijos, la galería ya no sube (7183d87b)
+
+- Antonio: «el panel de propiedades se esconde y el de imágenes ocupa su lugar; los dos campos tienen que ser estáticos, ambos visibles siempre», con imágenes al final debajo de propiedades.
+- `#props` deja de usar `hidden`: siempre está en el flujo. Sin selección lleva la clase `is-idle`, los 10 botones quedan `disabled`, los ppp muestran «—» y el panel se atenúa. La galería queda siempre debajo.
+- Medido en producción (393×844): `#props` a 716 px y galería a 954 px tanto con foto seleccionada como sin ella; los ppp pasan de «—» a 257 sin mover nada. 0 errores de consola.
+- Assets `app.20261028e.*` (la CDN cachea por ruta).
