@@ -1,4 +1,4 @@
-20261029a-flow-studio 2026-10-29
+20261029b-flow-studio 2026-10-29
 Flow Studio añade el MODO SERIE (guion + storyboard): escribes la idea, la IA la
 reparte en 3-8 escenas con narración y prompt visual, y «Generar escenas» las
 encola en UNA petición. El worker del PC las reclama juntas y las genera en un
@@ -10,12 +10,18 @@ referencia a todas las escenas para mantener el mismo personaje.
 Cada tarjeta de vídeo tiene «Continuar escena»: toma su último fotograma y lo
 deja como fotograma inicial del siguiente clip, para alargar una escena sin
 volver a subir nada.
+Nuevas opciones del catálogo de Flow:
+ · «4 variantes» (Shot Explorer): cuatro encuadres de la misma escena —general,
+   medio, primer plano y contrapicado— en una sola petición.
+ · Máscara de pincel (Mask Magic) además del círculo: se pinta la zona a
+   cambiar y fuera de lo pintado la imagen se conserva píxel a píxel.
+ · Calidad de referencias elegible: Rápida 1280 (sube antes) o Máxima 2048
+   (mejor cara y textos, como recomienda la skill de Flow). Se recuerda.
 Velocidad (medido 2026-10-29, worker real):
  · antes: 62 s por imagen y 82 s para dos (una sesión de Chrome y un proyecto
    de Flow por imagen, prompt tecleado a 30 ms/carácter, sondeo de cola 6 s);
- · ahora: 33 s para una imagen y 63 s para dos (45 s si la petición cae justo en un relevo del worker) (lote en un solo proyecto,
-   escritura del prompt instantánea, panel de ajustes cacheado, descarga con
-   espera de 200 ms y sondeo de cola 1,5 s).
+ · ahora: 33 s para una imagen y 63 s para dos (45 s si la petición cae justo
+   en un relevo del worker).
 La cola reencola sola los trabajos atascados en «running» (10 min imagen,
 90 min vídeo) en vez de dejarlos colgados para siempre.
 La cola de Google Flow sigue siendo la de siempre (flow_queue.php + worker del PC).

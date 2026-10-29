@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- assets versionados 20261029b: modo Serie (guion + storyboard), generación en lote y cola más rápida -->
+<!-- assets versionados 20261029c: modo Serie (guion + storyboard), generación en lote y cola más rápida -->
 <title>Flow Studio · Genera y edita imágenes con Google Flow y modelos directos</title>
 <meta name="description" content="Genera imágenes y vídeos con Google Flow en tu PC o con los modelos directos (OpenAI, Gemini y Qwen), crea una serie completa con guion y storyboard en un solo proyecto, edita solo la zona que marques con una máscara circular, elige formato y resolución y escala el resultado 2×, 4× u 8×. Los modelos caros se protegen con la contraseña de acceso.">
 <meta name="theme-color" content="#001018">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.hoola.20261029a.css">
+<link rel="stylesheet" href="app.hoola.20261029b.css">
 </head>
 <body>
 
@@ -157,6 +157,10 @@
                     </svg>
                     <span id="btnImproveLabel">Mejorar con IA</span>
                 </button>
+                <button type="button" id="btnVariants" class="ghost-btn small variants-btn"
+                    title="Genera cuatro encuadres distintos de la misma escena con Flow: general, medio, primer plano y contrapicado">
+                    4 variantes
+                </button>
                 <span class="improve-hint" id="improveHint">4 prompts</span>
             </div>
 
@@ -204,6 +208,13 @@
                     </div>
                 </div>
                 <p class="refs-note" id="refsNote" aria-live="polite">Opcional: hasta 2 imágenes. Flow las usará como referencia de estilo, personaje u objeto.</p>
+                <div class="ref-quality" id="refQuality">
+                    <span class="ref-quality-label">Calidad de las referencias</span>
+                    <div class="chips" id="refQualityChips" role="group" aria-label="Calidad de las imágenes de referencia">
+                        <button type="button" class="chip is-active" data-refside="1280" aria-pressed="true">Rápida · 1280</button>
+                        <button type="button" class="chip" data-refside="2048" aria-pressed="false">Máxima · 2048</button>
+                    </div>
+                </div>
                 <input type="file" id="refInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
             </fieldset>
 
@@ -363,16 +374,22 @@
     <div class="mask-card">
         <button type="button" id="maskClose" class="access-close" aria-label="Cerrar">×</button>
         <h2 id="maskTitle">Máscara de edición</h2>
-        <p id="maskDesc" class="mask-desc">Marca con un círculo la zona que quieres cambiar. El resto de la imagen se conserva tal cual, píxel a píxel, y el resultado mantiene el tamaño de la imagen original.</p>
+        <p id="maskDesc" class="mask-desc">Marca la zona que quieres cambiar con un círculo o pintándola con el pincel. El resto de la imagen se conserva tal cual, píxel a píxel, y el resultado mantiene el tamaño de la imagen original.</p>
+        <div class="mask-tools" role="group" aria-label="Herramienta de máscara">
+            <button type="button" id="maskToolCircle" class="chip is-active" aria-pressed="true">Círculo</button>
+            <button type="button" id="maskToolBrush" class="chip" aria-pressed="false">Pincel</button>
+            <button type="button" id="maskUndo" class="link-btn" hidden>Deshacer trazo</button>
+            <button type="button" id="maskResetBrush" class="link-btn" hidden>Borrar pintado</button>
+        </div>
         <div class="mask-stage" id="maskStage">
             <img id="maskImage" alt="Imagen que se va a editar" draggable="false">
             <canvas id="maskCanvas" aria-hidden="true"></canvas>
         </div>
         <div class="mask-controls">
-            <label for="maskSize">Tamaño del círculo <output id="maskSizeValue" for="maskSize">35 %</output></label>
+            <label for="maskSize"><span id="maskSizeLabel">Tamaño del círculo</span> <output id="maskSizeValue" for="maskSize">35 %</output></label>
             <input type="range" id="maskSize" min="5" max="100" step="1" value="35">
         </div>
-        <p class="mask-hint">Desliza para cambiar el tamaño y arrastra el círculo para moverlo.</p>
+        <p class="mask-hint" id="maskHint">Desliza para cambiar el tamaño y arrastra el círculo para moverlo.</p>
         <div class="mask-actions">
             <button type="button" class="ghost-btn" id="maskCancel">Cancelar</button>
             <button type="button" class="access-submit" id="maskApply">Aplicar máscara</button>
@@ -404,7 +421,7 @@
 <script src="history-manager.js"></script>
 <!-- Compuerta compartida de modelos: contraseña de acceso al pulsar los caros -->
 <script src="../_shared/model-gate.20261026b.js"></script>
-<script src="app.20261029b.js"></script>
+<script src="app.20261029c.js"></script>
 
 <!-- Ojo para ver/ocultar la contraseña en el modal de acceso y en la compuerta -->
 <script src="../_shared/password-eye.js?v=20261025b" defer></script>
