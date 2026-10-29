@@ -1,3 +1,12 @@
+## 2026-10-29 — Worker de descargas muerto en silencio: la cola se queda «En cola» para siempre
+
+- **Síntoma:** dos URLs encoladas en `apps/descargas` seguían «En cola» 30 min después; `health` daba `queued:2, running:0`.
+- **Causa:** el worker del PC no estaba corriendo (último latido 21/10 19:53; `worker.log` se corta sin línea de parada y no había proceso `worker.mjs`). La app no mostraba el estado del worker, así que desde la web era invisible.
+- **Por qué pasó inadvertido:** se había lanzado a mano con el `.bat` (ventana de consola); al cerrarse/matarse el proceso no dejó rastro ni se relanzó. El acceso directo de Inicio existía, pero el PC no se había reiniciado desde antes de crearlo.
+- **Solución:** la web avisa («PC desconectado…» y etiqueta «Esperando al PC»); el worker registra excepciones y sale con código 1; el VBS apunta arranques/paradas y reintenta el código 2; tarea `DescargasWorkerWatchdog` cada 5 min lo revive; `LEEME.md` con el diagnóstico.
+- **Lección:** un proceso de fondo invisible necesita (a) estado visible en la UI y (b) un vigilante que lo reviva. «Arrancarlo a mano» no es un mecanismo de arranque.
+- **Commit:** `b1c809f9`.
+
 ## 2026-10-28 — La CSP del sitio bloquea `blob:` en `<img>` y rompe la referencia de Flow
 
 - **Síntoma:** al generar con un modelo Flow en `dibujo_lineas_copia`, la tarjeta de error decía «No se pudo leer la imagen para enviarla a Flow» y la consola mostraba `Loading the image 'blob:https://atnojs.es/…' violates CSP directive "img-src 'self' data: https:"`.

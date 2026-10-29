@@ -1,3 +1,10 @@
+## 2026-10-29 — Descargas: watchdog por tarea programada y estado del PC visible
+
+- **Decisión:** el worker se arranca con `iniciar-worker.vbs` (supervisor con log) y la tarea programada `DescargasWorkerWatchdog` lo revive cada 5 minutos; la web muestra un chip con el estado del PC y la cola usa «Esperando al PC» cuando está desconectado.
+- **Por qué:** el fallo no fue de descarga sino de un proceso muerto sin aviso; el watchdog cubre la muerte del supervisor y el chip elimina la ambigüedad para el usuario. El disparador «al iniciar sesión» exige elevación (`Acceso denegado`), por eso la tarea usa «una vez» + repetición indefinida; el arranque al entrar en Windows lo sigue haciendo el acceso directo de Inicio.
+- **Contrapartida:** la tarea solo se instala/actualiza ejecutando `tools\descargador\instalar-watchdog.ps1` en el PC (no viaja con el despliegue web).
+- **Verificación:** prueba de caída real (worker+supervisor muertos → 1 worker + 1 supervisor en 3 s, sin duplicados), estado offline reproducido y **PASS 95,2/100** del verificador independiente.
+
 ## 2026-10-28 — dibujo_lineas_copia arranca con FLOW · NANO BANANA 2
 
 - **Decisión:** el modelo por defecto de `apps/dibujo_lineas_copia` es `flow-nano-banana-2`, por petición expresa de Antonio (2026-10-28).

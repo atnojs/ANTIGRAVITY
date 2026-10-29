@@ -511,3 +511,27 @@ hasta 7 días.
 `.htaccess` y algunas páginas legacy abren `alert()` porque les falta un JSON de datos; el smoke los
 descarta solo. El componente cubre también los campos que crea el JS (TrickVault, gate de modelos,
 bóveda, login de Firebase) porque se detectan por `MutationObserver`.
+
+## Descargas: comprobar y reanimar el worker del PC
+
+```powershell
+# ¿está corriendo? (debe salir 1; si sale 0, la cola no avanza)
+@(Get-CimInstance Win32_Process -Filter "Name='node.exe'" | ? { $_.CommandLine -match 'worker.mjs' }).Count
+
+# logs (supervisor = arranques/paradas; worker = descargas)
+Get-Content "$env:LOCALAPPDATA\descargas-worker\supervisor.log" -Tail 20
+Get-Content "$env:LOCALAPPDATA\descargas-worker\worker.log" -Tail 40 -Encoding UTF8
+
+# reanimarlo ya (el VBS no duplica si ya corre)
+Start-Process wscript.exe '"E:\ANTIGRAVITY\tools\descargador\iniciar-worker.vbs"' -WindowStyle Hidden
+
+# tarea que lo revive cada 5 min
+Get-ScheduledTask -TaskName 'DescargasWorkerWatchdog' | Select-Object TaskName,State
+Start-ScheduledTask -TaskName 'DescargasWorkerWatchdog'
+
+# (re)instalarla sin administrador
+powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\descargador\instalar-watchdog.ps1
+```
+
+La web lo enseña en el chip de cabecera: «PC conectado» / «PC desconectado (hace X)».
+

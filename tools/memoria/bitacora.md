@@ -4,6 +4,15 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-10-29 — descargas: cola atascada porque el worker no estaba corriendo
+
+- **Encargo:** «apps/descargas lleva 30 minutos con dos urls en cola. corrige el error.»
+- **Causa raíz:** el worker local (`tools/descargador/worker.mjs`) no estaba corriendo desde el 21/10 19:53 (`worker.log` se corta sin línea de parada; el PC no se había reiniciado desde el 19/10; 0 procesos `worker.mjs`). La cola de producción tenía 2 trabajos `queued` y la web no avisaba de nada. Al arrancarlo, las 2 descargas (144,9 y 154,4 MB) terminaron.
+- **Qué se hizo:** aviso `#worker-estado` («PC conectado» / «PC desconectado (hace X)»), etiqueta «Esperando al PC» y aviso flotante al encolar sin PC; `worker.mjs` registra `uncaughtException`/`unhandledRejection` y sale con código 1; `iniciar-worker.vbs` apunta arranques/paradas en `supervisor.log` y reintenta el código 2 cada 5 min; tarea programada `DescargasWorkerWatchdog` (cada 5 min) con `watchdog.vbs` + `instalar-watchdog.ps1`; restaurado el CSS de `.panel` (estaba como `.aanel` con `2ax/12ax/16ax` desde el 17/10, paneles sin fondo ni relleno); `APP_VERSION` 1.1.1 como marcador de despliegue.
+- **Verificación:** producción 1.1.1; 6/6 «Listo»; chip verde; `.panel` 16px + glass; 1280/768/393 sin scroll; offline real (>130 s) → chip rojo, job de prueba «Esperando al PC» + aviso, y al reactivar el worker terminó en <20 s (job de prueba borrado; cola final 6 done); watchdog revivió worker+supervisor en 3 s sin duplicados. Verificador independiente **PASS 95,2/100** (A1–A6 ≥ 9,0; 0 defectos B/M/Med).
+- **Commits:** `b1c809f9` (fix); esta entrada en el commit de documentación.
+- **Evidencias:** `tools/evidencias/2026-10-29-descargas-cola/` (capturas 00–07, `VERIFICACION_INDEPENDIENTE.md`, `AUTOEVALUACION.md`).
+
 ## 2026-10-28 (tarde) — dibujo_lineas_copia: modelo por defecto FLOW · NANO BANANA 2
 
 - **Encargo:** «quiero que el modelo por defecto sea "nano banana 2"».
