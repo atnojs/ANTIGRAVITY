@@ -100,7 +100,7 @@ Cambios aplicados en `E:/herramientas/google-flow` (no en el repo de la app salv
 
 1. **Lote**: `flow_studio_worker.py` reclama hasta 4 trabajos (`claim` repetido) y los ejecuta en
    **una sola** llamada `flow.py batch`: un Chrome y un proyecto de Flow para todos. Resultado:
-   34 s para una imagen y 63 s para dos. El vídeo siempre va solo.
+   33 s para una imagen (medido) y 63 s para dos. El vídeo siempre va solo.
 2. **Relevo encadenado**: el worker vive 25 min y la tarea dispara cada 2. Al terminar lanza un
    sucesor detached (`relaunch_successor`) y suelta el lock antes, así no queda el hueco de hasta
    2 min sin worker que se midió el 2026-10-29 (107 s de espera con una serie ya encolada).

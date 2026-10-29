@@ -13,7 +13,7 @@ volver a subir nada.
 Velocidad (medido 2026-10-29, worker real):
  · antes: 62 s por imagen y 82 s para dos (una sesión de Chrome y un proyecto
    de Flow por imagen, prompt tecleado a 30 ms/carácter, sondeo de cola 6 s);
- · ahora: 34 s para una imagen y 63 s para dos (lote en un solo proyecto,
+ · ahora: 33 s para una imagen y 63 s para dos (45 s si la petición cae justo en un relevo del worker) (lote en un solo proyecto,
    escritura del prompt instantánea, panel de ajustes cacheado, descarga con
    espera de 200 ms y sondeo de cola 1,5 s).
 La cola reencola sola los trabajos atascados en «running» (10 min imagen,
