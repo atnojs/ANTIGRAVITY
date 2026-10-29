@@ -65,8 +65,10 @@ Patrón ya implantado en `apps/editar_generar` y en `apps/imagenes_ia/combinar_i
 - Abre Chrome visible en el escritorio mientras trabaja: es normal (salvo lotes, ver punto anterior).
 - Esta herramienta es local y no sustituye el bloque canónico de modelos de `apps/dibujo_lineas_copia` en las apps web del proyecto.
 - SIN LÍMITE DE TIEMPO (2026-10-22): fuera los topes de 900 s. `flow.py` espera 30 min por imagen
-  y 60 por vídeo; el worker y el servidor MCP ya no cortan el subproceso; la cola no reencola un
-  `running` hasta las 2 h. Si una generación se cuelga de verdad, se cancela a mano.
+  y 60 por vídeo; el worker y el servidor MCP ya no cortan el subproceso. Desde el 2026-10-29 la
+  cola SÍ reencola un `running` atascado: 10 min en imagen y 90 min en vídeo (antes `STALE_RUNNING=0`
+  dejaba los trabajos colgados para siempre; pasó con 2 trabajos). Si una generación se cuelga de
+  verdad, se cancela a mano.
 - ANTES DE GENERAR: ningún Chrome puede estar usando `session/flowbot-profile` (Playwright no abre
   un perfil persistente en uso; `flow.py` muere en 2 s). Cerrar esos procesos primero.
 - Locks del worker: `flow_studio_worker.lock` se bloquea con `msvcrt.locking` (Windows), así que
@@ -87,4 +89,34 @@ Patrón ya implantado en `apps/editar_generar` y en `apps/imagenes_ia/combinar_i
   intención y el resultado deja de seguir lo pedido. Solo se añade el formato cuando hace falta.
 - Referencias: enviarlas a **2048 px / JPEG 0.92** (tope 6 MB por referencia). Bajarlas a 1280
   hacía que textos y caras llegaran ilegibles y el modelo "no siguiera" la imagen.
+
+## Velocidad del worker (medido 2026-10-29)
+
+Antes cada imagen costaba ~62 s y dos imágenes ~82 s. El desglose real (worker.log + `_tiempos.log`):
+9-15 s de arranque de Chrome + proyecto de Flow **por imagen**, 6 s de tecleo del prompt
+(`keyboard.type(delay=30)`), 6 s de ajustes, 18-20 s de generación real y 5-8 s de descarga y subida.
+
+Cambios aplicados en `E:/herramientas/google-flow` (no en el repo de la app salvo la cola):
+
+1. **Lote**: `flow_studio_worker.py` reclama hasta 4 trabajos (`claim` repetido) y los ejecuta en
+   **una sola** llamada `flow.py batch`: un Chrome y un proyecto de Flow para todos. Resultado:
+   34 s para una imagen y 63 s para dos. El vídeo siempre va solo.
+2. **Relevo encadenado**: el worker vive 25 min y la tarea dispara cada 2. Al terminar lanza un
+   sucesor detached (`relaunch_successor`) y suelta el lock antes, así no queda el hueco de hasta
+   2 min sin worker que se midió el 2026-10-29 (107 s de espera con una serie ya encolada).
+   `--once` y `--no-chain` desactivan el relevo para pruebas.
+3. **`prompt.py`**: `keyboard.type(..., delay=0)`; los 30 ms/carácter costaban ~6 s por prompt.
+4. **`configure.py`**: caché de ajustes por proceso; en un lote, el segundo trabajo con el mismo
+   modelo/ratio/cantidad no vuelve a abrir el panel (~3 s menos por imagen).
+5. **`project.py` / `configure.py`**: los sleeps ciegos (4 s + 5 s + 900 ms...) se sustituyen por
+   esperas al elemento real. Más rápido cuando Flow va fino y más seguro cuando va lento.
+6. **`download.py`**: sondeo de la URL cada 200 ms (antes 1 s) y presupuesto de hover 1,2 s.
+7. **Cola**: sondeo cada 1,5 s (antes 6 s) y reencolado de atascados.
+
+Lo que NO se puede bajar: la generación de Nano Banana en el agente de Flow son ~18-20 s reales, y
+cada referencia adjunta se sube a Google (~10 s por referencia). Con personaje en 5 escenas, esos
+50 s de subida son el coste dominante: adjuntar solo cuando haga falta.
+
+Para diagnosticar: `outputs/flow_studio/worker.log` (reclamo, lote, compresión, subida) y
+`outputs/flow_studio/_tiempos.log` (fases de flow.py con FLOW_TIMING=1).
 
