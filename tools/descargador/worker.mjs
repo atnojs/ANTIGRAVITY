@@ -148,6 +148,20 @@ const logAviso = (m) => { registrar('AVISO', m); console.warn(`[aviso] ${m}`); }
 const logError = (m) => { registrar('ERROR', m); console.error(`[error] ${m}`); };
 const logDepurar = (m) => { registrar('DEPURA', m); };
 
+/* ── Redes de seguridad del proceso ──────────────────────────────────────
+ * Si algo se escapa de los try/catch, el worker NO debe morirse en silencio:
+ * corre con la ventana oculta y nadie se enteraba (la cola se quedaba "en
+ * cola" durante horas). Ahora se apunta la traza en worker.log y se sale con
+ * codigo 1, para que el lanzador (iniciar-worker.vbs) lo vuelva a arrancar. */
+function caidaInesperada(tipo, error) {
+  const texto = error && error.stack ? error.stack : String(error);
+  try { logError(`${tipo}: ${texto}`); } catch { /* ni el log puede tumbar esto */ }
+  try { console.error(`[fatal] ${tipo}: ${texto}`); } catch { /* consola oculta */ }
+  process.exit(1);
+}
+process.on('uncaughtException', (error) => caidaInesperada('Excepción no controlada', error));
+process.on('unhandledRejection', (error) => caidaInesperada('Promesa rechazada sin controlar', error));
+
 // Salida legible en consola (resumen para el usuario)
 function consola(mensaje) {
   process.stdout.write(`[${hora()}] ${mensaje}\n`);
@@ -1816,6 +1830,7 @@ async function principal() {
   process.on('SIGINT', () => pararLimpiamente('Ctrl+C'));
   process.on('SIGBREAK', () => pararLimpiamente('Ctrl+Pausa'));
   process.on('SIGHUP', () => pararLimpiamente('cierre de consola'));
+  process.on('SIGTERM', () => pararLimpiamente('cierre del sistema'));
 
   // Heartbeat cada 30 s, independiente del bucle de sondeo.
   const latido = async () => {
@@ -1924,7 +1939,8 @@ principal().catch((e) => {
 
 // Red de seguridad: nunca dejar un yt-dlp huérfano.
 // matarArbol es síncrono (taskkill /T /F), así que puede usarse aquí.
-process.on('exit', () => {
+process.on('exit', (codigo) => {
+  try { logInfo(`Salida del proceso (código ${codigo})`); } catch { /* da igual */ }
   for (const proceso of hijosActivos.values()) {
     if (proceso && proceso.pid) matarArbol(proceso.pid);
   }

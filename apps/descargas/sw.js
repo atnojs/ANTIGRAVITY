@@ -3,7 +3,7 @@
    haya red (la cola se actualizara sola cuando vuelva).
    Nunca intercepta POST ni la API: eso tiene que ir siempre a la red. */
 
-const CACHE = 'descargas-v2';
+const CACHE = 'descargas-v3';
 const CARCASA = [
   './',
   './index.html',

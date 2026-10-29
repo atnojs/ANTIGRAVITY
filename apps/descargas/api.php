@@ -71,7 +71,7 @@ const ESPERAS_REINTENTO = [30, 120, 300]; // segundos entre reintentos
 const CLEANUP_EVERY_S  = 300;
 
 const APP_NAME     = 'descargas';
-const APP_VERSION  = '1.1.0';
+const APP_VERSION  = '1.1.1';
 
 function respond(int $status, array $payload): never {
     http_response_code($status);

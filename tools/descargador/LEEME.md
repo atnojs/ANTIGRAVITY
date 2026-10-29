@@ -85,7 +85,21 @@ mensaje de error en español y **sale con código 2**.
 
 ## 4. Cómo arrancarlo
 
-**Con doble clic** (lo normal):
+**Automático (lo normal):** al entrar en Windows se lanza solo, oculto, con
+`iniciar-worker.vbs` (acceso directo de la carpeta **Inicio**). Además hay una tarea
+programada, **`DescargasWorkerWatchdog`**, que cada 5 minutos comprueba si el worker
+sigue vivo y lo vuelve a arrancar si se ha caído. Así la cola no se queda esperando
+durante horas porque el worker se cerró sin avisar.
+
+Para instalar o reparar esa tarea (no hace falta ser administrador):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\descargador\instalar-watchdog.ps1
+```
+
+Se puede quitar con `... instalar-watchdog.ps1 -Quitar`.
+
+**Con doble clic** (para probar a mano):
 
 ```
 E:\ANTIGRAVITY\tools\descargador\iniciar-worker.bat
@@ -94,6 +108,8 @@ E:\ANTIGRAVITY\tools\descargador\iniciar-worker.bat
 El `.bat` se coloca en su carpeta, arranca el worker y, si el proceso termina, espera 10
 segundos y lo vuelve a lanzar (mostrando la hora). Si el worker sale con **código 2**
 (error de configuración) **no** lo relanza: deja el mensaje en pantalla y espera una tecla.
+(Eso es solo el lanzador manual; el `.vbs` del Inicio/watchdog sí reintenta el código 2
+cada 5 minutos.)
 
 **Desde una consola:**
 
@@ -102,11 +118,17 @@ cd /d E:\ANTIGRAVITY\tools\descargador
 "C:\Program Files\nodejs\node.exe" worker.mjs
 ```
 
+> **Si la cola de la web se queda «En cola»:** casi siempre es que el worker no está
+> corriendo. La propia web avisa arriba con «PC desconectado…» y la cola cambia a
+> «Esperando al PC». Comprueba el proceso (`Get-CimInstance Win32_Process -Filter
+> "Name='node.exe'" | Where-Object { $_.CommandLine -match 'worker.mjs' }`), mira
+> `supervisor.log` y, si hace falta, ejecuta el VBS o espera al watchdog.
+
 ---
 
-## 5. Cómo ver el log
+## 5. Cómo ver los logs
 
-El log está en:
+El log del worker está en:
 
 ```
 %LOCALAPPDATA%\descargas-worker\worker.log
@@ -114,10 +136,20 @@ El log está en:
 
 Es decir: `C:\Users\atnojs\AppData\Local\descargas-worker\worker.log`.
 
+El del lanzador (arranques, paradas, reintentos y errores de configuración) está al lado:
+
+```
+%LOCALAPPDATA%\descargas-worker\supervisor.log
+```
+
 - Se crea la carpeta automáticamente.
-- Cuando el fichero pasa de **5 MB** se rota: el anterior queda como `worker.log.1`.
+- `worker.log` rota a los **5 MB** (`worker.log.1`); `supervisor.log` a **1 MB**
+  (`supervisor.log.1`).
 - En **consola** se ve un resumen legible en español (arranque, trabajo recibido,
   progreso cada 5 s, subidas, errores).
+- Si el worker cae por una excepción no controlada, ahora deja la traza completa en
+  `worker.log` como `[ERROR] Excepción no controlada: …` y sale con código 1 para que el
+  lanzador lo relance. Antes se moría en silencio y la cola se quedaba parada sin rastro.
 
 Para seguirlo en vivo desde otra consola:
 
