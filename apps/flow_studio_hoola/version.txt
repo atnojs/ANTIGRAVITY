@@ -7,6 +7,9 @@ imagen. Las escenas se editan en el panel, el resultado cae al lienzo como
 tablero con su narración y se puede descargar el guion en JSON.
 El personaje se toma de «Referencias»: la imagen adjunta se envía como
 referencia a todas las escenas para mantener el mismo personaje.
+Cada tarjeta de vídeo tiene «Continuar escena»: toma su último fotograma y lo
+deja como fotograma inicial del siguiente clip, para alargar una escena sin
+volver a subir nada.
 Velocidad (medido 2026-10-29, worker real):
  · antes: 62 s por imagen y 82 s para dos (una sesión de Chrome y un proyecto
    de Flow por imagen, prompt tecleado a 30 ms/carácter, sondeo de cola 6 s);
