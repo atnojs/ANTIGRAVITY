@@ -21,7 +21,8 @@ const MAX_VIDEO_BYTES = 32 * 1024 * 1024;  // 32 MB por vídeo ya decodificado
 const MAX_VIDEO_QUEUE = 2;          // vídeos pendientes a la vez (cada uno gasta puntos)
 const VIDEO_MODELS = ['Veo 3.1 - Lite', 'Veo 3.1 - Fast', 'Veo 3.1 - Quality', 'Omni Flash'];
 const VIDEO_RATIOS = ['16:9', '9:16'];  // la UI de Flow solo ofrece estos dos en vídeo
-const STALE_RUNNING = 0;        // 0 = nunca reencolar: sin límite de tiempo (2026-10-22)
+const STALE_IMAGE = 600;        // 10 min: una imagen no tarda tanto; se reencola (2026-10-29)
+const STALE_VIDEO = 5400;       // 90 min: Veo puede tardar; no se toca antes
 const WORKER_FRESH = 600;       // 10 min sin señales = worker desconectado
 
 header('Content-Type: application/json; charset=utf-8');
@@ -457,7 +458,8 @@ if ($reqAction === 'claim') {
         $q['worker_seen'] = time();
         $now = time();
         foreach ($q['jobs'] as &$j) {
-            if (STALE_RUNNING > 0 && $j['status'] === 'running' && $now - (int) $j['started'] > STALE_RUNNING) {
+            $limite = (($j['type'] ?? 'image') === 'video') ? STALE_VIDEO : STALE_IMAGE;
+            if ($j['status'] === 'running' && $now - (int) $j['started'] > $limite) {
                 $j['status'] = 'queued';
                 $j['started'] = 0;
             }

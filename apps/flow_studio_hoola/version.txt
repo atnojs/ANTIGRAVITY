@@ -1,11 +1,18 @@
-20261028a-flow-studio 2026-10-28
-Flow Studio con el catálogo del estudio: 15 modelos de imagen (Flow, OpenAI 2.5,
-Gemini, Qwen e Image 2), 4 de vídeo, resolución con tope real ≈4 MP en los modelos
-directos (api.php + SQLite) y la compuerta de contraseña compartida (Model Gate 1.2.0).
-Edición con máscara circular ajustable: solo cambia el interior del círculo y fuera
-se conserva el original píxel a píxel, con Flow y con los modelos directos.
-El botón de la zona a editar se llama «Crear máscara» (antes «Marcar círculo»);
-con la máscara ya aplicada mantiene «Ajustar círculo».
-Entrar por «Acceso» desbloquea también la compuerta en esa pestaña.
-Las referencias son exclusivas de cada modo (generar, editar y vídeo).
+20261029a-flow-studio 2026-10-29
+Flow Studio añade el MODO SERIE (guion + storyboard): escribes la idea, la IA la
+reparte en 3-8 escenas con narración y prompt visual, y «Generar escenas» las
+encola en UNA petición. El worker del PC las reclama juntas y las genera en un
+solo proyecto de Flow (un Chrome, una preparación) en vez de abrir uno por
+imagen. Las escenas se editan en el panel, el resultado cae al lienzo como
+tablero con su narración y se puede descargar el guion en JSON.
+El personaje se toma de «Referencias»: la imagen adjunta se envía como
+referencia a todas las escenas para mantener el mismo personaje.
+Velocidad (medido 2026-10-29, worker real):
+ · antes: 62 s por imagen y 82 s para dos (una sesión de Chrome y un proyecto
+   de Flow por imagen, prompt tecleado a 30 ms/carácter, sondeo de cola 6 s);
+ · ahora: 34 s para una imagen y 63 s para dos (lote en un solo proyecto,
+   escritura del prompt instantánea, panel de ajustes cacheado, descarga con
+   espera de 200 ms y sondeo de cola 1,5 s).
+La cola reencola sola los trabajos atascados en «running» (10 min imagen,
+90 min vídeo) en vez de dejarlos colgados para siempre.
 La cola de Google Flow sigue siendo la de siempre (flow_queue.php + worker del PC).

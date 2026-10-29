@@ -121,6 +121,72 @@ function buildSystemPrompt(string $ratio, string $mode): string
         . 'Sin numeración, sin JSON, sin markdown, sin comillas y sin texto extra.';
 }
 
+/**
+ * Sistema del modo Serie: convierte una idea en un guion de escenas con
+ * narración (voz en off) y prompt visual listo para Flow.
+ */
+function buildStoryboardSystemPrompt(int $scenes, string $ratio, bool $character): string
+{
+    $personaje = $character
+        ? 'El usuario adjunta una imagen del personaje: descríbelo igual en todas las '
+            . 'escenas (mismo aspecto y misma ropa) y no lo cambies de una escena a otra.'
+        : 'No inventes marcas, logos ni personas reales.';
+    return 'Eres guionista y director de arte de series cortas para redes sociales. '
+        . 'A partir de la idea del usuario escribe un guion de exactamente ' . $scenes . ' escenas. '
+        . 'Devuelve SOLO un JSON válido, sin markdown y sin texto fuera del JSON, con esta forma: '
+        . '{"escenas":[{"titulo":"...","narracion":"...","prompt":"...","duracion":5}]}. '
+        . 'Reglas: exactamente ' . $scenes . ' objetos en orden narrativo y con cierre; '
+        . 'titulo de 2 a 5 palabras; '
+        . 'narracion de 1 o 2 frases (10 a 25 palabras) en español de España, pensada como voz en off; '
+        . 'prompt de 35 a 55 palabras en español con la descripción visual completa para un modelo '
+        . 'de imagen (sujeto y acción, encuadre, iluminación, paleta y acabado), formato '
+        . $ratio . ' y sin texto en pantalla; '
+        . 'duracion en segundos, entero de 3 a 8. '
+        . $personaje . ' '
+        . 'Todo el texto generado debe estar obligatoriamente en español.';
+}
+
+/** Lee el JSON del guion aunque venga con cercas de markdown o texto alrededor. */
+function parseStoryboard(string $content, int $max): array
+{
+    $text = trim($content);
+    $text = preg_replace('/```(?:json|JSON)?\s*/', '', $text) ?? $text;
+    $text = str_replace('```', '', $text);
+    $start = strpos($text, '{');
+    $end = strrpos($text, '}');
+    $json = ($start !== false && $end !== false && $end > $start)
+        ? substr($text, $start, $end - $start + 1)
+        : $text;
+    $data = json_decode($json, true);
+    if (!is_array($data)) {
+        return [];
+    }
+    $list = $data['escenas'] ?? $data['scenes'] ?? $data['storyboard'] ?? null;
+    if (!is_array($list)) {
+        return [];
+    }
+    $out = [];
+    foreach ($list as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        $prompt = trim((string) ($item['prompt'] ?? $item['descripcion'] ?? ''));
+        if ($prompt === '') {
+            continue;
+        }
+        $out[] = [
+            'titulo' => textCut(trim((string) ($item['titulo'] ?? $item['title'] ?? 'Escena')), 60),
+            'narracion' => textCut(trim((string) ($item['narracion'] ?? $item['narration'] ?? '')), 400),
+            'prompt' => textCut($prompt, 1200),
+            'duracion' => max(3, min(8, (int) ($item['duracion'] ?? $item['duration'] ?? 5))),
+        ];
+        if (count($out) >= $max) {
+            break;
+        }
+    }
+    return $out;
+}
+
 function looksLikeJunk(string $text): bool
 {
     foreach (['{', '}', 'options:', '"prompt"', 'titulo:', '```'] as $needle) {
@@ -242,6 +308,111 @@ if ($action === 'health') {
         'ok' => true,
         'model' => TEXT_MODEL,
         'configured' => getKey('R') !== '',
+    ]);
+}
+
+// --- Modo Serie: idea -> guion de escenas (texto -> JSON) -----------------
+if ($action === 'storyboard') {
+    $idea = trim((string) ($body['idea'] ?? ''));
+    if ($idea === '') {
+        respond(['ok' => false, 'error' => 'Escribe primero la idea de la serie.'], 400);
+    }
+    $idea = textCut($idea, 1200);
+    $scenes = (int) ($body['scenes'] ?? 5);
+    $scenes = max(3, min(8, $scenes));
+    $ratio = (string) ($body['ratio'] ?? '1:1');
+    if (!in_array($ratio, ['1:1', '16:9', '9:16', '4:3', '3:4'], true)) {
+        $ratio = '1:1';
+    }
+    $character = !empty($body['character']);
+
+    if (!rateLimitOk()) {
+        respond(['ok' => false, 'error' => 'Demasiadas peticiones seguidas. Espera un minuto.'], 429);
+    }
+    $key = getKey('R');
+    if ($key === '') {
+        respond(['ok' => false, 'error' => 'Falta la clave del proveedor de texto (R) en el servidor.'], 503);
+    }
+
+    $content = '';
+    $finish = '';
+    // Hasta 2 intentos: el modelo a veces devuelve una respuesta vacía o cortada.
+    for ($attempt = 0; $attempt < 2 && trim($content) === ''; $attempt++) {
+        $payload = [
+            'model' => TEXT_MODEL,
+            'messages' => [
+                ['role' => 'system', 'content' => buildStoryboardSystemPrompt($scenes, $ratio, $character)],
+                ['role' => 'user', 'content' => $idea],
+            ],
+            'temperature' => $attempt === 0 ? 0.8 : 0.5,
+            'max_tokens' => 2600,
+        ];
+
+        $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 50,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $key,
+                'Content-Type: application/json',
+                'HTTP-Referer: https://atnojs.es',
+                'X-Title: Flow Studio',
+            ],
+            CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
+        ]);
+
+        $response = curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false) {
+            $slow = stripos($curlError, 'timed out') !== false || stripos($curlError, 'timeout') !== false;
+            respond([
+                'ok' => false,
+                'error' => $slow
+                    ? 'El guion tardó demasiado (más de 50 s). Vuelve a intentarlo.'
+                    : 'No se pudo contactar con el proveedor de texto.',
+            ], 502);
+        }
+
+        $decoded = json_decode((string) $response, true);
+        if ($status < 200 || $status >= 300) {
+            $message = is_array($decoded) ? (string) ($decoded['error']['message'] ?? '') : '';
+            respond([
+                'ok' => false,
+                'error' => 'El proveedor respondió HTTP ' . $status . ($message !== '' ? ': ' . textCut($message, 160) : ''),
+            ], 502);
+        }
+        if (is_array($decoded)) {
+            $content = (string) ($decoded['choices'][0]['message']['content'] ?? '');
+            $finish = (string) ($decoded['choices'][0]['finish_reason'] ?? '');
+        }
+    }
+
+    if (trim($content) === '') {
+        respond([
+            'ok' => false,
+            'error' => 'El modelo no devolvió guion (motivo: ' . ($finish !== '' ? $finish : 'vacío') . '). Reintenta.',
+        ], 502);
+    }
+
+    $scenesOut = parseStoryboard($content, $scenes);
+    if (count($scenesOut) < 1) {
+        respond([
+            'ok' => false,
+            'error' => 'No se pudo leer el guion. Inténtalo otra vez.',
+            'preview' => textCut(trim($content), 320),
+        ], 502);
+    }
+
+    respond([
+        'ok' => true,
+        'model' => TEXT_MODEL,
+        'idea' => $idea,
+        'scenes' => $scenesOut,
     ]);
 }
 

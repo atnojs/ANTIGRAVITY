@@ -37,7 +37,8 @@ const VIDEO_MODEL_ALIASES = [
     'veo-3.1-quality' => 'Veo 3.1 - Quality',
     'omni-flash' => 'Omni Flash',
 ];
-const STALE_RUNNING = 0;        // 0 = nunca reencolar: sin límite de tiempo (2026-10-22)
+const STALE_IMAGE = 600;        // 10 min: una imagen nunca tarda tanto; se reencola
+const STALE_VIDEO = 5400;       // 90 min: Veo puede tardar; no se toca antes
 const WORKER_FRESH = 600;       // 10 min sin señales = worker desconectado
 
 header('Content-Type: application/json; charset=utf-8');
@@ -360,6 +361,24 @@ $token = (string) ($body['token'] ?? ($_SERVER['HTTP_X_QUEUE_TOKEN'] ?? ''));
 // --- request: encolar imágenes o vídeos -----------------------------------
 if ($reqAction === 'request') {
     $prompt = trim((string) ($body['prompt'] ?? ''));
+    // Modo Serie: varias escenas en UNA petición. El worker las reclama juntas
+    // y las genera en un solo proyecto de Flow (un Chrome para todas).
+    $promptsIn = [];
+    if (isset($body['prompts']) && is_array($body['prompts'])) {
+        foreach (array_slice(array_values($body['prompts']), 0, 8) as $item) {
+            if (!is_string($item)) {
+                continue;
+            }
+            $item = trim($item);
+            if ($item === '') {
+                continue;
+            }
+            $promptsIn[] = text_len($item) > MAX_PROMPT ? text_cut($item, MAX_PROMPT) : $item;
+        }
+    }
+    if ($prompt === '' && $promptsIn) {
+        $prompt = $promptsIn[0];
+    }
     if ($prompt === '') {
         respond(['ok' => false, 'error' => 'El prompt está vacío'], 400);
     }
@@ -369,6 +388,7 @@ if ($reqAction === 'request') {
     $type = ((string) ($body['type'] ?? 'image')) === 'video' ? 'video' : 'image';
     if ($type === 'video') {
         // Vídeo con Flow (Veo): solo 16:9 o 9:16 y un clip por petición.
+        $promptsIn = [];
         $ratio = (string) ($body['ratio'] ?? '16:9');
         if (!in_array($ratio, VIDEO_RATIOS, true)) {
             $ratio = '16:9';
@@ -392,12 +412,17 @@ if ($reqAction === 'request') {
         }
         $count = (int) ($body['count'] ?? 1);
         $count = max(1, min(4, $count));
+        if (count($promptsIn) > 1) {
+            // Cada prompt es una imagen: la cantidad la manda la lista de escenas.
+            $count = count($promptsIn);
+        }
         // mode=edit: la primera referencia es la imagen que se edita. La edición
         // reutiliza el canal de referencias del worker, así que no hace falta
         // desplegar de nuevo el worker del PC para que funcione.
         $mode = ((string) ($body['mode'] ?? 'generate')) === 'edit' ? 'edit' : 'generate';
         if ($mode === 'edit') {
             $count = 1;
+            $promptsIn = [];
         }
     }
 
@@ -412,7 +437,7 @@ if ($reqAction === 'request') {
         respond(['ok' => false, 'error' => 'Falta la imagen que quieres editar'], 400);
     }
 
-    $result = with_lock(function () use ($queueFile, $prompt, $ratio, $model, $count, $mode, $type, $refsIn, $refsDir) {
+    $result = with_lock(function () use ($queueFile, $prompt, $promptsIn, $ratio, $model, $count, $mode, $type, $refsIn, $refsDir) {
         $q = read_queue($queueFile);
         $pending = 0;
         $pendingVideos = 0;
@@ -448,7 +473,7 @@ if ($reqAction === 'request') {
             $q['jobs'][] = [
                 'id' => $id,
                 'type' => $type,
-                'prompt' => $prompt,
+                'prompt' => $promptsIn[$i] ?? $prompt,
                 'ratio' => $ratio,
                 'model' => $model,
                 'mode' => $mode,
@@ -528,7 +553,12 @@ if ($reqAction === 'claim') {
         $q['worker_seen'] = time();
         $now = time();
         foreach ($q['jobs'] as &$j) {
-            if (STALE_RUNNING > 0 && $j['status'] === 'running' && $now - (int) $j['started'] > STALE_RUNNING) {
+            // Un trabajo reclamado que lleva demasiado tiempo en «running» se
+            // reencola: sin esto, si el worker muere a mitad (o se corta la luz)
+            // el trabajo se queda colgado para siempre y el usuario ve
+            // «generando» eternamente (pasó el 2026-10-29 con 2 trabajos).
+            $limite = (($j['type'] ?? 'image') === 'video') ? STALE_VIDEO : STALE_IMAGE;
+            if ($j['status'] === 'running' && $now - (int) $j['started'] > $limite) {
                 $j['status'] = 'queued';
                 $j['started'] = 0;
             }

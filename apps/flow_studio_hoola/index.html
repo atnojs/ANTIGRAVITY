@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- assets versionados 20261028a: modelos directos, compuerta y máscara de edición -->
+<!-- assets versionados 20261029a: modo Serie (guion + storyboard), generación en lote y cola más rápida -->
 <title>Flow Studio · Genera y edita imágenes con Google Flow y modelos directos</title>
-<meta name="description" content="Genera imágenes y vídeos con Google Flow en tu PC o con los modelos directos (OpenAI, Gemini y Qwen), edita solo la zona que marques con una máscara circular, elige formato y resolución y escala el resultado 2×, 4× u 8×. Los modelos caros se protegen con la contraseña de acceso.">
+<meta name="description" content="Genera imágenes y vídeos con Google Flow en tu PC o con los modelos directos (OpenAI, Gemini y Qwen), crea una serie completa con guion y storyboard en un solo proyecto, edita solo la zona que marques con una máscara circular, elige formato y resolución y escala el resultado 2×, 4× u 8×. Los modelos caros se protegen con la contraseña de acceso.">
 <meta name="theme-color" content="#001018">
 <meta property="og:title" content="Flow Studio · Flow y modelos directos de imagen">
 <meta property="og:description" content="Flow gratis en tu PC y, si lo necesitas, OpenAI, Gemini y Qwen desde el servidor. Elige modelo, formato y resolución; los modelos protegidos piden la contraseña de acceso.">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.hoola.20261027d.css">
+<link rel="stylesheet" href="app.hoola.20261029a.css">
 </head>
 <body>
 
@@ -67,7 +67,46 @@
                     </svg>
                     <span>Vídeo</span>
                 </button>
+                <button type="button" id="modeSeries" class="mode-btn" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="14" rx="2.2"/>
+                        <path d="M8.5 5v14M15.5 5v14M3 12h18"/>
+                    </svg>
+                    <span>Serie</span>
+                </button>
             </div>
+
+            <section id="seriesPanel" class="series-panel hidden" aria-labelledby="seriesTitle">
+                <div class="series-head">
+                    <h3 id="seriesTitle">Serie · guion y storyboard</h3>
+                    <p class="series-sub">Escribe la idea, crea el guion con IA y genera todas las escenas de una vez: van en un solo proyecto de Flow, así que la preparación se paga una sola vez.</p>
+                </div>
+                <label class="sr-only" for="seriesIdea">Idea de la serie</label>
+                <textarea id="seriesIdea" class="series-idea" rows="3" maxlength="600" spellcheck="true"
+                    placeholder="Ej.: Una detective novata investiga robos en un mercadillo de barrio; tono de comedia ligera y colorido, final con moraleja"></textarea>
+                <div class="series-tools">
+                    <span class="series-tools-label">Escenas</span>
+                    <div class="chips" id="seriesCountChips" role="group" aria-label="Número de escenas del guion">
+                        <button type="button" class="chip" data-scenes="3" aria-pressed="false">3</button>
+                        <button type="button" class="chip" data-scenes="4" aria-pressed="false">4</button>
+                        <button type="button" class="chip is-active" data-scenes="5" aria-pressed="true">5</button>
+                        <button type="button" class="chip" data-scenes="6" aria-pressed="false">6</button>
+                    </div>
+                    <button type="button" id="btnStoryboard" class="btn-improve">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4 5h16v14H4z"/>
+                            <path d="M4 10h16M9 10v9M15 10v9"/>
+                        </svg>
+                        <span id="btnStoryboardLabel">Crear guion con IA</span>
+                    </button>
+                </div>
+                <p class="refs-note" id="seriesNote" aria-live="polite">El personaje se coge de «Referencias»: si adjuntas una imagen, la usan todas las escenas.</p>
+                <div class="series-scenes" id="seriesScenes"></div>
+                <div class="series-actions" id="seriesActions" hidden>
+                    <button type="button" id="btnSeriesExport" class="ghost-btn small">Descargar guion (JSON)</button>
+                    <button type="button" id="btnSeriesClear" class="link-btn">Vaciar escenas</button>
+                </div>
+            </section>
 
             <fieldset class="control source-control" id="sourceControl" hidden>
                 <legend>Imagen a editar <span class="legend-hint">obligatoria</span></legend>
@@ -365,7 +404,7 @@
 <script src="history-manager.js"></script>
 <!-- Compuerta compartida de modelos: contraseña de acceso al pulsar los caros -->
 <script src="../_shared/model-gate.20261026b.js"></script>
-<script src="app.20261028a.js"></script>
+<script src="app.20261029a.js"></script>
 
 <!-- Ojo para ver/ocultar la contraseña en el modal de acceso y en la compuerta -->
 <script src="../_shared/password-eye.js?v=20261025b" defer></script>
