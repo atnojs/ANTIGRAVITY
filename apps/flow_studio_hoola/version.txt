@@ -15,6 +15,9 @@ Nuevas opciones del catálogo de Flow:
    medio, primer plano y contrapicado— en una sola petición.
  · Máscara de pincel (Mask Magic) además del círculo: se pinta la zona a
    cambiar y fuera de lo pintado la imagen se conserva píxel a píxel.
+   La máscara se puede ampliar (rueda, botones, pellizco o Espacio + arrastrar)
+   para marcar con precisión; con el pincel el cursor es un círculo del tamaño
+   real del trazo.
  · Calidad de referencias elegible: Rápida 1280 (sube antes) o Máxima 2048
    (mejor cara y textos, como recomienda la skill de Flow). Se recuerda.
 Velocidad (medido 2026-10-29, worker real):

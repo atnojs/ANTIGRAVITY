@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- assets versionados 20261029c: modo Serie (guion + storyboard), generación en lote y cola más rápida -->
+<!-- assets versionados 20261029d: modo Serie (guion + storyboard), generación en lote y cola más rápida -->
 <title>Flow Studio · Genera y edita imágenes con Google Flow y modelos directos</title>
 <meta name="description" content="Genera imágenes y vídeos con Google Flow en tu PC o con los modelos directos (OpenAI, Gemini y Qwen), crea una serie completa con guion y storyboard en un solo proyecto, edita solo la zona que marques con una máscara circular, elige formato y resolución y escala el resultado 2×, 4× u 8×. Los modelos caros se protegen con la contraseña de acceso.">
 <meta name="theme-color" content="#001018">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.hoola.20261029b.css">
+<link rel="stylesheet" href="app.hoola.20261029c.css">
 </head>
 <body>
 
@@ -380,10 +380,17 @@
             <button type="button" id="maskToolBrush" class="chip" aria-pressed="false">Pincel</button>
             <button type="button" id="maskUndo" class="link-btn" hidden>Deshacer trazo</button>
             <button type="button" id="maskResetBrush" class="link-btn" hidden>Borrar pintado</button>
+            <div class="mask-zoom" role="group" aria-label="Zoom de la imagen">
+                <button type="button" id="maskZoomOut" class="mask-zoom-btn" aria-label="Alejar">−</button>
+                <output id="maskZoomValue" aria-live="polite">100 %</output>
+                <button type="button" id="maskZoomIn" class="mask-zoom-btn" aria-label="Acercar">+</button>
+                <button type="button" id="maskZoomReset" class="link-btn">1×</button>
+            </div>
         </div>
         <div class="mask-stage" id="maskStage">
             <img id="maskImage" alt="Imagen que se va a editar" draggable="false">
             <canvas id="maskCanvas" aria-hidden="true"></canvas>
+            <span class="brush-cursor" id="brushCursor" hidden aria-hidden="true"></span>
         </div>
         <div class="mask-controls">
             <label for="maskSize"><span id="maskSizeLabel">Tamaño del círculo</span> <output id="maskSizeValue" for="maskSize">35 %</output></label>
@@ -421,7 +428,7 @@
 <script src="history-manager.js"></script>
 <!-- Compuerta compartida de modelos: contraseña de acceso al pulsar los caros -->
 <script src="../_shared/model-gate.20261026b.js"></script>
-<script src="app.20261029c.js"></script>
+<script src="app.20261029d.js"></script>
 
 <!-- Ojo para ver/ocultar la contraseña en el modal de acceso y en la compuerta -->
 <script src="../_shared/password-eye.js?v=20261025b" defer></script>
