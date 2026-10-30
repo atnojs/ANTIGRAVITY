@@ -1170,3 +1170,23 @@ Ampliación con datos de la entrada del 2026-10-16:
   credenciales.
 - **Pendiente del dueño:** si quiere conservar el proyecto antiguo, hay que regenerar su apiKey y
   volver a publicar.
+
+### [2026-10-30] La compuerta de modelos sobrevivía al cierre de sesión
+
+- **Síntoma:** tras cerrar sesión (o reabrir la app) los modelos protegidos seguían sin pedir la
+  contraseña. Reproducido en producción: con la clave sembrada a mano en `sessionStorage` y sin
+  sesión válida, `ModelGate.isUnlocked()` devolvía `true` y había 0 chips bloqueados.
+- **Causa:** el desbloqueo vive en `sessionStorage` (`ag_model_gate_v1`) y el navegador lo conserva
+  al recargar o restaurar la pestaña. Ninguna app contrastaba ese estado con la sesión real:
+  `unified-image-studio-hoola` no llamaba a `ModelGate.lock()` al cerrar sesión y ninguna de las dos
+  bloqueaba la compuerta cuando `api.php?action=state` respondía `authenticated:false`.
+- **Solución:** (1) al arrancar, si el `state` del servidor no está autenticado (o no responde), se
+  llama a `ModelGate.lock()`; (2) al cerrar sesión se bloquea siempre, aunque falle el `logout`.
+  Aplicado a `unified-image-studio-hoola` (`assets/js/app.js` `?v=26`) y a `flow_studio_hoola`
+  (`app.20261030a.js`; en `app.20261030b.js` la comprobación se adelanta al inicio del arranque
+  para bloquear sin esperar al historial).
+- **Cómo comprobarlo:** abrir la app sin sesión, sembrar `sessionStorage.ag_model_gate_v1='1'`,
+  recargar → `ModelGate.isUnlocked()===false` y los chips vuelven a tener candado; pulsar un modelo
+  protegido → aparece «MODELO PROTEGIDO».
+- **Regla:** cualquier estado de desbloqueo guardado en el navegador debe revalidarse contra la
+  sesión del servidor al arrancar; no basta con borrarlo en el botón de logout.

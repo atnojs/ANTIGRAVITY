@@ -2729,3 +2729,12 @@ las cabeceras.
 - **Verificación en producción** (https://atnojs.es/apps/imagenes_ia/illusion_diffusion/): historial real 2 → 3 al generar → 3 tras recargar → 2 al borrar solo la prueba → 2 tras recargar; `history.php` 200 en list/save/delete; 0 errores de consola; fuente Electrolize, borde 2 px y radio 14 px servidos.
 - **Commit:** 357fbbfa (5 archivos, incluido lightbox-zoom.js nuevo) + push a main. origin/main..HEAD vacío.
 - **Límite:** no se ha cambiado el algoritmo de máscara ni el contrato de datos del historial; el texto del overlay se adapta a «Componiendo la ilusión…» porque no hay llamada a un modelo.
+
+## 2026-10-30 (tarde) — Compuerta de modelos: se bloquea al cerrar sesión o reabrir sin sesión
+
+- **Encargo:** «cierro sesión ... los modelos siguen sin contraseña. gran error».
+- **Qué cambié:** UIS (`assets/js/app.js` v26 → `index.html`) y Flow Studio (`app.20261030a.js` y después `app.20261030b.js`): al arrancar, si `api.php?action=state` no devuelve sesión válida se llama a `ModelGate.lock()`; al cerrar sesión se bloquea siempre (también si el `logout` falla). En la versión b la comprobación se lanza al inicio del arranque (la medición con la compuerta sembrada pasó de 6,7 s a ~4 s hasta el bloqueo, y ese tiempo es carga de página).
+- **Verificación local (Chrome + PHP local):** estado limpio 12 chips con candado; sembrando el desbloqueo y recargando sin sesión siguen 12 con candado (`isUnlocked()===false`) en las dos apps; al pulsar OPENAI 2.5 HIGH aparece el diálogo «MODELO PROTEGIDO»; 0 errores de consola.
+- **Verificación en producción:** UIS `app.js?v=26` y Flow Studio `app.20261030b.js` servidos (HTML con `last-modified 16:36:50`, `x-hcdn-cache-status: DYNAMIC`); misma prueba con `sessionStorage` sembrado → compuerta bloqueada en las dos y pide contraseña al pulsar el modelo protegido.
+- **Commits:** `3daa3a35` (fix + versiones), `876b53cd` (orden del arranque), `6d118c75` (re-disparo del despliegue; el webhook tardó ~12 min en publicar la versión b).
+- **Límite declarado:** no se ha podido probar el flujo de login/logout con la contraseña real desde el agente (no se manipula la clave); el cierre de sesión se validó por código y la reapertura sin sesión por comportamiento en navegador.
