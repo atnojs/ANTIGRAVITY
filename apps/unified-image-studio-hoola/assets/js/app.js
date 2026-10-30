@@ -46,6 +46,12 @@ let pendingResult = null;
 let lastExportUrl = null;
 
 /* ══════════════════════ Arranque ══════════════════════ */
+/** La compuerta de modelos se bloquea en cuanto no hay sesión válida. */
+function lockModelGate() {
+  const gate = window.ModelGate;
+  if (gate && typeof gate.lock === 'function') gate.lock();
+}
+
 async function boot() {
   renderer.init({
     view: $('viewCanvas'),
@@ -85,6 +91,10 @@ async function boot() {
   if (window.__UIS_DIAG__) window.__UIS_DIAG__.started = true;
 
   const probe = await server.probe();
+  // La compuerta no sobrevive a la sesión: si el servidor ya no la reconoce
+  // (logout, caducidad o cierre desde otra app), los modelos protegidos vuelven
+  // a pedir la contraseña al reabrir.
+  if (!probe || !probe.authenticated) lockModelGate();
   paintStorageInfo(await storageInfo());
   // El límite real lo manda el servidor: aceptar 20 MB contra un post_max_size
   // de 8 MB hacía fallar la subida sin ningún aviso.
@@ -2869,6 +2879,8 @@ async function openAuth() {
     if (!out) return;
     try { await server.call('logout', {}); } catch { /* la cookie puede haber caducado */ }
     server.writable = false;
+    // Cerrada la sesión, los modelos protegidos vuelven a pedir la contraseña.
+    lockModelGate();
     state.ui.mode = 'auth';
     updateTopbar();
     toast('Sesión cerrada.', 'ok');
