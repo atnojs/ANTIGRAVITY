@@ -491,7 +491,7 @@
                         </Grid>
 
                         <Grid Grid.Row="1">
-                            <ListBox x:Name="lstOrigen" SelectionMode="Extended"
+                            <ListBox x:Name="lstOrigen" SelectionMode="Extended" MinHeight="90"
                                      AutomationProperties.Name="Carpetas de origen elegidas">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
@@ -568,42 +568,39 @@
                                  MaxHeight="78" AutomationProperties.Name="Carpeta de destino"
                                  ToolTip="Puedes pegar o escribir una ruta, incluida una de red (\\servidor\carpeta)"/>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
-                            <Button x:Name="btnCambiarDestino" Style="{StaticResource BtnAccion}" Content="Cambiar…"
-                                    AutomationProperties.Name="Cambiar carpeta de destino"
-                                    ToolTip="Elegir la carpeta de destino"/>
-                            <Button x:Name="btnPresetServidor" Style="{StaticResource BtnFantasma}" Content="Servidor · Fotos"
-                                    AutomationProperties.Name="Usar la carpeta de fotos del servidor"
-                                    Margin="8,0,0,0" ToolTip="Poner la carpeta de fotos del servidor (D:\Media\Fotos)"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="3" Margin="0,12,0,0">
-                            <Border Style="{StaticResource TarjetaInterior}">
-                                <StackPanel>
-                                    <TextBlock Text="DESTINO EFECTIVO" Style="{StaticResource TextoCard}" FontSize="10"/>
-                                    <TextBlock x:Name="lblDestino" Text="—" Foreground="#EAF6FF" FontSize="12"
-                                               TextWrapping="Wrap" Margin="0,4,0,0"/>
-                                    <TextBlock x:Name="lblEspacio" Text="Comprobando espacio libre…"
-                                               Foreground="{StaticResource TextoSuave}" FontSize="10.5" Margin="0,5,0,0"
-                                               TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-                            <TextBlock x:Name="lblAvisoDestino" Text="" Foreground="{StaticResource Error}" FontSize="11"
-                                       TextWrapping="Wrap" Margin="0,8,0,0" TextTrimming="CharacterEllipsis"/>
-                        </StackPanel>
-
-                        <TextBlock Grid.Row="4" Text="La copia se hace por la red, directamente sobre el servidor."
-                                   Style="{StaticResource TextoSec}" Margin="0,10,0,0" TextWrapping="Wrap"/>
+                        <Grid Grid.Row="2" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="btnCambiarDestino" Grid.Column="0" Style="{StaticResource BtnAccion}" Content="Cambiar…"
+                                AutomationProperties.Name="Cambiar carpeta de destino"
+                                ToolTip="Elegir la carpeta de destino"/>
+                        <Button x:Name="btnPresetServidor" Grid.Column="1" Style="{StaticResource BtnFantasma}" Content="Servidor · Fotos"
+                                AutomationProperties.Name="Usar la carpeta de fotos del servidor"
+                                Margin="8,0,0,0" ToolTip="Poner la carpeta de fotos del servidor (D:\Media\Fotos)"/>
                     </Grid>
-                </Border>
-            </Grid>
+
+                    <StackPanel Grid.Row="3" Margin="0,12,0,0">
+                        <TextBlock x:Name="lblEspacio" Text="Comprobando espacio libre…"
+                                   Foreground="{StaticResource TextoSecundario}" FontSize="11" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="lblAvisoDestino" Text="" Foreground="{StaticResource Error}" FontSize="11"
+                                   TextWrapping="Wrap" Margin="0,6,0,0"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="4" Text="La copia se hace por la red, directamente sobre el servidor."
+                               Style="{StaticResource TextoSec}" Margin="0,10,0,0" TextWrapping="Wrap"/>
+                </Grid>
+            </Border>
+        </Grid>
 
             <!-- Opciones -->
             <Border Grid.Row="1" Style="{StaticResource Tarjeta}" Padding="16,10" Margin="0,14,0,0">
                 <StackPanel Orientation="Horizontal">
                     <CheckBox x:Name="chkVerificar" Style="{StaticResource Chk}" IsChecked="True"
-                              Content="Comprobar cada fichero al terminar"
-                              ToolTip="Después de copiar compara tamaño y fecha de cada fichero"/>
+                              Content="Comprobar tamaño y fecha al terminar"
+                              ToolTip="Compara tamaño y fecha de cada fichero (no compara el contenido byte a byte)"/>
                     <CheckBox x:Name="chkSobrescribir" Style="{StaticResource Chk}" IsChecked="False" Margin="26,0,0,0"
                               Content="Sobrescribir si el fichero ya existe y es distinto"
                               ToolTip="Desactivado: nunca se toca un fichero distinto que ya esté en el servidor"/>
@@ -650,7 +647,7 @@
                     <TextBlock x:Name="lblActual" Grid.Row="3" Text="" Style="{StaticResource TextoSec}" FontSize="10.5"
                                TextTrimming="CharacterEllipsis" Margin="0,5,0,0"/>
 
-                    <StackPanel Grid.Row="4" Margin="0,10,0,0">
+                    <StackPanel x:Name="panelRegistro" Grid.Row="4" Margin="0,10,0,0">
                         <TextBlock Text="REGISTRO" Style="{StaticResource TextoCard}" FontSize="10" Margin="0,0,0,4"/>
                         <Border Style="{StaticResource TarjetaInterior}" Padding="6">
                             <ListBox x:Name="lstRegistro" Height="72" FontSize="10.5"
@@ -735,7 +732,8 @@
 
                 <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,0">
                     <Button x:Name="btnFinalAbrir" Style="{StaticResource BtnAccion}" Content="Abrir destino" Height="40"/>
-                    <Button x:Name="btnFinalInforme" Style="{StaticResource BtnFantasma}" Content="Guardar informe"
+                    <Button x:Name="btnFinalInforme" Style="{StaticResource BtnFantasma}" Content="Abrir informe"
+                            AutomationProperties.Name="Abrir el informe de la copia"
                             Height="40" Margin="10,0,0,0" Visibility="Collapsed"/>
                     <Button x:Name="btnFinalCerrar" Style="{StaticResource BtnAccion}" Content="Cerrar"
                             Height="40" Margin="10,0,0,0"/>

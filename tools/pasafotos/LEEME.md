@@ -25,15 +25,15 @@ muchas a la vez) y **dónde quieres pegarlas** en el servidor. Copia por la red 
    - También puedes escribir o pegar una ruta a mano.
 4. Pulsa **COPIAR AL SERVIDOR**. Verás progreso, velocidad, tiempo restante y un registro.
 5. Al terminar, el resumen indica ficheros copiados, omitidos, avisos y errores. Desde ahí
-   puedes **Abrir destino** o **Guardar informe**.
+   puedes **Abrir destino** o **Abrir informe** (abre el Explorador con el informe seleccionado).
 
 Cada carpeta se copia **con su nombre** dentro del destino. Si dos carpetas del lote se llaman
 igual, la segunda entra como `Nombre (2)`.
 
 ### Opciones
 
-- **Comprobar cada fichero al terminar** (activada): después de copiar compara tamaño y fecha de
-  cada fichero. Si algo no coincide, aparece como error.
+- **Comprobar tamaño y fecha al terminar** (activada): después de copiar compara tamaño y fecha de
+  cada fichero (no compara el contenido byte a byte). Si algo no coincide, aparece como error.
 - **Sobrescribir si el fichero ya existe y es distinto** (desactivada): protección para no pisar
   nada del servidor. Actívala solo si quieres reemplazar versiones.
 
@@ -46,6 +46,8 @@ igual, la segunda entra como `Nombre (2)`.
 - Crea en el destino la carpeta de cada origen y todas sus subcarpetas, incluidas las vacías.
 - Conserva la fecha de modificación de los ficheros.
 - Omite los ficheros idénticos (mismo tamaño y fecha): se puede relanzar sin duplicar trabajo.
+  «Idéntico» significa mismo tamaño y misma fecha, no mismo contenido: si un fichero cambió de
+  contenido conservando tamaño y fecha, se considerará idéntico (igual que hace Robocopy).
 - Por defecto, un fichero distinto que ya exista en el destino **no se toca**: se cuenta como
   aviso y se ve en el resumen.
 - Comprueba el destino antes de empezar (que exista, que se pueda escribir y el espacio libre).

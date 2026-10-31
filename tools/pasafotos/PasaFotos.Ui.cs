@@ -62,12 +62,13 @@ namespace PasaFotos
         private StackPanel _panelVacio;
         private Button _btnAnadir, _btnQuitar, _btnVaciar, _btnCambiarDestino, _btnPresetServidor, _btnComprobar;
         private TextBox _txtDestino;
-        private TextBlock _lblResumenOrigen, _lblDestino, _lblEspacio, _lblAvisoDestino, _lblChip, _lblEstado, _lblVelocidad;
+        private TextBlock _lblResumenOrigen, _lblEspacio, _lblAvisoDestino, _lblChip, _lblEstado, _lblVelocidad;
         private TextBlock _lblStats, _lblPorcentaje, _lblActual, _lblUltimaCopia;
         private Shapes.Ellipse _dotEstado;
         private Border _chipEstado;
         private ProgressBar _prg;
         private ListBox _lstRegistro, _lstErrores;
+        private StackPanel _panelRegistro;
         private CheckBox _chkVerificar, _chkSobrescribir;
         private Button _btnCopiar, _btnCancelar, _btnAbrir;
         private Grid _overlay;
@@ -114,7 +115,7 @@ namespace PasaFotos
             Width = 1070;
             Height = 748;
             MinWidth = 900;
-            MinHeight = 620;
+            MinHeight = 660;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             Background = new SolidColorBrush(Color.FromRgb(0, 16, 24));
             FontFamily = CargarFuente();
@@ -139,6 +140,7 @@ namespace PasaFotos
                 Win32.BarraTituloOscura(hwnd);
             };
             Loaded += AlMostrar;
+            SizeChanged += delegate { AjustarResponsive(); };
             Closing += AlCerrar;
             PreviewKeyDown += Atajos;
         }
@@ -179,7 +181,6 @@ namespace PasaFotos
             _btnComprobar = B<Button>("btnComprobar");
             _txtDestino = B<TextBox>("txtDestino");
             _lblResumenOrigen = B<TextBlock>("lblResumenOrigen");
-            _lblDestino = B<TextBlock>("lblDestino");
             _lblEspacio = B<TextBlock>("lblEspacio");
             _lblAvisoDestino = B<TextBlock>("lblAvisoDestino");
             _lblChip = B<TextBlock>("lblChip");
@@ -194,6 +195,7 @@ namespace PasaFotos
             _prg = B<ProgressBar>("prg");
             _lstRegistro = B<ListBox>("lstRegistro");
             _lstErrores = B<ListBox>("lstErrores");
+            _panelRegistro = B<StackPanel>("panelRegistro");
             _chkVerificar = B<CheckBox>("chkVerificar");
             _chkSobrescribir = B<CheckBox>("chkSobrescribir");
             _btnCopiar = B<Button>("btnCopiar");
@@ -291,6 +293,7 @@ namespace PasaFotos
                 Height = Math.Min(Height, Math.Max(MinHeight, wa.Height * 0.95));
             }
             ComprobarServidor();
+            AjustarResponsive();
 
             _timerRed = new DispatcherTimer();
             _timerRed.Interval = TimeSpan.FromSeconds(25);
@@ -318,6 +321,13 @@ namespace PasaFotos
                 };
                 captura.Start();
             }
+        }
+
+        private void AjustarResponsive()
+        {
+            if (_panelRegistro == null) return;
+            // En ventanas bajas se oculta el registro para que las tarjetas conserven su contenido.
+            _panelRegistro.Visibility = ActualHeight > 0 && ActualHeight < 800 ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void GuardarCaptura(string ruta)
@@ -513,7 +523,7 @@ namespace PasaFotos
 
         private void RefrescarDestino()
         {
-            _lblDestino.Text = _destino;
+            _txtDestino.ToolTip = _destino;
             _lblAvisoDestino.Text = "";
             _lblEspacio.Text = "Comprobando el servidor…";
         }
@@ -793,8 +803,9 @@ namespace PasaFotos
 
             _btnCancelar.Visibility = Visibility.Collapsed;
             _btnCancelar.IsEnabled = true;
-            _prg.Value = 100;
-            _lblPorcentaje.Text = "100 %";
+            double pctFinal = e.BytesTotales > 0 ? Math.Min(100.0, (e.BytesProcesados + e.BytesEnCurso) * 100.0 / e.BytesTotales) : 0;
+            _prg.Value = pctFinal;
+            _lblPorcentaje.Text = ((int)pctFinal).ToString() + " %";
             _lblVelocidad.Text = "";
             _lblActual.Text = "";
             _lblEstado.Text = cancelado ? "Copia cancelada" : (e.NumErrores > 0 ? "Copia terminada con errores" : "Copia terminada");
