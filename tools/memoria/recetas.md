@@ -535,3 +535,21 @@ powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\descarg
 
 La web lo enseña en el chip de cabecera: «PC conectado» / «PC desconectado (hace X)».
 
+## PASAFOTOS (copiar carpetas de fotos al servidor de ANTONIO)
+
+```powershell
+# compilar (csc de .NET Framework; en este equipo no hay dotnet SDK)
+powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\pasafotos\build.ps1
+
+# copia automática a la biblioteca de Jellyfin
+E:\ANTIGRAVITY\tools\pasafotos\PasaFotos.exe --cli --origen "D:\fotos1|E:\fotos2" --destino "\\192.168.18.10\D\Media\Fotos\evento"
+
+# verificar sin tocar nada (SHA-256, soporta >260 y UNC)
+powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\pasafotos\verificar-copia.ps1 -Origen "D:\fotos1" -Destino "\\192.168.18.10\D\Media\Fotos\evento\fotos1"
+
+# borrar una carpeta del servidor con nombres >260 (Remove-Item normal falla)
+$p='\\?\UNC\192.168.18.10\D\Media\Fotos\carpeta'; [IO.Directory]::Delete($p,$true)
+
+# diagnóstico de usuario/permisos del ejecutable
+E:\ANTIGRAVITY\tools\pasafotos\PasaFotos.exe --diagnostico --destino "\\192.168.18.10\D\Media\Fotos"
+```

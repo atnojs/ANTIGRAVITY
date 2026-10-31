@@ -2738,3 +2738,13 @@ las cabeceras.
 - **Verificación en producción:** UIS `app.js?v=26` y Flow Studio `app.20261030b.js` servidos (HTML con `last-modified 16:36:50`, `x-hcdn-cache-status: DYNAMIC`); misma prueba con `sessionStorage` sembrado → compuerta bloqueada en las dos y pide contraseña al pulsar el modelo protegido.
 - **Commits:** `3daa3a35` (fix + versiones), `876b53cd` (orden del arranque), `6d118c75` (re-disparo del despliegue; el webhook tardó ~12 min en publicar la versión b).
 - **Límite declarado:** no se ha podido probar el flujo de login/logout con la contraseña real desde el agente (no se manipula la clave); el cierre de sesión se validó por código y la reapertura sin sesión por comportamiento en navegador.
+
+## 2026-10-31 (tarde) — PASAFOTOS: pasar carpetas de fotos al servidor de ANTONIO
+- **Encargo:** «he instalado un servidor en el otro pc (antonio). quiero ir pasando carpetas de fotos […] una app que al clicarlo me pida las carpetas que quiero copiar (poder darle muchas) y que me pregunte donde quiero pegarlas».
+- **Decidido con Antonio:** destino `D:\Media\Fotos` del servidor (biblioteca «Fotos» de Jellyfin); modo copiar (el original no se toca).
+- **Qué hice:** app local `tools/pasafotos/` (C# WPF compilado con el `csc` de .NET Framework 4.8, sin Visual Studio): selector moderno `IFileOpenDialog` con multiselección, arrastrar y soltar, lista de orígenes, destino con preset `\\192.168.18.10\D\Media\Fotos`, copia SMB con progreso/velocidad/ETA/cancelar, omite idénticos, no sobrescribe conflictos salvo casilla, verificación tamaño+fecha, informes `.json`+`.log` e historial en `%APPDATA%\PasaFotos` (reserva en `data\` junto al .exe si esa carpeta no es escribible), modo CLI y `--diagnostico`.
+- **Extras:** `verificar-copia.ps1` (SHA-256 con rutas >260 y UNC), `build.ps1`, `crear-acceso-directo.ps1`; acceso directo real creado en `D:\Escritorio\PASAFOTOS.lnk`.
+- **Verificación:** UI Automation real (clic en Copiar → resumen → 2 ficheros copiados); CLI contra el servidor (10 ficheros/400 MB, fichero de 100 MB, nombres de 194 caracteres, ñ/acentos, carpeta vacía, fichero 0 B); `verificar-copia.ps1` SHA-256 idéntico 6/6 y 10/10; conflicto sin sobrescribir (exit 1) y con `--sobrescribir` (exit 0); dos carpetas con el mismo nombre → `Nombre (2)`; capturas en `tools/evidencias/2026-10-31-pasafotos/`.
+- **Cancelación:** clic real en Cancelar a mitad de una copia de 350 MB al servidor → resumen «Copia cancelada», 0 ficheros parciales en el destino y origen intacto (2/2).
+- **Commit:** `222dddfa` + push a `main` (`origin/main..HEAD` vacío).
+- **Límites:** Immich no las indexa (habría que importarlas desde Immich); MTP no soportado; en ANTONIO los discos `C/D/E/F` pueden pedir credenciales SMB (la app usa la sesión de Windows).

@@ -514,3 +514,8 @@ propósito, para que no se pierda de vista.
   raíz, hacer que ambos `flow_queue.php` lo lean del entorno con `hash_equals` y actualizar el worker
   del PC para leerlo de un fichero de configuración fuera de Git. Después, retirar
   `apps/flow_studio_hoola` si el estudio unificado ya cubre su función.
+
+## 2026-10-31 — PASAFOTOS: Immich y acceso desde el móvil
+
+- **Qué:** la app PASAFOTOS deja las fotos en `D:\Media\Fotos` (biblioteca de Jellyfin). Immich **no** las indexa por su cuenta y el móvil aún no alcanza el servidor (aislamiento del WiFi doméstico, ver LEEME del servidor).
+- **Siguiente paso concreto:** si Antonio quiere verlas en Immich, importarlas desde la propia app de Immich (o valorar `immich-go`); para el móvil, corregir el aislamiento del WiFi antes de dar por resuelto el acceso remoto.

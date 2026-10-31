@@ -1190,3 +1190,19 @@ Ampliación con datos de la entrada del 2026-10-16:
   protegido → aparece «MODELO PROTEGIDO».
 - **Regla:** cualquier estado de desbloqueo guardado en el navegador debe revalidarse contra la
   sesión del servidor al arrancar; no basta con borrarlo en el botón de logout.
+
+### [2026-10-31] Un .exe compilado dentro de E:\ANTIGRAVITY no puede escribir en %APPDATA%, %TEMP% ni el Escritorio
+- **Síntoma:** una app propia compilada en `tools/` funciona al copiar a `E:\` y a la red, pero `File.WriteAllText` en `%APPDATA%`/`%TEMP%` da `UnauthorizedAccessException: Acceso denegado`. `Directory.CreateDirectory` falla en silencio y un informe acaba en `DirectoryNotFoundException`.
+- **Causa:** el banco de pruebas del agente aplica a los procesos cuyo ejecutable está dentro del workspace un token restringido a escritura en el workspace (y red). El mismo binario copiado a `%TEMP%` escribe sin problema: `EnvTest3.exe` dentro de `E:\ANTIGRAVITY` falla en `%APPDATA%` y `%TEMP%`; su copia en `%TEMP%` escribe en todo.
+- **Solución:** en la app, si `%APPDATA%` no es escribible usar `data\` junto al .exe (y admitir `PASAFOTOS_DATA` para forzar otra carpeta). En pruebas del agente, usar destinos dentro del workspace o en la red, nunca `%TEMP%`/Escritorio para el destino.
+- **Verificación:** `PasaFotos.exe --diagnostico` imprime OK/FALLO por carpeta; con el exe en `tools/pasafotos` da OK en workspace y red y FALLO en AppData/TEMP.
+
+### [2026-10-31] XAML cargado con XamlReader y comentarios XML con `--`; scripts .ps1 sin BOM
+- **Síntoma:** `XamlParseException: Un comentario XML no puede contener '--'` al arrancar (línea con `<!-- ---------- Cabecera ---------- -->`). Y un .ps1 con acentos guardado sin BOM da error de parser «falta el terminador» en PowerShell 5.1.
+- **Causa:** XML prohíbe `--` dentro de comentarios. PowerShell 5.1 interpreta los `.ps1` sin BOM como ANSI y los bytes UTF-8 de acentos rompen el análisis.
+- **Solución:** comentarios sin guiones repetidos en `ui.xaml`; guardar los `.ps1` que llevan acentos en UTF-8 **con BOM** (`New-Object Text.UTF8Encoding($true)`).
+
+### [2026-10-31] csc: `/out:` partido en dos argumentos desde PowerShell
+- **Síntoma:** `fatal error CS2005: Falta la especificación de archivo de la opción '/out:'` y `CS2008 no se especificaron archivos de código fuente`.
+- **Causa:** en un array de PowerShell, `'/out:' + $ruta` no se evalúa como un solo elemento: la coma del array tiene más precedencia y el resultado acaba siendo `/out:` + ruta por separado.
+- **Solución:** calcular cada argumento en una variable antes (`$argOut = '/out:' + $ruta`) o envolver en paréntesis.

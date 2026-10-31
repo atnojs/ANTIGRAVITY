@@ -425,3 +425,10 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
   que usan otras apps.
 - **Cómo se comprueba:** en producción no existe `#lightbox-antigravity` en el DOM y la pantalla de
   login se ve sin velo (`document.querySelectorAll('#lightbox-antigravity').length === 0`).
+
+### [2026-10-31] PASAFOTOS: app de escritorio en `tools/`, copia y no mueve
+
+- **Contexto:** Antonio instala un servidor Nextcloud/Jellyfin/Immich en el PC ANTONIO (192.168.18.10) y quiere ir pasando carpetas de fotos desde este PC con una app que pregunte origen (muchas carpetas) y destino.
+- **Decisión:** app local de Windows en `tools/pasafotos/` (WPF/C#, un solo `.exe` + fuentes), no una web. Destino por defecto `\\192.168.18.10\D\Media\Fotos`, la biblioteca que ya lee Jellyfin. Solo copia: nunca borra ni mueve originales, nunca sobrescribe ficheros distintos sin marcar la casilla, y comprueba el resultado.
+- **Por qué:** el destino está en otro PC y en una ruta SMB: el navegador no puede copiar carpetas locales a una ruta de red con esta fiabilidad. `tools/` está protegido por `.htaccess`, así que el ejecutable y los scripts no quedan públicos en Hostinger.
+- **Cómo se comprueba:** acceso directo `D:\Escritorio\PASAFOTOS.lnk` → ventana «PASAFOTOS»; `--diagnostico`; copia real + `verificar-copia.ps1` (SHA-256 idéntico).

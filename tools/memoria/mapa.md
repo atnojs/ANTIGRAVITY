@@ -28,6 +28,7 @@ estructura y dónde buscar, no la descripción de cada app.
 | `tools/verificar-despliegue.ps1` | Verificar que el despliegue de Hostinger está al día |
 | `tools/git_logger.sh` | Registro de actividad de git |
 | `tools/commit-aislado.ps1` | Commit de un cambio concreto sin arrastrar el resto |
+| `tools/pasafotos/` | App local **PASAFOTOS**: copia de carpetas de fotos al servidor de ANTONIO por SMB (Jellyfin `D:\Media\Fotos`) |
 | `tools/compress_to_limit.ps1` | Comprimir ficheros por debajo de un límite |
 | `tools/link-dsh-skills.ps1` | Enlazar skills con DSH |
 | `tools/generar-punteros-skills.php` | Regenerar los punteros de `.claude/skills/` |
