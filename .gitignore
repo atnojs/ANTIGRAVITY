@@ -299,3 +299,7 @@ tools/veronicaz/*.xlsx
 # data/). No contienen claves: las claves siguen en el .htaccess raiz.
 !apps/agenda/.htaccess
 !apps/agenda/data/.htaccess
+
+# PASAFOTOS: datos locales y artefactos de compilacion
+tools/pasafotos/data/
+tools/pasafotos/app.ico
