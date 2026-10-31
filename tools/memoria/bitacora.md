@@ -2748,3 +2748,9 @@ las cabeceras.
 - **Cancelación:** clic real en Cancelar a mitad de una copia de 350 MB al servidor → resumen «Copia cancelada», 0 ficheros parciales en el destino y origen intacto (2/2).
 - **Commit:** `222dddfa` + push a `main` (`origin/main..HEAD` vacío).
 - **Límites:** Immich no las indexa (habría que importarlas desde Immich); MTP no soportado; en ANTONIO los discos `C/D/E/F` pueden pedir credenciales SMB (la app usa la sesión de Windows).
+
+### [2026-10-31] PASAFOTOS · ronda 1 del verificador (REWORK) y correcciones
+- **Veredicto:** REWORK por falta de autoevaluación A1–A10 (A5=0,0) y un defecto medio: a 900×620 la lista de orígenes quedaba con altura 0. Menores: «Guardar informe» no guardaba, el 100 % al cancelar y el recorte de la ruta de destino.
+- **Corregido:** `MinHeight` de ventana 660 + `lstOrigen.MinHeight=90` + ocultar el registro con ventanas <800 px (medido con UIA: 206 px a 1024×720 y 146 px a 900×660, `offscreen=False`); botón «Abrir informe»; porcentaje real al cancelar (0 % si no había terminado ningún fichero); se eliminó el bloque «DESTINO EFECTIVO» que recortaba y la ruta completa queda en el campo editable con tooltip; UI/LEEME aclaran que «idéntico» = tamaño+fecha (tipo Robocopy).
+- **Autoevaluación:** `tools/evidencias/2026-10-31-pasafotos/AUTOEVALUACION.md` (A1–A10 → 93,4/100, D1–D7 cumplidos, decisión ENTREGO) ligada al commit `067a7793` y SHA `5DA3A550…3749C`.
+- **Commit:** `067a7793` + push a main.
