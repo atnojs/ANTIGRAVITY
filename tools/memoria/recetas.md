@@ -236,6 +236,21 @@ Hay que reintentar esa operación con `sandbox_permissions: danger-full-access`.
 lote (`Group-Object Name | Where-Object Count -gt 1`); al venir de una carpeta plana no
 debería haberlos, pero el destino podría tenerlos de una pasada anterior.
 
+**Corrida del 2026-11-01 (octubre):** Antonio pidió «**todas** los archivos», no solo los del
+mes. Se movieron los **484 archivos sueltos** de la raíz (860.458.542 B = 820,6 MiB) a
+`2026-10_Octubre`. Ronda principal de **483** en 3,7 s y **ronda 2** de 1 (`Graphic1.png`, llegó
+a las 18:25:41 mientras se verificaba). La raíz quedó con **0 archivos** y las 16 carpetas
+intactas. **Fechas (dos bases, no mezclar):** de los 483 de la ronda principal, **22** no son de
+octubre (18 del 1-nov + 4 antiguos: 2017-06, 2017-09, 2019-12 y 2026-07); en el total final de
+484 son **23** (19 del 1-nov + los 4 antiguos), y 461 son de octubre en ambas cuentas.
+Verificación SHA-256 **antes y después por archivo**: 484/484 OK, 0 fallos, 0 colisiones;
+evidencias en `tools/evidencias/2026-11-01-descargas-octubre/`. Si vuelve a decir «todas», mover
+**todos** los sueltos e informar de las fechas que no son del mes.
+
+**Ojo (2026-11-01):** siguen entrando descargas con **fecha antigua conservada** (una captura
+de 2017 bajada ese mismo día), así que filtrar por `LastWriteTime` las deja en la raíz para
+siempre: sirve para archivar «lo del mes», no para dejar la raíz limpia.
+
 ## TrickVault: publicar cambios desde la propia app (el flujo de Antonio)
 
 Esto **no** es el flujo del agente. El del agente está en
