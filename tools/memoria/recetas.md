@@ -252,6 +252,21 @@ suelto.
 de 2017 bajada ese mismo día), así que filtrar por `LastWriteTime` las deja en la raíz para
 siempre: sirve para archivar «lo del mes», no para dejar la raíz limpia.
 
+## Archivar descargas en segundos (herramienta)
+
+`tools/descargas/archivar-mes.ps1` + dos `.cmd` de doble clic. Mueve cada archivo suelto de
+`D:\Descargas` a la carpeta de **su** mes (`YYYY-MM_Mes`, por `LastWriteTime`), deja sueltos los
+del mes en curso, no toca carpetas, nunca sobrescribe (sufijo `(2)`) y registra en
+`D:\Descargas\_archivo-descargas.log`. Medido el 2026-11-01: 5 archivos de prueba en 0,13 s y la
+carpeta real en 0,05 s (100 archivos ≈ 0,1 s de trabajo; el proceso entero, ~0,4 s).
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\descargas\archivar-mes.ps1             # mueve
+powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\descargas\archivar-mes.ps1 -Simular  # solo enseña
+```
+
+Doble clic: `tools\descargas\Archivar descargas por mes.cmd` · `Simular (no mueve nada).cmd`.
+
 ## TrickVault: publicar cambios desde la propia app (el flujo de Antonio)
 
 Esto **no** es el flujo del agente. El del agente está en

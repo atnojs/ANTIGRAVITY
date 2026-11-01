@@ -1,3 +1,10 @@
+## 2026-11-01 — Descargas: archivar con la herramienta, no a mano
+
+- **Decisión:** archivar las descargas por mes se hace con `tools/descargas/archivar-mes.ps1` (o los `.cmd` de doble clic), no con un proceso manual ni con el circuito largo de verificación. Mueve cada archivo suelto a la carpeta de **su** mes por `LastWriteTime`, deja sueltos los del mes en curso y no toca carpetas.
+- **Por qué:** el 2026-11-01 el traslado real tardó 3,7 s, pero el proceso alrededor se fue a ~30 min y encima metió en octubre 24 archivos que no eran de octubre. Antonio lo rechazó expresamente: «no puedes tardar media hora para crear una carpeta y meter 100 archivos».
+- **Alcance:** operación determinista y con hash por archivo; se verifica con el propio recuento del script y un listado. El circuito completo de autocalidad vuelve a reservarse a artefactos (apps, webs, documentos, imágenes).
+- **Verificación:** banco de pruebas en `%TEMP%` (5 archivos de 2019/2026, colisión de nombre, mes en curso intacto) y ejecución real sobre `D:\Descargas`: 0,05 s, 0 movidos (todo era de noviembre), 461 en `2026-10_Octubre`.
+
 ## 2026-10-29 — Descargas: watchdog por tarea programada y estado del PC visible
 
 - **Decisión:** el worker se arranca con `iniciar-worker.vbs` (supervisor con log) y la tarea programada `DescargasWorkerWatchdog` lo revive cada 5 minutos; la web muestra un chip con el estado del PC y la cola usa «Esperando al PC» cuando está desconectado.
