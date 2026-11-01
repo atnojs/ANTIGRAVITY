@@ -238,13 +238,15 @@ debería haberlos, pero el destino podría tenerlos de una pasada anterior.
 
 **Corrida del 2026-11-01 (octubre):** Antonio pidió «todas los archivos de descargas» y **rechazó**
 que se metieran en octubre los que no lo eran («hay varios que son de noviembre, no de octubre»).
-Estado final correcto: `2026-10_Octubre` con **461 archivos, solo de octubre-2026**;
-`2026-11_Noviembre` (nueva) con **20 de noviembre**; el suelto de julio se unió a
+Estado final correcto: `2026-10_Octubre` con **461 archivos, solo de octubre-2026**; los **20 de
+noviembre quedan sueltos en la raíz** de `D:\Descargas` (petición expresa de Antonio: «SUELTOS»;
+el mes en curso no se archiva); el suelto de julio se unió a
 `2026-07_Julio`; y los 3 antiguos (2017-06, 2017-09, 2019-12) a sus carpetas de mes. **Raíz con
-0 archivos sueltos** y las 16 carpetas previas intactas. Todos los movimientos con SHA-256
-origen/destino (485 movidos de la raíz + 24 reclasificados, 0 perdidos); evidencias en
-`tools/evidencias/2026-11-01-descargas-octubre/`. **Regla:** para archivar el mes se mueve cada
-archivo a la carpeta de **su** mes (por `LastWriteTime`), y se avisa de los que no encajan.
+solo los 20 de noviembre** y las 16 carpetas previas intactas. Todos los movimientos con SHA-256
+origen/destino (485 movidos de la raíz + 24 reclasificados + 20 devueltos a la raíz, 0 perdidos);
+evidencias en `tools/evidencias/2026-11-01-descargas-octubre/`. **Regla:** para archivar el mes se
+mueve cada archivo a la carpeta de **su** mes (por `LastWriteTime`), y el mes en curso se deja
+suelto.
 
 **Ojo (2026-11-01):** siguen entrando descargas con **fecha antigua conservada** (una captura
 de 2017 bajada ese mismo día), así que filtrar por `LastWriteTime` las deja en la raíz para
