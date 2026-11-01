@@ -16,6 +16,13 @@ Ahora el worker:
    mensaje con el motivo real.
 Verificado el 2026-11-01 con el flujo completo de «Editar» en producción
 (subir imagen, editarla y recibir el resultado): 55 s de punta a punta.
+Diagnóstico del caso concreto que había fallado: Google Flow rechaza ESA imagen
+por su filtro de contenido («No se ha podido subir la imagen»). Medido el
+2026-11-01: la foto original se rechaza siempre; el mismo recorte sin la menor
+sube a la primera. El bloqueo es de Flow, no de la app. La tarjeta de error ya
+no muestra el RuntimeError técnico: explica que Flow no acepta esa imagen y qué
+hacer (otra imagen, recortar la zona o generar sin referencia), y deja el
+detalle técnico en el tooltip (assets 20261101a).
 La cola de Google Flow sigue siendo la de siempre (flow_queue.php + worker del PC).
 
 20261029b-flow-studio 2026-10-29
