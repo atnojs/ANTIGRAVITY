@@ -236,17 +236,15 @@ Hay que reintentar esa operación con `sandbox_permissions: danger-full-access`.
 lote (`Group-Object Name | Where-Object Count -gt 1`); al venir de una carpeta plana no
 debería haberlos, pero el destino podría tenerlos de una pasada anterior.
 
-**Corrida del 2026-11-01 (octubre):** Antonio pidió «**todas** los archivos», no solo los del
-mes. Se movieron los **485 archivos sueltos** de la raíz (**861.947.263 B = 822,0 MiB**) a
-`2026-10_Octubre`, en tres barridos: ronda principal de **483** (3,7 s), ronda 2 de **1**
-(`Graphic1.png`, llegó a las 18:25:41) y **barrido final** de **1** (`Graphic1.jpg`, llegó a las
-18:38:17 y se movió a las 18:38:49; registro en `ronda-3.json`). La raíz quedó con **0 archivos**
-y las 16 carpetas intactas. **Fechas (una base por bloque, no mezclar):** ronda principal **22 de
-483** no-octubre (18 del 1-nov + 4 antiguos: 2017-06, 2017-09, 2019-12 y 2026-07); total final
-**24 de 485** (20 del 1-nov + los 4 antiguos), y **461** de octubre en todas las cuentas.
-Verificación SHA-256 **antes y después por archivo**: 485/485 OK, 0 fallos, 0 colisiones;
-evidencias en `tools/evidencias/2026-11-01-descargas-octubre/`. Si vuelve a decir «todas», mover
-**todos** los sueltos e informar de las fechas que no son del mes.
+**Corrida del 2026-11-01 (octubre):** Antonio pidió «todas los archivos de descargas» y **rechazó**
+que se metieran en octubre los que no lo eran («hay varios que son de noviembre, no de octubre»).
+Estado final correcto: `2026-10_Octubre` con **461 archivos, solo de octubre-2026**;
+`2026-11_Noviembre` (nueva) con **20 de noviembre**; el suelto de julio se unió a
+`2026-07_Julio`; y los 3 antiguos (2017-06, 2017-09, 2019-12) a sus carpetas de mes. **Raíz con
+0 archivos sueltos** y las 16 carpetas previas intactas. Todos los movimientos con SHA-256
+origen/destino (485 movidos de la raíz + 24 reclasificados, 0 perdidos); evidencias en
+`tools/evidencias/2026-11-01-descargas-octubre/`. **Regla:** para archivar el mes se mueve cada
+archivo a la carpeta de **su** mes (por `LastWriteTime`), y se avisa de los que no encajan.
 
 **Ojo (2026-11-01):** siguen entrando descargas con **fecha antigua conservada** (una captura
 de 2017 bajada ese mismo día), así que filtrar por `LastWriteTime` las deja en la raíz para
