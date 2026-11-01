@@ -137,7 +137,7 @@ UPLOAD_ATTEMPTS = max(1, int(os.environ.get("FLOW_UPLOAD_ATTEMPTS", "2")))
 DEBUG_DIR = Path(__file__).resolve().parent.parent / "_debug"
 
 
-class UploadRejected(RuntimeError):
+class UploadRejectedError(RuntimeError):
     """Flow ha rechazado el archivo al subirlo (no es la red ni la app).
 
     Medido el 2026-11-01: una foto en la que sale una menor se rechaza siempre
@@ -272,7 +272,7 @@ async def _upload_and_attach_once(page, image_path: str) -> None:
         listo = await _wait_upload_ready(page, confirm, UPLOAD_TIMEOUT_S)
     except RuntimeError as exc:
         # Flow ha dicho que no al archivo: no es un timeout, es un rechazo suyo.
-        raise UploadRejected(str(exc)) from exc
+        raise UploadRejectedError(str(exc)) from exc
     if not listo:
         raise RuntimeError(
             "Flow no terminó de procesar el archivo en %d s: «Añadir a petición» "
@@ -340,7 +340,7 @@ async def _upload_and_attach(page, image_path: str) -> None:
                 ruta = _reencode_for_upload(ruta)
                 await page.wait_for_timeout(1_000)
     if any("rechazó el archivo" in fallo for fallo in fallos):
-        raise UploadRejected(
+        raise UploadRejectedError(
             "Google Flow no acepta la imagen de referencia: la rechaza al subirla. "
             "No es un fallo de la app: es el filtro de contenido de Flow, que "
             "bloquea ese archivo (medido: una foto con una menor se rechaza "
