@@ -237,13 +237,14 @@ lote (`Group-Object Name | Where-Object Count -gt 1`); al venir de una carpeta p
 debería haberlos, pero el destino podría tenerlos de una pasada anterior.
 
 **Corrida del 2026-11-01 (octubre):** Antonio pidió «**todas** los archivos», no solo los del
-mes. Se movieron los **484 archivos sueltos** de la raíz (860.458.542 B = 820,6 MiB) a
-`2026-10_Octubre`. Ronda principal de **483** en 3,7 s y **ronda 2** de 1 (`Graphic1.png`, llegó
-a las 18:25:41 mientras se verificaba). La raíz quedó con **0 archivos** y las 16 carpetas
-intactas. **Fechas (dos bases, no mezclar):** de los 483 de la ronda principal, **22** no son de
-octubre (18 del 1-nov + 4 antiguos: 2017-06, 2017-09, 2019-12 y 2026-07); en el total final de
-484 son **23** (19 del 1-nov + los 4 antiguos), y 461 son de octubre en ambas cuentas.
-Verificación SHA-256 **antes y después por archivo**: 484/484 OK, 0 fallos, 0 colisiones;
+mes. Se movieron los **485 archivos sueltos** de la raíz (**861.947.263 B = 822,0 MiB**) a
+`2026-10_Octubre`, en tres barridos: ronda principal de **483** (3,7 s), ronda 2 de **1**
+(`Graphic1.png`, llegó a las 18:25:41) y **barrido final** de **1** (`Graphic1.jpg`, llegó a las
+18:38:17 y se movió a las 18:38:49; registro en `ronda-3.json`). La raíz quedó con **0 archivos**
+y las 16 carpetas intactas. **Fechas (una base por bloque, no mezclar):** ronda principal **22 de
+483** no-octubre (18 del 1-nov + 4 antiguos: 2017-06, 2017-09, 2019-12 y 2026-07); total final
+**24 de 485** (20 del 1-nov + los 4 antiguos), y **461** de octubre en todas las cuentas.
+Verificación SHA-256 **antes y después por archivo**: 485/485 OK, 0 fallos, 0 colisiones;
 evidencias en `tools/evidencias/2026-11-01-descargas-octubre/`. Si vuelve a decir «todas», mover
 **todos** los sueltos e informar de las fechas que no son del mes.
 
