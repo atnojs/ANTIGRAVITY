@@ -3,7 +3,12 @@ Selección de items del canvas y upload de frames para modo Fotogramas/Ingredien
 """
 from .browser import get_page
 from .registry import capture_name
+import os
 import re
+import tempfile
+import time
+import uuid
+from pathlib import Path
 
 
 SEL_ADD_INGREDIENT = ('button[aria-haspopup="dialog"]:has-text("Crear"), '
@@ -99,52 +104,229 @@ async def select_ingredients_by_name(uuids: list[str]) -> None:
             await page.wait_for_timeout(1000)
 
 
-async def _upload_and_attach(page, image_path: str) -> None:
-    """UI actual (2026-07): abre el diálogo 'Crear', sube el archivo con
-    'Cargar medios' y lo adjunta a la instrucción del agente ('Agregar a la
-    instrucción'). El asset queda como chip del prompt y el agente lo usa
-    como referencia/fotograma."""
-    import re as _re
+# --- Adjuntar una imagen de referencia al prompt (arreglo 2026-11-01) -------
+# El 2026-11-01 fallaron tres trabajos seguidos con «La imagen se subió pero no
+# apareció 'Añadir a petición'». Medido con el navegador real
+# (_debug/probe_ref_upload.py): el botón SÍ aparece al instante, pero
+# DESHABILITADO mientras Flow procesa el archivo («Subiendo 0 %» -> 100 %).
+# El código anterior esperaba a que desapareciera el texto «Subiendo» y luego
+# hacía click(), que se comía 30 s de timeout si el procesado tardaba (o si
+# Flow rechazaba el archivo en silencio y nunca lo habilitaba). El error decía
+# «no apareció», que era falso. Ahora:
+#   1. se espera a que el botón esté HABILITADO y se lee el error de Flow si lo
+#      hubiera;
+#   2. si la subida se atasca, se cierra el panel y se reintenta con una copia
+#      JPEG más ligera;
+#   3. se comprueba que la referencia quedó adjunta antes de seguir.
+SEL_MEDIA_UPLOAD = re.compile(
+    r"(Cargar medios|Upload media|Subir imagen|Subir archivo multimedia)",
+    re.IGNORECASE)
+SEL_ADD_TO_PROMPT = re.compile(
+    r"(Añadir a petición|Agregar a la instrucción|Add to instruction|Add to prompt|Add to request)",
+    re.IGNORECASE)
+SEL_CHIP_REF = "flow-image-ingredient-chip, flow-ingredient-chip"
+# Errores que Flow pinta en su propia interfaz (el aviso legal del pie dice
+# «puede cometer errores», así que aquí no vale buscar la palabra «error» suelta).
+SEL_UPLOAD_ERROR = re.compile(
+    r"(no se pudo subir|no se ha podido subir|error al subir|no es compatible|"
+    r"formato no admitido|archivo demasiado grande|demasiado grande|"
+    r"vuelve a intentarlo|inténtalo de nuevo|failed to upload|upload failed)",
+    re.IGNORECASE)
+UPLOAD_TIMEOUT_S = float(os.environ.get("FLOW_UPLOAD_TIMEOUT", "180"))
+UPLOAD_ATTEMPTS = max(1, int(os.environ.get("FLOW_UPLOAD_ATTEMPTS", "2")))
+DEBUG_DIR = Path(__file__).resolve().parent.parent / "_debug"
 
-    await page.wait_for_selector(SEL_ADD_INGREDIENT, state="visible", timeout=8_000)
+
+async def _upload_error_text(page) -> str:
+    """Texto del error que Flow muestre en la interfaz, o '' si no hay."""
+    try:
+        texto = await page.evaluate("() => document.body.innerText || ''")
+    except Exception:
+        return ""
+    m = SEL_UPLOAD_ERROR.search(texto or "")
+    return m.group(0) if m else ""
+
+
+async def _wait_upload_ready(page, confirm, timeout_s: float) -> bool:
+    """True si el botón de confirmar se habilita; falla si Flow pinta un error."""
+    limite = time.monotonic() + timeout_s
+    while time.monotonic() < limite:
+        try:
+            if await confirm.is_enabled():
+                return True
+        except Exception:
+            pass
+        error = await _upload_error_text(page)
+        if error:
+            raise RuntimeError("Flow rechazó el archivo: %s" % error)
+        await page.wait_for_timeout(400)
+    return False
+
+
+async def _chip_count(page) -> int:
+    try:
+        return await page.locator(SEL_CHIP_REF).count()
+    except Exception:
+        return 0
+
+
+async def _screenshot_upload_failure(page, intento: int, image_path: str) -> str:
+    """Guarda captura y copia de la referencia fallida para poder diagnosticar."""
+    try:
+        DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return "(sin captura)"
+    sello = time.strftime("%Y%m%d_%H%M%S")
+    ruta = ""
+    try:
+        ruta = str(DEBUG_DIR / ("upload_ref_error_%s_%d.png" % (sello, intento)))
+        await page.screenshot(path=ruta)
+    except Exception:
+        ruta = ""
+    try:
+        import shutil
+
+        copia = DEBUG_DIR / (
+            "upload_ref_error_%s_%d_ref%s"
+            % (sello, intento, Path(image_path).suffix or ".jpg")
+        )
+        shutil.copyfile(image_path, copia)
+    except Exception:
+        pass
+    return ruta or "(sin captura)"
+
+
+def _reencode_for_upload(image_path: str) -> str:
+    """Copia JPEG ligera (1400 px, q 85) para reintentar una subida atascada.
+
+    Un archivo pesado es lo que más tarda en procesar Flow: si el primer
+    intento no terminó en el tiempo máximo, el segundo sube en segundos.
+    """
+    try:
+        from PIL import Image
+    except Exception:
+        return image_path
+    try:
+        with Image.open(image_path) as im:
+            im = im.convert("RGB")
+            ancho, alto = im.size
+            lado = 1400
+            if max(ancho, alto) > lado:
+                escala = lado / float(max(ancho, alto))
+                im = im.resize(
+                    (max(1, int(ancho * escala)), max(1, int(alto * escala))),
+                    Image.LANCZOS,
+                )
+            destino = os.path.join(
+                tempfile.gettempdir(),
+                "flow_ref_reintento_%s.jpg" % uuid.uuid4().hex,
+            )
+            im.save(destino, "JPEG", quality=85, optimize=True)
+        if os.path.isfile(destino) and os.path.getsize(destino) > 0:
+            return destino
+    except Exception:
+        pass
+    return image_path
+
+
+async def _upload_and_attach_once(page, image_path: str) -> None:
+    """Un intento completo: abrir «Crear», subir el archivo y adjuntarlo."""
+    await page.wait_for_selector(SEL_ADD_INGREDIENT, state="visible", timeout=15_000)
     await page.locator(SEL_ADD_INGREDIENT).first.click()
     await page.wait_for_timeout(2_000)
 
     upload_btn = page.locator('button, [role="button"]').filter(
-        has_text=_re.compile(r"(Cargar medios|Upload media|Subir imagen|Subir archivo multimedia)", _re.IGNORECASE)
+        has_text=SEL_MEDIA_UPLOAD
     ).first
     if await upload_btn.count() == 0:
-        raise Exception("Botón 'Cargar medios' o 'Upload' no encontrado.")
+        raise RuntimeError("no encontré el botón «Cargar medios» en el panel «Crear»")
 
-    async with page.expect_file_chooser(timeout=8_000) as fc_info:
+    async with page.expect_file_chooser(timeout=10_000) as fc_info:
         await upload_btn.click(force=True)
     file_chooser = await fc_info.value
     await file_chooser.set_files(str(image_path))
 
-    # Tras subir, Flow muestra la previsualización con 'Añadir a petición'.
-    add_btn = page.locator('button, [role="button"]').filter(
-        has_text=_re.compile(r"(Añadir a petición|Agregar a la instrucción|Add to instruction|Add to prompt)", _re.IGNORECASE)
+    confirm = page.locator('button, [role="button"]').filter(
+        has_text=SEL_ADD_TO_PROMPT
     ).first
     try:
-        await add_btn.wait_for(state="visible", timeout=60_000)
-        # Esperar a que termine la subida (el botón aparece ya con "Subiendo X%")
-        try:
-            await page.wait_for_function(
-                "() => !document.body.innerText.includes('Subiendo')",
-                timeout=120_000)
-        except Exception:
-            pass
-        await add_btn.click()
-        await page.wait_for_timeout(1_000)
-    except Exception:
-        await page.keyboard.press("Escape")
-        raise Exception(
-            "La imagen se subió pero no apareció 'Añadir a petición'; "
-            "no quedó adjunta al prompt."
+        await confirm.wait_for(state="visible", timeout=30_000)
+    except Exception as exc:
+        raise RuntimeError(
+            "no apareció el botón «Añadir a petición» tras subir el archivo"
+        ) from exc
+
+    chips_antes = await _chip_count(page)
+    if not await _wait_upload_ready(page, confirm, UPLOAD_TIMEOUT_S):
+        raise RuntimeError(
+            "Flow no terminó de procesar el archivo en %d s: «Añadir a petición» "
+            "siguió deshabilitado" % int(UPLOAD_TIMEOUT_S)
         )
-    # Cerrar el diálogo si sigue abierto.
-    await page.keyboard.press("Escape")
-    await page.wait_for_timeout(800)
+
+    await confirm.click(timeout=20_000)
+
+    # Comprobar que quedó adjunta: el panel se cierra y/o aparece el chip.
+    adjunta = False
+    limite = time.monotonic() + 20
+    while time.monotonic() < limite:
+        try:
+            if not await confirm.is_visible():
+                adjunta = True
+                break
+        except Exception:
+            adjunta = True
+            break
+        if await _chip_count(page) > chips_antes:
+            adjunta = True
+            break
+        await page.wait_for_timeout(300)
+    if not adjunta:
+        raise RuntimeError(
+            "pulsé «Añadir a petición» pero la referencia no quedó adjunta al prompt"
+        )
+
+    # Cerrar el panel si todavía quedara abierto (sin tocar el compositor).
+    try:
+        if await confirm.is_visible():
+            await page.keyboard.press("Escape")
+            await page.wait_for_timeout(400)
+    except Exception:
+        pass
+
+
+async def _upload_and_attach(page, image_path: str) -> None:
+    """Sube una imagen y la adjunta al prompt, con reintento si se atasca.
+
+    UI 2026-11: abre el diálogo «Crear», sube con «Cargar medios» y confirma
+    con «Añadir a petición» (deshabilitado hasta que Flow termina de procesar).
+    El asset queda como chip del prompt y el agente lo usa como referencia.
+    """
+    ruta = str(image_path)
+    fallos: list[str] = []
+    for intento in range(1, UPLOAD_ATTEMPTS + 1):
+        try:
+            await _upload_and_attach_once(page, ruta)
+            print("  referencia adjunta (intento %d)" % intento)
+            return
+        except Exception as exc:
+            fallos.append("%s: %s" % (type(exc).__name__, exc))
+            captura = await _screenshot_upload_failure(page, intento, ruta)
+            print(
+                "  [aviso] adjuntar referencia falló (intento %d/%d): %s. Captura: %s"
+                % (intento, UPLOAD_ATTEMPTS, exc, captura)
+            )
+            try:
+                await page.keyboard.press("Escape")
+                await page.wait_for_timeout(600)
+            except Exception:
+                pass
+            if intento < UPLOAD_ATTEMPTS:
+                ruta = _reencode_for_upload(ruta)
+                await page.wait_for_timeout(1_000)
+    raise RuntimeError(
+        "no se pudo adjuntar la imagen de referencia al prompt de Flow tras %d "
+        "intento(s): %s" % (UPLOAD_ATTEMPTS, " | ".join(fallos))
+    )
 
 
 async def upload_standalone_image(image_path: str) -> None:
@@ -231,16 +413,9 @@ async def _attach_frame_via_picker(page, slot: str, image_path: str) -> None:
     await confirm.wait_for(state="visible", timeout=120_000)
 
     # La subida tarda: el botón está deshabilitado hasta que Flow termina de
-    # procesar el archivo (spinner en la previsualización).
-    listo = False
-    for _ in range(180):
-        try:
-            if await confirm.is_enabled():
-                listo = True
-                break
-        except Exception:
-            pass
-        await page.wait_for_timeout(1_000)
+    # procesar el archivo (spinner en la previsualización). Se espera a que se
+    # habilite y se propaga el error de Flow si lo pinta (arreglo 2026-11-01).
+    listo = await _wait_upload_ready(page, confirm, UPLOAD_TIMEOUT_S)
     if not listo:
         # Último recurso: seleccionar explícitamente la opción subida.
         try:
@@ -250,14 +425,7 @@ async def _attach_frame_via_picker(page, slot: str, image_path: str) -> None:
                 await page.wait_for_timeout(1_000)
         except Exception:
             pass
-        for _ in range(60):
-            try:
-                if await confirm.is_enabled():
-                    listo = True
-                    break
-            except Exception:
-                pass
-            await page.wait_for_timeout(1_000)
+        listo = await _wait_upload_ready(page, confirm, 60)
     if not listo:
         raise RuntimeError(
             "Flow no terminó de procesar el fotograma %r (el botón «Añadir a "

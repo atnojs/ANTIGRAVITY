@@ -1,3 +1,23 @@
+20261101-flow-studio 2026-11-01
+Arreglado el error «La imagen se subió pero no apareció 'Añadir a petición'; no
+quedó adjunta al prompt» al editar o generar con imagen de referencia.
+La causa estaba en el worker del PC: el botón «Añadir a petición» aparece al
+instante pero DESHABILITADO mientras Google Flow procesa el archivo, y el código
+anterior pulsaba antes de tiempo (o esperaba un texto que no siempre aparece),
+se comía 30 s de espera y abortaba el trabajo con un mensaje que no era cierto.
+Ahora el worker:
+ · espera a que el botón esté HABILITADO (hasta 3 min) y lee el error de Flow si
+   lo pinta, en vez de dar por hecho que «no apareció»;
+ · si la subida se atasca, cierra el panel y reintenta con una copia JPEG más
+   ligera (1400 px), que Flow procesa en segundos;
+ · comprueba que la referencia quedó adjunta antes de enviar el prompt y, si no,
+   lo reintenta en vez de seguir a ciegas;
+ · si aun así falla, guarda captura y copia de la imagen en _debug y devuelve un
+   mensaje con el motivo real.
+Verificado el 2026-11-01 con el flujo completo de «Editar» en producción
+(subir imagen, editarla y recibir el resultado): 55 s de punta a punta.
+La cola de Google Flow sigue siendo la de siempre (flow_queue.php + worker del PC).
+
 20261029b-flow-studio 2026-10-29
 Flow Studio añade el MODO SERIE (guion + storyboard): escribes la idea, la IA la
 reparte en 3-8 escenas con narración y prompt visual, y «Generar escenas» las
