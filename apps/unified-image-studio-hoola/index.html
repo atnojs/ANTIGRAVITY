@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="assets/css/base.css?v=1" />
 <link rel="stylesheet" href="assets/css/studio.css?v=1" />
-<link rel="stylesheet" href="assets/css/hoola.css?v=1" />
+<link rel="stylesheet" href="assets/css/hoola.20261102.css?v=2" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300D0D0'/%3E%3Cstop offset='1' stop-color='%2326C626'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='%23001018'/%3E%3Cpath d='M8 22l6-12 4 8 2-4 4 8' stroke='url(%23g)' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 </head>
 <body>
@@ -415,6 +415,14 @@
               <button class="btn btn-ghost btn-sm" id="clearMaskBtn">Limpiar</button>
               <button class="btn btn-ghost btn-sm" id="toggleMaskBtn" aria-pressed="false">Ocultar máscara</button>
             </div>
+            <div class="field" id="maskZonesField" style="margin-top:14px;">
+              <div class="field-head">
+                <span class="field-label">Zonas de la máscara <span class="mono" id="maskZoneCount">0</span></span>
+                <button type="button" class="btn btn-ghost btn-sm" id="addZoneBtn" title="Crear la siguiente zona y pintar en ella">＋ Zona</button>
+              </div>
+              <div id="maskZones" class="zone-list" aria-live="polite"></div>
+              <p class="field-note">Cada zona pintada se numera sola (1, 2, 3…) y guarda su propio prompt. Para una zona nueva, pinta separada del resto: se crea con el número siguiente.</p>
+            </div>
             <p class="field-note">La máscara se guarda en coordenadas del documento: mantiene la alineación con cualquier zoom o desplazamiento.</p>
           </div>
 
@@ -433,11 +441,8 @@
 
           <div class="group">
             <h3 class="group-title">Edición con IA</h3>
-            <div class="field">
-              <label for="inpaintPrompt">Instrucción de inpainting</label>
-              <textarea id="inpaintPrompt" rows="3" placeholder="Qué debe aparecer dentro de la máscara pintada"></textarea>
-            </div>
-            <button class="btn btn-ghost btn-block" id="inpaintBtn"><svg class="ico"><use href="#i-wand"/></svg>Rellenar la máscara</button>
+            <button class="btn btn-ghost btn-block" id="inpaintBtn"><svg class="ico"><use href="#i-wand"/></svg><span id="inpaintBtnText">Rellenar la máscara</span></button>
+            <p class="field-note">Se rellena zona a zona, cada una con el prompt que tiene en «Zonas de la máscara». Al terminar se muestra una sola vista previa: «Aceptar» aplica todas las zonas de una vez.</p>
             <div class="divider"></div>
             <button class="btn btn-ghost btn-block" id="removeBgBtn"><svg class="ico"><use href="#i-mask"/></svg>Quitar fondo por color (local)</button>
             <button class="btn btn-ghost btn-block" id="removeBgAiBtn"><svg class="ico"><use href="#i-sparkles"/></svg>Quitar fondo con IA</button>
@@ -1053,7 +1058,7 @@
 <input type="file" id="projectInput" accept=".json,application/json" hidden />
 
 <script src="assets/js/model-gate.20261027.js?v=25"></script>
-<script type="module" src="assets/js/app.20261102n.js?v=20261102n"></script>
+<script type="module" src="assets/js/app.20261102o.js?v=20261102o"></script>
 <script src="lightbox-zoom.20261026.js" defer></script>
 <script src="../_shared/password-eye.js?v=20261025b" defer></script>
   <div id="brushCursor" class="brush-cursor" aria-hidden="true"></div>

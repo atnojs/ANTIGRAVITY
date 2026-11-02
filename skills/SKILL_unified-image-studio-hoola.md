@@ -199,24 +199,37 @@ generaciones seguidas en el PC (con modelos directos ese selector está desactiv
    **«Margen al aplicar»** (50 % por defecto) aplica también el borde del objeto si lo generado
    sobresale de lo pintado: súbelo si el objeto sale recortado, bájalo a 0 % si quieres solo lo
    pintado.
-4. Escribir la **«Instrucción de inpainting»** (qué debe aparecer en esa zona).
-5. **«Rellenar la máscara»** y aceptar el resultado igual que en F3.
+4. **Cada zona pintada se numera sola.** En «Zonas de la máscara» aparece una fila por zona, con
+   su número (el mismo que se dibuja sobre el lienzo), su prompt y el número de trazos. Al pintar:
+   si el trazo toca una zona existente, se une a ella; si queda separado, crea la **zona
+   siguiente** (2, 3, 4…). **«＋ Zona»** crea la zona siguiente y arma el próximo trazo para ella.
+   La **×** de cada fila borra esa zona con su prompt.
+5. Escribir el **prompt de cada zona** en su campo («Qué debe aparecer en la zona N»). El botón
+   pasa a **«Rellenar las N zonas»**; si alguna zona pintada no tiene prompt, la app no envía
+   nada y lleva el cursor a ese campo.
+6. **«Rellenar la máscara»** (o «Rellenar las N zonas»): se envía cada zona por separado, en
+   orden, con su máscara y su prompt. Al terminar se muestra **una sola vista previa**; **«Aceptar»**
+   aplica todas las zonas de una vez en su capa.
 
-**Qué aplica:** solo la zona pintada. El resto de la imagen se queda exactamente como estaba, aunque
-el proveedor devuelva una imagen completa distinta. La **vista previa ya muestra el lienzo completo
-con el cambio aplicado** (no la imagen entera que devolvió el proveedor, ni la capa suelta). Al
-pulsar «Aceptar» el resultado **sustituye los píxeles de esa misma capa**.
+**Qué aplica:** solo las zonas pintadas, cada una con su prompt. El resto de la imagen se queda
+exactamente como estaba, aunque el proveedor devuelva una imagen completa distinta. La **vista
+previa ya muestra el lienzo completo con todas las zonas aplicadas** (no la imagen entera que
+devolvió el proveedor, ni la capa suelta). Al pulsar «Aceptar» el resultado **sustituye los píxeles
+de esa misma capa**.
 
 Si la capa de la máscara está **tapada** por otra capa visible, la app avisa antes de rellenar y
 ofrece: cancelar (selecciona la capa de arriba y pinta allí la máscara) o rellenar la capa tapada
 igualmente.
 
 **Dos avisos que hay que dar:**
-- La máscara **no se borra sola** después de rellenar: si va a pintar otra zona, pulse antes
-  **«Limpiar»**, o el nuevo relleno incluirá también lo pintado antes.
+- La máscara **no se borra sola** después de rellenar: si va a pintar otras zonas, pulse antes
+  **«Limpiar»**, o el nuevo relleno incluirá también lo pintado antes. «Limpiar» borra también la
+  lista de zonas y sus prompts.
 - El relleno siempre se hace con un modelo **OpenAI (IMAGE 2)**. Si tiene elegido Flow, Gemini o
   Qwen, la app cambia sola a IMAGE 2 y avisa: esos motores no admiten máscaras y reescribirían la
   imagen entera.
+- Con **«Invertir»** activo no se pueden repartir prompts por zona (se rellena todo menos lo
+  pintado): si hay más de una zona, la app pide quitar la inversión antes de rellenar.
 
 **Extras:** «Invertir» (necesita algo pintado) hace lo contrario: rellena **todo menos** lo pintado.
 «Limpiar» borra la máscara y «Ocultar máscara» solo la esconde.
@@ -430,6 +443,7 @@ de API. Esa elección inicial no es un error: es el diseño de la app.
 | Peso por archivo | el que anuncia el lienzo: tope 20 MB, rebajado si el servidor tiene un `post_max_size` menor |
 | Lado máximo de imagen | 8192 px |
 | Capas por documento | 120 |
+| Zonas de máscara por capa | 12 (cada una con su prompt) |
 | Referencias por generación | 8 en la interfaz; **con Flow solo viajan las 2 primeras** |
 | Imágenes por encolado (solo Flow) | 1–4 |
 | Deshacer | 60 pasos |

@@ -1,4 +1,4 @@
-3.1.1-hoola 2026-11-02
+3.2.0-hoola 2026-11-02
 Copia completa del original actual (Google Flow, compuerta de modelos con la contraseña de
 acceso, cancelación y biblioteca) con el estilo Hoola/Relatos al 100 %.
 3.0.1: el relleno de máscara se aplica SOLO dentro de lo pintado (antes, al reabrir un
@@ -24,3 +24,10 @@ Verificación en docs/VERIFICACION.md (sección «Máscara», 2026-11-02).
 3.0.10: los avisos de capa oculta/opacidad muy baja y la nota se actualizan en vivo al arrastrar la opacidad; el diálogo indica que se pondrá al 100 % de opacidad.
 3.1.0: la mascara tiene «Margen al aplicar» (0-100 %, por defecto 50 %) para que un objeto generado mas grande que lo pintado (p. ej. una abeja) no salga recortado; el borde se aplica con desvanecido y se pide al modelo que encaje el objeto dentro de la zona.
 3.1.1: el margen aplica el objeto entero (dilatacion solida por trazo) con desvanecido solo en el borde exterior, en vez de un degradado por todo el margen.
+3.2.0: la máscara se reparte en ZONAS numeradas (1, 2, 3…): cada zona pintada se numera en el
+lienzo y guarda su propio prompt; los trazos nuevos pegados a una zona se unen a ella y los
+separados crean la siguiente. «＋ Zona» arma una zona para la siguiente pincelada. «Rellenar»
+recorre las zonas en orden, envía a cada una su máscara y su prompt, compone los parches en la
+capa y muestra una sola vista previa (Aceptar aplica todas). La goma borra en todas las zonas y
+«Limpiar» borra también las zonas. Se conserva el prompt de cada zona al guardar y reabrir.
+Máximo 12 zonas por capa. Los documentos antiguos pasan a tener una sola zona 1.

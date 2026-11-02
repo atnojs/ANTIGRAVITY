@@ -10,6 +10,7 @@ export const LIMITS = {
   historyDepth: 60,
   maxPrompt: 12000,
   maxRefs: 8,
+  maxMaskZones: 12,
 };
 
 export const uid = (prefix = 'id') =>
@@ -64,6 +65,7 @@ export const state = {
     maskColor: '#ff2d6f',
     maskOpacity: 100,
     maskMargin: 50,
+    maskZoneId: null,
     model: 'flow-nano-banana-2',
     aspect: '1:1',
     resolution: 1024,
@@ -274,6 +276,130 @@ export function moveLayerTo(id, targetIndex) {
 export function selectLayer(id) {
   state.selection.layerId = id;
   emit('selection:change', { layerId: id });
+}
+
+/* ── Zonas de la máscara ──
+   Cada zona es una zona pintada independiente, numerada (1, 2, 3…) y con su
+   propio prompt. Los trazos guardan a qué zona pertenecen (`stroke.zone`); los
+   trazos de BORRAR no pertenecen a ninguna y se aplican a todas, para que una
+   goma borre exactamente lo que se ve en el lienzo. */
+export const MASK_ZONE_COLORS = ['#ff2d6f', '#00d0d0', '#ffb020', '#a78bfa', '#26c626', '#38bdf8', '#f472b6', '#f87171'];
+
+export function zonaColor(indice) {
+  const n = Math.abs(Math.trunc(Number(indice) || 0));
+  return MASK_ZONE_COLORS[n % MASK_ZONE_COLORS.length];
+}
+
+export function nextMaskZoneId(mask) {
+  let max = 0;
+  for (const zona of mask?.zones || []) max = Math.max(max, Number(zona?.id) || 0);
+  return max + 1;
+}
+
+/** Normaliza la máscara de una capa y garantiza que cada trazo tenga una zona. */
+export function ensureMaskZones(layer) {
+  if (!layer) return null;
+  if (!layer.mask || typeof layer.mask !== 'object' || Array.isArray(layer.mask)) {
+    layer.mask = { enabled: false, strokes: [] };
+  }
+  const mask = layer.mask;
+  if (!Array.isArray(mask.strokes)) mask.strokes = [];
+  if (!Array.isArray(mask.zones)) mask.zones = [];
+
+  for (let i = mask.zones.length - 1; i >= 0; i -= 1) {
+    const zona = mask.zones[i];
+    if (!zona || typeof zona !== 'object') { mask.zones.splice(i, 1); continue; }
+    const id = Number(zona.id);
+    zona.id = Number.isFinite(id) && id > 0 ? Math.round(id) : 0;
+    if (typeof zona.prompt !== 'string') zona.prompt = '';
+  }
+  let max = 0;
+  for (const zona of mask.zones) max = Math.max(max, zona.id);
+  const usados = new Set();
+  for (const zona of mask.zones) {
+    if (!zona.id || usados.has(zona.id)) {
+      max += 1;
+      zona.id = max;
+    }
+    usados.add(zona.id);
+  }
+  // Documentos anteriores a las zonas: todo lo pintado pertenece a la zona 1.
+  if (!mask.zones.length && mask.strokes.length) {
+    mask.zones.push({ id: 1, prompt: '' });
+    usados.add(1);
+  }
+  if (!mask.zones.length) return mask;
+  const primera = mask.zones[0].id;
+  for (const trazo of mask.strokes) {
+    if (!trazo || typeof trazo !== 'object') continue;
+    if (trazo.mode === 'erase') continue;
+    if (!usados.has(Number(trazo.zone))) trazo.zone = primera;
+  }
+  return mask;
+}
+
+/** Crea la siguiente zona y la devuelve (null si se alcanzó el límite). */
+export function createMaskZone(layer, prompt = '') {
+  const mask = ensureMaskZones(layer);
+  if (!mask) return null;
+  if (mask.zones.length >= LIMITS.maxMaskZones) return null;
+  const zona = { id: nextMaskZoneId(mask), prompt: String(prompt || '') };
+  mask.zones.push(zona);
+  return zona;
+}
+
+/** Borra una zona, sus trazos y la deja sin prompt. */
+export function removeMaskZone(layer, zoneId) {
+  const mask = ensureMaskZones(layer);
+  if (!mask) return false;
+  const id = Number(zoneId);
+  const indice = mask.zones.findIndex((zona) => zona.id === id);
+  if (indice < 0) return false;
+  mask.zones.splice(indice, 1);
+  mask.strokes = mask.strokes.filter((trazo) => Number(trazo.zone) !== id);
+  if (!mask.strokes.some((trazo) => trazo.mode !== 'erase')) {
+    mask.strokes = [];
+    mask.enabled = false;
+  }
+  return true;
+}
+
+/** Trazos de pintar de una zona, en orden (los de borrar no cuentan). */
+export function maskZoneStrokes(mask, zoneId) {
+  const id = Number(zoneId);
+  return (mask?.strokes || []).filter((trazo) => trazo.mode !== 'erase' && Number(trazo.zone) === id);
+}
+
+/** Zona más cercana a un punto (para que un trazo nuevo se una a la suya).
+    Se compara el HUECO entre los bordes del pincel: si el trazo nuevo toca o
+    roza la pintura existente, es de esa zona; si queda separado, es zona nueva. */
+export function findMaskZoneAt(mask, point, size = 40) {
+  const zonas = mask?.zones || [];
+  if (!zonas.length || !point) return null;
+  // Admite { x, y } y también el par [x, y] de un trazo.
+  const px = Array.isArray(point) ? Number(point[0]) : Number(point.x);
+  const py = Array.isArray(point) ? Number(point[1]) : Number(point.y);
+  if (!Number.isFinite(px) || !Number.isFinite(py)) return null;
+  const radioNuevo = Math.max(1, (Number(size) || 40) / 2);
+  let mejor = null;
+  let mejorHueco = Infinity;
+  for (const zona of zonas) {
+    for (const trazo of mask.strokes) {
+      if (trazo.mode === 'erase' || Number(trazo.zone) !== zona.id) continue;
+      const radioTrazo = Math.max(1, (Number(trazo.size) || 1) / 2);
+      const puntos = trazo.pts || [];
+      const salto = Math.max(1, Math.ceil(puntos.length / 60));
+      for (let i = 0; i < puntos.length; i += salto) {
+        const dist = Math.hypot(puntos[i][0] - px, puntos[i][1] - py);
+        const hueco = dist - radioNuevo - radioTrazo;
+        if (hueco < mejorHueco) { mejorHueco = hueco; mejor = zona.id; }
+      }
+    }
+  }
+  // Tolerancia: hasta el radio del pincel. Si el trazo nuevo queda separado más
+  // que eso de la pintura existente, es una zona nueva (o se fuerza con «＋ Zona»).
+  const tolerancia = Math.max(8, Math.min(60, radioNuevo));
+  return mejorHueco <= tolerancia ? mejor : null;
 }
 
 /* ── Historial ── */

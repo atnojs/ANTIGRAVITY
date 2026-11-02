@@ -4,7 +4,7 @@
 
 import {
   state, emit, getLayer, selectLayer, clamp, makeTextLayer, makeShapeLayer, addLayer,
-  pushHistory, markDirty,
+  pushHistory, markDirty, ensureMaskZones, createMaskZone, findMaskZoneAt,
 } from './core.js?v=25';
 import { renderer, hitTestHandle, pointInLayer } from './render.js?v=25';
 
@@ -350,6 +350,18 @@ function onPointerUp() {
       // Añade la pincelada al estado actual y registra un único paso.
       layer.mask = layer.mask || { enabled: true, strokes: [] };
       if (!layer.mask.enabled) layer.mask.enabled = true;
+      // A qué zona pertenece la pincelada: la armada con «＋ Zona», la que ya
+      // había debajo del primer punto o una zona nueva (se numera sola).
+      const mask = ensureMaskZones(layer);
+      if (current.stroke.mode !== 'erase') {
+        const armada = Number(state.ui.maskZoneId);
+        const zonaArmada = Number.isFinite(armada) && armada > 0 && mask.zones.some((zona) => zona.id === armada) ? armada : 0;
+        const cercana = zonaArmada || findMaskZoneAt(mask, current.stroke.pts[0], current.stroke.size);        const zonaId = cercana || createMaskZone(layer)?.id || mask.zones[0]?.id || 1;
+        current.stroke.zone = zonaId;
+        state.ui.maskZoneId = null;
+      } else {
+        delete current.stroke.zone;
+      }
       layer.mask.strokes.push(current.stroke);
       renderer.invalidateMask(layer.id);
       pushHistory(snapshot, current.stroke.mode === 'erase' ? 'borrar máscara' : 'pintar máscara');

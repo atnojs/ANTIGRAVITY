@@ -499,3 +499,43 @@ aplica al 100 %.
    máscara pequeña, margen 50 %): la abeja se aplica completa (doradoPx 765, 0 cambios lejos de la
    zona, vista previa = aplicado 0), capturas C0-produccion-abeja-preview.png y
    C1-produccion-abeja-aplicada.png (C6-produccion-abeja.json).
+
+### 3.2.0 (2026-11-02) — zonas numeradas con prompt propio
+
+La máscara deja de ser una sola zona: cada zona pintada se numera (1, 2, 3…) y guarda su prompt.
+
+- **Modelo**: `layer.mask.zones = [{ id, prompt }]` y cada trazo de pintar guarda `stroke.zone`;
+  los trazos de borrar no tienen zona y se aplican a todas (la goma borra lo mismo que se ve).
+  Los documentos anteriores se migran a una sola zona 1 al leerlos, sin tocar el archivo.
+- **Numeración automática**: un trazo que toca una zona existente (los pinceles se solapan o quedan
+  a menos de un radio) se une a ella; separado crea la zona siguiente. «＋ Zona» arma la siguiente
+  pincelada. Cada zona se dibuja en el lienzo con su número y color.
+- **Relleno por zonas**: cada zona se envía al proveedor con SU máscara y SU prompt, en orden; los
+  parches se componen sobre la capa y el resultado se ofrece en una sola vista previa («Aceptar»
+  aplica todas). Si una zona falla, lo ya generado se conserva y se avisa; si no hay prompt en
+  alguna, no se envía nada.
+- **Límites**: 12 zonas por capa; «Limpiar» borra zonas y prompts; con «Invertir» y más de una zona
+  se pide quitar la inversión (no se reparten prompts).
+
+**Verificación 3.2.0 — Chrome real (CDP, sin tiempo virtual), 0 generaciones de proveedor.** Banco:
+app servida en local con `api.php` simulado. Chequeos automáticos, todos en PASS (`ok: true`),
+sobre el build `app.20261102o.js`:
+
+| Comprobación | Resultado |
+|---|---|
+| 4 trazos separados → 4 zonas, panel con 4 filas y números 1,2,3,4 | PASS |
+| Cada zona tiene su propia máscara (mismo nº de píxeles, suma distinta) | 4 de 4 |
+| Prompt por zona guardado en `mask.zones` y en `serializeProject()` | PASS |
+| Trazo pegado a la zona 1 → misma zona (4 zonas, 5 trazos, píxeles 12929 → 20251) | PASS |
+| Trazo separado → zona nueva (5) | PASS |
+| Goma dentro de la zona 1: baja sus píxeles y no toca la zona 2; el trazo de goma no tiene zona | PASS |
+| Borrar la zona 2 desde el panel: quedan las demás con sus trazos | PASS |
+| «＋ Zona» arma la zona 6 y la siguiente pincelada va a ella | PASS |
+| Serialización: 5 zonas, prompts conservados, 2 zonas nuevas sin prompt | PASS |
+| Consola sin errores JS | 0 |
+
+**No verificado en esta ronda**: la llamada real al proveedor por zona (requiere servidor PHP con
+clave y consume crédito). El bucle y la composición usan el mismo `generate` y la misma composición
+que el relleno de una zona ya validado en 3.1.1; queda pendiente una generación real de 2+ zonas.
+
+Capturas: `comparativa-zonas-uis.png` (antes 3.1.1 / después 3.2.0).

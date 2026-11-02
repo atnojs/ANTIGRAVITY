@@ -8,6 +8,7 @@ import {
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
+  ensureMaskZones, createMaskZone, removeMaskZone, maskZoneStrokes, zonaColor,
 } from './core.js?v=25';
 import { renderer } from './render.js?v=25';
 import { initTools, setTool } from './tools.js?v=25';
@@ -39,9 +40,10 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.1.1 · 2026-11-02 · máscara: margen sólido para objetos que sobresalen';
+const BUILD = 'v3.2.0 · 2026-11-02 · máscara por zonas numeradas, cada una con su prompt';
 
 let generationBusy = false;
+let inpaintBusy = false;
 let pendingResult = null;
 let lastExportUrl = null;
 
@@ -205,8 +207,10 @@ async function boot() {
 
   renderer.fit();
   updateViewportUI(state.ui.zoom);
-  // Arranque completado: el vigilante ya no debe mostrar el aviso.
+  // Arranque completado: el vigilante ya no debe mostrar el aviso y las pruebas
+  // automáticas saben cuándo el documento y los paneles están listos.
   if (window.__UIS_DIAG__) window.__UIS_DIAG__.started = true;
+  window.__UIS_BOOTED__ = BUILD;
 }
 
 /** Trabajos que quedaron en curso en el servidor: se retoman sin reenviar ni pagar. */
@@ -596,6 +600,7 @@ function bindTopbar() {
 
 function afterHistory() {
   renderLayers();
+  renderMaskZones();
   renderer.requestRender('history');
   updateTopbar();
   scheduleSave('history');
@@ -725,12 +730,66 @@ function bindLeftPanel() {
     guardarPreferenciasMascara();
   });
   pintarCapaDeLaMascara();
+  renderMaskZones();
+
+  // Zonas numeradas: alta manual (arma la siguiente pincelada), borrado y prompt propio.
+  const listaZonas = $('maskZones');
+  $('addZoneBtn')?.addEventListener('click', () => {
+    const layer = getLayer();
+    if (!layer) { toast('Selecciona la capa en la que quieres crear la zona.', 'warn'); return; }
+    if (layer.locked) { toast('La capa está bloqueada: desbloquéala para pintar la máscara.', 'warn'); return; }
+    let nueva = null;
+    mutate('añadir zona a la máscara', () => { nueva = createMaskZone(layer); });
+    if (!nueva) {
+      toast(`Máximo ${LIMITS.maxMaskZones} zonas por capa. Borra alguna para crear otra.`, 'warn');
+      return;
+    }
+    state.ui.maskZoneId = nueva.id;
+    setTool('mask');
+    setToolUI('mask');
+    switchLeftTab('edit');
+    renderMaskZones();
+    const campo = document.querySelector(`[data-zone-prompt="${nueva.id}"]`);
+    if (campo) campo.focus();
+    toast('Zona nueva lista: escribe su prompt y pinta en el lienzo.', 'ok');
+  });
+  listaZonas?.addEventListener('input', (event) => {
+    const campo = event.target.closest?.('[data-zone-prompt]');
+    if (!campo) return;
+    const layer = getLayer();
+    if (!layer) return;
+    const mask = ensureMaskZones(layer);
+    const zona = mask.zones.find((item) => item.id === Number(campo.dataset.zonePrompt));
+    if (!zona) return;
+    zona.prompt = campo.value.slice(0, 2000);
+    // Sin paso de historial por cada tecla: se guarda, pero no se apila el deshacer.
+    markDirty();
+    scheduleSave('prompt-zona');
+  });
+  listaZonas?.addEventListener('click', (event) => {
+    const borrar = event.target.closest?.('[data-zone-delete]');
+    if (!borrar) return;
+    const layer = getLayer();
+    if (!layer) return;
+    const id = Number(borrar.dataset.zoneDelete);
+    if (!id) return;
+    const zonaBorrada = Number(state.ui.maskZoneId) === id;
+    mutate('borrar zona de la máscara', () => { removeMaskZone(layer, id); });
+    if (zonaBorrada) state.ui.maskZoneId = null;
+    renderer.invalidateMask(layer.id);
+    renderer.requestRender('mask-zone-delete');
+    renderMaskZones();
+    toast('Zona borrada con su prompt.', 'ok');
+  });
+
   $('clearMaskBtn').addEventListener('click', () => {
     const layer = getLayer();
     if (!layer) return;
-    mutate('limpiar máscara', () => { layer.mask = { enabled: false, strokes: [] }; });
+    mutate('limpiar máscara', () => { layer.mask = { enabled: false, strokes: [], zones: [] }; });
+    state.ui.maskZoneId = null;
     renderer.invalidateMask(layer.id);
     renderLayers();
+    renderMaskZones();
     renderer.requestRender('mask-clear');
   });
   $('invertMaskBtn').addEventListener('click', () => {
@@ -1607,6 +1666,59 @@ async function componerVistaPreviaConParche(layer, parche) {
   }
 }
 
+/* ── Zonas de la máscara: lista numerada, cada una con su prompt ── */
+function escaparHtml(texto) {
+  return String(texto ?? '').replace(/[&<>"']/g, (caracter) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[caracter]));
+}
+
+function renderMaskZones() {
+  const contenedor = $('maskZones');
+  if (!contenedor) return;
+  const contador = $('maskZoneCount');
+  const capa = getLayer();
+  if (!capa) {
+    contenedor.innerHTML = '<p class="field-note">Selecciona una capa para ver y editar sus zonas.</p>';
+    if (contador) contador.textContent = '0';
+    sincronizarBotonInpaint(0);
+    return;
+  }
+  const mask = ensureMaskZones(capa);
+  const zonas = mask.zones;
+  if (contador) contador.textContent = String(zonas.length);
+  if (!zonas.length) {
+    contenedor.innerHTML = '<p class="field-note">Aún no hay zonas: pinta en el lienzo y se creará la zona 1.</p>';
+    sincronizarBotonInpaint(0);
+    return;
+  }
+  contenedor.innerHTML = zonas.map((zona, indice) => {
+    const trazos = maskZoneStrokes(mask, zona.id).length;
+    const armada = Number(state.ui.maskZoneId) === zona.id;
+    return `<div class="zone-item${armada ? ' is-armed' : ''}" data-zone-item="${zona.id}">
+      <span class="zone-badge" style="--zone-color:${zonaColor(indice)}" aria-hidden="true">${indice + 1}</span>
+      <div class="zone-body">
+        <textarea class="zone-prompt" rows="2" data-zone-prompt="${zona.id}"
+          aria-label="Prompt de la zona ${indice + 1}"
+          placeholder="Qué debe aparecer en la zona ${indice + 1}">${escaparHtml(zona.prompt)}</textarea>
+        <span class="zone-meta">${trazos} ${trazos === 1 ? 'trazo' : 'trazos'}${armada ? ' · se pintará aquí' : ''}</span>
+      </div>
+      <button type="button" class="icon-btn icon-btn-sm zone-delete" data-zone-delete="${zona.id}"
+        aria-label="Borrar la zona ${indice + 1}" title="Borrar la zona ${indice + 1}"><svg class="ico ico-sm"><use href="#i-x"/></svg></button>
+    </div>`;
+  }).join('');
+  sincronizarBotonInpaint(zonas.filter((zona) => maskZoneStrokes(mask, zona.id).length).length);
+}
+
+function sincronizarBotonInpaint(cantidad) {
+  const boton = $('inpaintBtn');
+  const texto = $('inpaintBtnText');
+  if (!boton || !texto) return;
+  const numero = Number(cantidad) || 0;
+  texto.textContent = numero > 1 ? `Rellenar las ${numero} zonas` : 'Rellenar la máscara';
+  boton.disabled = inpaintBusy;
+}
+
 /* Capa a la que pertenece la máscara: se muestra en el panel para no pintar a ciegas. */
 function pintarCapaDeLaMascara() {
   const nodo = $('maskLayerName');
@@ -1617,24 +1729,57 @@ function pintarCapaDeLaMascara() {
     nodo.classList.remove('is-warn');
     return;
   }
-  const trazos = capa.mask?.strokes?.length || 0;
+  const mask = ensureMaskZones(capa);
+  const zonas = mask.zones.length;
+  const trazos = mask.strokes.length;
   const oculta = !capa.visible || capa.opacity <= 0;
   const tenue = !oculta && capa.opacity < 0.1;
   const aviso = oculta ? ' · CAPA OCULTA' : (tenue ? ' · OPACIDAD MUY BAJA' : '');
-  nodo.textContent = `Capa de la máscara: «${capa.name}»${trazos ? ` · ${trazos} trazo${trazos === 1 ? '' : 's'}` : ''}${aviso}`;
+  const detalle = [
+    zonas ? `${zonas} zona${zonas === 1 ? '' : 's'}` : '',
+    trazos ? `${trazos} trazo${trazos === 1 ? '' : 's'}` : '',
+  ].filter(Boolean).join(' · ');
+  nodo.textContent = `Capa de la máscara: «${capa.name}»${detalle ? ` · ${detalle}` : ''}${aviso}`;
   nodo.classList.toggle('is-warn', oculta || tenue);
 }
 
 async function runInpaint() {
   const layer = getLayer();
   if (!layer) { toast('Selecciona la capa que quieres editar.', 'warn'); return; }
-  if (!layer.mask?.strokes?.length) { toast('Pinta la zona a rellenar en la máscara.', 'warn'); return; }
-  const prompt = $('inpaintPrompt').value.trim();
-  if (!prompt) { toast('Escribe qué debe aparecer dentro de la máscara.', 'warn'); return; }
-  // Se pide al modelo que encaje el objeto dentro de la zona; el margen de la
-  // máscara (abajo) se encarga de que, si se sale un poco, no salga recortado.
-  const instruccionAjuste = 'El objeto o cambio pedido debe quedar completo dentro de la zona marcada por la máscara, sin recortarse por el borde.';
-  const promptInpaint = prompt.length + instruccionAjuste.length + 2 <= 11600 ? `${prompt}\n\n${instruccionAjuste}` : prompt;
+  if (!layer.mask?.strokes?.length) { toast('Pinta al menos una zona en la máscara.', 'warn'); return; }
+  if (inpaintBusy) { toast('Ya se está rellenando la máscara. Espera a que termine.', 'warn'); return; }
+  // Una entrada por zona PINTADA, en el orden en que se numeran.
+  const mask = ensureMaskZones(layer);
+  const zonas = mask.zones
+    .map((zona, indice) => ({ zona, numero: indice + 1, trazos: maskZoneStrokes(mask, zona.id) }))
+    .filter((entrada) => entrada.trazos.length);
+  if (!zonas.length) { toast('Pinta al menos una zona en la máscara.', 'warn'); return; }
+  const sinPrompt = zonas.filter((entrada) => !entrada.zona.prompt.trim());
+  if (sinPrompt.length) {
+    const numeros = sinPrompt.map((entrada) => entrada.numero).join(', ');
+    toast(`Escribe qué debe aparecer en ${sinPrompt.length === 1 ? `la zona ${numeros}` : `las zonas ${numeros}`}.`, 'warn', { duration: 8000 });
+    renderMaskZones();
+    const campo = document.querySelector(`[data-zone-prompt="${sinPrompt[0].zona.id}"]`);
+    if (campo) {
+      campo.focus();
+      campo.classList.add('is-missing');
+      window.setTimeout(() => campo.classList.remove('is-missing'), 2600);
+    }
+    return;
+  }
+  // «Invertir» rellena TODO menos lo pintado: con varias zonas no se puede
+  // repartir por prompts, así que se avisa y se ofrece quitar la inversión.
+  if (mask.inverted && zonas.length > 1) {
+    const quitar = await confirmDialog({
+      title: 'La máscara está invertida',
+      text: `Con «Invertir» activo se rellena todo menos lo pintado, así que no se puede dar un prompt distinto a cada zona.\n\n¿Quitar la inversión y rellenar las ${zonas.length} zonas por separado?`,
+      okLabel: 'Quitar inversión y rellenar',
+    });
+    if (!quitar) return;
+    mutate('quitar inversión de máscara', () => { layer.mask.inverted = false; });
+    renderer.invalidateMask(layer.id);
+    renderer.requestRender('mask-invert');
+  }
   if (!server.available || !server.writable) {
     toast('El inpainting necesita el proxy del servidor y una clave configurada.', 'error');
     return;
@@ -1696,45 +1841,99 @@ async function runInpaint() {
   if (!soportaMascara) {
     toast(`Para rellenar la máscara se usa IMAGE 2: ${elegido?.label || 'ese modelo'} no admite máscaras.`, 'warn', { duration: 8000 });
   }
-  showLoading('Rellenando la máscara…', 'Se envía la composición y la máscara al proveedor.');
+  showLoading(
+    'Rellenando la máscara…',
+    zonas.length > 1 ? `Zona 1 de ${zonas.length}…` : 'Se envía la composición y la máscara al proveedor.',
+  );
+  inpaintBusy = true;
+  const botonInpaint = $('inpaintBtn');
+  if (botonInpaint) botonInpaint.disabled = true;
   try {
-    const composite = renderer.compositeToCanvas();
-    const mask = construirMascaraProveedor(layer);
-    const job = await generate({
-      prompt: promptInpaint,
-      model: modeloInpaint,
-      aspect: '1:1',
-      images: [composite.toDataURL('image/png')],
-      mask: mask.toDataURL('image/png'),
-      kind: 'inpaint',
-    });
-    if (job?.error) throw new Error(job.error);
-    const dataUrlProveedor = job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}`;
-    // Primero se compone el resultado dentro de la máscara (lo que se aplicará) y
-    // después se genera la vista previa del DOCUMENTO completo con ese parche:
-    // antes la vista previa enseñaba solo la capa editada o la imagen del
-    // proveedor, y parecía que había cambiado el sujeto de la imagen.
-    const compuesto = await componerInpaintingSobreCapa(layer, dataUrlProveedor);
-    if (!compuesto) {
-      toast('No se pudo componer el relleno dentro de la máscara, así que no se ha aplicado nada. Vuelve a intentarlo.', 'error', { duration: 12000 });
-      return;
+    const compositeUrl = renderer.compositeToCanvas().toDataURL('image/png');
+    const original = await cargarImagenDeRecurso(layer.resourceId);
+    if (!original) throw new Error('la imagen de la capa aún no está cargada. Vuelve a intentarlo en un segundo.');
+    // Lienzo de trabajo de la capa: se van aplicando los parches de cada zona
+    // uno encima de otro, y el resultado final se ofrece como una sola vista previa.
+    const trabajo = document.createElement('canvas');
+    trabajo.width = Math.max(1, Math.round(layer.w));
+    trabajo.height = Math.max(1, Math.round(layer.h));
+    trabajo.getContext('2d').drawImage(original, 0, 0, trabajo.width, trabajo.height);
+    const instruccionAjuste = 'El objeto o cambio pedido debe quedar completo dentro de la zona marcada por la máscara, sin recortarse por el borde.';
+    let aplicadas = 0;
+    let fallo = null;
+    for (const entrada of zonas) {
+      const { zona, numero } = entrada;
+      const segundo = $('loadingSecondary');
+      if (segundo) {
+        segundo.textContent = zonas.length > 1
+          ? `Zona ${numero} de ${zonas.length}…`
+          : 'Se envía la composición y la máscara al proveedor.';
+      }
+      const pintado = renderer.maskCanvasFor(layer, zona.id);
+      const maskProveedor = construirMascaraProveedor(layer, pintado);
+      const base = zona.prompt.trim();
+      const prompt = base.length + instruccionAjuste.length + 2 <= 11600 ? `${base}\n\n${instruccionAjuste}` : base;
+      try {
+        const job = await generate({
+          prompt,
+          model: modeloInpaint,
+          aspect: '1:1',
+          images: [compositeUrl],
+          mask: maskProveedor.toDataURL('image/png'),
+          kind: 'inpaint',
+        });
+        if (job?.error) throw new Error(job.error);
+        if (!job?.image) throw new Error('el trabajo terminó sin imagen.');
+        const dataUrlProveedor = job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}`;
+        const compuesto = await componerParcheEnLienzo(trabajo, layer, pintado, entrada.trazos, dataUrlProveedor);
+        if (!compuesto) throw new Error('no se pudo componer el resultado dentro de la zona.');
+        aplicadas += 1;
+      } catch (error) {
+        fallo = { numero, mensaje: error.message };
+        break;
+      }
     }
-    const vistaPrevia = await componerVistaPreviaConParche(layer, compuesto);
+    if (!aplicadas) {
+      throw new Error(fallo ? `zona ${fallo.numero}: ${fallo.mensaje}` : 'no se aplicó ninguna zona.');
+    }
+    // Lo ya rellenado no se pierde si una zona falla: se ofrece como vista previa.
+    const blob = await canvasToBlob(trabajo, 'image/png');
+    const recursoFinal = addResource({
+      name: `inpaint-${Date.now()}.png`,
+      mime: 'image/png',
+      blob,
+      width: trabajo.width,
+      height: trabajo.height,
+    });
+    recursoFinal.preview = true;
+    const vistaPrevia = await componerVistaPreviaConParche(layer, recursoFinal);
     if (!vistaPrevia) {
-      liberarVistaPrevia({ compuesto });
-      toast('No se pudo preparar la vista previa del documento, así que no se ha aplicado nada. Vuelve a intentarlo.', 'error', { duration: 12000 });
-      return;
+      liberarVistaPrevia({ compuesto: recursoFinal });
+      throw new Error('no se pudo preparar la vista previa del documento.');
     }
     // Si había otra vista previa abierta, su composición temporal se libera.
     liberarVistaPrevia(pendingResult);
-    pendingResult = { job, layerId: layer.id, dataUrl: dataUrlProveedor, compuesto, previewUrl: vistaPrevia };
+    pendingResult = {
+      job: { kind: 'inpaint', zonas: zonas.length, aplicadas },
+      layerId: layer.id,
+      dataUrl: trabajo.toDataURL('image/png'),
+      compuesto: recursoFinal,
+      previewUrl: vistaPrevia,
+    };
     showResultPreview(pendingResult);
-    toast(layer.mask?.inverted
-      ? 'Resultado listo: la vista previa es el lienzo completo con el cambio aplicado fuera de lo pintado (máscara invertida).'
-      : 'Resultado listo: la vista previa es el lienzo completo con el cambio aplicado dentro de la máscara.', 'ok');
+    const resumen = aplicadas === 1 ? 'la zona' : `${aplicadas} zonas`;
+    if (fallo) {
+      toast(`Se ${aplicadas === 1 ? 'rellenó' : 'rellenaron'} ${resumen} con su prompt. La zona ${fallo.numero} falló: ${fallo.mensaje}`, 'warn', { duration: 12000 });
+    } else {
+      toast(layer.mask?.inverted
+        ? 'Resultado listo: la vista previa es el lienzo completo con el cambio aplicado fuera de lo pintado (máscara invertida).'
+        : `Resultado listo: ${resumen} rellenada${aplicadas === 1 ? '' : 's'} dentro de su máscara. Acepta para aplicarlo.`, 'ok');
+    }
   } catch (error) {
-    toast(`El inpainting falló: ${error.message}`, 'error');
+    toast(`El inpainting falló: ${error.message}`, 'error', { duration: 12000 });
   } finally {
+    inpaintBusy = false;
+    if (botonInpaint) botonInpaint.disabled = false;
     hideLoading();
   }
 }
@@ -1744,13 +1943,12 @@ async function runInpaint() {
    El lienzo de la máscara pinta blanco sobre negro (todo opaco), así que aquí se
    invierte el alfa: lo pintado queda transparente = zona a editar. Si la máscara
    está invertida, se hace lo contrario. */
-function construirMascaraProveedor(layer) {
+function construirMascaraProveedor(layer, pintado = renderer.maskCanvasFor(layer)) {
   const doc = state.doc;
   const canvas = document.createElement('canvas');
   canvas.width = doc.width;
   canvas.height = doc.height;
   const ctx = canvas.getContext('2d');
-  const pintado = renderer.maskCanvasFor(layer);
   const invertida = Boolean(layer.mask?.inverted);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (invertida) {
@@ -1822,9 +2020,8 @@ function renombrarCapaDesdePropiedades() {
      ampliación es local a cada trazo (sombra difusa), no de la caja total, para
      que dos zonas separadas no acaben cubriendo media imagen;
    - invertida: todo menos lo pintado (sin ampliar). */
-function mascaraParaComponer(layer) {
+function mascaraParaComponer(layer, pintado = renderer.maskCanvasFor(layer), trazosZona = null) {
   const doc = state.doc;
-  const pintado = renderer.maskCanvasFor(layer);
   if (layer.mask?.inverted) {
     const canvas = document.createElement('canvas');
     canvas.width = doc.width;
@@ -1838,7 +2035,8 @@ function mascaraParaComponer(layer) {
     return canvas;
   }
   const porcentaje = Number(state.ui.maskMargin ?? 50);
-  const tamanos = (layer.mask?.strokes || []).map((trazo) => trazo.size || 1);
+  const trazos = (trazosZona || layer.mask?.strokes || []).filter((trazo) => trazo.mode !== 'erase');
+  const tamanos = trazos.map((trazo) => trazo.size || 1);
   const mayor = tamanos.length ? Math.max(...tamanos) : 0;
   if (!(porcentaje > 0) || !mayor) return pintado;
   // Margen proporcional al pincel con el que se pintó esa zona. La dilatación es
@@ -1916,6 +2114,39 @@ async function componerInpaintingSobreCapa(layer, dataUrlResultado) {
   } catch (error) {
     console.error('Inpainting: fallo al componer dentro de la máscara', error);
     return null;
+  }
+}
+
+/* Compone un resultado de UNA zona sobre el lienzo de trabajo de la capa.
+   Se usa al rellenar varias zonas seguidas: cada parche se aplica en su sitio y
+   el siguiente parte de lo ya rellenado. */
+async function componerParcheEnLienzo(lienzo, layer, pintado, trazosZona, dataUrlResultado) {
+  try {
+    const doc = state.doc;
+    if (!doc || !layer || !lienzo) return false;
+    const proveedor = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('No se pudo leer el resultado del proveedor.'));
+      img.src = dataUrlResultado;
+    });
+    const parche = document.createElement('canvas');
+    parche.width = doc.width;
+    parche.height = doc.height;
+    const pctx = parche.getContext('2d');
+    pctx.drawImage(proveedor, 0, 0, doc.width, doc.height);
+    pctx.globalCompositeOperation = 'destination-in';
+    pctx.drawImage(mascaraParaComponer(layer, pintado, trazosZona), 0, 0, doc.width, doc.height);
+    pctx.globalCompositeOperation = 'source-over';
+    lienzo.getContext('2d').drawImage(
+      parche,
+      layer.x, layer.y, layer.w, layer.h,
+      0, 0, lienzo.width, lienzo.height,
+    );
+    return true;
+  } catch (error) {
+    console.error('Inpainting: no se pudo componer el parche de la zona', error);
+    return false;
   }
 }
 
@@ -3361,10 +3592,11 @@ async function showDiagnostics() {
 }
 
 /* ══════════════════════ Eventos globales ══════════════════════ */
-on('layers:change', () => { renderLayers(); renderAssets(); pintarCapaDeLaMascara(); });
+on('layers:change', () => { renderLayers(); renderAssets(); pintarCapaDeLaMascara(); renderMaskZones(); });
 on('selection:change', () => {
   renderLayers();
   pintarCapaDeLaMascara();
+  renderMaskZones();
   renderer.requestRender('selection');
   updateTopbar();
 });

@@ -2,7 +2,7 @@
    render.js — motor de dibujo, viewport y composición
    ============================================================ */
 
-import { state, clamp, getResource, imageFor, getLayer } from './core.js?v=25';
+import { state, clamp, getResource, imageFor, getLayer, zonaColor } from './core.js?v=25';
 
 const HANDLE_DEFS = [
   ['nw', -1, -1], ['n', 0, -1], ['ne', 1, -1],
@@ -322,10 +322,16 @@ class Renderer {
   releaseScratch() { /* el canvas se reutiliza */ }
 
   /* ── Máscaras ── */
-  maskCanvasFor(layer) {
-    const key = layer.id;
+  /** Canvas de la máscara. Con `zoneId` solo se pintan los trazos de esa zona
+      (más la goma, que borra en todas): así cada zona se rellena por separado. */
+  maskCanvasFor(layer, zoneId = null) {
+    const zona = zoneId == null ? null : Number(zoneId);
+    const key = `${layer.id}#${zona == null ? 'all' : `z${zona}`}`;
     const cache = this.maskCache.get(key);
-    const strokes = layer.mask?.strokes || [];
+    const todos = layer.mask?.strokes || [];
+    const strokes = zona == null
+      ? todos
+      : todos.filter((trazo) => trazo.mode === 'erase' || Number(trazo.zone) === zona);
     // Firma ESTRUCTURAL de la lista de trazos: modo, grosor, dureza, número de
     // puntos de cada trazo, última coordenada y si la máscara está invertida.
     // Antes solo miraba el número de trazos y los puntos del último, así que dos
@@ -351,7 +357,10 @@ class Renderer {
   }
 
   invalidateMask(layerId) {
-    this.maskCache.delete(layerId);
+    // La caché guarda una entrada por capa y zona.
+    for (const key of [...this.maskCache.keys()]) {
+      if (key === layerId || key.startsWith(`${layerId}#`)) this.maskCache.delete(key);
+    }
   }
 
   paintMask() {
@@ -397,7 +406,55 @@ class Renderer {
         paintStroke(ctx, { ...live, mode: 'paint' }, live.mode === 'erase' ? 'rgba(248,81,73,.9)' : color);
         ctx.restore();
       }
+      // Número de cada zona pintada, para saber qué prompt le corresponde.
+      this.paintMaskZoneBadges(layer);
     }
+    ctx.restore();
+  }
+
+  /** Círculos numerados sobre el centro de cada zona de la máscara. */
+  paintMaskZoneBadges(layer) {
+    const zonas = layer?.mask?.zones;
+    if (!Array.isArray(zonas) || !zonas.length) return;
+    const ctx = this.maskCtx;
+    const zoom = Math.max(0.02, this.zoom);
+    const radio = 13 / zoom;
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    zonas.forEach((zona, indice) => {
+      let sumaX = 0;
+      let sumaY = 0;
+      let total = 0;
+      for (const trazo of layer.mask.strokes || []) {
+        if (trazo.mode === 'erase' || Number(trazo.zone) !== zona.id) continue;
+        for (const punto of trazo.pts || []) {
+          sumaX += punto[0];
+          sumaY += punto[1];
+          total += 1;
+        }
+      }
+      if (!total) return;
+      const x = sumaX / total;
+      const y = sumaY / total;
+      ctx.beginPath();
+      ctx.arc(x, y, radio, 0, TAU);
+      ctx.fillStyle = zonaColor(indice);
+      ctx.fill();
+      ctx.lineWidth = 2 / zoom;
+      ctx.strokeStyle = 'rgba(4, 18, 26, 0.9)';
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, y, radio, 0, TAU);
+      ctx.lineWidth = 1 / zoom;
+      ctx.strokeStyle = 'rgba(234, 255, 255, 0.92)';
+      ctx.stroke();
+      ctx.fillStyle = '#04141c';
+      ctx.font = `${Math.round(13 / zoom)}px Electrolize, system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(indice + 1), x, y + 0.5 / zoom);
+    });
     ctx.restore();
   }
 
