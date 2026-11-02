@@ -2,7 +2,7 @@
    render.js — motor de dibujo, viewport y composición
    ============================================================ */
 
-import { state, clamp, getResource, imageFor, getLayer } from './core.20261102c.js?v=20261102c';
+import { state, clamp, getResource, imageFor, getLayer } from './core.20261102d.js?v=20261102d';
 
 const HANDLE_DEFS = [
   ['nw', -1, -1], ['n', 0, -1], ['ne', 1, -1],

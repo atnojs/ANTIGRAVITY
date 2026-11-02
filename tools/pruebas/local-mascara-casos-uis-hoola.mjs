@@ -153,12 +153,13 @@ await page.click('#invertMaskBtn');
 await page.waitForTimeout(500);
 const antesA = await leerCapa();
 await enviar('pinta un fondo morado con rayas verdes');
+const toastInvertido = await page.evaluate(() => [...document.querySelectorAll('.toast')].map((t) => t.textContent.trim()).pop() || '');
 await page.click('#aiPreview:not(.hidden) #aiAccept');
 await page.waitForTimeout(2000);
 const despuesA = await leerCapa();
 guardar(antesA.png, '60-invertir-antes.png');
 guardar(despuesA.png, '61-invertir-despues.png');
-resultados.invertir = { invertida: antesA.invertida, ...(await medirFranja(antesA.png, despuesA.png)) };
+resultados.invertir = { invertida: antesA.invertida, toastVistaPrevia: toastInvertido, ...(await medirFranja(antesA.png, despuesA.png)) };
 
 // ── B) Vista previa + Escape (deselecciona la capa) ─────────────────────────
 // Se vacía el documento para partir de una sola capa limpia.
@@ -196,7 +197,10 @@ guardar(antesB.png, '62-escape-antes.png');
 guardar(despuesB.png, '63-escape-despues.png');
 resultados.escape = { capasAntes, capasDespues: despuesB.capas, seleccionTrasEscape: seleccion, previewSeguiaAbierta: hayPreview === 1, ...(await medirFranja(antesB.png, despuesB.png)) };
 
-const okInvertir = resultados.invertir.invertida && resultados.invertir.fueraPct > 20 && resultados.invertir.dentroPct < 5;
+const okInvertir = resultados.invertir.invertida
+  && resultados.invertir.fueraPct > 20
+  && resultados.invertir.dentroPct < 5
+  && /fuera de lo pintado/i.test(resultados.invertir.toastVistaPrevia || '');
 const okEscape = resultados.escape.capasAntes === resultados.escape.capasDespues && resultados.escape.fueraPct < 3 && resultados.escape.dentroPct > 15;
 const salida = { okInvertir, okEscape, ...resultados, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
 fs.writeFileSync(`${OUT}/64-casos-limite.json`, JSON.stringify(salida, null, 2));

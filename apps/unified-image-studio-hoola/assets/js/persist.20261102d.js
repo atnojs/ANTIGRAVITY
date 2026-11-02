@@ -4,7 +4,7 @@
 
 import {
   state, emit, addResource, markSaved, setSaveState, uid, SCHEMA,
-} from './core.20261102c.js?v=20261102c';
+} from './core.20261102d.js?v=20261102d';
 
 const DB_NAME = 'unified-image-studio-hoola';
 const DB_VERSION = 1;

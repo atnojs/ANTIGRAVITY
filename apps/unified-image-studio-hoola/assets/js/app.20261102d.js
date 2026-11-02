@@ -8,38 +8,38 @@ import {
   addLayer, removeLayer, duplicateLayer, reorderLayer, selectLayer, mutate,
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
-} from './core.20261102c.js?v=20261102c';
-import { renderer } from './render.20261102c.js?v=20261102c';
-import { initTools, setTool } from './tools.20261102c.js?v=20261102c';
+} from './core.20261102d.js?v=20261102d';
+import { renderer } from './render.20261102d.js?v=20261102d';
+import { initTools, setTool } from './tools.20261102d.js?v=20261102d';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
   showLoading, hideLoading, updateTopbar, updateSaveState, updateViewportUI, setEmptyState,
   renderLayers, renderLayerProps, renderRefs, renderVersions, renderProjects, renderAssets,
   renderRecipes, setActiveModel, switchLeftTab, switchRightTab, setToolUI, paintStorageInfo,
-} from './ui.20261102c.js?v=20261102c';
+} from './ui.20261102d.js?v=20261102d';
 import {
   server, saveNow, scheduleSave, listProjects, loadProject, deleteProject, saveVersion,
   listVersions, deleteVersion, storageInfo, clearLocalCache, uploadResource, lastProjectId, idb,
   fetchVersionDoc,
-} from './persist.20261102c.js?v=20261102c';
+} from './persist.20261102d.js?v=20261102d';
 import {
   downloadExport, copyToClipboard, downloadProject, exportImage, canvasToBlob, estimateExport,
-} from './exporter.20261102c.js?v=20261102c';
+} from './exporter.20261102d.js?v=20261102d';
 import {
   MODELS, modelById, loadCatalog, catalog, generate,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
-} from './ai.20261102c.js?v=20261102c';
+} from './ai.20261102d.js?v=20261102d';
 import {
   FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
   flowState, refreshFlowState, listFlowJobs, createFlowImage, createFlowVideo,
   statusFlowJobs, retryFlowJob, deleteFlowJob, cancelFlowJob, downloadFlowJob, fetchFlowBlob,
-} from './flow.20261102c.js?v=20261102c';
+} from './flow.20261102d.js?v=20261102d';
 
 const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.2 · 2026-11-02 · máscara: aplica solo lo pintado (también invertida)';
+const BUILD = 'v3.0.3 · 2026-11-02 · máscara: aplica solo lo pintado (también invertida)';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -1343,7 +1343,7 @@ async function acceptResult(mode) {
   const capaObjetivo = result.layerId ? getLayer(result.layerId) : getLayer();
   const destino = edicion ? capaObjetivo : null;
   if (edicion && !destino) {
-    toast('Selecciona la capa en la que quieres aplicar el resultado y vuelve a aceptarlo.', 'warn', { duration: 9000 });
+    toast('Selecciona la capa en la que quieres aplicar el resultado y vuelve a aceptarlo. Si esa capa ya no existe, descarta la vista previa con «Descartar».', 'warn', { duration: 9000 });
     return;
   }
   if (edicion && destino) {
@@ -1465,7 +1465,9 @@ async function runInpaint() {
     if (job?.error) throw new Error(job.error);
     pendingResult = { job, layerId: layer.id, dataUrl: job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}` };
     showResultPreview(pendingResult);
-    toast('Resultado listo: al aceptar se aplica SOLO dentro de la máscara pintada.', 'ok');
+    toast(layer.mask?.inverted
+      ? 'Resultado listo: al aceptar se aplica SOLO fuera de lo pintado (máscara invertida).'
+      : 'Resultado listo: al aceptar se aplica SOLO dentro de la máscara pintada.', 'ok');
   } catch (error) {
     toast(`El inpainting falló: ${error.message}`, 'error');
   } finally {

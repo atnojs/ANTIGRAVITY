@@ -244,6 +244,22 @@ verificaciones anteriores pasaban y la app seguía fallando para el usuario.
 Script: `tools/pruebas/verificar-produccion-mascara-uis-hoola.mjs` (medida en
 `tools/evidencias/2026-11-02-mascara-uis/53-produccion-medicion.json`, capturas 50–52).
 
+### Producción de la versión 3.0.2 (rework, 2026-11-02)
+
+| Comprobación | Resultado |
+|---|---|
+| Commit | `6429287b` (+ re-disparo del despliegue `fce61b7`) |
+| `index.html` servido | cita `assets/js/app.20261102c.js?v=20261102c`; hash servido = blob del commit |
+| `api.php?action=state` | `version: "3.0.2-hoola"` |
+| Sello en la app | `v3.0.2 · 2026-11-02 · máscara: aplica solo lo pintado (también invertida)` |
+| Módulos `*.20261102c.js` | `app/render/tools/ui/core/persist/exporter/ai/flow`: hash servido = blob del commit; una sola copia |
+| Escenario del fallo (documento con `aspectOriginal` heredado + recarga) | fuera de la máscara **0,06 %** cambiado; capa ≠ imagen del proveedor fuera (diferencia media 2,8); dentro 75,6 % coincide con el proveedor |
+| Consola | 0 errores propios |
+
+Archivos servidos comprobados: `index.html`, `app/render/tools/ui.20261102c.js` (SHA-256 = blob).
+Medición: `tools/evidencias/2026-11-02-mascara-uis/53-produccion-medicion.json` (sobrescrita con la
+medida de 3.0.2).
+
 ### Rework 3.0.2 (2026-11-02) — defectos del verificador independiente
 
 El verificador emitió **REWORK** con un defecto Medio y dos menores en el mismo control. Corregidos

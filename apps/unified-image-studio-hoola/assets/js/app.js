@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.2 · 2026-11-02 · máscara: aplica solo lo pintado (también invertida)';
+const BUILD = 'v3.0.3 · 2026-11-02 · máscara: aplica solo lo pintado (también invertida)';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -1343,7 +1343,7 @@ async function acceptResult(mode) {
   const capaObjetivo = result.layerId ? getLayer(result.layerId) : getLayer();
   const destino = edicion ? capaObjetivo : null;
   if (edicion && !destino) {
-    toast('Selecciona la capa en la que quieres aplicar el resultado y vuelve a aceptarlo.', 'warn', { duration: 9000 });
+    toast('Selecciona la capa en la que quieres aplicar el resultado y vuelve a aceptarlo. Si esa capa ya no existe, descarta la vista previa con «Descartar».', 'warn', { duration: 9000 });
     return;
   }
   if (edicion && destino) {
@@ -1465,7 +1465,9 @@ async function runInpaint() {
     if (job?.error) throw new Error(job.error);
     pendingResult = { job, layerId: layer.id, dataUrl: job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}` };
     showResultPreview(pendingResult);
-    toast('Resultado listo: al aceptar se aplica SOLO dentro de la máscara pintada.', 'ok');
+    toast(layer.mask?.inverted
+      ? 'Resultado listo: al aceptar se aplica SOLO fuera de lo pintado (máscara invertida).'
+      : 'Resultado listo: al aceptar se aplica SOLO dentro de la máscara pintada.', 'ok');
   } catch (error) {
     toast(`El inpainting falló: ${error.message}`, 'error');
   } finally {

@@ -29,7 +29,7 @@ comprueba eso primero y dilo antes de dar la receta.
 | Nombre visible | `Unified Image Studio · Hoola` (marca `UIS`, etiqueta `HOOLA`) |
 | URL publicada | `https://atnojs.es/apps/unified-image-studio-hoola/` |
 | Ruta en el repo | `apps/unified-image-studio-hoola/` |
-| Versión | `3.0.2-hoola` (sello en la barra inferior) |
+| Versión | `3.0.3-hoola` (sello en la barra inferior) |
 | Qué es | Estudio de imagen por capas: importar, generar con IA, editar, componer y exportar |
 | Backend | PHP (`api.php` + `proxy.php` + `lib/`), SQLite en `storage/`; sin él solo se edita y exporta |
 | Motores | Google Flow en el PC (imágenes y vídeo) + proveedores directos (OpenAI, Gemini, Qwen) |
@@ -205,7 +205,8 @@ píxeles de esa misma capa**.
   Qwen, la app cambia sola a IMAGE 2 y avisa: esos motores no admiten máscaras y reescribirían la
   imagen entera.
 
-**Extras:** «Invertir» (necesita algo pintado), «Limpiar», «Ocultar máscara».
+**Extras:** «Invertir» (necesita algo pintado) hace lo contrario: rellena **todo menos** lo pintado.
+«Limpiar» borra la máscara y «Ocultar máscara» solo la esconde.
 
 ### F5 · Quitar el fondo
 
