@@ -2832,3 +2832,14 @@ las cabeceras.
 - **Verificación:** dos verificadores independientes → **PASS** (4 PDF) y **PASS** (desglose: 7/7, 0 defectos, recálculo propio de las 204 facturas y diff celda a celda contra la copia previa). Actas en `tools/evidencias/2026-11-02-pdfs-133-134-161-167/` y `tools/evidencias/2026-11-02-desglose-facturacion/`.
 - **Pendientes/observaciones:** la factura 21 está mal nombrada (`Febrero\Factura 21xlsx.xlsx`); hay 8 xlsx duplicados de junio (87-94) en `…\2026\Prueba\`; 14 facturas con plantilla `Ejecutiva` sin área de impresión (Julio 139 y Agosto 140-152).
 - **Commit:** ver `git log -1 -- tools/memoria/bitacora.md`.
+
+
+## 2026-11-02 (tarde) — L@s Veronica'z: área de impresión en 14 facturas y aclaración de `Mayo\Prueba`
+- **Encargo:** «Coloca área de impresión» + aclarar si hay «8 xlsx duplicados de junio en \2026\Prueba».
+- **Área de impresión:** puesta `A1:D30` a las 14 facturas de plantilla `Ejecutiva` que no la tenían (Julio 139 + Agosto 140-152). Ahora las **68** facturas `Ejecutiva` del año tienen área y ninguna se imprime en dos páginas. Las 14 quedaron además con vertical/A4 (solo impresión) y sin tocar ningún dato (diff 0 contra las copias previas de 13; de la 139 no hay copia previa porque falló el respaldo y se documenta así).
+- **PDFs:** los 5 que ya existían (139, 143, 146, 147, 151) salían en 2 páginas con la segunda vacía; regenerados a 1 página con el mismo contenido. Los antiguos están en `_backups\2026-11-02_printarea\pdf_2paginas\`.
+- **Carpeta `Prueba`:** no está en `…\2026\Prueba` sino en **`…\2026\Mayo\Prueba`** y **no son duplicados**: son 8 `.xlsx` (87-94) + 4 PDF del 23/07/2026 12:30 con los mismos números pero datos distintos (clientes e importes de prueba; p. ej. «87 Lurdes 45 €» frente a la real «87 Sara 40 €»). No están en el libro y no se han tocado; conviene sacarlas de `2026` (colisionan en numeración).
+- **Skill:** añadida la regla «Área de impresión obligatoria A1:D30» en el cuerpo y en el checklist (y el aviso de que sin ella el PDF sale en 2 páginas); sincronizada en los 4 perfiles.
+- **Verificación:** verificador independiente **PASS** (14/14 con área, 68/68 en el año, 0 diferencias de datos, 5 PDF a 1 página, libro intacto con K15=12.044, skill sincronizada, tabla de `Prueba` vs reales). Acta en `tools/evidencias/2026-11-02-printarea-y-prueba/`.
+- **Observación pendiente del dueño:** las facturas 151 y 152 llevan fecha 29/08 y 31/08 en la factura/PDF, pero el libro tiene 28/08 y 30/08 (preexistente, no lo introduce este cambio).
+- **Commit:** ver `git log -1 -- tools/memoria/bitacora.md`.
