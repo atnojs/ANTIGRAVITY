@@ -2854,3 +2854,13 @@ las cabeceras.
 - **Verificación:** verificador independiente **PASS** (fechas = libro, diff 1 celda por factura, PDF 1 página con 28/08, Prueba intacta, libro K15=12.044 sin errores). Acta en `tools/evidencias/2026-11-02-fechas-151-152/`.
 - **Pendiente del dueño:** quedan 2 facturas con fecha distinta a la del libro: **22** (factura 03/02/2026 / libro 05/02/2026) y **45** (factura 25/03/**2025** / libro 25/03/2026, el año de la factura está mal).
 - **Commit:** ver `git log -1 -- tools/memoria/bitacora.md`.
+
+
+## 2026-11-02 (tarde) — L@s Veronica'z: fechas de las facturas 22 y 45 alineadas con el libro
+- **Encargo:** «alinealas con el libro» (las dos únicas facturas que quedaban con fecha distinta a la del libro).
+- **Cambios:** `Febrero\Factura 22.xlsx` K2 03/02/2026 → **05/02/2026**; `Marzo\Factura 45.xlsx` K2 25/03/**2025** → **25/03/2026** (el año estaba mal). Escritas con `=DATE(...)` para evitar el desfase de zona horaria del COM.
+- **PDFs:** reexportado `Factura 22.pdf` (1 página, 05/02/2026); al no tener área de impresión salían 4 páginas (3 en blanco), así que se le puso `$A$1:$K$32` con ajuste a 1 página. Texto idéntico al PDF antiguo salvo la fecha (1 token distinto de 107). La 45 no tiene PDF (Soraya no tiene DNI); también se le puso área `$A$1:$K$32` + ajuste a 1 página porque exportaba 4 páginas.
+- **Copias:** `_backups\2026-11-02_fechas_22_45\` (22.xlsx, 45.xlsx, 45 tras la fecha, y el PDF antiguo del 03/02).
+- **Consistencia:** ahora **204/204** facturas reales de 2026 tienen la misma fecha que el libro (antes fallaban 4: 22, 45, 151 y 152). `Mayo\Prueba` intacta.
+- **Verificación:** verificador independiente **PASS** (diff 1 celda por factura, PDF de 22 en 1 página con la fecha nueva y texto idéntico salvo la fecha, 204/204, libro intacto con K15=12.044, Prueba sin tocar). Acta en `tools/evidencias/2026-11-02-fechas-22-45/`.
+- **Commit:** ver `git log -1 -- tools/memoria/bitacora.md`.
