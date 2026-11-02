@@ -303,3 +303,8 @@ tools/veronicaz/*.xlsx
 # PASAFOTOS: datos locales y artefactos de compilacion
 tools/pasafotos/data/
 tools/pasafotos/app.ico
+
+# Banco de comparación de la máscara de UIS·Hoola: copia congelada del código
+# anterior para demostrar el fallo. Se regenera con `git show`; no se publica.
+tools/pruebas/tmp-old-uis/
+

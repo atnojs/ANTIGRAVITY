@@ -326,7 +326,12 @@ class Renderer {
     const key = layer.id;
     const cache = this.maskCache.get(key);
     const strokes = layer.mask?.strokes || [];
-    const signature = strokes.length + ':' + (strokes.at(-1)?.pts.length || 0);
+    // Firma por CONTENIDO de la lista de trazos (modo, grosor, dureza y número
+    // de puntos). Antes solo miraba el número de trazos y los puntos del último:
+    // dos máscaras distintas podían compartir firma y reutilizarse la vieja.
+    const signature = strokes
+      .map((s) => `${s.mode === 'erase' ? 'e' : 'p'}${s.size || 0}:${s.hardness ?? ''}:${s.pts?.length || 0}`)
+      .join('|');
     if (cache && cache.signature === signature && cache.w === state.doc.width && cache.h === state.doc.height) {
       return cache.canvas;
     }

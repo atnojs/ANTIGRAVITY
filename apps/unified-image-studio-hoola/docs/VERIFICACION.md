@@ -184,3 +184,49 @@ Los dos encargos afectados quedaron en el registro como `mode: edit` con una sol
 
 Cuidado con el cambio: los invariantes de `tools/flow-agent/comprobar-entregable.mjs` apuntaban al
 texto antiguo y **fallaron** al aplicar el arreglo, lo que confirmó que la comprobación sirve.
+
+---
+
+## Máscara: el relleno se aplicaba a TODA la imagen (2026-11-02 · v3.0.1-hoola)
+
+**Síntoma reportado:** «Selecciono con el pincel, clico en rellenar la máscara y le aplica lo
+solicitado a toda la imagen».
+
+**Causa raíz (reproducida y medida):** `componerInpaintingSobreCapa()` construía la base del
+compuesto con `imageFor(layer.aspectOriginal || layer.resourceId)`. `imageFor()` **solo devuelve la
+imagen si ya está cargada** y, si no, devuelve `null` (la deja cargando). `aspectOriginal` no se
+pinta nunca en el lienzo, así que su `<img>` no existía: en cuanto la capa tenía `aspectOriginal`
+(es decir, después de un inpainting o de «quitar fondo» anteriores, y **siempre** al reabrir el
+proyecto), el compuesto devolvía `null` y `acceptResult()` aplicaba **la imagen entera del
+proveedor** a la capa. La primera máscara de una imagen recién importada sí funcionaba: por eso las
+verificaciones anteriores pasaban y la app seguía fallando para el usuario.
+
+**Corrección (`assets/js/app.js` v3.0.1):**
+
+1. La base del compuesto es **siempre la imagen actual de la capa**, cargada con un ayudante
+   (`cargarImagenDeRecurso`) que **espera** a que el `<img>` esté listo. Ya no se usa
+   `aspectOriginal` (también revertía las ediciones anteriores fuera de la máscara).
+2. Si el compuesto no se puede construir, **no se aplica nada**: se avisa al usuario y se deja la
+   vista previa abierta. Nunca se aplica la imagen entera como consuelo.
+3. El relleno de máscara usa **siempre un modelo OpenAI (IMAGE 2)**: Flow, Gemini y Qwen ignoran la
+   máscara en el servidor y reescribirían la imagen completa. Antes solo se corregía el caso de
+   Flow.
+4. `maskCanvasFor()` (máscara por píxeles) firma la caché por **contenido** de los trazos, no solo
+   por número de trazos y puntos del último.
+5. Módulos versionados con fecha (`*.20261102.js`) para que la CDN de Hostinger sirva el código
+   nuevo sin depender de `?v=` (cachea por ruta).
+
+**Evidencia:**
+
+| Prueba | Resultado |
+|---|---|
+| Banco local, código ANTERIOR (peor proveedor: reescribe toda la imagen) | 1.er relleno OK; tras recargar, 2.º relleno: **resto de la imagen cambiado 100 %** |
+| Banco local, código CORREGIDO | 1.er relleno: franja 24,4 % / resto **0 %**; tras recargar, 2.º relleno: franja 25,2 % / resto **0 %** |
+| Modelo Gemini seleccionado + «Rellenar la máscara» | la petición viaja con `openai-image-2-low` |
+| Módulos cargados en una carga | una sola copia de cada uno (`app`, `ai`, `core`, `exporter`, `flow`, `persist`, `render`, `tools`, `ui` `.20261102.js`) |
+| Producción tras desplegar | ver más abajo |
+
+Banco: `tools/pruebas/local-mascara-uis-hoola.mjs` (sirve la app por HTTP y simula el proveedor).
+Código anterior congelado en `tools/pruebas/tmp-old-uis/` para comparar (no se publica).
+Evidencias: `tools/evidencias/2026-11-02-mascara-uis/`.
+

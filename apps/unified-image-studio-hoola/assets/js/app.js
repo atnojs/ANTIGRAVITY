@@ -39,11 +39,44 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.0 · 2026-10-26 · copia Hoola al 100%';
+const BUILD = 'v3.0.1 · 2026-11-02 · máscara aplicada solo dentro de lo pintado';
 
 let generationBusy = false;
 let pendingResult = null;
 let lastExportUrl = null;
+
+/* Imagen de un recurso, esperando a que cargue si hace falta.
+   `imageFor()` solo devuelve la imagen si YA está cargada; usar eso dentro de un
+   compuesto asíncrono hacía que, en cuanto la imagen no estaba precargada (p. ej.
+   al reabrir un proyecto), el compuesto del inpainting se descartara y se aplicara
+   el resultado ENTERO del proveedor a la capa: el cambio se veía en toda la imagen. */
+const promesasImagenRecurso = new Map();
+function cargarImagenDeRecurso(resourceId, timeout = 20000) {
+  const res = getResource(resourceId);
+  if (!res?.url) return Promise.resolve(null);
+  const cargada = imageFor(resourceId);
+  if (cargada) return Promise.resolve(cargada);
+  const enCurso = promesasImagenRecurso.get(res.url);
+  if (enCurso) return enCurso;
+  const promesa = new Promise((resolve) => {
+    const img = new Image();
+    let terminado = false;
+    const terminar = (valor) => {
+      if (terminado) return;
+      terminado = true;
+      clearTimeout(temporizador);
+      resolve(valor);
+    };
+    const temporizador = setTimeout(() => terminar(null), timeout);
+    img.decoding = 'async';
+    img.onload = () => terminar(img.naturalWidth > 0 ? img : null);
+    img.onerror = () => terminar(null);
+    img.src = res.url;
+  });
+  promesasImagenRecurso.set(res.url, promesa);
+  void promesa.then(() => promesasImagenRecurso.delete(res.url));
+  return promesa;
+}
 
 /* ══════════════════════ Arranque ══════════════════════ */
 /** La compuerta de modelos se bloquea en cuanto no hay sesión válida. */
@@ -1306,30 +1339,36 @@ async function acceptResult(mode) {
   const edicion = ['inpaint', 'remove-background'].includes(result.job?.kind);
   const destino = edicion ? getLayer() : null;
   if (edicion && destino) {
-    const blobEdicion = dataUrlToBlob(result.dataUrl);
-    const dimsEdicion = await readImageDimensions(blobEdicion);
-    const recurso = addResource({
-      name: `${result.job.kind}-${Date.now()}.png`,
-      mime: 'image/png',
-      blob: blobEdicion,
-      width: dimsEdicion.width,
-      height: dimsEdicion.height,
-    });
-    void uploadResource(recurso);
-    const anterior = destino.resourceId;
+    // Inpainting: primero se compone el resultado DENTRO de la máscara. Si no se
+    // puede componer, NO se aplica la imagen entera del proveedor: se avisa y se
+    // deja la vista previa abierta (antes se sustituía toda la capa y el cambio
+    // aparecía en toda la imagen).
     let recursoFinal = null;
     if (result.job.kind === 'inpaint') {
-      // El proveedor devuelve la imagen entera y puede mover cosas fuera de la
-      // máscara. Se compone: original fuera de la máscara + resultado dentro.
-      const parche = await componerInpaintingSobreCapa(destino, result.dataUrl);
-      if (parche) {
-        recursoFinal = parche;
+      recursoFinal = await componerInpaintingSobreCapa(destino, result.dataUrl);
+      if (!recursoFinal) {
+        console.error('Inpainting: no se pudo componer el resultado dentro de la máscara.');
+        toast('No se pudo aplicar el relleno solo dentro de la máscara, así que no se ha aplicado nada. Vuelve a intentarlo.', 'error', { duration: 12000 });
+        return;
       }
     }
+    let recurso = null;
+    if (!recursoFinal) {
+      const blobEdicion = dataUrlToBlob(result.dataUrl);
+      const dimsEdicion = await readImageDimensions(blobEdicion);
+      recurso = addResource({
+        name: `${result.job.kind}-${Date.now()}.png`,
+        mime: 'image/png',
+        blob: blobEdicion,
+        width: dimsEdicion.width,
+        height: dimsEdicion.height,
+      });
+      void uploadResource(recurso);
+    }
+    const recursoAplicado = recursoFinal ? recursoFinal.id : recurso.id;
     mutate(result.job.kind === 'inpaint' ? 'aplicar inpainting' : 'aplicar fondo quitado', () => {
-      destino.resourceId = (typeof recursoFinal !== "undefined" && recursoFinal ? recursoFinal.id : recurso.id);
+      destino.resourceId = recursoAplicado;
     });
-    if (result.job.kind === 'inpaint') destino.aspectOriginal = anterior;
     renderLayers();
     renderAssets();
     renderer.requestRender('edicion-aplicada');
@@ -1393,12 +1432,15 @@ async function runInpaint() {
     toast('El inpainting necesita el proxy del servidor y una clave configurada.', 'error');
     return;
   }
-  // El relleno de máscara lo hacen los proveedores directos: el motor de Flow no
-  // admite máscaras. Si hay un modelo de Flow elegido, se usa IMAGE 2 y se avisa.
+  // El relleno de máscara necesita un modelo que ACEPTE máscaras: solo los
+  // proveedores OpenAI la envían al proveedor. Flow, Gemini y Qwen la ignoran,
+  // así que el modelo reescribiría la imagen entera. En ese caso se usa IMAGE 2
+  // y se avisa, en vez de mandar la máscara a quien no la entiende.
   const elegido = modelById(state.ui.model);
-  const modeloInpaint = elegido?.provider === 'flow' ? 'openai-image-2-low' : state.ui.model;
-  if (elegido?.provider === 'flow') {
-    toast('Para rellenar la máscara se usa IMAGE 2: el motor de Flow no admite máscaras.', 'warn', { duration: 8000 });
+  const soportaMascara = elegido?.provider === 'openai';
+  const modeloInpaint = soportaMascara ? state.ui.model : 'openai-image-2-low';
+  if (!soportaMascara) {
+    toast(`Para rellenar la máscara se usa IMAGE 2: ${elegido?.label || 'ese modelo'} no admite máscaras.`, 'warn', { duration: 8000 });
   }
   showLoading('Rellenando la máscara…', 'Se envía la composición y la máscara al proveedor.');
   try {
@@ -1415,6 +1457,7 @@ async function runInpaint() {
     if (job?.error) throw new Error(job.error);
     pendingResult = { job, dataUrl: job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}` };
     showResultPreview(pendingResult);
+    toast('Resultado listo: al aceptar se aplica SOLO dentro de la máscara pintada.', 'ok');
   } catch (error) {
     toast(`El inpainting falló: ${error.message}`, 'error');
   } finally {
@@ -1499,12 +1542,20 @@ function renombrarCapaDesdePropiedades() {
 
 /* Compone el resultado del proveedor SOLO dentro de la máscara de la capa:
    el resto del lienzo se queda exactamente como estaba. Evita que el "drift"
-   del modelo reescriba zonas que el usuario no había pintado. */
+   del modelo reescriba zonas que el usuario no había pintado.
+
+   La base es SIEMPRE la imagen actual de la capa:
+   - Antes se usaba `layer.aspectOriginal`, que no se precarga nunca (imageFor()
+     devuelve null si la imagen no está lista) y hacía que el compuesto se
+     descartara y se aplicara la imagen entera del proveedor: el cambio salía en
+     toda la imagen nada más reabrir un proyecto.
+   - Ese original además revertía las ediciones anteriores fuera de la máscara. */
 async function componerInpaintingSobreCapa(layer, dataUrlResultado) {
   try {
     const doc = state.doc;
-    const original = imageFor(layer.aspectOriginal || layer.resourceId);
-    if (!original || !doc) return null;
+    if (!doc || !layer) return null;
+    const original = await cargarImagenDeRecurso(layer.resourceId);
+    if (!original) return null;
     const cargar = (src) => new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve(img);
@@ -1525,7 +1576,7 @@ async function componerInpaintingSobreCapa(layer, dataUrlResultado) {
     pctx.drawImage(renderer.maskCanvasFor(layer), 0, 0, doc.width, doc.height);
     pctx.globalCompositeOperation = 'source-over';
 
-    // 3) Nueva imagen de la capa: original + parche en su sitio
+    // 3) Nueva imagen de la capa: la actual + parche en su sitio
     const lienzo = document.createElement('canvas');
     lienzo.width = Math.max(1, Math.round(layer.w));
     lienzo.height = Math.max(1, Math.round(layer.h));
@@ -1536,6 +1587,7 @@ async function componerInpaintingSobreCapa(layer, dataUrlResultado) {
     const blob = await canvasToBlob(lienzo, 'image/png');
     return addResource({ name: 'inpaint-' + Date.now() + '.png', mime: 'image/png', blob, width: lienzo.width, height: lienzo.height });
   } catch (error) {
+    console.error('Inpainting: fallo al componer dentro de la máscara', error);
     return null;
   }
 }
@@ -1574,7 +1626,8 @@ async function removeBackgroundLocal() {
     const resource = addResource({ name: `${layer.name}-sin-fondo.png`, mime: 'image/png', blob, width: canvas.width, height: canvas.height });
     void uploadResource(resource);
     mutate('quitar fondo (local)', () => {
-      layer.aspectOriginal = layer.resourceId;
+      // Ya no se guarda un `aspectOriginal`: la composición del inpainting usa
+      // siempre la imagen actual de la capa (ver componerInpaintingSobreCapa).
       layer.resourceId = resource.id;
       layer.name = `${layer.name} sin fondo`;
     });

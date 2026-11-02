@@ -29,7 +29,7 @@ comprueba eso primero y dilo antes de dar la receta.
 | Nombre visible | `Unified Image Studio · Hoola` (marca `UIS`, etiqueta `HOOLA`) |
 | URL publicada | `https://atnojs.es/apps/unified-image-studio-hoola/` |
 | Ruta en el repo | `apps/unified-image-studio-hoola/` |
-| Versión | `3.0.0-hoola` (sello en la barra inferior) |
+| Versión | `3.0.1-hoola` (sello en la barra inferior) |
 | Qué es | Estudio de imagen por capas: importar, generar con IA, editar, componer y exportar |
 | Backend | PHP (`api.php` + `proxy.php` + `lib/`), SQLite en `storage/`; sin él solo se edita y exporta |
 | Motores | Google Flow en el PC (imágenes y vídeo) + proveedores directos (OpenAI, Gemini, Qwen) |
@@ -193,6 +193,17 @@ generaciones seguidas en el PC (con modelos directos ese selector está desactiv
    zona sobre el lienzo. «Borrar» corrige lo pintado.
 4. Escribir la **«Instrucción de inpainting»** (qué debe aparecer en esa zona).
 5. **«Rellenar la máscara»** y aceptar el resultado igual que en F3.
+
+**Qué aplica:** solo la zona pintada. El resto de la imagen se queda exactamente como estaba, aunque
+el proveedor devuelva una imagen completa distinta. Al pulsar «Aceptar» el resultado **sustituye los
+píxeles de esa misma capa**.
+
+**Dos avisos que hay que dar:**
+- La máscara **no se borra sola** después de rellenar: si va a pintar otra zona, pulse antes
+  **«Limpiar»**, o el nuevo relleno incluirá también lo pintado antes.
+- El relleno siempre se hace con un modelo **OpenAI (IMAGE 2)**. Si tiene elegido Flow, Gemini o
+  Qwen, la app cambia sola a IMAGE 2 y avisa: esos motores no admiten máscaras y reescribirían la
+  imagen entera.
 
 **Extras:** «Invertir» (necesita algo pintado), «Limpiar», «Ocultar máscara».
 
@@ -408,6 +419,7 @@ de API. Esa elección inicial no es un error: es el diseño de la app.
 | Referencias por generación | 8 en la interfaz; **con Flow solo viajan las 2 primeras** |
 | Imágenes por encolado (solo Flow) | 1–4 |
 | Deshacer | 60 pasos |
+| Modelos para rellenar la máscara | siempre OpenAI (IMAGE 2): Flow, Gemini y Qwen no admiten máscaras |
 | Proporciones con Flow | 1:1, 16:9, 4:3, 3:4, 9:16 (el resto, desactivadas) |
 | Resolución con Flow | no se elige: ~1K nativa |
 | Formatos de vídeo | 16:9 y 9:16 |
