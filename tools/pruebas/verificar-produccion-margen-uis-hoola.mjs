@@ -19,7 +19,8 @@ page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); })
 page.on('pageerror', (e) => errores.push('pageerror: ' + e.message));
 
 await page.route('**/api.php?action=job.create', async (route) => {
-  const body = await route.request().postDataJSON().catch(() => ({}));
+  let body = {};
+  try { body = route.request().postDataJSON(); } catch { body = {}; }
   await route.fulfill({
     status: 200,
     contentType: 'application/json',

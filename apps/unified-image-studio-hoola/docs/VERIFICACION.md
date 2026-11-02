@@ -489,3 +489,13 @@ La primera versión del margen (3.1.0) usaba una sombra difusa: el borde del obj
 semiopaco y el objeto no quedaba entero. Ahora la zona se **dilata de forma sólida** (copias
 desplazadas del trazo, local a cada zona) y solo se **desenfoca el borde exterior**; el interior se
 aplica al 100 %.
+**Producción 3.1.1** (commit 76211c9; index.html → pp.20261102n.js?v=20261102n;
+pi.php?action=state → ersion: "3.1.1-hoola"). Dos comprobaciones:
+
+1. **Proveedor simulado con objeto grande** (0 generaciones): máscara de radio ~60 px y objeto de
+   radio 150 px → objetoAplicadoPct 100, lejosCambiadoPct 0, vista previa = aplicado (0)
+   (B2-produccion-margen.json).
+2. **Proveedor real** openai-image-2-low (1 generación, prompt «coloca una abeja color oro»,
+   máscara pequeña, margen 50 %): la abeja se aplica completa (doradoPx 765, 0 cambios lejos de la
+   zona, vista previa = aplicado 0), capturas C0-produccion-abeja-preview.png y
+   C1-produccion-abeja-aplicada.png (C6-produccion-abeja.json).

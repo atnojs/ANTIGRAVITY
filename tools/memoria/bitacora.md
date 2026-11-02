@@ -4,6 +4,16 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-02 (noche, 2) — UIS·Hoola: «la abeja es mayor que la zona de la máscara» (margen al aplicar)
+
+- **Encargo:** «ahora funcionó a medias. La abeja es mayor que la zona de la mascara y por eso se ve parcial. corrígelo.»
+- **Causa:** la composición recortaba el resultado del proveedor a lo pintado (`destination-in` con la máscara del usuario); si el modelo dibujaba el objeto más grande que la máscara, la parte de fuera se perdía y el objeto salía cortado.
+- **Solución (3.1.0 → 3.1.1):** nueva opción **«Margen al aplicar»** (0–100 %, por defecto 50 %, guardada en `uis-hoola:maskPrefs`): la zona que se toma del proveedor se dilata alrededor de lo pintado antes de componer. La dilatación es **local a cada trazo** (copias desplazadas en 36 direcciones; 3.1.0 usaba una sombra difusa y el borde quedaba semiopaco → **3.1.1 la hace sólida** y solo desenfoca el borde exterior ~12 % del margen). `0 %` recupera el comportamiento estricto. Además el prompt pide que el objeto quede completo dentro de la zona.
+- **Verificación:** local (principal: núcleo 100 %, margen 36,7 %, resto 0, preview = aplicado; casos y capas sin regresión). Producción: proveedor simulado con objeto de radio 150 px sobre máscara de 60 px → `objetoAplicadoPct 100`, lejos 0 (`B2-produccion-margen.json`); proveedor real `openai-image-2-low` con «coloca una abeja color oro» → `doradoPx 765`, lejos 0, preview = aplicado (`C6-produccion-abeja.json`; capturas `C0`/`C1`). PASS independiente 3.0.10 = **97,1**; 3.1.1 pendiente de firma.
+- **Commits:** `4df69fef` (3.1.0), `f76211c9` (3.1.1) + re-disparos; documentación en el commit de cierre.
+- **Lección:** al componer un inpainting no basta con recortar a la máscara del usuario: el modelo dibuja el objeto a su tamaño y hay que dar un margen (dilatación sólida + borde suave) o el resultado sale amputado.
+
+---
 ## 2026-11-02 (noche) — UIS·Hoola: la máscara estaba en una capa tapada («me cambió el sujeto»)
 
 - **Encargo:** «marque las mascaras y al rellenar de negro, las rellenó bien pero me cambió el sujeto de la imagen y eso no tiene que pasar» (capturas: dragón con dos máscaras rosas arriba; vista previa con un árbol y dos manchas negras).
