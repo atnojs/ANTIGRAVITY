@@ -2843,3 +2843,14 @@ las cabeceras.
 - **Verificación:** verificador independiente **PASS** (14/14 con área, 68/68 en el año, 0 diferencias de datos, 5 PDF a 1 página, libro intacto con K15=12.044, skill sincronizada, tabla de `Prueba` vs reales). Acta en `tools/evidencias/2026-11-02-printarea-y-prueba/`.
 - **Observación pendiente del dueño:** las facturas 151 y 152 llevan fecha 29/08 y 31/08 en la factura/PDF, pero el libro tiene 28/08 y 30/08 (preexistente, no lo introduce este cambio).
 - **Commit:** ver `git log -1 -- tools/memoria/bitacora.md`.
+
+
+## 2026-11-02 (tarde) — L@s Veronica'z: fecha del libro en las facturas 151 y 152; `Mayo\Prueba` se conserva
+- **Encargo:** «no la borres [la carpeta Prueba], la dejamos así por si las moscas» + «pon a las facturas 151 y 152 la fecha del libro al pdf».
+- **Fechas:** `Factura 151.xlsx` D2 29/08/2026 → **28/08/2026** (la del libro, `G35`) y `Factura 152.xlsx` 31/08/2026 → **30/08/2026** (`G36`). Escritas con `=DATE(...)` (el `datetime` por COM metía desfase de zona horaria). Regenerado `Factura 151.pdf` con la fecha nueva (1 página); la 152 no tiene PDF porque Lurdes no tiene DNI.
+- **Diff:** solo cambia `D2` en cada factura; el resto de celdas, estilos, anchos y el área `A1:D30` idénticos. Copias previas en `_backups\2026-11-02_fechas_151_152\` (incluye el PDF antiguo del 29/08).
+- **Nota de proceso:** el PDF de la 151 estaba abierto en Acrobat y bloqueaba el reemplazo; se cerró esa ventana (`WM_CLOSE`) y se copió el PDF nuevo. El render del PDF nuevo es idéntico al que exporta Excel (0 píxeles distintos).
+- **`Mayo\Prueba`:** se conserva tal cual (12 ficheros, mtime 23/07/2026), como pidió Antonio. Son 8 xlsx + 4 pdf con números 87-94 pero datos de prueba distintos de las facturas reales.
+- **Verificación:** verificador independiente **PASS** (fechas = libro, diff 1 celda por factura, PDF 1 página con 28/08, Prueba intacta, libro K15=12.044 sin errores). Acta en `tools/evidencias/2026-11-02-fechas-151-152/`.
+- **Pendiente del dueño:** quedan 2 facturas con fecha distinta a la del libro: **22** (factura 03/02/2026 / libro 05/02/2026) y **45** (factura 25/03/**2025** / libro 25/03/2026, el año de la factura está mal).
+- **Commit:** ver `git log -1 -- tools/memoria/bitacora.md`.
