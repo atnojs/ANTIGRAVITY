@@ -1,3 +1,24 @@
+## 2026-11-02 — La vista previa del relleno enseñaba la salida del proveedor, no lo que se aplica (UIS·Hoola)
+
+- **Síntoma (usuario):** «en la imagen 1 te marco donde esta la mascara (dentro de la boca), en la
+  imagen 2 ves el resultado… en el prompt puse pinta de color fuxia»: adjuntó un retrato **entero**
+  teñido de fucsia y parecía que el relleno se aplicaba a toda la imagen.
+- **Causa:** la composición **sí** respetaba la máscara (medido en producción: fuera de la máscara
+  0,09 %), pero la **vista previa** mostraba `job.image`, la imagen **completa** que devuelve el
+  proveedor, que con el prompt «pinta de color fucsia» recoloreó todo el retrato. El usuario veía la
+  salida del proveedor y creía que era el resultado aplicado.
+- **Solución (3.0.4):** `runInpaint()` compone **antes** de previsualizar
+  (`componerInpaintingSobreCapa`) y guarda el compuesto en `pendingResult`; `showResultPreview()` usa
+  `previewUrl`; `acceptResult()` reutiliza ese mismo compuesto (sin recomponer). Rótulo «Vista previa
+  de lo que se aplicará». Efecto medido: vista previa = capa aplicada (diferencia media 0; mismo
+  SHA-256).
+- **Lección:** una vista previa de una operación con máscara debe mostrar **el resultado compuesto**,
+  no la salida cruda del proveedor; si no, el usuario juzga (y desconfía) de una imagen que nunca se
+  aplicará. Además: no dejar la composición previa como recurso huérfano —se marca `preview`, no se
+  guarda ni sube y se libera al descartar— (3.0.5).
+- **Verificación:** `34-local-pass.json` (`vistaPreviaVsAplicado.mediaDif:0`), `77-produccion-mascara-color.json`
+  (fuera 0,1 %, dentro 46,3 %, vista previa = aplicado), PASS independiente 96,6/100.
+
 ## 2026-11-02 — La máscara del inpainting se aplicaba a TODA la imagen (UIS·Hoola)
 
 - **Síntoma (usuario):** «Selecciono con el pincel, clico en rellenar la máscara y le aplica lo

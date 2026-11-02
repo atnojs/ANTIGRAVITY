@@ -326,6 +326,16 @@ Ahora el recurso se marca `preview`, **no se guarda ni se sube** mientras no se 
 (`persist.js`), y al descartar o regenerar se **libera** (`liberarVistaPrevia`: revoca el blob URL y
 lo quita de `state.resources`); al aceptar se quita la marca y se sube.
 
+**Producción 3.0.5** (commit `ae2cf27e`; `index.html` → `app.20261102g.js?v=20261102g`;
+`api.php?action=state` → `version: "3.0.5-hoola"`; `f`, `d`, `c`, `.20261102` siguen 200):
+el verificador reprodujo en Chrome real, con 0 generaciones, recursos base 1 → preview 2 (`preview:true`)
+→ descartar 2→1 → regenerar 2→2 → aceptar 2 (preview:false, `remoteId` asignado y `resource.upload`)
+→ recarga: la preview **no** persistió; **ninguna** preview se subió; vista previa y aplicado con el
+mismo SHA-256; consola `[]`; módulos `g` una sola copia. Generación real en 3.0.4:
+fuera de la máscara 0,1 %, dentro 46,3 %, vista previa = aplicado. Gate: **PASS 96,6/100**
+(`VERIFICACION_INDEPENDIENTE.md`).
+
+
 
 
 ### Rework 3.0.2 (2026-11-02) — defectos del verificador independiente

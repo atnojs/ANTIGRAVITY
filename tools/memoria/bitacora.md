@@ -4,6 +4,17 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-02 (tarde) — UIS·Hoola: color/opacidad de la máscara y vista previa fiel
+
+- **Encargo:** tras el arreglo de la máscara, el usuario reporta: (a) «en la imagen 1 te marco donde esta la mascara (dentro de la boca), en la imagen 2 ves el resultado… en el prompt puse pinta de color fuxia» (parecía teñir todo el retrato); (b) «si el selector de opacidad está al 100%, por qué al marcar la zona no se queda en blanco…? Quiero que la máscara tenga otro color. Pon un selector de color…».
+- **Diagnóstico:** (a) la composición ya respetaba la máscara (producción: fuera 0,1 %); lo que enseñaba todo el retrato teñido era **la vista previa**, que mostraba la imagen completa del proveedor. (b) la capa de máscara se pintaba con cian y alpha 0,55 fijos; el único «opacidad» visible era el de la **capa**, no el de la máscara.
+- **Qué se hizo (3.0.4):** `paintMask()` usa `state.ui.maskColor` + `maskOpacity` (10–100 %, por defecto 100 % = sólida); controles «Color de la máscara» (+ «Auto») y «Opacidad de la máscara», persistidos en `localStorage: uis-hoola:maskPrefs`; `runInpaint()` **compone antes de previsualizar** y `acceptResult()` reutiliza esa composición (vista previa = aplicado); rótulo «Vista previa de lo que se aplicará».
+- **Ronda 5 (3.0.5):** el verificador detectó O1 (la composición temporal quedaba como recurso huérfano al descartar/regenerar). Los recursos `preview` ya no se guardan ni suben (`persist.js`) y se liberan con `liberarVistaPrevia()`; al aceptar se desmarcan y suben.
+- **Verificación:** banco local (`okPreview` mediaDif 0; `okMascara` píxel `[0,255,0,255]` y alfa 77 al 30 %; `okSinHuerfano` 3→3); producción 3.0.4/3.0.5 con 1 generación real (fuera 0,1 %, dentro 46,3 %, proveedor 27,97 fuera sin aplicarse, vista previa = aplicado con el mismo SHA-256); hashes servidos = blobs; consola `[]`; 1500/768/390 sin scroll. **PASS independiente 96,6/100** en 5 rondas.
+- **Commits:** `6cb8b4d2` (3.0.4), `ae2cf27e` (3.0.5) y esta entrada en el commit de documentación.
+- **Evidencias:** `tools/evidencias/2026-11-02-mascara-uis/` (capturas 70–76, `77-produccion-mascara-color.json`, `AUTOEVALUACION.md`, `VERIFICACION_INDEPENDIENTE.md`).
+
+---
 ## 2026-11-02 — UIS·Hoola: la máscara del inpainting se aplicaba a toda la imagen
 
 - **Encargo:** «en esta app: apps/unified-image-studio-hoola sigue sin funcionar la máscara. Selecciono con el pincel, clico en rellenar la máscara y le aplica lo solicitado a toda la imagen. asegurate de que funcione como debe antes de darme el cambio.»
