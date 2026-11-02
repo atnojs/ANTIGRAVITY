@@ -462,3 +462,11 @@ Evidencias: `tools/evidencias/2026-11-02-mascara-uis/`.
 
 - La nota «Capa de la máscara» se actualiza **mientras se arrastra** la opacidad (antes solo al soltar).
 - El aviso de capa oculta indica que se pondrá **al 100 %** de opacidad («Mostrar al 100 % y rellenar»).
+**Producción 3.0.10** (commit 5e4674bd + re-disparos 5e26476a/f03811c; index.html →
+pp.20261102l.js?v=20261102l; pi.php?action=state → ersion: "3.0.10-hoola"; k y anteriores
+siguen 200). Comprobado en Chrome **con 0 generaciones reales**: tras recargar la nota dice la capa;
+con un solo input del deslizador la nota pasa a **«OPACIDAD MUY BAJA»** (sin esperar al change);
+capa oculta al 50 % → diálogo «La capa de la máscara está oculta» con «(opacidad 50 %)» y botón
+**«Mostrar al 100 % y rellenar»**; cancelar no crea trabajos ni cambia nada; aceptar (proveedor
+simulado) deja la capa visible al 100 % con vista previa. Gate: **PASS 97,1/100**
+(VERIFICACION_INDEPENDIENTE.md).

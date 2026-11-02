@@ -1,3 +1,25 @@
+## 2026-11-02 — La máscara estaba pintada en una capa tapada: «me cambió el sujeto de la imagen» (UIS·Hoola)
+
+- **Síntoma (usuario):** «marque las mascaras y al rellenar de negro, las rellenó bien pero me cambió
+  el sujeto de la imagen»: en el lienzo veía un dragón; la vista previa le mostraba un árbol con dos
+  manchas negras.
+- **Causa:** el proyecto tenía 3 capas; los dos trazos grandes de la máscara (size 600 y 300) estaban
+  en la capa **intermedia** («WhatsApp Image…», la foto del árbol), que queda **debajo** de la capa
+  visible («Resultado IA», el dragón). El relleno se aplicó correctamente a la capa seleccionada,
+  pero la vista previa enseñaba **solo esa capa** → el usuario interpretó que había cambiado el
+  sujeto. No era un fallo de composición: era un problema de **saber sobre qué capa se pinta** y de
+  **qué enseña la vista previa**.
+- **Solución (3.0.6/3.0.7):** nota «Capa de la máscara: «nombre»» en el panel; aviso antes de rellenar
+  si una capa visible de arriba cubre la zona pintada (con opción de cancelar y seleccionar la capa
+  de arriba; no se genera trabajo al cancelar); la vista previa pasa a ser **el lienzo completo con
+  el parche aplicado**; el aviso comprueba el **alfa real** de la capa de arriba para no dar falsos
+  positivos con capas transparentes.
+- **Lección:** en apps con capas, toda herramienta que edite «la capa seleccionada» debe mostrar sin
+  ambigüedad cuál es y avisar si lo que se va a editar queda oculto; y la vista previa debe ser el
+  documento final, no una capa suelta.
+- **Verificación:** `tools/evidencias/2026-11-02-mascara-uis/85-caso-capas.json` y
+  `94-produccion-caso-capas.json`; diagnóstico del proyecto real en `diag-usuario/`.
+
 ## 2026-11-02 — La vista previa del relleno enseñaba la salida del proveedor, no lo que se aplica (UIS·Hoola)
 
 - **Síntoma (usuario):** «en la imagen 1 te marco donde esta la mascara (dentro de la boca), en la
