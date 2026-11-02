@@ -1,4 +1,4 @@
-3.0.6-hoola 2026-11-02
+3.0.7-hoola 2026-11-02
 Copia completa del original actual (Google Flow, compuerta de modelos con la contraseña de
 acceso, cancelación y biblioteca) con el estilo Hoola/Relatos al 100 %.
 3.0.1: el relleno de máscara se aplica SOLO dentro de lo pintado (antes, al reabrir un
@@ -13,4 +13,8 @@ recuerda por navegador, y la vista previa del relleno muestra SOLO lo que se apl
 3.0.6: el panel indica a qué capa pertenece la máscara; si esa capa está tapada por otra
 de arriba se avisa antes de rellenar (y se puede cancelar para seleccionar la de arriba);
 la vista previa del relleno es el LIENZO COMPLETO con el cambio aplicado.
+3.0.7: el aviso de «capa tapada» comprueba el alfa real de la capa de arriba (sin falsos
+positivos con capas transparentes), espera a que carguen todas las capas para la vista
+previa y no cambia el documento durante la espera; la nota de capa se actualiza al
+renombrar.
 Verificación en docs/VERIFICACION.md (sección «Máscara», 2026-11-02).

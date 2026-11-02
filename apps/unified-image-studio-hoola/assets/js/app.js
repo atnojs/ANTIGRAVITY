@@ -9,7 +9,7 @@ import {
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
 } from './core.js?v=25';
-import { renderer, pointInLayer } from './render.js?v=25';
+import { renderer } from './render.js?v=25';
 import { initTools, setTool } from './tools.js?v=25';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.6 · 2026-11-02 · máscara: capa correcta, vista previa del lienzo completo';
+const BUILD = 'v3.0.7 · 2026-11-02 · máscara: aviso de capa tapada sin falsos positivos';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -1503,6 +1503,28 @@ function discardResult() {
   $('aiPreviewImg').src = '';
 }
 
+/* ¿La capa pinta algo OPACO en alguno de estos puntos? Se renderiza la capa una
+   vez y se mira el alfa real (no solo su rectángulo), para no avisar de «tapada»
+   cuando la capa de arriba es transparente en esa zona. */
+function capaOpacaEnPuntos(capa, doc, muestra) {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = doc.width;
+    canvas.height = doc.height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    renderer.paintLayerOnto(ctx, capa);
+    for (const [x, y] of muestra) {
+      const px = Math.round(x);
+      const py = Math.round(y);
+      if (px < 0 || py < 0 || px >= doc.width || py >= doc.height) continue;
+      if (ctx.getImageData(px, py, 1, 1).data[3] > 8) return true;
+    }
+  } catch (error) {
+    console.error('No se pudo comprobar si la capa tapa la máscara', error);
+  }
+  return false;
+}
+
 /* Capa visible que TAPA la capa editada en la zona pintada. Si existe, rellenar
    ahí no se verá en el lienzo (la tapa la de arriba): hay que avisar antes, porque
    es fácil pintar la máscara sobre una capa que no es la que se está viendo. */
@@ -1521,7 +1543,7 @@ function capaQueTapaLaMascara(layer) {
   for (let i = indice + 1; i < doc.layers.length; i += 1) {
     const arriba = doc.layers[i];
     if (!arriba.visible || arriba.opacity <= 0) continue;
-    if (muestra.some(([x, y]) => pointInLayer(arriba, { x, y }))) return arriba;
+    if (capaOpacaEnPuntos(arriba, doc, muestra)) return arriba;
   }
   return null;
 }
@@ -1537,21 +1559,31 @@ async function esperarImagenEnCache(resourceId, intentos = 80) {
   return null;
 }
 
+async function esperarImagenesDelDocumento() {
+  const capas = state.doc?.layers || [];
+  await Promise.all(capas.map((capa) => (capa.type === 'image' ? esperarImagenEnCache(capa.resourceId, 40) : null)));
+}
+
 /* Vista previa = el DOCUMENTO COMPLETO con el parche aplicado en su capa. Así se
    ve exactamente lo que quedará en el lienzo al aceptar, aunque el parche vaya a
-   una capa que está debajo de otras. */
+   una capa que está debajo de otras. La imagen se espera ANTES de tocar el
+   documento: el cambio temporal de `resourceId` es síncrono para no cruzarse con
+   un autoguardado. */
 async function componerVistaPreviaConParche(layer, parche) {
-  const anterior = layer.resourceId;
   try {
-    layer.resourceId = parche.id;
     if (!(await esperarImagenEnCache(parche.id))) return null;
-    return renderer.compositeToCanvas().toDataURL('image/png');
+    await esperarImagenesDelDocumento();
+    const anterior = layer.resourceId;
+    layer.resourceId = parche.id;
+    try {
+      return renderer.compositeToCanvas().toDataURL('image/png');
+    } finally {
+      layer.resourceId = anterior;
+      renderer.requestRender('mask-preview-restore');
+    }
   } catch (error) {
     console.error('Inpainting: no se pudo componer la vista previa del documento', error);
     return null;
-  } finally {
-    layer.resourceId = anterior;
-    renderer.requestRender('mask-preview-restore');
   }
 }
 
@@ -1710,6 +1742,7 @@ function renombrarCapaDesdePropiedades() {
       });
       renderLayers();
       renderLayerProps();
+      pintarCapaDeLaMascara();
       toast('Capa renombrada.', 'ok');
     } else if (!guardar) {
       renderLayerProps();

@@ -356,6 +356,34 @@ Verificación local (`tools/pruebas/local-mascara-capas-uis-hoola.mjs`): aviso c
 0 trabajos y selecciona la capa de arriba, vista previa vs documento antes de aceptar **0**, vs capa
 de abajo **110,07**, vs documento tras aceptar **0**, capas 2→2.
 
+**Producción 3.0.6** (commit `4676b8ec`; `index.html` → `app.20261102h.js?v=20261102h`;
+`api.php?action=state` → `version: "3.0.6-hoola"`; `g`, `f`, `d`, `c`, `.20261102` siguen 200).
+Escenario real reproducido en Chrome con **1 generación** `openai-image-2-low`: dos capas (foto
+abajo, dibujo opaco arriba), máscara en la de abajo →
+`94-produccion-caso-capas.json`: nota «Capa de la máscara: «foto-abajo»», aviso «La máscara está en
+una capa tapada» visible, vista previa vs documento antes de aceptar **0**, vs capa de abajo
+**110,07**, vs documento tras aceptar **0**, capas 2→2, 0 errores. Capturas
+`90-produccion-aviso-capa-tapada.png`, `91-produccion-vista-previa-lienzo.png`,
+`92-produccion-vista-previa.png`. Script:
+`tools/pruebas/verificar-produccion-mascara-capas-uis-hoola.mjs`.
+
+### 3.0.7 (2026-11-02) — aviso de capa tapada sin falsos positivos
+
+Observaciones del verificador sobre 3.0.6: (O2) el aviso miraba solo el rectángulo de la capa de
+arriba, así que podía avisar con una capa transparente en esa zona; la nota de capa no se refrescaba
+al renombrar. (O3) la vista previa cambiaba `layer.resourceId` mientras esperaba la imagen y no
+esperaba a todas las capas.
+
+- `capaOpacaEnPuntos()`: renderiza la capa de arriba una vez y comprueba el **alfa real** en los
+  puntos pintados; capa transparente en esa zona → **no** avisa (caso probado en local: sin
+  `confirmDialog` y con vista previa).
+- `esperarImagenesDelDocumento()`: espera a las imágenes de todas las capas antes de componer la
+  vista previa; el cambio temporal de `resourceId` pasa a ser **síncrono** (sin ventana para el
+  autoguardado).
+- La nota «Capa de la máscara» se actualiza también al renombrar.
+
+
+
 
 
 

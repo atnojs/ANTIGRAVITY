@@ -195,8 +195,45 @@ const okCancelar = trasCancelar.trabajos === trabajosAntes && trasCancelar.selec
 const okPreviewDocumento = difPreviewDocumento < 4;
 const okPreviewAplicado = difPreviewAplicado < 2;
 const okSinCapaNueva = trasAceptar.capas === 2;
-const salida = { capas, seleccionada, aviso, trasCancelar, difPreviewDocumento, difPreviewCapa, difPreviewAplicado, okAviso, okCancelar, okPreviewDocumento, okPreviewAplicado, okSinCapaNueva, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
-const pasa = okAviso && okCancelar && okPreviewDocumento && okPreviewAplicado && okSinCapaNueva;
+
+// 3) Sin falso positivo: capa de arriba TRANSPARENTE en la zona de la máscara.
+await page.evaluate(() => { window.__UIS__.state.doc.layers = []; window.__UIS__.state.selection.layerId = null; });
+await page.evaluate(async () => {
+  const crear = async (pintar, nombre) => {
+    const c = document.createElement('canvas'); c.width = 1024; c.height = 1024;
+    const x = c.getContext('2d');
+    pintar(x);
+    const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
+    await window.__UIS__.importFiles([new File([blob], nombre, { type: 'image/png' })], { asLayer: true });
+  };
+  await crear((x) => { x.fillStyle = '#c0392b'; x.fillRect(0, 0, 1024, 1024); }, 'fondo-opaco.png');
+  // Capa de arriba: solo una franja arriba; el resto transparente.
+  await crear((x) => { x.fillStyle = '#2980b9'; x.fillRect(0, 0, 1024, 120); }, 'arriba-transparente.png');
+});
+await page.waitForTimeout(1200);
+await page.locator('#layerList .layer-item').last().click();
+await page.waitForTimeout(400);
+await page.waitForTimeout(300);
+await page.mouse.move(a.x, a.y);
+await page.mouse.down();
+for (let i = 1; i <= 8; i += 1) await page.mouse.move(a.x + (b.x - a.x) * i / 8, a.y, { steps: 2 });
+await page.mouse.up();
+await page.waitForTimeout(400);
+await page.fill('#inpaintPrompt', 'pinta de color fucsia');
+await page.click('#inpaintBtn');
+await page.waitForTimeout(1500);
+const avisoFalso = (await page.locator('#confirmModal:not(.hidden)').count()) === 1;
+if (avisoFalso) await page.click('#confirmCancel');
+for (let t = 0; t < 40; t += 1) {
+  if (await page.locator('#aiPreview:not(.hidden)').count()) break;
+  await page.waitForTimeout(500);
+}
+const hayPreviewFalso = (await page.locator('#aiPreview:not(.hidden)').count()) === 1;
+if (hayPreviewFalso) await page.evaluate(() => { const b = document.querySelector('#aiPreview:not(.hidden) #aiDiscard'); if (b) b.click(); });
+const okSinFalsoPositivo = !avisoFalso && hayPreviewFalso;
+
+const salida = { capas, seleccionada, aviso, trasCancelar, difPreviewDocumento, difPreviewCapa, difPreviewAplicado, avisoFalso, hayPreviewFalso, okAviso, okCancelar, okPreviewDocumento, okPreviewAplicado, okSinCapaNueva, okSinFalsoPositivo, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
+const pasa = okAviso && okCancelar && okPreviewDocumento && okPreviewAplicado && okSinCapaNueva && okSinFalsoPositivo;
 salida.pasa = pasa;
 fs.writeFileSync(`${OUT}/85-caso-capas.json`, JSON.stringify(salida, null, 2));
 console.log(JSON.stringify(salida, null, 2));
