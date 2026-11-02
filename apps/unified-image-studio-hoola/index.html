@@ -392,6 +392,18 @@
               <label for="brushHardness">Dureza <span class="mono" id="brushHardnessValue">80 %</span></label>
               <input type="range" id="brushHardness" min="0" max="100" step="1" value="80" />
             </div>
+            <div class="field">
+              <label for="maskColor">Color de la máscara</label>
+              <div class="color-row">
+                <input type="color" id="maskColor" value="#ff2d6f" aria-label="Color de la zona pintada de la máscara" />
+                <button class="btn btn-ghost btn-sm" id="maskColorClear" title="Volver al color de contraste automático">Auto</button>
+              </div>
+              <p class="field-note">Elige un color que contraste con la imagen: se pinta encima de la zona marcada.</p>
+            </div>
+            <div class="field">
+              <label for="maskOpacity">Opacidad de la máscara <span class="mono" id="maskOpacityValue">100 %</span></label>
+              <input type="range" id="maskOpacity" min="10" max="100" step="1" value="100" />
+            </div>
             <div class="btn-row">
               <button class="btn btn-ghost btn-sm" id="invertMaskBtn">Invertir</button>
               <button class="btn btn-ghost btn-sm" id="clearMaskBtn">Limpiar</button>
@@ -675,7 +687,7 @@
         <div class="ai-preview hidden" id="aiPreview">
           <img id="aiPreviewImg" alt="Vista previa del resultado de IA" />
           <div class="ai-preview-bar">
-            <span class="ai-preview-label">Vista previa sin aplicar</span>
+            <span class="ai-preview-label">Vista previa de lo que se aplicará</span>
             <div class="btn-row">
               <button class="btn btn-sm btn-primary" id="aiAccept">Aceptar</button>
               <button class="btn btn-sm btn-ghost" id="aiRegen">Regenerar</button>
@@ -1035,7 +1047,7 @@
 <input type="file" id="projectInput" accept=".json,application/json" hidden />
 
 <script src="assets/js/model-gate.20261027.js?v=25"></script>
-<script type="module" src="assets/js/app.20261102d.js?v=20261102d"></script>
+<script type="module" src="assets/js/app.20261102f.js?v=20261102f"></script>
 <script src="lightbox-zoom.20261026.js" defer></script>
 <script src="../_shared/password-eye.js?v=20261025b" defer></script>
   <div id="brushCursor" class="brush-cursor" aria-hidden="true"></div>

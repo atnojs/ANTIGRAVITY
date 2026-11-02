@@ -148,6 +148,34 @@ const resultados = {};
 await importar();
 await page.waitForTimeout(1000);
 await pintar();
+
+// Máscara: color elegido y opacidad. A 100 % debe tapar la imagen (alfa alto y
+// color elegido); al bajar la opacidad, el alfa baja.
+const mascaraVisual = await page.evaluate(async () => {
+  const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+  const color = document.getElementById('maskColor');
+  color.value = '#00ff00';
+  color.dispatchEvent(new Event('input', { bubbles: true }));
+  const op = document.getElementById('maskOpacity');
+  op.value = '100';
+  op.dispatchEvent(new Event('input', { bubbles: true }));
+  await dormir(500);
+  const u = window.__UIS__;
+  const ctx = document.getElementById('maskCanvas').getContext('2d');
+  const t = ctx.getTransform();
+  const sx = Math.round(512 * t.a + t.e);
+  const sy = Math.round(512 * t.d + t.f);
+  const leer = () => Array.from(ctx.getImageData(sx, sy, 1, 1).data);
+  const pixel100 = leer();
+  const op30 = document.getElementById('maskOpacity');
+  op30.value = '30';
+  op30.dispatchEvent(new Event('input', { bubbles: true }));
+  await dormir(500);
+  const pixel30 = leer();
+  return { color: color.value, etiqueta: document.getElementById('maskOpacityValue').textContent, punto: [sx, sy], pixel100, pixel30 };
+});
+console.log('   máscara visible:', JSON.stringify(mascaraVisual));
+
 await abrirEditar();
 await page.click('#invertMaskBtn');
 await page.waitForTimeout(500);
@@ -202,10 +230,14 @@ const okInvertir = resultados.invertir.invertida
   && resultados.invertir.dentroPct < 5
   && /fuera de lo pintado/i.test(resultados.invertir.toastVistaPrevia || '');
 const okEscape = resultados.escape.capasAntes === resultados.escape.capasDespues && resultados.escape.fueraPct < 3 && resultados.escape.dentroPct > 15;
-const salida = { okInvertir, okEscape, ...resultados, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
+const okMascara = mascaraVisual.color === '#00ff00'
+  && mascaraVisual.pixel100[3] > 240
+  && mascaraVisual.pixel100[1] > 220
+  && mascaraVisual.pixel30[3] < 140;
+const salida = { okInvertir, okEscape, okMascara, mascaraVisual, ...resultados, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
 fs.writeFileSync(`${OUT}/64-casos-limite.json`, JSON.stringify(salida, null, 2));
 console.log(JSON.stringify(salida, null, 2));
-console.log(okInvertir && okEscape ? '\nPASS: «Invertir» y vista previa + Escape se comportan como deben' : '\nFALLO en algún caso límite');
+console.log(okInvertir && okEscape && okMascara ? '\nPASS: «Invertir», vista previa + Escape y color/opacidad de la máscara se comportan como deben' : '\nFALLO en algún caso límite');
 await browser.close();
 servidor.close();
-process.exit(okInvertir && okEscape ? 0 : 1);
+process.exit(okInvertir && okEscape && okMascara ? 0 : 1);

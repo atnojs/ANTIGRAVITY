@@ -61,6 +61,8 @@ export const state = {
     maskMode: 'paint',
     brushSize: 80,
     brushHardness: 80,
+    maskColor: '#ff2d6f',
+    maskOpacity: 100,
     model: 'flow-nano-banana-2',
     aspect: '1:1',
     resolution: 1024,

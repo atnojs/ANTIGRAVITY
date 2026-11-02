@@ -278,6 +278,27 @@ sigue sirviendo `CE48C9FE…`); sello `v3.0.3`. Una generación real `openai-ima
 PASS). Informe: `tools/evidencias/2026-11-02-mascara-uis/VERIFICACION_INDEPENDIENTE.md`;
 autoevaluación: `AUTOEVALUACION.md` (94,1).
 
+### 3.0.4 (2026-11-02) — color/opacidad de la máscara y vista previa fiel
+
+Dos peticiones del usuario tras usar la 3.0.3:
+
+1. **«Con la opacidad al 100 % la zona marcada no se queda blanca y no se distingue la máscara.
+   Quiero elegir el color para que contraste.»** La capa de máscara estaba pintada a alpha 0,55 con
+   cian fijo. Ahora hay **«Color de la máscara»** (selector de color + «Auto») y **«Opacidad de la
+   máscara»** (10–100 %, por defecto **100 % = sólida**, tapa la imagen). Se guardan por navegador
+   (`localStorage: uis-hoola:maskPrefs`). Medido en Chromium: píxel pintado con color `#00ff00` y
+   opacidad 100 % → RGBA `0,255,0,255`; con 30 % → alfa `77`.
+2. **«Le aplica lo solicitado a toda la imagen» (captura: prompt "pinta de color fucsia" y todo el
+   retrato teñido).** La composición ya respetaba la máscara; lo que enseñaba toda la imagen teñida
+   era **la vista previa**, que mostraba la salida completa del proveedor. Ahora `runInpaint` compone
+   antes de previsualizar y la vista previa muestra **solo lo que se aplicará** (misma imagen que
+   `acceptResult` usa después, sin recomponer). Medido: vista previa vs capa aplicada → **diferencia
+   media 0** en los dos rellenos del banco.
+
+Evidencia: `34-local-pass.json` (`okPreview:true`, `vistaPreviaVsAplicado.v1/v2`), `64-casos-limite.json`
+(`okMascara:true`, `mascaraVisual.pixel100/pixel30`), PNG 60–63.
+
+
 ### Rework 3.0.2 (2026-11-02) — defectos del verificador independiente
 
 El verificador emitió **REWORK** con un defecto Medio y dos menores en el mismo control. Corregidos

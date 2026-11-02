@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.3 · 2026-11-02 · máscara: aplica solo lo pintado (también invertida)';
+const BUILD = 'v3.0.4 · 2026-11-02 · máscara con color/opacidad y vista previa fiel';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -76,6 +76,36 @@ function cargarImagenDeRecurso(resourceId, timeout = 20000) {
   promesasImagenRecurso.set(res.url, promesa);
   void promesa.then(() => promesasImagenRecurso.delete(res.url));
   return promesa;
+}
+
+/* Color y opacidad de la máscara: se guardan por navegador para que el trazo
+   contraste con la imagen de cada trabajo (a 100 % de opacidad la zona marcada
+   tapa lo que hay debajo, sin dejar ver la imagen). */
+const MASK_PREFS_KEY = 'uis-hoola:maskPrefs';
+const MASK_COLOR_AUTO = '#ff2d6f';
+
+function guardarPreferenciasMascara() {
+  try {
+    localStorage.setItem(MASK_PREFS_KEY, JSON.stringify({
+      color: state.ui.maskColor,
+      opacity: state.ui.maskOpacity,
+    }));
+  } catch { /* sin almacenamiento: se mantiene solo en memoria */ }
+}
+
+function cargarPreferenciasMascara() {
+  try {
+    const raw = localStorage.getItem(MASK_PREFS_KEY);
+    const prefs = raw ? JSON.parse(raw) : null;
+    if (typeof prefs?.color === 'string' && /^#[0-9a-f]{6}$/i.test(prefs.color)) state.ui.maskColor = prefs.color;
+    if (Number.isFinite(prefs?.opacity)) state.ui.maskOpacity = Math.max(10, Math.min(100, Number(prefs.opacity)));
+  } catch { /* preferencias corruptas: se usan las de por defecto */ }
+  const color = $('maskColor');
+  if (color) color.value = state.ui.maskColor || MASK_COLOR_AUTO;
+  const opacidad = $('maskOpacity');
+  if (opacidad) opacidad.value = String(state.ui.maskOpacity ?? 100);
+  const etiqueta = $('maskOpacityValue');
+  if (etiqueta) etiqueta.textContent = `${state.ui.maskOpacity ?? 100} %`;
 }
 
 /* ══════════════════════ Arranque ══════════════════════ */
@@ -473,6 +503,11 @@ function sincronizarRangos() {
   if (dureza && $('brushHardnessValue')) $('brushHardnessValue').textContent = `${dureza.value} %`;
   state.ui.brushSize = pincel ? Number(pincel.value) : state.ui.brushSize;
   state.ui.brushHardness = dureza ? Number(dureza.value) : state.ui.brushHardness;
+  const opacidadMascara = $('maskOpacity');
+  if (opacidadMascara) {
+    if ($('maskOpacityValue')) $('maskOpacityValue').textContent = `${opacidadMascara.value} %`;
+    state.ui.maskOpacity = Number(opacidadMascara.value);
+  }
 }
 
 document.addEventListener('input', (event) => {
@@ -650,6 +685,26 @@ function bindLeftPanel() {
   $('brushHardness').addEventListener('input', (event) => {
     state.ui.brushHardness = Number(event.target.value);
     $('brushHardnessValue').textContent = `${event.target.value} %`;
+  });
+
+  // Color y opacidad de la máscara (contraste sobre la imagen).
+  cargarPreferenciasMascara();
+  $('maskColor').addEventListener('input', (event) => {
+    state.ui.maskColor = event.target.value;
+    guardarPreferenciasMascara();
+    renderer.requestRender('mask-color');
+  });
+  $('maskColorClear').addEventListener('click', () => {
+    state.ui.maskColor = MASK_COLOR_AUTO;
+    $('maskColor').value = MASK_COLOR_AUTO;
+    guardarPreferenciasMascara();
+    renderer.requestRender('mask-color');
+  });
+  $('maskOpacity').addEventListener('input', (event) => {
+    state.ui.maskOpacity = Number(event.target.value);
+    $('maskOpacityValue').textContent = `${event.target.value} %`;
+    guardarPreferenciasMascara();
+    renderer.requestRender('mask-opacity');
   });
   $('clearMaskBtn').addEventListener('click', () => {
     const layer = getLayer();
@@ -1323,9 +1378,10 @@ function paintGenerationProgress(jobs) {
 }
 
 function showResultPreview(result) {
-  $('resultPreview').src = result.dataUrl;
+  const url = result.previewUrl || result.dataUrl;
+  $('resultPreview').src = url;
   $('resultTray').classList.remove('hidden');
-  $('aiPreviewImg').src = result.dataUrl;
+  $('aiPreviewImg').src = url;
   $('aiPreview').classList.remove('hidden');
 }
 
@@ -1351,8 +1407,8 @@ async function acceptResult(mode) {
     // puede componer, NO se aplica la imagen entera del proveedor: se avisa y se
     // deja la vista previa abierta (antes se sustituía toda la capa y el cambio
     // aparecía en toda la imagen).
-    let recursoFinal = null;
-    if (result.job.kind === 'inpaint') {
+    let recursoFinal = result.compuesto || null;
+    if (result.job.kind === 'inpaint' && !recursoFinal) {
       recursoFinal = await componerInpaintingSobreCapa(destino, result.dataUrl);
       if (!recursoFinal) {
         console.error('Inpainting: no se pudo componer el resultado dentro de la máscara.');
@@ -1360,6 +1416,7 @@ async function acceptResult(mode) {
         return;
       }
     }
+    if (recursoFinal) void uploadResource(recursoFinal);
     let recurso = null;
     if (!recursoFinal) {
       const blobEdicion = dataUrlToBlob(result.dataUrl);
@@ -1463,11 +1520,20 @@ async function runInpaint() {
       kind: 'inpaint',
     });
     if (job?.error) throw new Error(job.error);
-    pendingResult = { job, layerId: layer.id, dataUrl: job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}` };
+    const dataUrlProveedor = job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}`;
+    // La vista previa muestra SOLO lo que se va a aplicar: la composición dentro
+    // de la máscara. Antes enseñaba la imagen completa que devolvía el proveedor,
+    // así que un modelo que se salía de la zona parecía cambiar toda la imagen.
+    const compuesto = await componerInpaintingSobreCapa(layer, dataUrlProveedor);
+    if (!compuesto) {
+      toast('No se pudo componer el relleno dentro de la máscara, así que no se ha aplicado nada. Vuelve a intentarlo.', 'error', { duration: 12000 });
+      return;
+    }
+    pendingResult = { job, layerId: layer.id, dataUrl: dataUrlProveedor, compuesto, previewUrl: compuesto.url };
     showResultPreview(pendingResult);
     toast(layer.mask?.inverted
-      ? 'Resultado listo: al aceptar se aplica SOLO fuera de lo pintado (máscara invertida).'
-      : 'Resultado listo: al aceptar se aplica SOLO dentro de la máscara pintada.', 'ok');
+      ? 'Resultado listo: la vista previa muestra solo lo que se aplicará fuera de lo pintado (máscara invertida).'
+      : 'Resultado listo: la vista previa muestra solo lo que se aplicará dentro de la máscara.', 'ok');
   } catch (error) {
     toast(`El inpainting falló: ${error.message}`, 'error');
   } finally {

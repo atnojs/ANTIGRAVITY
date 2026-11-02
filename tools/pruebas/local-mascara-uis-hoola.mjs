@@ -177,11 +177,33 @@ async function rellenar(prompt) {
     preview: !document.getElementById('aiPreview')?.classList.contains('hidden'),
   }));
   if (!hay) console.log('DIAG sin vista previa:', JSON.stringify(diag));
+  const previewPng = hay ? await page.evaluate(async () => {
+    const img = document.getElementById('aiPreviewImg');
+    if (!img?.src) return null;
+    await new Promise((ok, mal) => { if (img.complete && img.naturalWidth) ok(); else { img.onload = ok; img.onerror = mal; } });
+    const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    c.getContext('2d').drawImage(img, 0, 0);
+    return c.toDataURL('image/png');
+  }) : null;
   const boton = hay ? '#aiPreview:not(.hidden) #aiAccept' : '#acceptResult';
   await page.click(boton);
   await page.waitForTimeout(1800);
-  return { preview: hay };
+  return { preview: hay, previewPng };
 }
+
+const compararPngs = (aUrl, bUrl) => page.evaluate(async ({ aUrl, bUrl }) => {
+  const cargar = (s) => new Promise((ok, mal) => { const i = new Image(); i.onload = () => ok(i); i.onerror = mal; i.src = s; });
+  const A = await cargar(aUrl); const B = await cargar(bUrl);
+  if (A.naturalWidth !== B.naturalWidth || A.naturalHeight !== B.naturalHeight) {
+    return { mismasDimensiones: false, a: `${A.naturalWidth}x${A.naturalHeight}`, b: `${B.naturalWidth}x${B.naturalHeight}`, mediaDif: null };
+  }
+  const W = 256, H = Math.max(1, Math.round(256 * A.naturalHeight / A.naturalWidth));
+  const mk = (img) => { const c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').drawImage(img, 0, 0, W, H); return c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, W, H).data; };
+  const da = mk(A); const db = mk(B);
+  let suma = 0;
+  for (let i = 0; i < da.length; i += 4) suma += (Math.abs(da[i] - db[i]) + Math.abs(da[i + 1] - db[i + 1]) + Math.abs(da[i + 2] - db[i + 2])) / 3;
+  return { mismasDimensiones: true, mediaDif: +(suma / (da.length / 4)).toFixed(2) };
+}, { aUrl, bUrl });
 
 const leerPng = () => page.evaluate(async () => {
   const u = window.__UIS__;
@@ -224,7 +246,8 @@ await pintar(200);
 const r1 = await rellenar('Rellena la franja con un color lila plano, sin texto.');
 const tras1 = await leerPng();
 const m1 = await medir(antes1.png, tras1.png, [{ nombre: 'franja1', y: 200, r: 100 }]);
-console.log('Relleno 1:', JSON.stringify(r1), JSON.stringify(m1));
+const v1 = r1.previewPng ? await compararPngs(r1.previewPng, tras1.png) : { mismasDimensiones: false, mediaDif: null };
+console.log('Relleno 1:', JSON.stringify({ preview: r1.preview }), JSON.stringify(m1), '· vista previa vs aplicado:', JSON.stringify(v1));
 
 // Recargar: la app recupera el proyecto y las imágenes se cargan de nuevo.
 await page.evaluate(() => window.__UIS__.saveNow('test'));
@@ -236,7 +259,8 @@ await pintar(820);
 const r2 = await rellenar('Rellena la franja con un color verde plano, sin texto.');
 const tras2 = await leerPng();
 const m2 = await medir(antes2.png, tras2.png, [{ nombre: 'franja1', y: 200, r: 100 }, { nombre: 'franja2', y: 820, r: 100 }]);
-console.log('Relleno 2 (tras recargar):', JSON.stringify(r2), JSON.stringify(m2));
+const v2 = r2.previewPng ? await compararPngs(r2.previewPng, tras2.png) : { mismasDimensiones: false, mediaDif: null };
+console.log('Relleno 2 (tras recargar):', JSON.stringify({ preview: r2.preview }), JSON.stringify(m2), '· vista previa vs aplicado:', JSON.stringify(v2));
 
 const guardar = (dataUrl, n) => fs.writeFileSync(`${OUT}/${n}`, Buffer.from(dataUrl.slice(dataUrl.indexOf(',') + 1), 'base64'));
 
@@ -262,8 +286,9 @@ guardar(tras2.png, `33-${EXPECT}-tras2.png`);
 const ok1 = m1.franja1Pct > 15 && (m1.restoPct || 0) < 3;
 const ok2 = m2.franja2Pct > 15 && (m2.restoPct || 0) < 3;
 const ok3 = llamada?.model === 'openai-image-2-low';
-const pasa = ok1 && ok2 && ok3;
-const resultado = { dir: DIR, expectativa: EXPECT, relleno1: m1, relleno2: m2, modeloConGemini: llamada?.model || null, pasa, consola: consola.slice(0, 8) };
+const okPreview = [v1, v2].every((v) => v.mismasDimensiones && v.mediaDif !== null && v.mediaDif < 2);
+const pasa = ok1 && ok2 && ok3 && okPreview;
+const resultado = { dir: DIR, expectativa: EXPECT, relleno1: m1, relleno2: m2, modeloConGemini: llamada?.model || null, vistaPreviaVsAplicado: { v1, v2 }, okPreview, pasa, consola: consola.slice(0, 8) };
 fs.writeFileSync(`${OUT}/34-local-${EXPECT}.json`, JSON.stringify(resultado, null, 2));
 console.log('\nRESULTADO:', JSON.stringify(resultado, null, 2));
 const correcto = EXPECT === 'pass' ? pasa : !pasa;

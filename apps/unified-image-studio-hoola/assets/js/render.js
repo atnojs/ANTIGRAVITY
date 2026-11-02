@@ -363,35 +363,38 @@ class Renderer {
     const layer = getLayer();
     const live = this.activeStroke && this.activeStroke.layerId === layer?.id ? this.activeStroke.stroke : null;
     const show = state.ui.showMask && layer && (layer.mask?.strokes?.length > 0 || live) && !state.ui.compare;
+    // Color y opacidad elegidos por el usuario: a 100 % la zona marcada tapa la
+    // imagen (sin dejar ver lo que hay debajo) y con un color que contrasta.
+    const color = state.ui.maskColor || '#ff2d6f';
+    const bruto = Number(state.ui.maskOpacity ?? 100);
+    const opacity = Math.max(0.05, Math.min(1, (Number.isFinite(bruto) ? bruto : 100) / 100));
     if (show) {
       if (layer.mask?.strokes?.length > 0) {
         const canvas = this.maskCanvasFor(layer);
         if (layer.mask?.inverted) {
           // Vista de la máscara invertida: se muestra el complemento de lo pintado.
-          ctx.globalAlpha = 0.35;
-          ctx.fillStyle = 'rgba(46,232,255,.55)';
+          ctx.globalAlpha = opacity;
+          ctx.fillStyle = color;
           ctx.fillRect(0, 0, doc.width, doc.height);
           ctx.globalAlpha = 1;
           ctx.globalCompositeOperation = 'destination-out';
           ctx.drawImage(canvas, 0, 0, doc.width, doc.height);
           ctx.globalCompositeOperation = 'source-over';
         } else {
-          ctx.globalAlpha = 0.55;
-        ctx.drawImage(canvas, 0, 0, doc.width, doc.height);
-        // Tinte cian sobre la máscara pintada.
-        ctx.globalCompositeOperation = 'source-in';
-        ctx.fillStyle = 'rgba(46,232,255,.55)';
-        ctx.fillRect(0, 0, doc.width, doc.height);
-        ctx.globalCompositeOperation = 'source-over';
+          ctx.globalAlpha = opacity;
+          ctx.drawImage(canvas, 0, 0, doc.width, doc.height);
           ctx.globalAlpha = 1;
+          // Tinte del color elegido sobre la máscara pintada.
+          ctx.globalCompositeOperation = 'source-in';
+          ctx.fillStyle = color;
+          ctx.fillRect(0, 0, doc.width, doc.height);
+          ctx.globalCompositeOperation = 'source-over';
         }
       }
       if (live) {
         ctx.save();
-        ctx.globalAlpha = 0.75;
-        ctx.strokeStyle = live.mode === 'erase' ? 'rgba(248,81,73,.8)' : 'rgba(46,232,255,.85)';
-        ctx.fillStyle = ctx.strokeStyle;
-        paintStroke(ctx, { ...live, mode: 'paint' });
+        ctx.globalAlpha = Math.min(1, opacity + 0.2);
+        paintStroke(ctx, { ...live, mode: 'paint' }, live.mode === 'erase' ? 'rgba(248,81,73,.9)' : color);
         ctx.restore();
       }
     }
@@ -561,13 +564,14 @@ class Renderer {
 }
 
 /* ── Pinceladas de máscara ── */
-export function paintStroke(ctx, stroke) {
+export function paintStroke(ctx, stroke, colorOverride = null) {
   const pts = stroke.pts || [];
   if (pts.length === 0) return;
   ctx.save();
   ctx.globalCompositeOperation = stroke.mode === 'erase' ? 'destination-out' : 'source-over';
-  ctx.strokeStyle = stroke.mode === 'erase' ? 'rgba(0,0,0,1)' : 'rgba(255,255,255,1)';
-  ctx.fillStyle = stroke.mode === 'erase' ? 'rgba(0,0,0,1)' : 'rgba(255,255,255,1)';
+  const pintado = colorOverride || 'rgba(255,255,255,1)';
+  ctx.strokeStyle = stroke.mode === 'erase' ? 'rgba(0,0,0,1)' : pintado;
+  ctx.fillStyle = stroke.mode === 'erase' ? 'rgba(0,0,0,1)' : pintado;
   ctx.lineWidth = Math.max(1, stroke.size);
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';

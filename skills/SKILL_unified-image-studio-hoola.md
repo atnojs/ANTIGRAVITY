@@ -29,7 +29,7 @@ comprueba eso primero y dilo antes de dar la receta.
 | Nombre visible | `Unified Image Studio · Hoola` (marca `UIS`, etiqueta `HOOLA`) |
 | URL publicada | `https://atnojs.es/apps/unified-image-studio-hoola/` |
 | Ruta en el repo | `apps/unified-image-studio-hoola/` |
-| Versión | `3.0.3-hoola` (sello en la barra inferior) |
+| Versión | `3.0.4-hoola` (sello en la barra inferior) |
 | Qué es | Estudio de imagen por capas: importar, generar con IA, editar, componer y exportar |
 | Backend | PHP (`api.php` + `proxy.php` + `lib/`), SQLite en `storage/`; sin él solo se edita y exporta |
 | Motores | Google Flow en el PC (imágenes y vídeo) + proveedores directos (OpenAI, Gemini, Qwen) |
@@ -189,14 +189,17 @@ generaciones seguidas en el PC (con modelos directos ese selector está desactiv
 
 1. Seleccionar la capa en el panel derecho **«Capas»**.
 2. Pestaña **«Editar»**.
-3. En **«Máscara de la capa»**: **«Pintar»**, ajustar «Tamaño del pincel» y «Dureza» y pintar la
-   zona sobre el lienzo. «Borrar» corrige lo pintado.
+3. En **«Máscara de la capa»**: **«Pintar»**, ajustar «Tamaño del pincel», «Dureza»,
+   **«Color de la máscara»** (con **«Auto»** vuelve al color de contraste por defecto) y
+   **«Opacidad de la máscara»** (a **100 %** la zona marcada se pinta sólida y tapa la imagen; se
+   recuerda en ese navegador) y pintar la zona sobre el lienzo. «Borrar» corrige lo pintado.
 4. Escribir la **«Instrucción de inpainting»** (qué debe aparecer en esa zona).
 5. **«Rellenar la máscara»** y aceptar el resultado igual que en F3.
 
 **Qué aplica:** solo la zona pintada. El resto de la imagen se queda exactamente como estaba, aunque
-el proveedor devuelva una imagen completa distinta. Al pulsar «Aceptar» el resultado **sustituye los
-píxeles de esa misma capa**.
+el proveedor devuelva una imagen completa distinta. La **vista previa ya muestra solo lo que se va a
+aplicar** (la composición dentro de la máscara), no la imagen entera que devolvió el proveedor. Al
+pulsar «Aceptar» el resultado **sustituye los píxeles de esa misma capa**.
 
 **Dos avisos que hay que dar:**
 - La máscara **no se borra sola** después de rellenar: si va a pintar otra zona, pulse antes
