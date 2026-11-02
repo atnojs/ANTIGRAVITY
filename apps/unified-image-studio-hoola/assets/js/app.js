@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.1.0 · 2026-11-02 · máscara: margen para objetos que sobresalen';
+const BUILD = 'v3.1.1 · 2026-11-02 · máscara: margen sólido para objetos que sobresalen';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -1841,18 +1841,27 @@ function mascaraParaComponer(layer) {
   const tamanos = (layer.mask?.strokes || []).map((trazo) => trazo.size || 1);
   const mayor = tamanos.length ? Math.max(...tamanos) : 0;
   if (!(porcentaje > 0) || !mayor) return pintado;
-  // Margen proporcional al pincel con el que se pintó esa zona (local al trazo).
+  // Margen proporcional al pincel con el que se pintó esa zona. La dilatación es
+  // local (copias desplazadas del trazo), así que dos zonas separadas no se unen.
   const margen = Math.max(8, Math.min(220, Math.round(mayor * porcentaje / 100)));
+  const expandida = document.createElement('canvas');
+  expandida.width = doc.width;
+  expandida.height = doc.height;
+  const ex = expandida.getContext('2d');
+  const pasos = 36;
+  for (let i = 0; i < pasos; i += 1) {
+    const angulo = (Math.PI * 2 * i) / pasos;
+    ex.drawImage(pintado, Math.cos(angulo) * margen, Math.sin(angulo) * margen);
+  }
+  ex.drawImage(pintado, 0, 0);
+  // Desvanecido solo del borde: el interior queda opaco y el objeto se aplica entero.
   const suave = document.createElement('canvas');
   suave.width = doc.width;
   suave.height = doc.height;
-  const ctx = suave.getContext('2d');
-  // La sombra difusa amplía el trazo y deja el borde desvanecido de una vez.
-  ctx.shadowColor = 'rgba(255, 255, 255, 1)';
-  ctx.shadowBlur = margen * 2;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
-  ctx.drawImage(pintado, 0, 0);
+  const sx = suave.getContext('2d');
+  sx.filter = `blur(${Math.max(2, Math.round(margen * 0.12))}px)`;
+  sx.drawImage(expandida, 0, 0);
+  sx.filter = 'none';
   return suave;
 }
 /* Compone el resultado del proveedor SOLO dentro de la máscara de la capa:

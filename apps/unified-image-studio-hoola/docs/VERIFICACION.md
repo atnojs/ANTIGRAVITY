@@ -483,3 +483,9 @@ fuera de la máscara se perdía. Ahora:
   la zona marcada.
 - La preferencia se guarda con el color/opacidad en uis-hoola:maskPrefs.
 - La vista previa sigue siendo el lienzo completo con el cambio (y el margen) aplicado.
+### 3.1.1 (2026-11-02) — el margen aplica el objeto entero
+
+La primera versión del margen (3.1.0) usaba una sombra difusa: el borde del objeto se aplicaba
+semiopaco y el objeto no quedaba entero. Ahora la zona se **dilata de forma sólida** (copias
+desplazadas del trazo, local a cada zona) y solo se **desenfoca el borde exterior**; el interior se
+aplica al 100 %.
