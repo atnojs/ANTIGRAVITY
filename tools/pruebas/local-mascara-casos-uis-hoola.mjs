@@ -127,18 +127,23 @@ const medirFranja = (antesUrl, despuesUrl) => page.evaluate(async ({ antesUrl, d
   const A = await cargar(antesUrl); const B = await cargar(despuesUrl);
   const mk = (img) => { const c = document.createElement('canvas'); c.width = 512; c.height = 512; c.getContext('2d').drawImage(img, 0, 0, 512, 512); return c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, 512, 512).data; };
   const da = mk(A); const db = mk(B);
-  let nD = 0, cD = 0, nF = 0, cF = 0;
+  // Zonas: núcleo pintado, margen aplicado (objetos que sobresalen) y resto.
+  let nD = 0, cD = 0, nM = 0, cM = 0, nR = 0, cR = 0;
   for (let y = 0; y < 512; y += 2) {
     for (let x = 0; x < 512; x += 2) {
       const i = (y * 512 + x) * 4;
       const dif = (Math.abs(da[i] - db[i]) + Math.abs(da[i + 1] - db[i + 1]) + Math.abs(da[i + 2] - db[i + 2])) / 3;
-      // Zona pintada real: pincel de 80 px alrededor de y=512, x 300..724.
-      const dentro = Math.abs(y * 2 - 512) <= 30 && x * 2 >= 330 && x * 2 <= 690;
-      const fuera = Math.abs(y * 2 - 512) > 85 || x * 2 < 260 || x * 2 > 745;
-      if (dentro) { nD += 1; if (dif > 24) cD += 1; } else if (fuera) { nF += 1; if (dif > 24) cF += 1; }
+      const dy = Math.abs(y * 2 - 512);
+      if (dy <= 30 && x * 2 >= 330 && x * 2 <= 690) { nD += 1; if (dif > 24) cD += 1; }
+      else if (dy <= 300) { nM += 1; if (dif > 24) cM += 1; }
+      else { nR += 1; if (dif > 24) cR += 1; }
     }
   }
-  return { dentroPct: +(100 * cD / Math.max(1, nD)).toFixed(1), fueraPct: +(100 * cF / Math.max(1, nF)).toFixed(1) };
+  return {
+    dentroPct: +(100 * cD / Math.max(1, nD)).toFixed(1),
+    margenPct: +(100 * cM / Math.max(1, nM)).toFixed(1),
+    restoPct: +(100 * cR / Math.max(1, nR)).toFixed(1),
+  };
 }, { antesUrl, despuesUrl });
 
 const guardar = (dataUrl, n) => fs.writeFileSync(`${OUT}/${n}`, Buffer.from(dataUrl.slice(dataUrl.indexOf(',') + 1), 'base64'));
@@ -226,10 +231,13 @@ guardar(despuesB.png, '63-escape-despues.png');
 resultados.escape = { capasAntes, capasDespues: despuesB.capas, seleccionTrasEscape: seleccion, previewSeguiaAbierta: hayPreview === 1, ...(await medirFranja(antesB.png, despuesB.png)) };
 
 const okInvertir = resultados.invertir.invertida
-  && resultados.invertir.fueraPct > 20
+  && resultados.invertir.margenPct > 20
   && resultados.invertir.dentroPct < 5
   && /fuera de lo pintado/i.test(resultados.invertir.toastVistaPrevia || '');
-const okEscape = resultados.escape.capasAntes === resultados.escape.capasDespues && resultados.escape.fueraPct < 3 && resultados.escape.dentroPct > 15;
+const okEscape = resultados.escape.capasAntes === resultados.escape.capasDespues
+  && resultados.escape.dentroPct > 15
+  && resultados.escape.margenPct > 3
+  && resultados.escape.restoPct < 3;
 const okMascara = mascaraVisual.color === '#00ff00'
   && mascaraVisual.pixel100[3] > 240
   && mascaraVisual.pixel100[1] > 220

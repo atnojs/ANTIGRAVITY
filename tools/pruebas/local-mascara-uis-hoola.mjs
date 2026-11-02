@@ -216,22 +216,25 @@ const leerPng = () => page.evaluate(async () => {
   return { png: c.toDataURL('image/png'), recurso: res.name, capa: layer.name };
 });
 
-const medir = (aUrl, bUrl, franjas) => page.evaluate(async ({ aUrl, bUrl, franjas }) => {
+const medir = (aUrl, bUrl, yBand, x0, x1, yMin = 0, yMax = 1024) => page.evaluate(async ({ aUrl, bUrl, yBand, x0, x1, yMin, yMax }) => {
   const cargar = (s) => new Promise((ok, mal) => { const i = new Image(); i.onload = () => ok(i); i.onerror = mal; i.src = s; });
   const A = await cargar(aUrl); const B = await cargar(bUrl);
   const c1 = document.createElement('canvas'); c1.width = 512; c1.height = 512; c1.getContext('2d').drawImage(A, 0, 0, 512, 512);
   const c2 = document.createElement('canvas'); c2.width = 512; c2.height = 512; c2.getContext('2d').drawImage(B, 0, 0, 512, 512);
   const d1 = c1.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, 512, 512).data;
   const d2 = c2.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, 512, 512).data;
-  const acc = {};
-  for (const f of franjas) acc[f.nombre] = [0, 0];
+  // Zonas por distancia al centro de la franja: núcleo pintado, margen aplicado
+  // (objetos que sobresalen) y resto, que NO debe cambiar.
+  const acc = { centro: [0, 0], margen: [0, 0], resto: [0, 0] };
   for (let y = 0; y < 512; y += 2) {
+    const dy = Math.abs(y * 2 - yBand);
     for (let x = 0; x < 512; x += 2) {
+      const dx = x * 2;
+      const dyDoc = y * 2;
+      if (dx < x0 || dx > x1 || dyDoc < yMin || dyDoc > yMax) continue;
       const i = (y * 512 + x) * 4;
       const dif = (Math.abs(d1[i] - d2[i]) + Math.abs(d1[i + 1] - d2[i + 1]) + Math.abs(d1[i + 2] - d2[i + 2])) / 3;
-      let cual = 'resto';
-      for (const f of franjas) if (Math.abs(y * 2 - f.y) <= f.r) cual = f.nombre;
-      if (!acc[cual]) acc[cual] = [0, 0];
+      const cual = dy <= 40 ? 'centro' : (dy <= 170 ? 'margen' : 'resto');
       acc[cual][1] += 1;
       if (dif > 24) acc[cual][0] += 1;
     }
@@ -239,13 +242,13 @@ const medir = (aUrl, bUrl, franjas) => page.evaluate(async ({ aUrl, bUrl, franja
   const salida = {};
   for (const k of Object.keys(acc)) salida[k + 'Pct'] = +(100 * acc[k][0] / Math.max(1, acc[k][1])).toFixed(1);
   return salida;
-}, { aUrl, bUrl, franjas });
+}, { aUrl, bUrl, yBand, x0, x1, yMin, yMax });
 
 const antes1 = await leerPng();
 await pintar(200);
 const r1 = await rellenar('Rellena la franja con un color lila plano, sin texto.');
 const tras1 = await leerPng();
-const m1 = await medir(antes1.png, tras1.png, [{ nombre: 'franja1', y: 200, r: 100 }]);
+const m1 = await medir(antes1.png, tras1.png, 200, 180, 844, 0, 512);
 const v1 = r1.previewPng ? await compararPngs(r1.previewPng, tras1.png) : { mismasDimensiones: false, mediaDif: null };
 console.log('Relleno 1:', JSON.stringify({ preview: r1.preview }), JSON.stringify(m1), '· vista previa vs aplicado:', JSON.stringify(v1));
 
@@ -260,7 +263,7 @@ const antes2 = await leerPng();
 await pintar(820);
 const r2 = await rellenar('Rellena la franja con un color verde plano, sin texto.');
 const tras2 = await leerPng();
-const m2 = await medir(antes2.png, tras2.png, [{ nombre: 'franja1', y: 200, r: 100 }, { nombre: 'franja2', y: 820, r: 100 }]);
+const m2 = await medir(antes2.png, tras2.png, 820, 180, 844, 512, 1024);
 const v2 = r2.previewPng ? await compararPngs(r2.previewPng, tras2.png) : { mismasDimensiones: false, mediaDif: null };
 console.log('Relleno 2 (tras recargar):', JSON.stringify({ preview: r2.preview }), JSON.stringify(m2), '· vista previa vs aplicado:', JSON.stringify(v2));
 
@@ -288,8 +291,8 @@ guardar(tras1.png, `31-${EXPECT}-tras1.png`);
 guardar(antes2.png, `32-${EXPECT}-antes2.png`);
 guardar(tras2.png, `33-${EXPECT}-tras2.png`);
 
-const ok1 = m1.franja1Pct > 15 && (m1.restoPct || 0) < 3;
-const ok2 = m2.franja2Pct > 15 && (m2.restoPct || 0) < 3;
+const ok1 = m1.centroPct > 10 && m1.margenPct > 8 && m1.restoPct < 3;
+const ok2 = m2.centroPct > 10 && m2.margenPct > 8 && m2.restoPct < 3;
 const ok3 = llamada?.model === 'openai-image-2-low';
 const okPreview = [v1, v2].every((v) => v.mismasDimensiones && v.mediaDif !== null && v.mediaDif < 2);
 const okSinHuerfano = recursosDespues <= recursosAntes;

@@ -146,35 +146,39 @@ const medir = await page.evaluate(async ({ antes, despues, preview, proveedor })
   const da = mk(A); const dd = mk(D);
   const dp = PR ? mk(PR) : null; const dv = PV ? mk(PV) : null;
   const dentro = (x, y) => Math.abs(y * 2 - 512) <= 60 && Math.abs(x * 2 - 512) <= 70;
-  let nF = 0, cambiosFuera = 0, nD = 0, cambiosDentro = 0;
-  let difPreview = 0, nPrev = 0, difProveedorFuera = 0;
+  const margen = (x, y) => !dentro(x, y) && Math.abs(y * 2 - 512) <= 300 && Math.abs(x * 2 - 512) <= 300;
+  let nC = 0, cambiosCentro = 0, nM = 0, cambiosMargen = 0, nR = 0, cambiosResto = 0;
+  let difPreview = 0, nPrev = 0, difProveedorResto = 0;
   for (let y = 0; y < H; y += 2) {
     for (let x = 0; x < W; x += 2) {
       const i = (y * W + x) * 4;
       const dif = (Math.abs(da[i] - dd[i]) + Math.abs(da[i + 1] - dd[i + 1]) + Math.abs(da[i + 2] - dd[i + 2])) / 3;
-      if (dentro(x, y)) { nD += 1; if (dif > 20) cambiosDentro += 1; }
-      else { nF += 1; if (dif > 20) cambiosFuera += 1; }
+      if (dentro(x, y)) { nC += 1; if (dif > 20) cambiosCentro += 1; }
+      else if (margen(x, y)) { nM += 1; if (dif > 20) cambiosMargen += 1; }
+      else { nR += 1; if (dif > 20) cambiosResto += 1; }
       if (dp) { difPreview += (Math.abs(dp[i] - dd[i]) + Math.abs(dp[i + 1] - dd[i + 1]) + Math.abs(dp[i + 2] - dd[i + 2])) / 3; nPrev += 1; }
-      if (dv && !dentro(x, y)) difProveedorFuera += (Math.abs(dv[i] - dd[i]) + Math.abs(dv[i + 1] - dd[i + 1]) + Math.abs(dv[i + 2] - dd[i + 2])) / 3;
+      if (dv && !dentro(x, y) && !margen(x, y)) difProveedorResto += (Math.abs(dv[i] - dd[i]) + Math.abs(dv[i + 1] - dd[i + 1]) + Math.abs(dv[i + 2] - dd[i + 2])) / 3;
     }
   }
   return {
-    fueraCambiadoPct: +(100 * cambiosFuera / Math.max(1, nF)).toFixed(2),
-    dentroCambiadoPct: +(100 * cambiosDentro / Math.max(1, nD)).toFixed(1),
+    centroCambiadoPct: +(100 * cambiosCentro / Math.max(1, nC)).toFixed(1),
+    margenCambiadoPct: +(100 * cambiosMargen / Math.max(1, nM)).toFixed(1),
+    restoCambiadoPct: +(100 * cambiosResto / Math.max(1, nR)).toFixed(2),
     vistaPreviaVsAplicadoMedia: +(difPreview / Math.max(1, nPrev)).toFixed(2),
-    proveedorFueraMedia: +(difProveedorFuera / Math.max(1, nF)).toFixed(2),
+    proveedorRestoMedia: +(difProveedorResto / Math.max(1, nR)).toFixed(2),
   };
 }, { antes: antesPng, despues: despuesPng, preview: previewPng, proveedor: proveedorPng });
 
 const info = { build, versionServida, modelo: enviado?.model, hayPreview: hayPreview === 1, mascara, ...medir, errores: errores.filter((e) => !e.includes('401') && !e.includes('404')).slice(0, 6) };
 const ok = info.hayPreview
-  && info.fueraCambiadoPct < 1
-  && info.dentroCambiadoPct > 10
+  && info.centroCambiadoPct > 10
+  && info.margenCambiadoPct > 8
+  && info.restoCambiadoPct < 1
   && info.vistaPreviaVsAplicadoMedia < 2
   && info.mascara.pixel[3] > 240
   && info.mascara.color === '#00ff00';
 fs.writeFileSync(`${OUT}/77-produccion-mascara-color.json`, JSON.stringify({ ok, ...info }, null, 2));
 console.log(JSON.stringify({ ok, ...info }, null, 2));
-console.log(ok ? '\nPASS: vista previa = aplicado, máscara visible y fuera de la máscara intacto' : '\nFALLO: revisar medidas');
+console.log(ok ? '\nPASS: vista previa = aplicado, margen aplicado y resto intacto' : '\nFALLO: revisar medidas');
 await browser.close();
 process.exit(ok ? 0 : 1);

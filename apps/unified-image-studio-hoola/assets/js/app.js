@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.10 · 2026-11-02 · máscara: avisos de capa oculta/tenue y nota en vivo';
+const BUILD = 'v3.1.0 · 2026-11-02 · máscara: margen para objetos que sobresalen';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -89,6 +89,7 @@ function guardarPreferenciasMascara() {
     localStorage.setItem(MASK_PREFS_KEY, JSON.stringify({
       color: state.ui.maskColor,
       opacity: state.ui.maskOpacity,
+      margin: state.ui.maskMargin,
     }));
   } catch { /* sin almacenamiento: se mantiene solo en memoria */ }
 }
@@ -99,6 +100,7 @@ function cargarPreferenciasMascara() {
     const prefs = raw ? JSON.parse(raw) : null;
     if (typeof prefs?.color === 'string' && /^#[0-9a-f]{6}$/i.test(prefs.color)) state.ui.maskColor = prefs.color;
     if (Number.isFinite(prefs?.opacity)) state.ui.maskOpacity = Math.max(10, Math.min(100, Number(prefs.opacity)));
+    if (Number.isFinite(prefs?.margin)) state.ui.maskMargin = Math.max(0, Math.min(100, Number(prefs.margin)));
   } catch { /* preferencias corruptas: se usan las de por defecto */ }
   const color = $('maskColor');
   if (color) color.value = state.ui.maskColor || MASK_COLOR_AUTO;
@@ -106,6 +108,10 @@ function cargarPreferenciasMascara() {
   if (opacidad) opacidad.value = String(state.ui.maskOpacity ?? 100);
   const etiqueta = $('maskOpacityValue');
   if (etiqueta) etiqueta.textContent = `${state.ui.maskOpacity ?? 100} %`;
+  const margen = $('maskMargin');
+  if (margen) margen.value = String(state.ui.maskMargin ?? 50);
+  const etiquetaMargen = $('maskMarginValue');
+  if (etiquetaMargen) etiquetaMargen.textContent = `${state.ui.maskMargin ?? 50} %`;
 }
 
 /* ══════════════════════ Arranque ══════════════════════ */
@@ -510,6 +516,11 @@ function sincronizarRangos() {
     if ($('maskOpacityValue')) $('maskOpacityValue').textContent = `${opacidadMascara.value} %`;
     state.ui.maskOpacity = Number(opacidadMascara.value);
   }
+  const margenMascara = $('maskMargin');
+  if (margenMascara) {
+    if ($('maskMarginValue')) $('maskMarginValue').textContent = `${margenMascara.value} %`;
+    state.ui.maskMargin = Number(margenMascara.value);
+  }
 }
 
 document.addEventListener('input', (event) => {
@@ -707,6 +718,11 @@ function bindLeftPanel() {
     $('maskOpacityValue').textContent = `${event.target.value} %`;
     guardarPreferenciasMascara();
     renderer.requestRender('mask-opacity');
+  });
+  $('maskMargin').addEventListener('input', (event) => {
+    state.ui.maskMargin = Number(event.target.value);
+    $('maskMarginValue').textContent = `${event.target.value} %`;
+    guardarPreferenciasMascara();
   });
   pintarCapaDeLaMascara();
   $('clearMaskBtn').addEventListener('click', () => {
@@ -1615,6 +1631,10 @@ async function runInpaint() {
   if (!layer.mask?.strokes?.length) { toast('Pinta la zona a rellenar en la máscara.', 'warn'); return; }
   const prompt = $('inpaintPrompt').value.trim();
   if (!prompt) { toast('Escribe qué debe aparecer dentro de la máscara.', 'warn'); return; }
+  // Se pide al modelo que encaje el objeto dentro de la zona; el margen de la
+  // máscara (abajo) se encarga de que, si se sale un poco, no salga recortado.
+  const instruccionAjuste = 'El objeto o cambio pedido debe quedar completo dentro de la zona marcada por la máscara, sin recortarse por el borde.';
+  const promptInpaint = prompt.length + instruccionAjuste.length + 2 <= 11600 ? `${prompt}\n\n${instruccionAjuste}` : prompt;
   if (!server.available || !server.writable) {
     toast('El inpainting necesita el proxy del servidor y una clave configurada.', 'error');
     return;
@@ -1681,7 +1701,7 @@ async function runInpaint() {
     const composite = renderer.compositeToCanvas();
     const mask = construirMascaraProveedor(layer);
     const job = await generate({
-      prompt,
+      prompt: promptInpaint,
       model: modeloInpaint,
       aspect: '1:1',
       images: [composite.toDataURL('image/png')],
@@ -1797,25 +1817,44 @@ function renombrarCapaDesdePropiedades() {
 
 /* Máscara para COMPONER el resultado dentro de la capa: alfa opaco = zona que se
    toma del proveedor. Debe ser la misma zona que se le pidió al proveedor:
-   - normal: lo pintado;
-   - invertida: todo menos lo pintado (si no, «Invertir» no aplicaba el cambio
-     donde el proveedor sí lo había hecho). */
+   - normal: lo pintado, ampliado con «Margen al aplicar» y borde desvanecido,
+     para que un objeto más grande que la máscara no salga recortado. La
+     ampliación es local a cada trazo (sombra difusa), no de la caja total, para
+     que dos zonas separadas no acaben cubriendo media imagen;
+   - invertida: todo menos lo pintado (sin ampliar). */
 function mascaraParaComponer(layer) {
   const doc = state.doc;
   const pintado = renderer.maskCanvasFor(layer);
-  if (!layer.mask?.inverted) return pintado;
-  const canvas = document.createElement('canvas');
-  canvas.width = doc.width;
-  canvas.height = doc.height;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.globalCompositeOperation = 'destination-out';
+  if (layer.mask?.inverted) {
+    const canvas = document.createElement('canvas');
+    canvas.width = doc.width;
+    canvas.height = doc.height;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.drawImage(pintado, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+    return canvas;
+  }
+  const porcentaje = Number(state.ui.maskMargin ?? 50);
+  const tamanos = (layer.mask?.strokes || []).map((trazo) => trazo.size || 1);
+  const mayor = tamanos.length ? Math.max(...tamanos) : 0;
+  if (!(porcentaje > 0) || !mayor) return pintado;
+  // Margen proporcional al pincel con el que se pintó esa zona (local al trazo).
+  const margen = Math.max(8, Math.min(220, Math.round(mayor * porcentaje / 100)));
+  const suave = document.createElement('canvas');
+  suave.width = doc.width;
+  suave.height = doc.height;
+  const ctx = suave.getContext('2d');
+  // La sombra difusa amplía el trazo y deja el borde desvanecido de una vez.
+  ctx.shadowColor = 'rgba(255, 255, 255, 1)';
+  ctx.shadowBlur = margen * 2;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
   ctx.drawImage(pintado, 0, 0);
-  ctx.globalCompositeOperation = 'source-over';
-  return canvas;
+  return suave;
 }
-
 /* Compone el resultado del proveedor SOLO dentro de la máscara de la capa:
    el resto del lienzo se queda exactamente como estaba. Evita que el "drift"
    del modelo reescriba zonas que el usuario no había pintado.

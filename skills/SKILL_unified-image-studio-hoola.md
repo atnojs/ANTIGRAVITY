@@ -29,7 +29,7 @@ comprueba eso primero y dilo antes de dar la receta.
 | Nombre visible | `Unified Image Studio · Hoola` (marca `UIS`, etiqueta `HOOLA`) |
 | URL publicada | `https://atnojs.es/apps/unified-image-studio-hoola/` |
 | Ruta en el repo | `apps/unified-image-studio-hoola/` |
-| Versión | `3.0.9-hoola` (sello en la barra inferior) |
+| Versión | `3.1.0-hoola` (sello en la barra inferior) |
 | Qué es | Estudio de imagen por capas: importar, generar con IA, editar, componer y exportar |
 | Backend | PHP (`api.php` + `proxy.php` + `lib/`), SQLite en `storage/`; sin él solo se edita y exporta |
 | Motores | Google Flow en el PC (imágenes y vídeo) + proveedores directos (OpenAI, Gemini, Qwen) |
@@ -196,6 +196,9 @@ generaciones seguidas en el PC (con modelos directos ese selector está desactiv
    **«Color de la máscara»** (con **«Auto»** vuelve al color de contraste por defecto) y
    **«Opacidad de la máscara»** (a **100 %** la zona marcada se pinta sólida y tapa la imagen; se
    recuerda en ese navegador) y pintar la zona sobre el lienzo. «Borrar» corrige lo pintado.
+   **«Margen al aplicar»** (50 % por defecto) aplica también el borde del objeto si lo generado
+   sobresale de lo pintado: súbelo si el objeto sale recortado, bájalo a 0 % si quieres solo lo
+   pintado.
 4. Escribir la **«Instrucción de inpainting»** (qué debe aparecer en esa zona).
 5. **«Rellenar la máscara»** y aceptar el resultado igual que en F3.
 

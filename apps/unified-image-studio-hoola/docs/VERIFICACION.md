@@ -470,3 +470,16 @@ capa oculta al 50 % → diálogo «La capa de la máscara está oculta» con «(
 **«Mostrar al 100 % y rellenar»**; cancelar no crea trabajos ni cambia nada; aceptar (proveedor
 simulado) deja la capa visible al 100 % con vista previa. Gate: **PASS 97,1/100**
 (VERIFICACION_INDEPENDIENTE.md).
+### 3.1.0 (2026-11-02) — objetos más grandes que la máscara
+
+Reporte del usuario: «la abeja es mayor que la zona de la máscara y por eso se ve parcial». La
+composición recortaba el resultado a lo pintado, así que el trozo del objeto que el proveedor dibujó
+fuera de la máscara se perdía. Ahora:
+
+- **«Margen al aplicar»** (0–100 %, por defecto 50 %): dilata la zona que se toma del proveedor
+  alrededor de lo pintado (hasta ~medio tamaño de la máscara) con **borde desvanecido**, de modo que
+  el objeto sobresaliente se aplica completo. 0 % = comportamiento estricto anterior.
+- Al prompt de inpainting se le añade una frase pidiendo que el objeto quede **completo dentro** de
+  la zona marcada.
+- La preferencia se guarda con el color/opacidad en uis-hoola:maskPrefs.
+- La vista previa sigue siendo el lienzo completo con el cambio (y el margen) aplicado.

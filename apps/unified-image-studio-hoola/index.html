@@ -405,6 +405,11 @@
               <label for="maskOpacity">Opacidad de la máscara <span class="mono" id="maskOpacityValue">100 %</span></label>
               <input type="range" id="maskOpacity" min="10" max="100" step="1" value="100" />
             </div>
+            <div class="field">
+              <label for="maskMargin">Margen al aplicar <span class="mono" id="maskMarginValue">50 %</span></label>
+              <input type="range" id="maskMargin" min="0" max="100" step="5" value="50" />
+              <p class="field-note">Si lo generado sobresale de la zona pintada (p. ej. una abeja más grande que el círculo), se aplica también su borde hasta este margen. 0 % = solo lo pintado; 50 % = medio tamaño de la máscara.</p>
+            </div>
             <div class="btn-row">
               <button class="btn btn-ghost btn-sm" id="invertMaskBtn">Invertir</button>
               <button class="btn btn-ghost btn-sm" id="clearMaskBtn">Limpiar</button>
@@ -1048,7 +1053,7 @@
 <input type="file" id="projectInput" accept=".json,application/json" hidden />
 
 <script src="assets/js/model-gate.20261027.js?v=25"></script>
-<script type="module" src="assets/js/app.20261102l.js?v=20261102l"></script>
+<script type="module" src="assets/js/app.20261102m.js?v=20261102m"></script>
 <script src="lightbox-zoom.20261026.js" defer></script>
 <script src="../_shared/password-eye.js?v=20261025b" defer></script>
   <div id="brushCursor" class="brush-cursor" aria-hidden="true"></div>
