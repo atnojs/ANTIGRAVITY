@@ -232,8 +232,58 @@ const hayPreviewFalso = (await page.locator('#aiPreview:not(.hidden)').count()) 
 if (hayPreviewFalso) await page.evaluate(() => { const b = document.querySelector('#aiPreview:not(.hidden) #aiDiscard'); if (b) b.click(); });
 const okSinFalsoPositivo = !avisoFalso && hayPreviewFalso;
 
-const salida = { capas, seleccionada, aviso, trasCancelar, difPreviewDocumento, difPreviewCapa, difPreviewAplicado, avisoFalso, hayPreviewFalso, okAviso, okCancelar, okPreviewDocumento, okPreviewAplicado, okSinCapaNueva, okSinFalsoPositivo, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
-const pasa = okAviso && okCancelar && okPreviewDocumento && okPreviewAplicado && okSinCapaNueva && okSinFalsoPositivo;
+// 4) Capa OCULTA: pintar y rellenar no se vería. Debe avisar y, si se acepta,
+//    mostrar la capa y continuar el relleno.
+await page.evaluate(() => { window.__UIS__.state.doc.layers = []; window.__UIS__.state.selection.layerId = null; });
+await page.evaluate(async () => {
+  const crear = async (c1, c2, nombre) => {
+    const c = document.createElement('canvas'); c.width = 1024; c.height = 1024;
+    const x = c.getContext('2d');
+    x.fillStyle = c1; x.fillRect(0, 0, 512, 1024);
+    x.fillStyle = c2; x.fillRect(512, 0, 512, 1024);
+    const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
+    await window.__UIS__.importFiles([new File([blob], nombre, { type: 'image/png' })], { asLayer: true });
+  };
+  await crear('#c0392b', '#f1c40f', 'fondo-oculto.png');
+  await crear('#2980b9', '#27ae60', 'capa-oculta.png');
+});
+await page.waitForTimeout(1200);
+// La capa de arriba (seleccionada) se oculta con el ojo del panel.
+await page.locator('#layerList .layer-item').first().locator('button[aria-label="Ocultar capa"]').click();
+await page.waitForTimeout(400);
+const notaOculta = await page.evaluate(() => document.getElementById('maskLayerName')?.textContent);
+await page.mouse.move(a.x, a.y);
+await page.mouse.down();
+for (let i = 1; i <= 8; i += 1) await page.mouse.move(a.x + (b.x - a.x) * i / 8, a.y, { steps: 2 });
+await page.mouse.up();
+await page.waitForTimeout(400);
+await page.fill('#inpaintPrompt', 'pinta de color fucsia');
+await page.click('#inpaintBtn');
+await page.waitForTimeout(1200);
+const avisoOculta = {
+  visible: (await page.locator('#confirmModal:not(.hidden)').count()) === 1,
+  titulo: await page.locator('#confirmTitle').textContent().catch(() => ''),
+};
+if (avisoOculta.visible) await page.click('#confirmOk');
+for (let t = 0; t < 40; t += 1) {
+  if (await page.locator('#aiPreview:not(.hidden)').count()) break;
+  await page.waitForTimeout(500);
+}
+const hayPreviewOculta = (await page.locator('#aiPreview:not(.hidden)').count()) === 1;
+let visibleTrasMostrar = null;
+if (hayPreviewOculta) {
+  visibleTrasMostrar = await page.evaluate(() => {
+    const u = window.__UIS__;
+    const capa = u.state.doc.layers.find((l) => l.id === u.state.selection.layerId);
+    return capa ? capa.visible : null;
+  });
+  await page.click('#aiPreview:not(.hidden) #aiAccept');
+  await page.waitForTimeout(1500);
+}
+const okCapaOculta = avisoOculta.visible && /oculta/i.test(avisoOculta.titulo) && /CAPA OCULTA/.test(notaOculta || '') && hayPreviewOculta && visibleTrasMostrar === true;
+
+const salida = { capas, seleccionada, aviso, trasCancelar, difPreviewDocumento, difPreviewCapa, difPreviewAplicado, avisoFalso, hayPreviewFalso, notaOculta, avisoOculta, hayPreviewOculta, visibleTrasMostrar, okAviso, okCancelar, okPreviewDocumento, okPreviewAplicado, okSinCapaNueva, okSinFalsoPositivo, okCapaOculta, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
+const pasa = okAviso && okCancelar && okPreviewDocumento && okPreviewAplicado && okSinCapaNueva && okSinFalsoPositivo && okCapaOculta;
 salida.pasa = pasa;
 fs.writeFileSync(`${OUT}/85-caso-capas.json`, JSON.stringify(salida, null, 2));
 console.log(JSON.stringify(salida, null, 2));

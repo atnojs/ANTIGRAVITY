@@ -382,6 +382,28 @@ esperaba a todas las capas.
   autoguardado).
 - La nota «Capa de la máscara» se actualiza también al renombrar.
 
+### 3.0.8 (2026-11-02) — capa de la máscara OCULTA
+
+Nuevo reporte del usuario («sigue sin funcionar») con una captura del 3.0.6/3.0.7. Diagnóstico con
+los datos del servidor: en su proyecto la capa seleccionada **«Resultado IA sin fondo» estaba
+oculta** (`visible:false`); la máscara y el relleno se aplicaban ahí y en el lienzo no cambiaba nada
+(la capa visible es «Resultado IA»). Correcciones:
+
+- La nota «Capa de la máscara» añade **«CAPA OCULTA»** (en rojo) cuando la capa no se ve.
+- Antes de rellenar, si la capa de la máscara está oculta o con opacidad 0, se avisa y se ofrece
+  **«Mostrar y rellenar»** (la muestra, la deja a opacidad 1 si hacía falta y sigue) o cancelar.
+- Prueba local nueva (`local-mascara-capas-uis-hoola.mjs`, caso 4): nota «CAPA OCULTA», diálogo con
+  título «La capa de la máscara está oculta», tras aceptar la capa queda visible y el relleno sigue.
+
+
+**Producción 3.0.7** (commit `9a8a8db3`; `index.html` → `app.20261102i.js?v=20261102i`;
+`api.php?action=state` → `version: "3.0.7-hoola"`; `h`, `g`, `f`, `d`, `c`, `.20261102` siguen 200).
+Caso de capa tapada reproducido en Chrome con **1 generación** `openai-image-2-low`:
+`94-produccion-caso-capas.json` → aviso correcto, vista previa vs documento antes de aceptar **0**,
+vs capa de abajo **110,07**, vs documento tras aceptar **0**, capas 2→2, 0 errores. Local sin falso
+positivo (capa transparente arriba): `85-caso-capas.json` (`avisoFalso:false`, `hayPreviewFalso:true`).
+
+
 
 
 

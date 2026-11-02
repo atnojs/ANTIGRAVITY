@@ -29,7 +29,7 @@ comprueba eso primero y dilo antes de dar la receta.
 | Nombre visible | `Unified Image Studio · Hoola` (marca `UIS`, etiqueta `HOOLA`) |
 | URL publicada | `https://atnojs.es/apps/unified-image-studio-hoola/` |
 | Ruta en el repo | `apps/unified-image-studio-hoola/` |
-| Versión | `3.0.7-hoola` (sello en la barra inferior) |
+| Versión | `3.0.8-hoola` (sello en la barra inferior) |
 | Qué es | Estudio de imagen por capas: importar, generar con IA, editar, componer y exportar |
 | Backend | PHP (`api.php` + `proxy.php` + `lib/`), SQLite en `storage/`; sin él solo se edita y exporta |
 | Motores | Google Flow en el PC (imágenes y vídeo) + proveedores directos (OpenAI, Gemini, Qwen) |
@@ -189,7 +189,8 @@ generaciones seguidas en el PC (con modelos directos ese selector está desactiv
 
 1. Seleccionar la capa en el panel derecho **«Capas»**. El bloque **«Máscara de la capa»** dice
    siempre **«Capa de la máscara: «nombre»»**: si no es la capa que estás viendo, la máscara se
-   pintará en otra y el relleno puede quedar tapado.
+   pintará en otra y el relleno puede quedar tapado. Si la capa está oculta, la nota lo avisa
+   (**«CAPA OCULTA»**) y al rellenar la app ofrece mostrarla y continuar.
 2. Pestaña **«Editar»**.
 3. En **«Máscara de la capa»**: **«Pintar»**, ajustar «Tamaño del pincel», «Dureza»,
    **«Color de la máscara»** (con **«Auto»** vuelve al color de contraste por defecto) y

@@ -902,3 +902,5 @@ input[type="range"]::-webkit-slider-runnable-track {
   border-radius: 99px;
   background: linear-gradient(90deg, var(--acc) var(--fill, 0%), rgba(0, 208, 208, 0.16) var(--fill, 0%));
 }
+/* Aviso: la capa de la máscara está oculta (el relleno no se vería). */
+#maskLayerName.is-warn { color: #ffb4b4; }
