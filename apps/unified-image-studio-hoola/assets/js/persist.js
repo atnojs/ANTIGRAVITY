@@ -126,6 +126,8 @@ export async function saveLocal(reason = 'auto') {
     await idb.put(STORE_DOCS, state.doc);
     for (const res of state.resources.values()) {
       if (!res.blob) continue;
+      // Recursos de una vista previa sin aceptar: no se guardan ni se suben.
+      if (res.preview) continue;
       const existing = await idb.get(STORE_RESOURCES, res.id);
       if (!existing) {
         await idb.put(STORE_RESOURCES, {
@@ -239,6 +241,8 @@ export async function flushPendingUploads() {
   let failures = 0;
   for (const resource of state.resources.values()) {
     if (!resource.blob || resource.remoteId) continue;
+    // La composición de una vista previa sin aceptar no debe llegar al servidor.
+    if (resource.preview) continue;
     try {
       await uploadResource(resource);
     } catch (error) {

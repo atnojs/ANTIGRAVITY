@@ -267,6 +267,7 @@ const guardar = (dataUrl, n) => fs.writeFileSync(`${OUT}/${n}`, Buffer.from(data
 // 3) Con un modelo que NO admite máscaras (Gemini), el relleno debe viajar con IMAGE 2.
 await pintar(820);
 const desde = await page.evaluate(() => (window.__MOCK__.llamadas || []).length);
+const recursosAntes = await page.evaluate(() => window.__UIS__.state.resources.size);
 await page.evaluate(() => { window.__UIS__.state.ui.model = 'gemini-pro'; });
 await page.fill('#inpaintPrompt', 'pinta un cuadrado amarillo plano');
 await page.click('#inpaintBtn');
@@ -277,7 +278,9 @@ for (let t = 0; t < 40; t += 1) {
 const llamada = await page.evaluate((n) => (window.__MOCK__.llamadas || []).slice(n).find((c) => c.action === 'job.create') || null, desde);
 console.log('Modelo con Gemini seleccionado →', JSON.stringify(llamada));
 await page.evaluate(() => { const b = document.querySelector('#aiPreview:not(.hidden) #aiDiscard'); if (b) b.click(); });
-await page.waitForTimeout(600);
+await page.waitForTimeout(800);
+const recursosDespues = await page.evaluate(() => window.__UIS__.state.resources.size);
+console.log('Recursos antes/después de descartar la vista previa:', recursosAntes, '→', recursosDespues);
 guardar(antes1.png, `30-${EXPECT}-antes1.png`);
 guardar(tras1.png, `31-${EXPECT}-tras1.png`);
 guardar(antes2.png, `32-${EXPECT}-antes2.png`);
@@ -287,8 +290,9 @@ const ok1 = m1.franja1Pct > 15 && (m1.restoPct || 0) < 3;
 const ok2 = m2.franja2Pct > 15 && (m2.restoPct || 0) < 3;
 const ok3 = llamada?.model === 'openai-image-2-low';
 const okPreview = [v1, v2].every((v) => v.mismasDimensiones && v.mediaDif !== null && v.mediaDif < 2);
-const pasa = ok1 && ok2 && ok3 && okPreview;
-const resultado = { dir: DIR, expectativa: EXPECT, relleno1: m1, relleno2: m2, modeloConGemini: llamada?.model || null, vistaPreviaVsAplicado: { v1, v2 }, okPreview, pasa, consola: consola.slice(0, 8) };
+const okSinHuerfano = recursosDespues <= recursosAntes;
+const pasa = ok1 && ok2 && ok3 && okPreview && okSinHuerfano;
+const resultado = { dir: DIR, expectativa: EXPECT, relleno1: m1, relleno2: m2, modeloConGemini: llamada?.model || null, vistaPreviaVsAplicado: { v1, v2 }, okPreview, recursosAntes, recursosDespues, okSinHuerfano, pasa, consola: consola.slice(0, 8) };
 fs.writeFileSync(`${OUT}/34-local-${EXPECT}.json`, JSON.stringify(resultado, null, 2));
 console.log('\nRESULTADO:', JSON.stringify(resultado, null, 2));
 const correcto = EXPECT === 'pass' ? pasa : !pasa;

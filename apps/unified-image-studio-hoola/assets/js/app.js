@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.4 · 2026-11-02 · máscara con color/opacidad y vista previa fiel';
+const BUILD = 'v3.0.5 · 2026-11-02 · máscara con color/opacidad, vista previa fiel y sin recursos huérfanos';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -1416,7 +1416,11 @@ async function acceptResult(mode) {
         return;
       }
     }
-    if (recursoFinal) void uploadResource(recursoFinal);
+    if (recursoFinal) {
+      // Ya se aplica a la capa: deja de ser una composición temporal.
+      if (recursoFinal.preview) delete recursoFinal.preview;
+      void uploadResource(recursoFinal);
+    }
     let recurso = null;
     if (!recursoFinal) {
       const blobEdicion = dataUrlToBlob(result.dataUrl);
@@ -1479,7 +1483,18 @@ async function acceptResult(mode) {
   toast(mode === 'variant' ? 'Variante guardada como capa nueva.' : 'Resultado aplicado como capa nueva.', 'ok');
 }
 
+/* La composición de la vista previa es temporal: al descartarla o regenerarla se
+   libera, para que no quede como recurso huérfano del proyecto. */
+function liberarVistaPrevia(resultado) {
+  const recurso = resultado?.compuesto;
+  if (!recurso || !recurso.preview) return;
+  try { if (recurso.url) URL.revokeObjectURL(recurso.url); } catch { /* ya revocado */ }
+  state.resources.delete(recurso.id);
+  renderAssets();
+}
+
 function discardResult() {
+  liberarVistaPrevia(pendingResult);
   pendingResult = null;
   $('resultTray').classList.add('hidden');
   $('aiPreview').classList.add('hidden');
@@ -1529,6 +1544,8 @@ async function runInpaint() {
       toast('No se pudo componer el relleno dentro de la máscara, así que no se ha aplicado nada. Vuelve a intentarlo.', 'error', { duration: 12000 });
       return;
     }
+    // Si había otra vista previa abierta, su composición temporal se libera.
+    liberarVistaPrevia(pendingResult);
     pendingResult = { job, layerId: layer.id, dataUrl: dataUrlProveedor, compuesto, previewUrl: compuesto.url };
     showResultPreview(pendingResult);
     toast(layer.mask?.inverted
@@ -1682,7 +1699,10 @@ async function componerInpaintingSobreCapa(layer, dataUrlResultado) {
     lctx.drawImage(parche, layer.x, layer.y, layer.w, layer.h, 0, 0, lienzo.width, lienzo.height);
 
     const blob = await canvasToBlob(lienzo, 'image/png');
-    return addResource({ name: 'inpaint-' + Date.now() + '.png', mime: 'image/png', blob, width: lienzo.width, height: lienzo.height });
+    const recurso = addResource({ name: 'inpaint-' + Date.now() + '.png', mime: 'image/png', blob, width: lienzo.width, height: lienzo.height });
+    // Temporal mientras se muestra la vista previa: si se descarta, se libera.
+    recurso.preview = true;
+    return recurso;
   } catch (error) {
     console.error('Inpainting: fallo al componer dentro de la máscara', error);
     return null;

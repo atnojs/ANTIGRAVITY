@@ -1,4 +1,4 @@
-3.0.4-hoola 2026-11-02
+3.0.5-hoola 2026-11-02
 Copia completa del original actual (Google Flow, compuerta de modelos con la contraseña de
 acceso, cancelación y biblioteca) con el estilo Hoola/Relatos al 100 %.
 3.0.1: el relleno de máscara se aplica SOLO dentro de lo pintado (antes, al reabrir un
@@ -7,6 +7,7 @@ proyecto, se aplicaba la imagen entera del proveedor a toda la capa).
 apuntando a la capa original aunque se deseleccione con Escape.
 3.0.3: avisos veraces en la vista previa (modo invertido y capa perdida).
 3.0.4: la máscara tiene selector de color y de opacidad (a 100 % tapa la imagen), se
-recuerda por navegador, y la vista previa del relleno muestra SOLO lo que se aplicará
-(no la imagen completa del proveedor).
+recuerda por navegador, y la vista previa del relleno muestra SOLO lo que se aplicará.
+3.0.5: la composición temporal de la vista previa se libera al descartarla o regenerarla
+(no quedan recursos huérfanos ni se sube al servidor).
 Verificación en docs/VERIFICACION.md (sección «Máscara», 2026-11-02).

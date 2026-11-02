@@ -298,6 +298,35 @@ Dos peticiones del usuario tras usar la 3.0.3:
 Evidencia: `34-local-pass.json` (`okPreview:true`, `vistaPreviaVsAplicado.v1/v2`), `64-casos-limite.json`
 (`okMascara:true`, `mascaraVisual.pixel100/pixel30`), PNG 60–63.
 
+### Producción 3.0.4 (2026-11-02)
+
+Commit `6cb8b4d2`. `index.html` cita `app.20261102f.js?v=20261102f`; `api.php?action=state` →
+`version: "3.0.4-hoola"`; hashes servidos = blobs del commit (index, app/render/core `f`; `d` sigue
+200). Caso del usuario reproducido en Chrome real con una generación `openai-image-2-low`
+(foto de detalle, máscara pequeña, prompt «pinta de color fucsia»):
+
+| Comprobación | Resultado |
+|---|---|
+| Máscara visible con color elegido y opacidad 100 % | píxel `[0,255,0,255]` (sólido, tapa la imagen), etiqueta «100 %» |
+| Proveedor | tiñó **toda** la imagen (diferencia media fuera de la máscara **25,09**) |
+| Vista previa vs capa aplicada | **diferencia media 0** (idénticas) |
+| Fuera de la máscara (antes vs después) | **0,09 %** de píxeles cambiados |
+| Dentro de la máscara | **40,9 %** cambiado |
+| Consola | 0 errores propios |
+
+Capturas: `70-produccion-mascara-verde.png` (máscara sólida), `71-produccion-vista-previa.png`,
+`72-produccion-despues.png`; medida `77-produccion-mascara-color.json`. Script:
+`tools/pruebas/verificar-produccion-mascara-color-uis-hoola.mjs`.
+
+### 3.0.5 (2026-11-02) — recursos huérfanos de la vista previa
+
+El verificador detectó (O1) que la composición temporal de la vista previa quedaba en
+`state.resources` al descartarla o regenerarla (aparecía en «Recursos del proyecto» y podía subirse).
+Ahora el recurso se marca `preview`, **no se guarda ni se sube** mientras no se acepte
+(`persist.js`), y al descartar o regenerar se **libera** (`liberarVistaPrevia`: revoca el blob URL y
+lo quita de `state.resources`); al aceptar se quita la marca y se sube.
+
+
 
 ### Rework 3.0.2 (2026-11-02) — defectos del verificador independiente
 
