@@ -1,6 +1,9 @@
-3.0.1-hoola 2026-11-02
+3.0.2-hoola 2026-11-02
 Copia completa del original actual (Google Flow, compuerta de modelos con la contraseña de
 acceso, cancelación y biblioteca) con el estilo Hoola/Relatos al 100 %.
-Corrección 3.0.1: el relleno de máscara se aplica SOLO dentro de lo pintado (antes, al
-reabrir un proyecto, se aplicaba la imagen entera del proveedor a toda la capa).
+3.0.1: el relleno de máscara se aplica SOLO dentro de lo pintado (antes, al reabrir un
+proyecto, se aplicaba la imagen entera del proveedor a toda la capa).
+3.0.2: «Invertir» aplica el cambio donde toca (fuera de lo pintado), «Aceptar» sigue
+apuntando a la capa original aunque se deseleccione con Escape, y la caché de la máscara
+tiene en cuenta el estado invertido.
 Verificación en docs/VERIFICACION.md (sección «Máscara», 2026-11-02).

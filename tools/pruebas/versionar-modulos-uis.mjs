@@ -10,8 +10,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const VERSION = process.argv[2];
-if (!/^\d{8}$/.test(VERSION || '')) {
-  console.error('Uso: node tools/pruebas/versionar-modulos-uis.mjs YYYYMMDD');
+if (!/^\d{8}[a-z]?$/.test(VERSION || '')) {
+  console.error('Uso: node tools/pruebas/versionar-modulos-uis.mjs YYYYMMDD[a-z]');
   process.exit(1);
 }
 const DIR = path.resolve('apps/unified-image-studio-hoola/assets/js');
@@ -50,8 +50,8 @@ console.log(`\n${escritos} módulos versionados como *.${VERSION}.js`);
 // index.html debe cargar la versión nueva (y solo ella).
 const html = path.resolve('apps/unified-image-studio-hoola/index.html');
 let indice = fs.readFileSync(html, 'utf8');
-if (!/assets\/js\/app\.\d{8}\.js/.test(indice)) {
-  console.error('AVISO: index.html no apunta todavía a app.<fecha>.js');
-} else {
-  console.log('index.html:', indice.match(/assets\/js\/app\.[^"]+/)[0]);
-}
+const antes = (indice.match(/assets\/js\/app[^"']*/) || ['(ninguna)'])[0];
+indice = indice.replace(/assets\/js\/app[^"']*/g, `assets/js/${base('app')}?v=${VERSION}`);
+fs.writeFileSync(html, indice, 'utf8');
+const despues = (indice.match(/assets\/js\/app[^"']*/) || ['(ninguna)'])[0];
+console.log(`index.html: ${antes} → ${despues}`);

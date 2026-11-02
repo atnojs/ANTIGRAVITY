@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.1 · 2026-11-02 · máscara aplicada solo dentro de lo pintado';
+const BUILD = 'v3.0.2 · 2026-11-02 · máscara: aplica solo lo pintado (también invertida)';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -1336,8 +1336,16 @@ async function acceptResult(mode) {
   // Inpainting y quitar fondo son EDICIONES de la capa: el resultado debe
   // sustituir los píxeles de esa misma capa, conservando su posición y tamaño.
   // Antes se añadía como capa nueva y centrada, y por eso aparecía donde quería.
+  // Se usa la capa sobre la que se pidió el resultado (result.layerId): si el
+  // usuario deselecciona con Escape mientras ve la vista previa, «Aceptar» debe
+  // seguir aplicando sobre esa capa y no añadir la imagen entera como capa nueva.
   const edicion = ['inpaint', 'remove-background'].includes(result.job?.kind);
-  const destino = edicion ? getLayer() : null;
+  const capaObjetivo = result.layerId ? getLayer(result.layerId) : getLayer();
+  const destino = edicion ? capaObjetivo : null;
+  if (edicion && !destino) {
+    toast('Selecciona la capa en la que quieres aplicar el resultado y vuelve a aceptarlo.', 'warn', { duration: 9000 });
+    return;
+  }
   if (edicion && destino) {
     // Inpainting: primero se compone el resultado DENTRO de la máscara. Si no se
     // puede componer, NO se aplica la imagen entera del proveedor: se avisa y se
@@ -1455,7 +1463,7 @@ async function runInpaint() {
       kind: 'inpaint',
     });
     if (job?.error) throw new Error(job.error);
-    pendingResult = { job, dataUrl: job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}` };
+    pendingResult = { job, layerId: layer.id, dataUrl: job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}` };
     showResultPreview(pendingResult);
     toast('Resultado listo: al aceptar se aplica SOLO dentro de la máscara pintada.', 'ok');
   } catch (error) {
@@ -1540,6 +1548,27 @@ function renombrarCapaDesdePropiedades() {
 }
 
 
+/* Máscara para COMPONER el resultado dentro de la capa: alfa opaco = zona que se
+   toma del proveedor. Debe ser la misma zona que se le pidió al proveedor:
+   - normal: lo pintado;
+   - invertida: todo menos lo pintado (si no, «Invertir» no aplicaba el cambio
+     donde el proveedor sí lo había hecho). */
+function mascaraParaComponer(layer) {
+  const doc = state.doc;
+  const pintado = renderer.maskCanvasFor(layer);
+  if (!layer.mask?.inverted) return pintado;
+  const canvas = document.createElement('canvas');
+  canvas.width = doc.width;
+  canvas.height = doc.height;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.drawImage(pintado, 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  return canvas;
+}
+
 /* Compone el resultado del proveedor SOLO dentro de la máscara de la capa:
    el resto del lienzo se queda exactamente como estaba. Evita que el "drift"
    del modelo reescriba zonas que el usuario no había pintado.
@@ -1571,9 +1600,9 @@ async function componerInpaintingSobreCapa(layer, dataUrlResultado) {
     const pctx = parche.getContext('2d');
     pctx.drawImage(proveedor, 0, 0, doc.width, doc.height);
 
-    // 2) Solo la zona pintada
+    // 2) Solo la zona pedida al proveedor (la misma: normal o invertida)
     pctx.globalCompositeOperation = 'destination-in';
-    pctx.drawImage(renderer.maskCanvasFor(layer), 0, 0, doc.width, doc.height);
+    pctx.drawImage(mascaraParaComponer(layer), 0, 0, doc.width, doc.height);
     pctx.globalCompositeOperation = 'source-over';
 
     // 3) Nueva imagen de la capa: la actual + parche en su sitio
@@ -1735,7 +1764,7 @@ async function removeBackgroundAi() {
       toast('El modelo devolvió una imagen opaca: no ha quitado el fondo. Usa «Quitar fondo por color» o repite con otra imagen.', 'error', { duration: 10000 });
       return;
     }
-    pendingResult = { job, dataUrl: dataUrlFondo };
+    pendingResult = { job, layerId: layer.id, dataUrl: dataUrlFondo };
     showResultPreview(pendingResult);
     toast('Resultado listo: acéptalo para sustituir el fondo sin tocar textos ni logos.', 'ok');
   } catch (error) {

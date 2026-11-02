@@ -326,12 +326,16 @@ class Renderer {
     const key = layer.id;
     const cache = this.maskCache.get(key);
     const strokes = layer.mask?.strokes || [];
-    // Firma por CONTENIDO de la lista de trazos (modo, grosor, dureza y número
-    // de puntos). Antes solo miraba el número de trazos y los puntos del último:
-    // dos máscaras distintas podían compartir firma y reutilizarse la vieja.
-    const signature = strokes
+    // Firma ESTRUCTURAL de la lista de trazos: modo, grosor, dureza, número de
+    // puntos de cada trazo, última coordenada y si la máscara está invertida.
+    // Antes solo miraba el número de trazos y los puntos del último, así que dos
+    // máscaras distintas podían compartir firma. La invalidación fiable es
+    // `invalidateMask()`, que se llama en cada mutación de la máscara.
+    const ultimo = strokes.at(-1);
+    const firmaTrazos = strokes
       .map((s) => `${s.mode === 'erase' ? 'e' : 'p'}${s.size || 0}:${s.hardness ?? ''}:${s.pts?.length || 0}`)
       .join('|');
+    const signature = `${layer.mask?.inverted ? 'inv' : 'nor'}#${firmaTrazos}#${ultimo?.pts?.at(-1)?.join(',') || ''}`;
     if (cache && cache.signature === signature && cache.w === state.doc.width && cache.h === state.doc.height) {
       return cache.canvas;
     }

@@ -226,6 +226,40 @@ verificaciones anteriores pasaban y la app seguía fallando para el usuario.
 | Módulos cargados en una carga | una sola copia de cada uno (`app`, `ai`, `core`, `exporter`, `flow`, `persist`, `render`, `tools`, `ui` `.20261102.js`) |
 | Producción tras desplegar | ver más abajo |
 
+### Producción (2026-11-02, tras desplegar `12170394` + re-disparo `c63288cf`)
+
+| Comprobación | Resultado |
+|---|---|
+| `index.html` servido | cita `assets/js/app.20261102.js?v=20261102` (hash servido = hash del commit) |
+| `api.php?action=state` | `version: "3.0.1-hoola"`, `ok: true` |
+| Sello en la app | `v3.0.1 · 2026-11-02 · máscara aplicada solo dentro de lo pintado` |
+| Módulos servidos | `app/render/tools/ui/core/persist/exporter/ai/flow` `.20261102.js`: hash del **blob del commit** = hash servido; una sola copia de cada uno |
+| Escenario real del fallo | foto de detalle → 1.er relleno (franja 1) → simular documento antiguo con `aspectOriginal` heredado → guardar → recargar → 2.º relleno (franja 2) |
+| Fuera de las franjas (antes vs después) | **0,25 %** de píxeles cambiados (la composite conserva el original) |
+| Fuera de las franjas, capa vs imagen del proveedor | diferencia media **2,79** (no se aplicó la imagen entera) |
+| Dentro de la franja pintada | **76,1 %** de los píxeles coinciden con la imagen del proveedor (parche aplicado) |
+| Consola | 0 errores propios |
+| Cuenta/modelo | `openai-image-2-low`, trabajos `succeeded` |
+
+Script: `tools/pruebas/verificar-produccion-mascara-uis-hoola.mjs` (medida en
+`tools/evidencias/2026-11-02-mascara-uis/53-produccion-medicion.json`, capturas 50–52).
+
+### Rework 3.0.2 (2026-11-02) — defectos del verificador independiente
+
+El verificador emitió **REWORK** con un defecto Medio y dos menores en el mismo control. Corregidos
+y re-verificados con banco local (proveedor simulado que reescribe toda la imagen):
+
+| Defecto | Qué pasaba | Corrección | Medida antes → después |
+|---|---|---|---|
+| D1 Medio: «Invertir» roto | el proveedor editaba FUERA de lo pintado, pero la composición aplicaba el parche DENTRO: el cambio se perdía | `mascaraParaComponer()` usa la misma zona que se envió (complemento si la máscara está invertida) | pintado: 100 % → **0 %**; fuera: 0,1 % → **100 %** |
+| D2 Menor: vista previa + `Escape` | al deseleccionar la capa, «Aceptar» añadía la imagen ENTERA del proveedor como capa nueva | el resultado recuerda `layerId`; si ya no hay capa objetivo no se aplica y se avisa | capas 1→2 → **1→1**; fuera de la máscara 0 % → **0,1 %** |
+| D3 Menor: firma de caché | el commit decía «firma por contenido» y solo miraba estructura | la firma incluye ahora estado invertido y última coordenada (la invalidación real sigue siendo `invalidateMask()`) | comentario y firma coherentes |
+
+Evidencia: `tools/evidencias/2026-11-02-mascara-uis/64-casos-limite.json` (corregido) y
+`65-casos-limite-antes.json` (código anterior), PNG 60–63. Script:
+`tools/pruebas/local-mascara-casos-uis-hoola.mjs`.
+
+
 Banco: `tools/pruebas/local-mascara-uis-hoola.mjs` (sirve la app por HTTP y simula el proveedor).
 Código anterior congelado en `tools/pruebas/tmp-old-uis/` para comparar (no se publica).
 Evidencias: `tools/evidencias/2026-11-02-mascara-uis/`.
