@@ -2884,3 +2884,11 @@ las cabeceras.
 - **Consistencia:** ahora **204/204** facturas reales de 2026 tienen la misma fecha que el libro (antes fallaban 4: 22, 45, 151 y 152). `Mayo\Prueba` intacta.
 - **Verificación:** verificador independiente **PASS** (diff 1 celda por factura, PDF de 22 en 1 página con la fecha nueva y texto idéntico salvo la fecha, 204/204, libro intacto con K15=12.044, Prueba sin tocar). Acta en `tools/evidencias/2026-11-02-fechas-22-45/`.
 - **Commit:** ver `git log -1 -- tools/memoria/bitacora.md`.
+
+
+## 2026-11-02 (noche) — UIS·Hoola 3.2.0: zonas numeradas de máscara con prompt propio
+- **Encargo:** «al marcar una zona con la máscara se enumere… cada máscara su propio campo para su prompt».
+- **Cambios:** mask.zones (id + prompt) y stroke.zone; numeración automática (trazo pegado = misma zona, separado = nueva), «＋ Zona» arma el siguiente trazo; panel «Zonas de la máscara» con un campo por zona; la goma no tiene zona y borra en todas; «Rellenar las N zonas» recorre zona a zona con su máscara y su prompt y compone una sola vista previa; «Limpiar» borra también las zonas; máximo 12. Versión 3.2.0-hoola y UIS_VERSION.
+- **Publicación:** commits 716d5999 (app, skill y verificación) y 1cd39f85 (versión del servidor) en main; producción sirve pp.20261102o.js y hoola.20261102.css.
+- **Verificación:** Chrome real por CDP (sin tiempo virtual), 11/11 comprobaciones en PASS (4 zonas numeradas, prompts por zona, máscara distinta por zona, trazo pegado a la zona 1, trazo separado = zona nueva, goma por zona, borrado de zona, «＋ Zona», serialización). Producción: build v3.2.0, 3 zonas numeradas y «Rellenar las 3 zonas», 0 errores JS. **Pendiente:** una generación real con proveedor de 2+ zonas (no se gastó crédito).
+- **Commit:** ver git log -1 -- tools/memoria/bitacora.md.
