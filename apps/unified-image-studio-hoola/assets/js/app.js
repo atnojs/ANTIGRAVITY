@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.8 · 2026-11-02 · máscara: avisa si la capa está oculta o tapada';
+const BUILD = 'v3.0.9 · 2026-11-02 · máscara: capa oculta o casi transparente avisada';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -277,6 +277,7 @@ async function openProject(id, { silent = false } = {}) {
   state.doc = doc;
   state.selection.layerId = doc.layers.at(-1)?.id || null;
   resetHistory();
+  pintarCapaDeLaMascara();
   setEmptyState(doc.layers.length === 0 && !doc.__blank);
   renderLayers();
   renderAssets();
@@ -287,8 +288,7 @@ async function openProject(id, { silent = false } = {}) {
   updateViewportUI(state.ui.zoom);
   if (state.ui.mode === 'server' && server.writable) {
     try {
-      const data = await server.call('project.get', { id }, { method: 'GET', timeout: 8000 });
-      if (data?.version) {
+      const data = await server.call('project.get', { id }, { method: 'GET', timeout: 8000 });      if (data?.version) {
         // Adopta la versión del servidor aunque el documento local sea el vigente:
         // sin esto el primer guardado chocaría con un 409 falso.
         state.project.version = Number(data.version);
@@ -306,12 +306,14 @@ async function openProject(id, { silent = false } = {}) {
           renderLayers();
           renderer.fit();
           updateTopbar();
+          pintarCapaDeLaMascara();
         }
       }
     } catch { /* el proyecto local es válido */ }
   }
   // Al abrir desde el menú hay que recordarlo: al recargar volvía el anterior.
   try { localStorage.setItem('uis-hoola:lastProject', id); } catch { /* sin almacenamiento */ }
+  pintarCapaDeLaMascara();
   if (!silent) toast(`Proyecto «${project.name}» abierto.`, 'ok');
 }
 
@@ -1594,12 +1596,15 @@ function pintarCapaDeLaMascara() {
   const capa = getLayer();
   if (!capa) {
     nodo.textContent = 'Capa de la máscara: sin selección';
+    nodo.classList.remove('is-warn');
     return;
   }
   const trazos = capa.mask?.strokes?.length || 0;
   const oculta = !capa.visible || capa.opacity <= 0;
-  nodo.textContent = `Capa de la máscara: «${capa.name}»${trazos ? ` · ${trazos} trazo${trazos === 1 ? '' : 's'}` : ''}${oculta ? ' · CAPA OCULTA' : ''}`;
-  nodo.classList.toggle('is-warn', oculta);
+  const tenue = !oculta && capa.opacity < 0.1;
+  const aviso = oculta ? ' · CAPA OCULTA' : (tenue ? ' · OPACIDAD MUY BAJA' : '');
+  nodo.textContent = `Capa de la máscara: «${capa.name}»${trazos ? ` · ${trazos} trazo${trazos === 1 ? '' : 's'}` : ''}${aviso}`;
+  nodo.classList.toggle('is-warn', oculta || tenue);
 }
 
 async function runInpaint() {
@@ -1612,28 +1617,33 @@ async function runInpaint() {
     toast('El inpainting necesita el proxy del servidor y una clave configurada.', 'error');
     return;
   }
-  // Si la capa que se va a editar está OCULTA (o con opacidad 0), el relleno se
-  // aplica pero no se ve en el lienzo: es la otra forma de «no funciona nada».
-  if (!layer.visible || layer.opacity <= 0) {
+  // Si la capa que se va a editar está OCULTA (o casi transparente), el relleno
+  // se aplica pero no se ve en el lienzo: es la otra forma de «no funciona nada».
+  const capaOculta = !layer.visible || layer.opacity <= 0;
+  const capaTenue = !capaOculta && layer.opacity < 0.1;
+  if (capaOculta || capaTenue) {
     const mostrar = await confirmDialog({
-      title: 'La capa de la máscara está oculta',
-      text: `Estás editando «${layer.name}», pero esa capa está oculta: el relleno se aplicaría y en el lienzo no se vería nada.\n\n¿Quieres mostrarla y rellenar?`,
-      okLabel: 'Mostrar y rellenar',
+      title: capaOculta ? 'La capa de la máscara está oculta' : 'La capa de la máscara casi no se ve',
+      text: capaOculta
+        ? `Estás editando «${layer.name}», pero esa capa está oculta: el relleno se aplicaría y en el lienzo no se vería nada.\n\n¿Quieres mostrarla y rellenar?`
+        : `Estás editando «${layer.name}», que tiene una opacidad del ${Math.round(layer.opacity * 100)} %: el relleno se vería muy tenue.\n\n¿Quieres ponerla al 100 % y rellenar?`,
+      okLabel: capaOculta ? 'Mostrar y rellenar' : 'Poner al 100 % y rellenar',
     });
     if (!mostrar) {
       switchRightTab('layers');
-      toast(`«${layer.name}» sigue oculta: muestra la capa en «Capas» o elige otra antes de rellenar.`, 'info', { duration: 9000 });
+      toast(`«${layer.name}» sigue ${capaOculta ? 'oculta' : 'con opacidad muy baja'}: ajústala en «Capas» o elige otra antes de rellenar.`, 'info', { duration: 9000 });
       return;
     }
     mutate('mostrar capa para editar', () => {
       layer.visible = true;
-      if (layer.opacity <= 0) layer.opacity = 1;
+      layer.opacity = 1;
     });
     renderLayers();
+    renderLayerProps();
     renderer.requestRender('capa-visible');
     scheduleSave('capa-visible');
     pintarCapaDeLaMascara();
-    toast(`Capa «${layer.name}» mostrada.`, 'ok');
+    toast(`Capa «${layer.name}» visible al 100 %.`, 'ok');
   }
   // Si la capa de la máscara está tapada por otra de arriba, el relleno no se
   // verá en el lienzo. Se avisa y se deja elegir: editar la capa tapada o, si

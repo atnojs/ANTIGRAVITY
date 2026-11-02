@@ -395,6 +395,24 @@ oculta** (`visible:false`); la máscara y el relleno se aplicaban ahí y en el l
 - Prueba local nueva (`local-mascara-capas-uis-hoola.mjs`, caso 4): nota «CAPA OCULTA», diálogo con
   título «La capa de la máscara está oculta», tras aceptar la capa queda visible y el relleno sigue.
 
+**Producción 3.0.8** (commit `d40e7204`; `index.html` → `app.20261102j.js?v=20261102j`;
+`api.php?action=state` → `version: "3.0.8-hoola"`; `i`, `h`, `g`, `f`, `d`, `c`, `.20261102` siguen
+200). Caso de capa oculta reproducido en Chrome con **1 generación** `openai-image-2-low`
+(`99-produccion-capa-oculta.json`): nota «Capa de la máscara: «oculta» · CAPA OCULTA», diálogo
+«La capa de la máscara está oculta», tras «Mostrar y rellenar» la capa queda visible, vista previa
+vs aplicado **0**, capas 2→2, 0 errores. Capturas: `95-produccion-nota-capa-oculta.png`,
+`96-produccion-aviso-capa-oculta.png`, `97-produccion-vista-previa-oculta.png`.
+
+### 3.0.9 (2026-11-02) — cierre de observaciones de 3.0.8
+
+- **O1:** al abrir/recargar un proyecto la nota decía «sin selección» con una capa seleccionada
+  (`openProject()` asignaba `selection.layerId` sin emitir `selection:change`). Ahora se refresca al
+  final de `openProject()` y en el caso de cargar la versión del servidor.
+- **O3:** una opacidad residual (1–9 %) tampoco deja ver el relleno: la nota añade
+  **«OPACIDAD MUY BAJA»** y el aviso ofrece «Poner al 100 % y rellenar».
+
+
+
 
 **Producción 3.0.7** (commit `9a8a8db3`; `index.html` → `app.20261102i.js?v=20261102i`;
 `api.php?action=state` → `version: "3.0.7-hoola"`; `h`, `g`, `f`, `d`, `c`, `.20261102` siguen 200).
