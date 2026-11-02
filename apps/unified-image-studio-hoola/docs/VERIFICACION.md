@@ -335,6 +335,28 @@ mismo SHA-256; consola `[]`; módulos `g` una sola copia. Generación real en 3.
 fuera de la máscara 0,1 %, dentro 46,3 %, vista previa = aplicado. Gate: **PASS 96,6/100**
 (`VERIFICACION_INDEPENDIENTE.md`).
 
+### 3.0.6 (2026-11-02) — máscara sobre la capa equivocada y vista previa del lienzo
+
+Caso real del usuario (proyecto `prj_mvpg4jvf2uuuw5`): pintó las dos máscaras sobre la capa
+**«WhatsApp Image…»**, que queda **debajo** de la capa visible **«Resultado IA»** (el dragón). El
+relleno se aplicó bien a esa capa, pero la vista previa enseñaba **solo esa capa** (la foto del
+árbol), por lo que parecía que «cambió el sujeto de la imagen». Diagnóstico con datos del servidor:
+el trabajo `job_6a34e7c6e947665c161bff61` devolvió el dragón en negro; la capa editada era la de
+abajo. Correcciones:
+
+1. **«Capa de la máscara: «nombre»»** en el bloque de la máscara: siempre se ve sobre qué capa se
+   pinta (se actualiza al cambiar de capa).
+2. **Aviso de capa tapada** antes de rellenar: si hay una capa visible por encima que cubre la zona
+   pintada, se avisa y se ofrece **cancelar** (selecciona automáticamente la capa de arriba y abre
+   «Capas» para pintar allí) o **rellenar la capa tapada** igualmente.
+3. **Vista previa = lienzo completo** con el parche aplicado (no la capa suelta ni la imagen del
+   proveedor): lo que se ve en la vista previa es exactamente lo que queda al aceptar.
+
+Verificación local (`tools/pruebas/local-mascara-capas-uis-hoola.mjs`): aviso correcto, cancelar deja
+0 trabajos y selecciona la capa de arriba, vista previa vs documento antes de aceptar **0**, vs capa
+de abajo **110,07**, vs documento tras aceptar **0**, capas 2→2.
+
+
 
 
 

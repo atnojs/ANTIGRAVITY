@@ -1,4 +1,4 @@
-3.0.5-hoola 2026-11-02
+3.0.6-hoola 2026-11-02
 Copia completa del original actual (Google Flow, compuerta de modelos con la contraseña de
 acceso, cancelación y biblioteca) con el estilo Hoola/Relatos al 100 %.
 3.0.1: el relleno de máscara se aplica SOLO dentro de lo pintado (antes, al reabrir un
@@ -10,4 +10,7 @@ apuntando a la capa original aunque se deseleccione con Escape.
 recuerda por navegador, y la vista previa del relleno muestra SOLO lo que se aplicará.
 3.0.5: la composición temporal de la vista previa se libera al descartarla o regenerarla
 (no quedan recursos huérfanos ni se sube al servidor).
+3.0.6: el panel indica a qué capa pertenece la máscara; si esa capa está tapada por otra
+de arriba se avisa antes de rellenar (y se puede cancelar para seleccionar la de arriba);
+la vista previa del relleno es el LIENZO COMPLETO con el cambio aplicado.
 Verificación en docs/VERIFICACION.md (sección «Máscara», 2026-11-02).

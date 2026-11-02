@@ -9,7 +9,7 @@ import {
   undo, redo, markDirty, resetHistory, pushHistory, LIMITS, fmtBytes, fmtDate,
   deserializeProject, dataUrlToBlob, serializeProject,
 } from './core.js?v=25';
-import { renderer } from './render.js?v=25';
+import { renderer, pointInLayer } from './render.js?v=25';
 import { initTools, setTool } from './tools.js?v=25';
 import {
   $, $$, el, toast, openModal, closeModal, closeTopModal, anyModalOpen, confirmDialog,
@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.5 · 2026-11-02 · máscara con color/opacidad, vista previa fiel y sin recursos huérfanos';
+const BUILD = 'v3.0.6 · 2026-11-02 · máscara: capa correcta, vista previa del lienzo completo';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -706,6 +706,7 @@ function bindLeftPanel() {
     guardarPreferenciasMascara();
     renderer.requestRender('mask-opacity');
   });
+  pintarCapaDeLaMascara();
   $('clearMaskBtn').addEventListener('click', () => {
     const layer = getLayer();
     if (!layer) return;
@@ -1502,6 +1503,71 @@ function discardResult() {
   $('aiPreviewImg').src = '';
 }
 
+/* Capa visible que TAPA la capa editada en la zona pintada. Si existe, rellenar
+   ahí no se verá en el lienzo (la tapa la de arriba): hay que avisar antes, porque
+   es fácil pintar la máscara sobre una capa que no es la que se está viendo. */
+function capaQueTapaLaMascara(layer) {
+  const doc = state.doc;
+  if (!doc || !layer) return null;
+  const indice = doc.layers.findIndex((capa) => capa.id === layer.id);
+  if (indice < 0) return null;
+  const puntos = [];
+  for (const stroke of layer.mask?.strokes || []) {
+    for (const punto of stroke.pts || []) puntos.push(punto);
+  }
+  if (!puntos.length) return null;
+  const salto = Math.max(1, Math.ceil(puntos.length / 80));
+  const muestra = puntos.filter((_, i) => i % salto === 0);
+  for (let i = indice + 1; i < doc.layers.length; i += 1) {
+    const arriba = doc.layers[i];
+    if (!arriba.visible || arriba.opacity <= 0) continue;
+    if (muestra.some(([x, y]) => pointInLayer(arriba, { x, y }))) return arriba;
+  }
+  return null;
+}
+
+/* La imagen de un recurso tarda un instante en cargar; el compositor solo la usa
+   cuando `imageFor()` la devuelve, así que se espera aquí antes de previsualizar. */
+async function esperarImagenEnCache(resourceId, intentos = 80) {
+  for (let i = 0; i < intentos; i += 1) {
+    const imagen = imageFor(resourceId);
+    if (imagen) return imagen;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  return null;
+}
+
+/* Vista previa = el DOCUMENTO COMPLETO con el parche aplicado en su capa. Así se
+   ve exactamente lo que quedará en el lienzo al aceptar, aunque el parche vaya a
+   una capa que está debajo de otras. */
+async function componerVistaPreviaConParche(layer, parche) {
+  const anterior = layer.resourceId;
+  try {
+    layer.resourceId = parche.id;
+    if (!(await esperarImagenEnCache(parche.id))) return null;
+    return renderer.compositeToCanvas().toDataURL('image/png');
+  } catch (error) {
+    console.error('Inpainting: no se pudo componer la vista previa del documento', error);
+    return null;
+  } finally {
+    layer.resourceId = anterior;
+    renderer.requestRender('mask-preview-restore');
+  }
+}
+
+/* Capa a la que pertenece la máscara: se muestra en el panel para no pintar a ciegas. */
+function pintarCapaDeLaMascara() {
+  const nodo = $('maskLayerName');
+  if (!nodo) return;
+  const capa = getLayer();
+  if (!capa) {
+    nodo.textContent = 'Capa de la máscara: sin selección';
+    return;
+  }
+  const trazos = capa.mask?.strokes?.length || 0;
+  nodo.textContent = `Capa de la máscara: «${capa.name}»${trazos ? ` · ${trazos} trazo${trazos === 1 ? '' : 's'}` : ''}`;
+}
+
 async function runInpaint() {
   const layer = getLayer();
   if (!layer) { toast('Selecciona la capa que quieres editar.', 'warn'); return; }
@@ -1511,6 +1577,24 @@ async function runInpaint() {
   if (!server.available || !server.writable) {
     toast('El inpainting necesita el proxy del servidor y una clave configurada.', 'error');
     return;
+  }
+  // Si la capa de la máscara está tapada por otra de arriba, el relleno no se
+  // verá en el lienzo. Se avisa y se deja elegir: editar la capa tapada o, si
+  // se cancela, seleccionar la capa que tapa (lo que el usuario suele querer).
+  const tapada = capaQueTapaLaMascara(layer);
+  if (tapada) {
+    const seguir = await confirmDialog({
+      title: 'La máscara está en una capa tapada',
+      text: `La máscara está en «${layer.name}», pero «${tapada.name}» está encima y tapa esa zona: el relleno no se verá en el lienzo.\n\nSi quieres editar la imagen que ves, pulsa «Cancelar», selecciona «${tapada.name}» en «Capas» y pinta allí la máscara.`,
+      okLabel: `Rellenar «${layer.name}»`,
+    });
+    if (!seguir) {
+      selectLayer(tapada.id);
+      switchRightTab('layers');
+      pintarCapaDeLaMascara();
+      toast(`Seleccionada «${tapada.name}»: pinta la máscara sobre ella y vuelve a rellenar.`, 'info', { duration: 9000 });
+      return;
+    }
   }
   // El relleno de máscara necesita un modelo que ACEPTE máscaras: solo los
   // proveedores OpenAI la envían al proveedor. Flow, Gemini y Qwen la ignoran,
@@ -1536,21 +1620,28 @@ async function runInpaint() {
     });
     if (job?.error) throw new Error(job.error);
     const dataUrlProveedor = job.image.startsWith('data:') ? job.image : `data:${job.mimeType || 'image/png'};base64,${job.image}`;
-    // La vista previa muestra SOLO lo que se va a aplicar: la composición dentro
-    // de la máscara. Antes enseñaba la imagen completa que devolvía el proveedor,
-    // así que un modelo que se salía de la zona parecía cambiar toda la imagen.
+    // Primero se compone el resultado dentro de la máscara (lo que se aplicará) y
+    // después se genera la vista previa del DOCUMENTO completo con ese parche:
+    // antes la vista previa enseñaba solo la capa editada o la imagen del
+    // proveedor, y parecía que había cambiado el sujeto de la imagen.
     const compuesto = await componerInpaintingSobreCapa(layer, dataUrlProveedor);
     if (!compuesto) {
       toast('No se pudo componer el relleno dentro de la máscara, así que no se ha aplicado nada. Vuelve a intentarlo.', 'error', { duration: 12000 });
       return;
     }
+    const vistaPrevia = await componerVistaPreviaConParche(layer, compuesto);
+    if (!vistaPrevia) {
+      liberarVistaPrevia({ compuesto });
+      toast('No se pudo preparar la vista previa del documento, así que no se ha aplicado nada. Vuelve a intentarlo.', 'error', { duration: 12000 });
+      return;
+    }
     // Si había otra vista previa abierta, su composición temporal se libera.
     liberarVistaPrevia(pendingResult);
-    pendingResult = { job, layerId: layer.id, dataUrl: dataUrlProveedor, compuesto, previewUrl: compuesto.url };
+    pendingResult = { job, layerId: layer.id, dataUrl: dataUrlProveedor, compuesto, previewUrl: vistaPrevia };
     showResultPreview(pendingResult);
     toast(layer.mask?.inverted
-      ? 'Resultado listo: la vista previa muestra solo lo que se aplicará fuera de lo pintado (máscara invertida).'
-      : 'Resultado listo: la vista previa muestra solo lo que se aplicará dentro de la máscara.', 'ok');
+      ? 'Resultado listo: la vista previa es el lienzo completo con el cambio aplicado fuera de lo pintado (máscara invertida).'
+      : 'Resultado listo: la vista previa es el lienzo completo con el cambio aplicado dentro de la máscara.', 'ok');
   } catch (error) {
     toast(`El inpainting falló: ${error.message}`, 'error');
   } finally {
@@ -3151,9 +3242,10 @@ async function showDiagnostics() {
 }
 
 /* ══════════════════════ Eventos globales ══════════════════════ */
-on('layers:change', () => { renderLayers(); renderAssets(); });
+on('layers:change', () => { renderLayers(); renderAssets(); pintarCapaDeLaMascara(); });
 on('selection:change', () => {
   renderLayers();
+  pintarCapaDeLaMascara();
   renderer.requestRender('selection');
   updateTopbar();
 });

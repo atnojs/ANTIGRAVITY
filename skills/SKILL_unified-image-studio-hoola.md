@@ -29,7 +29,7 @@ comprueba eso primero y dilo antes de dar la receta.
 | Nombre visible | `Unified Image Studio · Hoola` (marca `UIS`, etiqueta `HOOLA`) |
 | URL publicada | `https://atnojs.es/apps/unified-image-studio-hoola/` |
 | Ruta en el repo | `apps/unified-image-studio-hoola/` |
-| Versión | `3.0.5-hoola` (sello en la barra inferior) |
+| Versión | `3.0.6-hoola` (sello en la barra inferior) |
 | Qué es | Estudio de imagen por capas: importar, generar con IA, editar, componer y exportar |
 | Backend | PHP (`api.php` + `proxy.php` + `lib/`), SQLite en `storage/`; sin él solo se edita y exporta |
 | Motores | Google Flow en el PC (imágenes y vídeo) + proveedores directos (OpenAI, Gemini, Qwen) |
@@ -187,7 +187,9 @@ generaciones seguidas en el PC (con modelos directos ese selector está desactiv
 
 ### F4 · Cambiar una parte de la imagen (inpainting)
 
-1. Seleccionar la capa en el panel derecho **«Capas»**.
+1. Seleccionar la capa en el panel derecho **«Capas»**. El bloque **«Máscara de la capa»** dice
+   siempre **«Capa de la máscara: «nombre»»**: si no es la capa que estás viendo, la máscara se
+   pintará en otra y el relleno puede quedar tapado.
 2. Pestaña **«Editar»**.
 3. En **«Máscara de la capa»**: **«Pintar»**, ajustar «Tamaño del pincel», «Dureza»,
    **«Color de la máscara»** (con **«Auto»** vuelve al color de contraste por defecto) y
@@ -197,9 +199,13 @@ generaciones seguidas en el PC (con modelos directos ese selector está desactiv
 5. **«Rellenar la máscara»** y aceptar el resultado igual que en F3.
 
 **Qué aplica:** solo la zona pintada. El resto de la imagen se queda exactamente como estaba, aunque
-el proveedor devuelva una imagen completa distinta. La **vista previa ya muestra solo lo que se va a
-aplicar** (la composición dentro de la máscara), no la imagen entera que devolvió el proveedor. Al
+el proveedor devuelva una imagen completa distinta. La **vista previa ya muestra el lienzo completo
+con el cambio aplicado** (no la imagen entera que devolvió el proveedor, ni la capa suelta). Al
 pulsar «Aceptar» el resultado **sustituye los píxeles de esa misma capa**.
+
+Si la capa de la máscara está **tapada** por otra capa visible, la app avisa antes de rellenar y
+ofrece: cancelar (selecciona la capa de arriba y pinta allí la máscara) o rellenar la capa tapada
+igualmente.
 
 **Dos avisos que hay que dar:**
 - La máscara **no se borra sola** después de rellenar: si va a pintar otra zona, pulse antes
