@@ -39,7 +39,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.0.9 · 2026-11-02 · máscara: capa oculta o casi transparente avisada';
+const BUILD = 'v3.0.10 · 2026-11-02 · máscara: avisos de capa oculta/tenue y nota en vivo';
 
 let generationBusy = false;
 let pendingResult = null;
@@ -906,6 +906,8 @@ function bindRightPanel() {
     layer.opacity = Number(event.target.value) / 100;
     $('opacityValue').textContent = `${event.target.value} %`;
     renderer.requestRender('opacity');
+    // La nota de la máscara avisa también mientras se arrastra el control.
+    pintarCapaDeLaMascara();
   });
   $('layerOpacity').addEventListener('change', () => {
     const layer = getLayer();
@@ -1622,12 +1624,13 @@ async function runInpaint() {
   const capaOculta = !layer.visible || layer.opacity <= 0;
   const capaTenue = !capaOculta && layer.opacity < 0.1;
   if (capaOculta || capaTenue) {
+    const opacidadPct = Math.round(layer.opacity * 100);
     const mostrar = await confirmDialog({
       title: capaOculta ? 'La capa de la máscara está oculta' : 'La capa de la máscara casi no se ve',
       text: capaOculta
-        ? `Estás editando «${layer.name}», pero esa capa está oculta: el relleno se aplicaría y en el lienzo no se vería nada.\n\n¿Quieres mostrarla y rellenar?`
-        : `Estás editando «${layer.name}», que tiene una opacidad del ${Math.round(layer.opacity * 100)} %: el relleno se vería muy tenue.\n\n¿Quieres ponerla al 100 % y rellenar?`,
-      okLabel: capaOculta ? 'Mostrar y rellenar' : 'Poner al 100 % y rellenar',
+        ? `Estás editando «${layer.name}», pero esa capa está oculta${layer.opacity > 0 ? ` (opacidad ${opacidadPct} %)` : ''}: el relleno se aplicaría y en el lienzo no se vería nada.\n\n¿Quieres mostrarla al 100 % y rellenar?`
+        : `Estás editando «${layer.name}», que tiene una opacidad del ${opacidadPct} %: el relleno se vería muy tenue.\n\n¿Quieres ponerla al 100 % y rellenar?`,
+      okLabel: capaOculta ? 'Mostrar al 100 % y rellenar' : 'Poner al 100 % y rellenar',
     });
     if (!mostrar) {
       switchRightTab('layers');

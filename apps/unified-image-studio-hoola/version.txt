@@ -1,4 +1,4 @@
-3.0.9-hoola 2026-11-02
+3.0.10-hoola 2026-11-02
 Copia completa del original actual (Google Flow, compuerta de modelos con la contraseña de
 acceso, cancelación y biblioteca) con el estilo Hoola/Relatos al 100 %.
 3.0.1: el relleno de máscara se aplica SOLO dentro de lo pintado (antes, al reabrir un
@@ -21,3 +21,4 @@ mostrarla y rellenar (o cancelar); la nota de la máscara lo indica («CAPA OCUL
 3.0.9: la nota de la máscara también avisa con opacidad muy baja («OPACIDAD MUY BAJA») y
 se corrige tras abrir un proyecto (ya no dice «sin selección» con una capa seleccionada).
 Verificación en docs/VERIFICACION.md (sección «Máscara», 2026-11-02).
+3.0.10: los avisos de capa oculta/opacidad muy baja y la nota se actualizan en vivo al arrastrar la opacidad; el diálogo indica que se pondrá al 100 % de opacidad.

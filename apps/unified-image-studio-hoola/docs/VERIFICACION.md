@@ -411,6 +411,15 @@ vs aplicado **0**, capas 2→2, 0 errores. Capturas: `95-produccion-nota-capa-oc
 - **O3:** una opacidad residual (1–9 %) tampoco deja ver el relleno: la nota añade
   **«OPACIDAD MUY BAJA»** y el aviso ofrece «Poner al 100 % y rellenar».
 
+**Producción 3.0.9** (commit `09830502` + re-disparos `a4f9909c`/`9b751ab5`; `index.html` →
+`app.20261102k.js?v=20261102k`; `api.php?action=state` → `version: "3.0.9-hoola"`). Comprobado en
+Chrome **con 0 generaciones** (solo diálogo y cancelar; `A2-produccion-notas.json`): tras recargar la
+nota dice la capa («nota-oculta»), oculta → «… · CAPA OCULTA» en `rgb(255,180,180)` y diálogo «La capa
+de la máscara está oculta»; opacidad 5 % → «… · OPACIDAD MUY BAJA» y diálogo «La capa de la máscara
+casi no se ve» con «Poner al 100 % y rellenar»; cancelar no crea trabajos; 0 errores. Capturas
+`A0-produccion-aviso-oculta.png`, `A1-produccion-aviso-opacidad.png`.
+
+
 
 
 
@@ -448,3 +457,8 @@ Banco: `tools/pruebas/local-mascara-uis-hoola.mjs` (sirve la app por HTTP y simu
 Código anterior congelado en `tools/pruebas/tmp-old-uis/` para comparar (no se publica).
 Evidencias: `tools/evidencias/2026-11-02-mascara-uis/`.
 
+
+### 3.0.10 (2026-11-02) — nota en vivo y texto del aviso
+
+- La nota «Capa de la máscara» se actualiza **mientras se arrastra** la opacidad (antes solo al soltar).
+- El aviso de capa oculta indica que se pondrá **al 100 %** de opacidad («Mostrar al 100 % y rellenar»).

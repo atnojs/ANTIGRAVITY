@@ -94,6 +94,7 @@ await page.waitForTimeout(400);
 // 2) Opacidad 5 % → nota «OPACIDAD MUY BAJA» y aviso de opacidad.
 const opacidad = await page.evaluate(async () => {
   const slider = document.getElementById('layerOpacity');
+  slider.dispatchEvent(new Event('pointerdown', { bubbles: true }));
   slider.value = '5';
   slider.dispatchEvent(new Event('input', { bubbles: true }));
   slider.dispatchEvent(new Event('change', { bubbles: true }));
@@ -121,7 +122,7 @@ const ok = /Capa de la máscara: «/.test(info.notaTrasRecarga || '')
   && info.avisoOculta.visible && /oculta/i.test(info.avisoOculta.titulo)
   && /OPACIDAD MUY BAJA/.test(info.opacidad.nota || '')
   && info.avisoTenue.visible && /casi no se ve/i.test(info.avisoTenue.titulo) && /100 %/.test(info.avisoTenue.ok || '')
-  && info.trabajos === 2 && info.trabajosTrasCancelar === 2 && info.errores.length === 0;
+  && info.trabajos === 0 && info.trabajosTrasCancelar === 0 && info.errores.length === 0;
 info.ok = ok;
 fs.writeFileSync(`${OUT}/A2-produccion-notas.json`, JSON.stringify(info, null, 2));
 console.log(JSON.stringify(info, null, 2));
