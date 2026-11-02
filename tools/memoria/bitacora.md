@@ -4,6 +4,17 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-02 — UIS·Hoola: la máscara del inpainting se aplicaba a toda la imagen
+
+- **Encargo:** «en esta app: apps/unified-image-studio-hoola sigue sin funcionar la máscara. Selecciono con el pincel, clico en rellenar la máscara y le aplica lo solicitado a toda la imagen. asegurate de que funcione como debe antes de darme el cambio.»
+- **Causa raíz:** `componerInpaintingSobreCapa()` usaba `imageFor(layer.aspectOriginal || layer.resourceId)`. `imageFor()` devuelve `null` si la imagen no está ya cargada; `aspectOriginal` no se pinta nunca, así que con capas editadas antes (y siempre al reabrir un proyecto) el compuesto devolvía `null` y se aplicaba **la imagen entera del proveedor** a la capa. La primera máscara de una imagen recién importada sí funcionaba → las verificaciones anteriores pasaban.
+- **Qué se hizo (3.0.1 → 3.0.3):** base del compuesto = imagen actual de la capa, esperando carga (`cargarImagenDeRecurso`); si no hay compuesto no se aplica nada y se avisa; relleno siempre con modelo OpenAI (Flow/Gemini/Qwen no aceptan máscara; antes solo se corregía Flow); máscara invertida compuesta con la zona correcta; `layerId` recordado en el resultado (Escape+Aceptar ya no añade la imagen entera como capa nueva); caché de máscara con firma estructural; módulos versionados con fecha (`*.20261102`, `c`, `d`) y versiones anteriores conservadas para HTML cacheado; avisos veraces (invertida / capa perdida); skill y `docs/VERIFICACION.md` actualizados.
+- **Verificación:** banco local con proveedor simulado (código anterior: resto 100 %; corregido: resto 0 %), casos límite (invertir 100→0 % dentro y 0,1→100 % fuera; Escape capas 1→2 → 1→1), producción 3.0.3 con generación real (fuera 0 %, dentro 21,9 %), hashes servidos = blobs de los commits, una sola copia de cada módulo. **PASS independiente 95,9/100** en 3 rondas (la primera emitió REWORK por D1 Medio: «Invertir»; D2/D3 menores, corregidos).
+- **Commits:** `12170394` (arreglo), `6429287b` (rework), `6a64b11d` + `e869edb9` (avisos y módulos anteriores); re-disparos de despliegue `c63288cf` y `fce61b7` (Hostinger se congeló dos veces).
+- **Evidencias:** `tools/evidencias/2026-11-02-mascara-uis/` (`AUTOEVALUACION.md`, `VERIFICACION_INDEPENDIENTE.md`, JSON 34/35/36/37/53/64/65/68 y PNG 30–75).
+- **Lección:** verificar solo con imágenes recién importadas oculta los fallos que dependen del estado guardado; ver `errores.md` (2026-11-02).
+
+---
 ## 2026-10-29 — descargas: cola atascada porque el worker no estaba corriendo
 
 - **Encargo:** «apps/descargas lleva 30 minutos con dos urls en cola. corrige el error.»

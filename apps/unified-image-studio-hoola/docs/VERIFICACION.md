@@ -260,6 +260,24 @@ Archivos servidos comprobados: `index.html`, `app/render/tools/ui.20261102c.js` 
 Medición: `tools/evidencias/2026-11-02-mascara-uis/53-produccion-medicion.json` (sobrescrita con la
 medida de 3.0.2).
 
+### 3.0.3 (2026-11-02) — cierre de observaciones del verificador
+
+- **O1:** el aviso de la vista previa ya dice la verdad con la máscara invertida («se aplica SOLO
+  fuera de lo pintado»).
+- **O3:** si la capa objetivo ya no existe, el aviso indica descartar la vista previa.
+- Los módulos de 3.0.2 (`*.20261102c.js`) **se conservan** servidos (HTTP 200) para el HTML cacheado,
+  junto a los nuevos `*.20261102d.js` que cita `index.html`.
+
+Producción 3.0.3: `api.php?action=state` → `version: "3.0.3-hoola"`; `index.html` →
+`app.20261102d.js?v=20261102d` (SHA-256 servido = blob del commit `03E35C27…`; `app.20261102c.js`
+sigue sirviendo `CE48C9FE…`); sello `v3.0.3`. Una generación real `openai-image-2-low` con máscara:
+**fuera 0 %** de cambio, **dentro 21,9 %**.
+
+**Gate de calidad:** verificación independiente en 3 rondas → **PASS 95,9/100** sobre
+`e869edb9`/`3.0.3-hoola` (ronda 1: REWORK por D1 Medio «Invertir», D2/D3 menores; rondas 2 y 3:
+PASS). Informe: `tools/evidencias/2026-11-02-mascara-uis/VERIFICACION_INDEPENDIENTE.md`;
+autoevaluación: `AUTOEVALUACION.md` (94,1).
+
 ### Rework 3.0.2 (2026-11-02) — defectos del verificador independiente
 
 El verificador emitió **REWORK** con un defecto Medio y dos menores en el mismo control. Corregidos

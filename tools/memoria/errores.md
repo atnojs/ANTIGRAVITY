@@ -1,3 +1,33 @@
+## 2026-11-02 — La máscara del inpainting se aplicaba a TODA la imagen (UIS·Hoola)
+
+- **Síntoma (usuario):** «Selecciono con el pincel, clico en rellenar la máscara y le aplica lo
+  solicitado a toda la imagen». Pasaba siempre en sus proyectos, aunque las verificaciones del
+  agente pasaban una y otra vez.
+- **Causa raíz:** `componerInpaintingSobreCapa()` construía la base del compuesto con
+  `imageFor(layer.aspectOriginal || layer.resourceId)`. `imageFor()` **devuelve `null` si la imagen
+  no está ya cargada** (deja el `<img>` cargando). `aspectOriginal` no se pinta nunca, así que en una
+  capa ya editada (inpainting o «quitar fondo» previos, y **siempre** al reabrir un proyecto) el
+  compuesto devolvía `null` y `acceptResult()` aplicaba **la imagen entera del proveedor** a la capa.
+  La primera máscara de una imagen recién importada sí funcionaba: de ahí que solo fallara en uso real.
+- **Solución (v3.0.3):** base = imagen **actual** de la capa, esperando el `onload`
+  (`cargarImagenDeRecurso`, con timeout y caché de promesas); si el compuesto falla **no se aplica
+  nada** y se avisa; el relleno usa **siempre un modelo OpenAI** (Flow, Gemini y Qwen ignoran la
+  máscara en el servidor); la máscara invertida se compone con la misma zona que se envió
+  (`mascaraParaComponer`); el resultado recuerda `layerId` (Escape + Aceptar no añade la imagen
+  entera como capa nueva); caché de la máscara con firma estructural; módulos con fecha propia para
+  la CDN y versiones anteriores conservadas para HTML cacheado.
+- **Verificación:** banco local con proveedor simulado que reescribe toda la imagen —código anterior
+  `resto 100 %`, corregido `resto 0 %`— (`tools/pruebas/local-mascara-uis-hoola.mjs`); casos
+  «Invertir» (antes pintado 100 %/fuera 0,1 % → ahora 0 %/100 %) y vista previa + Escape (capas
+  1→2 → 1→1) (`local-mascara-casos-uis-hoola.mjs`); producción 3.0.3 con una generación real: fuera
+  **0 %**, dentro 21,9 %; PASS independiente **95,9/100** (3 rondas; D1 Medio abierto en la primera).
+- **Commits:** `12170394` (arreglo), `6429287b` (rework D1–D3), `6a64b11d` (avisos) + `e869edb9`
+  (módulos de la versión anterior) + re-disparos `c63288cf`/`fce61b7`.
+- **Lecciones:** (1) un getter síncrono tipo `imageFor()` que devuelve `null` «mientras carga» no
+  sirve dentro de un flujo asíncrono; (2) un fallback silencioso a «aplicar la imagen entera» convierte
+  un fallo de composición en un cambio de toda la imagen; (3) verificar solo con imágenes recién
+  importadas oculta los fallos que dependen del estado guardado (aquí, `aspectOriginal`).
+
 ## 2026-10-29 — Worker de descargas muerto en silencio: la cola se queda «En cola» para siempre
 
 - **Síntoma:** dos URLs encoladas en `apps/descargas` seguían «En cola» 30 min después; `health` daba `queued:2, running:0`.
