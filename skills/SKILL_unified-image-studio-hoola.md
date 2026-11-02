@@ -444,6 +444,7 @@ de API. Esa elección inicial no es un error: es el diseño de la app.
 | Lado máximo de imagen | 8192 px |
 | Capas por documento | 120 |
 | Zonas de máscara por capa | 12 (cada una con su prompt) |
+| Prompt de una zona de máscara | 2.000 caracteres por zona (el campo los recorta) |
 | Referencias por generación | 8 en la interfaz; **con Flow solo viajan las 2 primeras** |
 | Imágenes por encolado (solo Flow) | 1–4 |
 | Deshacer | 60 pasos |
