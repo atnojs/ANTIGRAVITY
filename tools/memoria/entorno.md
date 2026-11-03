@@ -85,7 +85,7 @@ diagnosticar sus servicios**; esta ficha es solo el resumen que el repo necesita
 | Jellyfin 12.3.0 | `http://192.168.18.10:8096` · `HTTP 200` en `/health` · imagen fijada en 12.3 · lee `D:\Media` |
 | Immich | **`http://192.168.18.10:2283`** · `HTTP 200` en `/api/server/ping` · originales en `D:\Media\Immich` |
 | ⚠️ `:2235` | **No es ningún servicio**: no existe. El puerto de Immich es **2283**. |
-| Credenciales | `F:\Docker\credenciales.txt` (contraseñas de los tres servicios; 24 caracteres) y `.env` de Nextcloud/Immich. **Aquí no se copian valores.** |
+| Credenciales | `F:\Docker\credenciales.txt` (contraseñas de los tres servicios) y `.env` de Nextcloud/Immich. **Aquí no se copian valores.** |
 | Copias | `F:\Docker\backup\` + log por ejecución (`logs\backup-AAAAMMDD-HHMMSS.log`); activas y verificadas |
 
 **Comportamiento 24/7 (del LEEME § «Comportamiento 24/7», no supuesto):**
