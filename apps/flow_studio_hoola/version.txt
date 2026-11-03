@@ -1,3 +1,6 @@
+20261103b-flow-studio 2026-11-03
+Reintento por zona: si el proveedor falla en una zona se reintenta una vez antes de avisar, para que una peticion perdida no deje una zona sin rellenar.
+
 20261103a-flow-studio 2026-11-03
 Mascara por zonas: se pintan varias zonas numeradas, cada una con su prompt, y se rellenan zona a zona (un trabajo por zona) componiendo una sola imagen. Incluye «Margen al aplicar» para objetos que sobresalen. Puerto desde Unified Image Studio 3.2.2.
 
