@@ -29,6 +29,7 @@ Una entrada por sesión de trabajo relevante.
   apuntar a `\\192.168.18.10\F\Docker\LEEME.md` y no inventar causas. Ante «no veo el servidor»,
   medir por capas (ping/ARP → SMB/discos → puertos HTTP) y usar los puertos reales.
 - **Archivos:** `tools/memoria/entorno.md`, `errores.md`, `pendientes.md`, `bitacora.md`.
+- **Commits:** `2b309110` (memoria) + `054fbe8e` (redacción: sin detalles de contraseñas).
 
 ---
 ## 2026-11-03 — UIS·Hoola 3.2.2: «Rellenar las N zonas» solo rellenaba la zona 1
