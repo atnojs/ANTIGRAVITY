@@ -4,6 +4,18 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-03 (tarde) — Flow Studio: máscara por zonas (varias máscaras en una sola generación)
+
+- **Encargo:** «añade esa misma función a esta app: apps/flow_studio_hoola» y después «solo veo que puedo aplicar una sola máscara y quiero poder utilizar varias máscaras en una sola generación».
+- **Antes:** la app solo tenía una máscara (círculo o pincel único) que se aplicaba a toda la edición.
+- **Solución:** portado de UIS 3.2.2. Con el **Pincel** cada trazo separado crea una **zona numerada** (o «＋ Zona» arma el siguiente); panel «Zonas de la máscara» con un prompt por zona; al generar se lanza **un trabajo por zona** (Flow `flow_queue.php` o directo `api.php`), se compone cada parche dentro de su zona con **«Margen al aplicar»** y se crea **una sola tarjeta** con la imagen final. Reintento automático una vez por zona si el proveedor falla. El círculo sigue siendo una sola zona y el flujo sin zonas no cambia.
+- **Interfaz:** el texto del diálogo y las ayudas explican «Pincel = varias zonas, Círculo = una»; botón «Aplicar N zonas»; chip «Máscara: N zonas».
+- **Verificación:** local con proveedor simulado para Flow y directo (2 zonas → 2 trabajos con sus prompts → una imagen con ambos colores). Producción real con 2 generaciones `openai-image-2-low`: 2 `job.create`, zonas 6,7 % / 28,1 % cambiadas, lejos 0 %, cian 389 px y verde 404 px, tarjeta con «Máscara». Evidencias en `tools/evidencias/2026-11-03-flow-zonas/`.
+- **Commits:** `5e45efd3` (feature), `6030f520` (reintento), `b3aa7876` (interfaz), `530d5b2b` (compatibilidad del pincel único) + re-disparos de despliegue.
+- **Corrección tras verificación:** el verificador independiente (ronda 13) dio REWORK: con una sola zona pintada y sin prompt de zona, el pincel único de siempre ya no se podía aplicar. Se corrigió en `530d5b2b` (20261103d): los prompts por zona solo son obligatorios con 2+ zonas; con una sola zona sin prompt se aplica y se genera con el **prompt principal**.
+- **Lección:** al portar una función entre apps, la UI tiene que dejar claro el cambio de modo (aquí Pincel = varias zonas); si el usuario solo ve el modo Círculo cree que no existe. Además, un fallo puntual del proveedor no debe dejar una zona sin rellenar: reintento por zona. Y **no romper el flujo antiguo**: una máscara de una sola zona debe seguir usando el prompt principal.
+
+---
 ## 2026-11-03 — Servidor ANTONIO: servicios caídos y la documentación real del servidor
 
 - **Encargo del usuario:** «no puedo ver en Chrome http://192.168.18.10:8080, :2235 y :8096».
