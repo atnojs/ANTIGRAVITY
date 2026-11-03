@@ -568,3 +568,9 @@ límite y error claro) y el bucle de zonas lo espera antes de cada trabajo.
 devuelve un color por palabra clave: antes → 1 llamada y solo zona 1; ahora → **3 llamadas con los 3
 prompts**, **3 máscaras con centroides distintos** (0,242/0,242 · 0,740/0,242 · 0,498/0,779) y cada
 zona con su color (cian, gris, verde). Suites principal/casos/capas adaptadas a la UI de zonas.
+**Producción 3.2.2** (commit 4ddb9f6a; index.html → pp.20261103b.js?v=20261103b;
+pi.php?action=state → ersion: "3.2.2-hoola"). Prueba real con **2 generaciones**
+openai-image-2-low (	ools/pruebas/verificar-produccion-zonas-uis-hoola.mjs): 2 zonas con prompts
+distintos → **2 trabajos** enviados, cada uno con su prompt; ambos succeeded; zona 1 cambiada
+**27,1 %** y zona 2 **32,3 %**, lejos de las zonas **0 %**; vista previa con ambas zonas aplicadas
+(cian arriba, verde abajo); 0 errores. Medida: 	ools/evidencias/2026-11-03-mascara-zonas/15-produccion-2-zonas.json.

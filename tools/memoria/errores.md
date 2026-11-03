@@ -1,3 +1,20 @@
+## 2026-11-03 — Un guard de concurrencia con retardo rompía el relleno por zonas (UIS·Hoola 3.2.2)
+
+- **Síntoma (usuario):** con 3 zonas de máscara y sus prompts, «Rellenar las 3 zonas» rellenaba solo
+  la zona 1 y avisaba «La zona 2 falló: Ya hay una generación en curso. Espera a que termine.».
+- **Causa:** `generate()` libera el guard `activeJob` con `setTimeout(…, 800)` después de terminar
+  (para que la UI de «generando» no parpadee). El bucle de zonas llamaba a la zona siguiente en
+  cuanto terminaba la anterior, así que el guard aún vivo lanzaba el error y el bucle se cortaba.
+- **Solución:** `ai.js` exporta `esperarTrabajoLibre()` (espera acotada a que `activeJob` quede libre,
+  con error claro si no) y el bucle de zonas la llama antes de cada `generate()`. No se cambió la
+  semántica del guard para el resto de la app.
+- **Verificación:** banco local de zonas con proveedor simulado (antes 1 llamada; ahora 3 llamadas,
+  3 máscaras con centroides distintos y un color por prompt) y producción real con 2 generaciones
+  (2 trabajos con sus prompts, ambas zonas aplicadas, lejos 0 %).
+- **Lección:** si un guard de concurrencia no se libera de forma síncrona al terminar, cualquier
+  flujo secuencial de trabajos (varias zonas, lotes, reintentos) fallará en el segundo. El flujo debe
+  esperar explícitamente o el guard debe liberarse al completarse de verdad.
+
 ## 2026-11-02 — La máscara estaba pintada en una capa tapada: «me cambió el sujeto de la imagen» (UIS·Hoola)
 
 - **Síntoma (usuario):** «marque las mascaras y al rellenar de negro, las rellenó bien pero me cambió

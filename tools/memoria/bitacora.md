@@ -4,12 +4,22 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-03 — UIS·Hoola 3.2.2: «Rellenar las N zonas» solo rellenaba la zona 1
+
+- **Encargo:** «esta claro que no funciona, corrigelo» (captura con 3 zonas numeradas, prompts «pintar de cian / humo / hierba»).
+- **Diagnóstico:** reproducido con proveedor simulado. El bucle de zonas rellenaba la zona 1 y la zona 2 fallaba con «Ya hay una generación en curso. Espera a que termine.». Causa: `generate()` mantiene el guard de concurrencia (`activeJob`) **800 ms** después de terminar (limpieza con `setTimeout`); el bucle llamaba a la zona siguiente de inmediato y el guard cortaba el proceso.
+- **Solución (3.2.2):** `ai.js` exporta `esperarTrabajoLibre()` (espera acotada con error claro) y el bucle de zonas la llama antes de cada `generate()`. Bancos adaptados a la UI 3.2 (prompts por zona; ya no existe `#inpaintPrompt`).
+- **Verificación:** local nuevo (`local-mascara-zonas-uis-hoola.mjs`): antes 1 llamada/solo zona 1; ahora **3 llamadas con los 3 prompts**, **3 máscaras** (centroides 0,242/0,242 · 0,740/0,242 · 0,498/0,779) y colores cian/gris/verde. Producción real con 2 generaciones: 2 trabajos con su prompt, zona 1 27,1 % / zona 2 32,3 %, lejos 0 %, preview = aplicado. PASS independiente **96,5** (ronda 12). Queda hecha así la «generación real con 2+ zonas» que la sesión de 3.2.0 dejó pendiente.
+- **Commits:** `4ddb9f6a` (fix) + documentación en el commit de cierre.
+- **Lección:** un guard de concurrencia con retardo de liberación rompe cualquier flujo que lance varios trabajos seguidos; o se libera al terminar de verdad o el flujo espera explícitamente. Ver `errores.md`.
+
+---
 ## 2026-11-02 (noche, 2) — UIS·Hoola: «la abeja es mayor que la zona de la máscara» (margen al aplicar)
 
 - **Encargo:** «ahora funcionó a medias. La abeja es mayor que la zona de la mascara y por eso se ve parcial. corrígelo.»
 - **Causa:** la composición recortaba el resultado del proveedor a lo pintado (`destination-in` con la máscara del usuario); si el modelo dibujaba el objeto más grande que la máscara, la parte de fuera se perdía y el objeto salía cortado.
 - **Solución (3.1.0 → 3.1.1):** nueva opción **«Margen al aplicar»** (0–100 %, por defecto 50 %, guardada en `uis-hoola:maskPrefs`): la zona que se toma del proveedor se dilata alrededor de lo pintado antes de componer. La dilatación es **local a cada trazo** (copias desplazadas en 36 direcciones; 3.1.0 usaba una sombra difusa y el borde quedaba semiopaco → **3.1.1 la hace sólida** y solo desenfoca el borde exterior ~12 % del margen). `0 %` recupera el comportamiento estricto. Además el prompt pide que el objeto quede completo dentro de la zona.
-- **Verificación:** local (principal: núcleo 100 %, margen 36,7 %, resto 0, preview = aplicado; casos y capas sin regresión). Producción: proveedor simulado con objeto de radio 150 px sobre máscara de 60 px → `objetoAplicadoPct 100`, lejos 0 (`B2-produccion-margen.json`); proveedor real `openai-image-2-low` con «coloca una abeja color oro» → `doradoPx 765`, lejos 0, preview = aplicado (`C6-produccion-abeja.json`; capturas `C0`/`C1`). PASS independiente 3.0.10 = **97,1**; 3.1.1 pendiente de firma.
+- **Verificación:** local (principal: núcleo 100 %, margen 36,7 %, resto 0, preview = aplicado; casos y capas sin regresión). Producción: proveedor simulado con objeto de radio 150 px sobre máscara de 60 px → `objetoAplicadoPct 100`, lejos 0 (`B2-produccion-margen.json`); proveedor real `openai-image-2-low` con «coloca una abeja color oro» → `doradoPx 765`, lejos 0, preview = aplicado (`C6-produccion-abeja.json`; capturas `C0`/`C1`). PASS independiente 3.0.10 = **97,1**; 3.1.1 = **96,6** (ronda 11).
 - **Commits:** `4df69fef` (3.1.0), `f76211c9` (3.1.1) + re-disparos; documentación en el commit de cierre.
 - **Lección:** al componer un inpainting no basta con recortar a la máscara del usuario: el modelo dibuja el objeto a su tamaño y hay que dar un margen (dilatación sólida + borde suave) o el resultado sale amputado.
 
