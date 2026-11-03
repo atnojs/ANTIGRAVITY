@@ -1,3 +1,49 @@
+## 2026-11-03 — El Chrome del móvil no abría los servicios del servidor: era el perfil, no la red
+
+- **Síntoma (usuario):** desde el móvil no cargaba ninguno de los tres servicios del servidor
+  (Nextcloud `8080`, Jellyfin `8096`, Immich `2283`); se probó «de todo» y nada funcionaba.
+- **Causa (dos cosas; `F:\Docker\LEEME.md` § «Acceso desde el móvil (resuelto)»):** (1) en un
+  intento la dirección se escribió mal —`192.168.10:8096`, sin el `.18.`— y Chrome la enviaba a
+  Google en vez de al servidor; (2) el **perfil de Chrome del móvil estaba corrupto**: el registro
+  del firewall mostró **cero conexiones** a la red durante varios intentos, mientras **Samsung
+  Internet sí** conectaba a los tres servicios. **No era aislamiento del WiFi doméstico** (las dos
+  redes de casa dan acceso).
+- **Solución:** **borrar los datos de Chrome** en el móvil (Ajustes → Aplicaciones → Chrome →
+  Almacenamiento → Borrar datos). Después se verificó el acceso a 8080, 8096 y 2283 con conexiones
+  `ALLOW` en el registro del firewall.
+- **Regla (orden de comprobación):** 1) dirección completa, con sus cuatro números, y puerto
+  correcto (Immich es **2283**, no 2235); 2) probar otro navegador; 3) si solo falla Chrome, borrar
+  sus datos; 4) **solo entonces** mirar la red o el router.
+- **Verificación:** `F:\Docker\LEEME.md` § «Acceso desde el móvil (resuelto)» y registro del
+  firewall del servidor con `ALLOW` en 8080, 8096 y 2283.
+- **Lección:** un navegador puede fallar sin enviar **ni un paquete**; el firewall del servidor
+  distingue «no llega» de «no sale». El segundo navegador es la prueba que aísla el problema.
+
+## 2026-11-03 — Servidor ANTONIO con los servicios en timeout (`:2235` no existe)
+
+- **Síntoma:** desde PRINCIPAL, el 2026-11-03 entre las 14:28 y las 14:35,
+  `http://192.168.18.10:8080`, `:8096` y `:2283` daban **timeout** (`curl` exit 28, HTTP 000) y
+  `:2235` tampoco respondía. En cambio el **ping** a `192.168.18.10` respondía (ARP
+  `10-7B-44-47-BC-76`, estado Reachable), SMB y 135/139/445 estaban abiertos y los discos
+  C/D/E/F/Users eran accesibles.
+- **Evidencia de que los contenedores sí estaban vivos de madrugada:** el log
+  `F:\Docker\backup\logs\backup-20261103-033003.log` registra a las **03:30:10** «Volcado Nextcloud
+  OK: 546026 bytes» y a las **03:31:00** «Volcado Immich OK: 91292453 bytes». A las 14:30 ya nada
+  escuchaba en esos puertos.
+- **Causa probable (documentada en el LEEME § «Comportamiento 24/7»; NO confirmada para este
+  incidente):** tras un reinicio o corte, **Windows se queda en la pantalla de inicio de sesión y
+  Docker Desktop no arranca**, porque su `AutoStart` solo actúa al iniciar sesión; además el
+  Resource Saver/`autoPause` dejaría la web sin responder hasta despertar el motor. `:2235` no es
+  ningún servicio: el puerto real de Immich es **2283**.
+- **Solución (según el LEEME):** **iniciar sesión en ANTONIO y abrir Docker Desktop**; los
+  contenedores vuelven solos en ~15 s (política `unless-stopped`) y **Immich tarda ~90 s** (migra y
+  comprueba la base de datos; aparece `unhealthy` un par de minutos, es normal).
+- **Estado:** **abierto**. Confirmado: ping/SMB OK + puertos timeout + contenedores vivos a las
+  03:30. **No confirmado:** la causa exacta de este corte y que Docker haya vuelto a arrancar.
+- **Regla:** ante «no veo el servidor», medir por capas antes de tocar nada — ping/ARP → SMB y
+  discos → puertos HTTP. Si SMB responde y los puertos del contenedor no, el problema está en
+  Docker/WSL2, no en la red. Usar siempre los puertos reales (8080 / 8096 / **2283**).
+
 ## 2026-11-03 — Un guard de concurrencia con retardo rompía el relleno por zonas (UIS·Hoola 3.2.2)
 
 - **Síntoma (usuario):** con 3 zonas de máscara y sus prompts, «Rellenar las 3 zonas» rellenaba solo

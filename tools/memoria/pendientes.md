@@ -517,5 +517,6 @@ propósito, para que no se pierda de vista.
 
 ## 2026-10-31 — PASAFOTOS: Immich y acceso desde el móvil
 
-- **Qué:** la app PASAFOTOS deja las fotos en `D:\Media\Fotos` (biblioteca de Jellyfin). Immich **no** las indexa por su cuenta y el móvil aún no alcanza el servidor (aislamiento del WiFi doméstico, ver LEEME del servidor).
-- **Siguiente paso concreto:** si Antonio quiere verlas en Immich, importarlas desde la propia app de Immich (o valorar `immich-go`); para el móvil, corregir el aislamiento del WiFi antes de dar por resuelto el acceso remoto.
+- **Qué:** la app PASAFOTOS deja las fotos en `D:\Media\Fotos` (biblioteca de Jellyfin). Immich **no** las indexa por su cuenta.
+- **Corrección (2026-11-03):** el acceso desde el móvil **no** era «aislamiento del WiFi doméstico» (era un dato erróneo). La causa real, según `F:\Docker\LEEME.md` § «Acceso desde el móvil (resuelto)», fueron dos cosas: (a) una dirección mal escrita en un intento (`192.168.10:8096`, sin el `.18.`) y (b) el **perfil de Chrome del móvil corrupto** —el firewall no registró ni una conexión a la red mientras Samsung Internet sí entraba a los tres servicios—; se arregló **borrando los datos de Chrome**. Las dos redes WiFi de casa dan acceso.
+- **Siguiente paso concreto:** ya no es corregir ningún aislamiento (no existe). Si Antonio quiere ver las fotos en Immich, importarlas desde la app de Immich (o valorar `immich-go`); lo que sí queda abierto del servidor es **opcional**: (1) **inicio de sesión automático en ANTONIO** para que Docker arranque solo tras un corte de luz, y (2) **tercer disco / copia fuera de casa** (hoy las dos copias están en el mismo equipo). Ambos están en el LEEME § «Pendiente».

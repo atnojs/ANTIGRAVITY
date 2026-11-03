@@ -69,6 +69,35 @@ Ficha de la máquina y del entorno del agente. Si algo de aquí cambia, se actua
 lo que apaga el descubrimiento (`FDResPub`) y rompe el acceso a los otros PCs. Poner el perfil en
 Privada y arrancar `FDResPub` (detalle en `errores.md`, entrada 2026-10-21).
 
+### Servidor doméstico ANTONIO — ficha (verificada 2026-11-03)
+
+La documentación **real** del servidor es **`\\192.168.18.10\F\Docker\LEEME.md`** (365 líneas,
+leída por SMB): servicios, copias, decisiones y pendientes. **Léela antes de tocar el servidor o
+diagnosticar sus servicios**; esta ficha es solo el resumen que el repo necesita.
+
+| Dato | Valor |
+|---|---|
+| Equipo | **ANTONIO** · `192.168.18.10` · ASUS · **Windows 11 Pro 23H2** |
+| Runtime | **Docker Desktop 4.97.0** (motor 29.9.2) sobre **WSL2 3.0.1.0** (kernel 6.18.40.1-1), límite de 6 GB de 16 GB |
+| Discos compartidos | C, D, E, F, Users · mapeados en PRINCIPAL: `D:`→**`Z:`**, `E:`→**`Y:`**, `F:`→**`X:`** |
+| Acceso | Cuenta **Invitado**, sin contraseña: `net use \\192.168.18.10\D` y `\\192.168.18.10\F\Docker\...` funcionan |
+| Nextcloud 35.0.2 | `http://192.168.18.10:8080` · `HTTP 200` en `/status.php` · volumen Docker `cloud_html` |
+| Jellyfin 12.3.0 | `http://192.168.18.10:8096` · `HTTP 200` en `/health` · imagen fijada en 12.3 · lee `D:\Media` |
+| Immich | **`http://192.168.18.10:2283`** · `HTTP 200` en `/api/server/ping` · originales en `D:\Media\Immich` |
+| ⚠️ `:2235` | **No es ningún servicio**: no existe. El puerto de Immich es **2283**. |
+| Credenciales | `F:\Docker\credenciales.txt` (contraseñas de los tres servicios; 24 caracteres) y `.env` de Nextcloud/Immich. **Aquí no se copian valores.** |
+| Copias | `F:\Docker\backup\` + log por ejecución (`logs\backup-AAAAMMDD-HHMMSS.log`); activas y verificadas |
+
+**Comportamiento 24/7 (del LEEME § «Comportamiento 24/7», no supuesto):**
+- `unless-stopped`: tras reiniciar el motor los contenedores vuelven solos en ~15 s; **Immich tarda
+  ~90 s** (migra y comprueba la base de datos) y aparece `unhealthy` un par de minutos, que es normal.
+- `autoPause` / Resource Saver **desactivado a propósito** (`%APPDATA%\Docker\settings-store.json`):
+  con el motor pausado, la web deja de responder hasta que alguien la despierta.
+- **Talón de Aquiles:** tras un corte de luz, Windows se queda en la pantalla de inicio de sesión y
+  **Docker Desktop no arranca**; el `AutoStart` está activado pero **solo actúa al iniciar sesión**
+  (el LEEME lo deja como pendiente: inicio de sesión automático).
+- Firewall con reglas para 8080, 8096 y 2283 en perfil **privado**; los tres escuchan en `0.0.0.0`.
+
 ## Limitaciones conocidas del entorno del agente
 
 - **CIM/WMI puede denegarse** (`Get-CimInstance Win32_Process`, `Win32_OperatingSystem`).

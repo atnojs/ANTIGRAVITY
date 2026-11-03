@@ -4,6 +4,33 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-03 — Servidor ANTONIO: servicios caídos y la documentación real del servidor
+
+- **Encargo del usuario:** «no puedo ver en Chrome http://192.168.18.10:8080, :2235 y :8096».
+- **Qué se midió (desde PRINCIPAL, 14:28–14:35):** ping a `192.168.18.10` OK (ARP
+  `10-7B-44-47-BC-76`, estado Reachable); SMB y 135/139/445 abiertos; discos C/D/E/F/Users
+  accesibles; pero **8080, 8096 y 2283 dan timeout** (`curl` exit 28, HTTP 000): Docker no está
+  escuchando. `:2235` no existe en el servidor (el puerto de Immich es **2283**).
+- **Qué se encontró:** la documentación **real** del servidor vive en
+  **`\\192.168.18.10\F\Docker\LEEME.md`** (365 líneas, leída por SMB). Ahí estaba la causa real del
+  fallo del móvil que la memoria tenía mal: **no era «aislamiento del WiFi doméstico»**, fueron una
+  dirección mal escrita (`192.168.10:8096`, sin el `.18.`) y **el perfil de Chrome del móvil
+  corrupto** (el firewall no registró ni una conexión y Samsung Internet sí conectaba); se resolvió
+  borrando los datos de Chrome. El LEEME también documenta servicios (Nextcloud 8080, Jellyfin 8096,
+  Immich 2283), copias y comportamiento 24/7.
+- **Evidencia:** `F:\Docker\backup\logs\backup-20261103-033003.log` → 03:30:10 «Volcado Nextcloud
+  OK: 546026 bytes»; 03:31:00 «Volcado Immich OK: 91292453 bytes». A las 14:30 ya no escuchaba nada.
+- **Qué quedó pendiente:** confirmar con el usuario (1) que inició sesión en ANTONIO y que Docker
+  Desktop arrancó, y (2) que 8080, 8096 y 2283 responden de nuevo. La causa exacta del corte de hoy
+  **no está confirmada**; la hipótesis que documenta el LEEME es que Windows se quedó en la pantalla
+  de inicio de sesión y Docker no arrancó (`AutoStart` solo actúa al iniciar sesión), con el
+  Resource Saver/`autoPause` como agravante.
+- **Lección:** la documentación del servidor **vive en el servidor**; la memoria del repo debe
+  apuntar a `\\192.168.18.10\F\Docker\LEEME.md` y no inventar causas. Ante «no veo el servidor»,
+  medir por capas (ping/ARP → SMB/discos → puertos HTTP) y usar los puertos reales.
+- **Archivos:** `tools/memoria/entorno.md`, `errores.md`, `pendientes.md`, `bitacora.md`.
+
+---
 ## 2026-11-03 — UIS·Hoola 3.2.2: «Rellenar las N zonas» solo rellenaba la zona 1
 
 - **Encargo:** «esta claro que no funciona, corrigelo» (captura con 3 zonas numeradas, prompts «pintar de cian / humo / hierba»).
