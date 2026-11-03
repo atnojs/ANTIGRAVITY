@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.hoola.20261029c.css">
+<link rel="stylesheet" href="app.hoola.20261103a.css">
 </head>
 <body>
 
@@ -395,8 +395,18 @@
         <div class="mask-controls">
             <label for="maskSize"><span id="maskSizeLabel">Tamaño del círculo</span> <output id="maskSizeValue" for="maskSize">35 %</output></label>
             <input type="range" id="maskSize" min="5" max="100" step="1" value="35">
+            <label for="maskMargin"><span>Margen al aplicar</span> <output id="maskMarginValue" for="maskMargin">50 %</output></label>
+            <input type="range" id="maskMargin" min="0" max="100" step="5" value="50">
         </div>
         <p class="mask-hint" id="maskHint">Desliza para cambiar el tamaño y arrastra el círculo para moverlo.</p>
+        <section class="mask-zones" id="maskZonesPanel" hidden aria-label="Zonas de la máscara">
+            <div class="mask-zones-head">
+                <span>Zonas de la máscara <output id="maskZoneCount">0</output></span>
+                <button type="button" class="link-btn" id="maskAddZone">＋ Zona</button>
+            </div>
+            <div class="mask-zone-list" id="maskZoneList"></div>
+            <p class="mask-hint">Cada zona se numera sola (1, 2, 3…). Pinta separado del resto para crear una zona nueva; «＋ Zona» arma el siguiente trazo. Cada zona se rellena con su propio prompt.</p>
+        </section>
         <div class="mask-actions">
             <button type="button" class="ghost-btn" id="maskCancel">Cancelar</button>
             <button type="button" class="access-submit" id="maskApply">Aplicar máscara</button>
@@ -428,7 +438,7 @@
 <script src="history-manager.js"></script>
 <!-- Compuerta compartida de modelos: contraseña de acceso al pulsar los caros -->
 <script src="../_shared/model-gate.20261026b.js"></script>
-<script src="app.20261101a.js"></script>
+<script src="app.20261103a.js"></script>
 
 <!-- Ojo para ver/ocultar la contraseña en el modal de acceso y en la compuerta -->
 <script src="../_shared/password-eye.js?v=20261025b" defer></script>
