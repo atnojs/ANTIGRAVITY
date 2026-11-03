@@ -36,6 +36,16 @@ console.log('Sirviendo', DIR, 'en', URL_BASE, '· esperado:', EXPECT);
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({ viewport: { width: 1500, height: 950 } });
 const page = await context.newPage();
+
+// Rellena el prompt de todas las zonas de la máscara (UI 3.2+: un campo por zona;
+// en versiones antiguas existía un único #inpaintPrompt).
+async function ponerPromptZonas(texto) {
+  const viejo = page.locator('#inpaintPrompt');
+  if (await viejo.count()) await viejo.fill(texto);
+  const campos = page.locator('[data-zone-prompt]');
+  const total = await campos.count();
+  for (let i = 0; i < total; i += 1) await campos.nth(i).fill(texto);
+}
 const consola = [];
 page.on('console', (m) => { if (m.type() === 'error') consola.push(m.text()); });
 page.on('pageerror', (e) => consola.push('pageerror: ' + e.message));
@@ -115,7 +125,7 @@ await page.waitForTimeout(1200);
 
 async function pintar(y) {
   for (let intento = 0; intento < 3; intento += 1) {
-    if (await page.locator('#inpaintPrompt').isVisible()) break;
+    if (await page.locator('#inpaintBtn').isVisible()) break;
     await page.click('.rail-btn[data-tab="edit"]');
     await page.waitForTimeout(600);
   }
@@ -144,17 +154,17 @@ async function rellenar(prompt) {
   // Garantiza que la pestaña Editar esté abierta (el panel pudo cerrarse al
   // pulsar otra pestaña): sin esto, el campo no está visible.
   for (let intento = 0; intento < 3; intento += 1) {
-    if (await page.locator('#inpaintPrompt').isVisible()) break;
+    if (await page.locator('#inpaintBtn').isVisible()) break;
     await page.click('.rail-btn[data-tab="edit"]');
     await page.waitForTimeout(600);
   }
-  await page.fill('#inpaintPrompt', prompt);
+  await ponerPromptZonas(prompt);
   const previo = await page.evaluate(() => {
     const u = window.__UIS__;
     const l = u.state.doc?.layers?.find((x) => x.id === u.state.selection.layerId) || u.state.doc?.layers?.[0] || null;
     return {
       capa: l ? { id: l.id, trazos: l.mask?.strokes?.length || 0 } : null,
-      prompt: document.getElementById('inpaintPrompt').value.slice(0, 40),
+      prompt: [...document.querySelectorAll('[data-zone-prompt]')].map((c) => c.value).join(' | ').slice(0, 60),
       modo: u.state.ui.mode,
       modelo: u.state.ui.model,
       doc: Boolean(u.state.doc),
@@ -274,7 +284,7 @@ await pintar(820);
 const desde = await page.evaluate(() => (window.__MOCK__.llamadas || []).length);
 const recursosAntes = await page.evaluate(() => window.__UIS__.state.resources.size);
 await page.evaluate(() => { window.__UIS__.state.ui.model = 'gemini-pro'; });
-await page.fill('#inpaintPrompt', 'pinta un cuadrado amarillo plano');
+await ponerPromptZonas('pinta un cuadrado amarillo plano');
 await page.click('#inpaintBtn');
 for (let t = 0; t < 40; t += 1) {
   if (await page.locator('#aiPreview:not(.hidden)').count()) break;

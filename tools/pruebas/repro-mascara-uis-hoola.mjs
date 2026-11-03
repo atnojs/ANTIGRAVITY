@@ -25,6 +25,16 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({ viewport: { width: 1500, height: 950 }, acceptDownloads: true });
 const page = await context.newPage();
 
+// Rellena el prompt de todas las zonas de la máscara (UI 3.2+: un campo por zona;
+// en versiones antiguas existía un único #inpaintPrompt).
+async function ponerPromptZonas(texto) {
+  const viejo = page.locator('#inpaintPrompt');
+  if (await viejo.count()) await viejo.fill(texto);
+  const campos = page.locator('[data-zone-prompt]');
+  const total = await campos.count();
+  for (let i = 0; i < total; i += 1) await campos.nth(i).fill(texto);
+}
+
 const consola = [];
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') consola.push(`${m.type()}: ${m.text()}`); });
 page.on('pageerror', (e) => consola.push(`pageerror: ${e.message}`));
@@ -140,7 +150,7 @@ console.log('Máscara pintada:', JSON.stringify(estadoMascara));
 await page.screenshot({ path: `${OUT}/01-mascara-pintada.png` });
 
 // ── Instrucción y envío ──
-await page.fill('#inpaintPrompt', 'Rellena la franja con un color lila plano y liso, sin texto ni formas.');
+await ponerPromptZonas('Rellena la franja con un color lila plano y liso, sin texto ni formas.');
 await page.click('#inpaintBtn');
 
 let espera = 0;

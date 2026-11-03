@@ -16,6 +16,16 @@ const guardar = (dataUrl, n) => fs.writeFileSync(`${OUT}/${n}`, Buffer.from(Stri
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({ viewport: { width: 1500, height: 950 } });
 const page = await context.newPage();
+
+// Rellena el prompt de todas las zonas de la máscara (UI 3.2+: un campo por zona;
+// en versiones antiguas existía un único #inpaintPrompt).
+async function ponerPromptZonas(texto) {
+  const viejo = page.locator('#inpaintPrompt');
+  if (await viejo.count()) await viejo.fill(texto);
+  const campos = page.locator('[data-zone-prompt]');
+  const total = await campos.count();
+  for (let i = 0; i < total; i += 1) await campos.nth(i).fill(texto);
+}
 const errores = [];
 page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
 page.on('pageerror', (e) => errores.push('pageerror: ' + e.message));
@@ -74,7 +84,7 @@ await page.mouse.up();
 await page.waitForTimeout(400);
 
 // Rellenar: debe salir el aviso de capa tapada.
-await page.fill('#inpaintPrompt', 'pinta de color fucsia');
+await ponerPromptZonas('pinta de color fucsia');
 await page.click('#inpaintBtn');
 await page.waitForTimeout(1500);
 const aviso = {

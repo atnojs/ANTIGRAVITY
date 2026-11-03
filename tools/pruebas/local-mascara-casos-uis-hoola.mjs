@@ -29,6 +29,16 @@ await new Promise((ok) => servidor.listen(PORT, '127.0.0.1', ok));
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({ viewport: { width: 1500, height: 950 } });
 const page = await context.newPage();
+
+// Rellena el prompt de todas las zonas de la máscara (UI 3.2+: un campo por zona;
+// en versiones antiguas existía un único #inpaintPrompt).
+async function ponerPromptZonas(texto) {
+  const viejo = page.locator('#inpaintPrompt');
+  if (await viejo.count()) await viejo.fill(texto);
+  const campos = page.locator('[data-zone-prompt]');
+  const total = await campos.count();
+  for (let i = 0; i < total; i += 1) await campos.nth(i).fill(texto);
+}
 const errores = [];
 page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
 page.on('pageerror', (e) => errores.push('pageerror: ' + e.message));
@@ -78,7 +88,7 @@ const importar = async () => page.evaluate(async () => {
 
 async function abrirEditar() {
   for (let i = 0; i < 3; i += 1) {
-    if (await page.locator('#inpaintPrompt').isVisible()) return;
+    if (await page.locator('#inpaintBtn').isVisible()) return;
     await page.click('.rail-btn[data-tab="edit"]');
     await page.waitForTimeout(600);
   }
@@ -103,7 +113,7 @@ async function pintar() {
 }
 
 async function enviar(prompt) {
-  await page.fill('#inpaintPrompt', prompt);
+  await ponerPromptZonas(prompt);
   await page.click('#inpaintBtn');
   for (let t = 0; t < 40; t += 1) {
     if (await page.locator('#aiPreview:not(.hidden)').count()) break;
@@ -168,7 +178,7 @@ const mascaraVisual = await page.evaluate(async () => {
   const u = window.__UIS__;
   const ctx = document.getElementById('maskCanvas').getContext('2d');
   const t = ctx.getTransform();
-  const sx = Math.round(512 * t.a + t.e);
+  const sx = Math.round(380 * t.a + t.e); // dentro de la franja pero fuera del círculo numerado de la zona
   const sy = Math.round(512 * t.d + t.f);
   const leer = () => Array.from(ctx.getImageData(sx, sy, 1, 1).data);
   const pixel100 = leer();

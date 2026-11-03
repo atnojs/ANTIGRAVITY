@@ -552,3 +552,19 @@ que una lectura hecha en un hueco se quedaba en pantalla aunque el PC ya estuvie
 - No cambia el circuito de Flow: mismo `flow.state`, misma cola, mismo agente.
 - Comprobado en producción: `flow.state` (sesión del usuario) → `workerOnline: true`,
   `agentConfigured: true`, `pending: 0`; build servido v3.2.1 y sin errores de consola.
+### 3.2.2 (2026-11-03) — el relleno por zonas fallaba a partir de la zona 2
+
+**Síntoma:** con 3 zonas pintadas y sus prompts, «Rellenar las 3 zonas» rellenaba solo la zona 1 y
+mostraba «La zona 2 falló: Ya hay una generación en curso. Espera a que termine.».
+
+**Causa:** cada zona lanza su propio trabajo con generate(), que mantiene el guard de concurrencia
+(ctiveJob) durante 800 ms después de terminar (limpieza con setTimeout). El bucle de zonas
+llamaba a la zona siguiente de inmediato y el guard lanzaba el error; el bucle se detenía.
+
+**Corrección:** i.js exporta esperarTrabajoLibre() (espera a que ctiveJob se libere, con
+límite y error claro) y el bucle de zonas lo espera antes de cada trabajo.
+
+**Verificación:** 	ools/pruebas/local-mascara-zonas-uis-hoola.mjs con proveedor simulado que
+devuelve un color por palabra clave: antes → 1 llamada y solo zona 1; ahora → **3 llamadas con los 3
+prompts**, **3 máscaras con centroides distintos** (0,242/0,242 · 0,740/0,242 · 0,498/0,779) y cada
+zona con su color (cian, gris, verde). Suites principal/casos/capas adaptadas a la UI de zonas.

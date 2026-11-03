@@ -1,4 +1,4 @@
-3.2.1-hoola 2026-11-03
+3.2.2-hoola 2026-11-03
 Copia completa del original actual (Google Flow, compuerta de modelos con la contraseña de
 acceso, cancelación y biblioteca) con el estilo Hoola/Relatos al 100 %.
 3.0.1: el relleno de máscara se aplica SOLO dentro de lo pintado (antes, al reabrir un
@@ -35,3 +35,4 @@ Máximo 12 zonas por capa. Los documentos antiguos pasan a tener una sola zona 1
 ventana), para que no se quede en «Flow: sin conexión» cuando el PC ya está conectado. Antes
 solo se leía al abrir la pestaña y el estado podía quedar viejo (el agente del PC arranca y
 para por ciclos).
+3.2.2: el relleno por zonas ya no falla en la zona 2 (espera a que el trabajo anterior libere el guard); cada zona se rellena con su prompt.

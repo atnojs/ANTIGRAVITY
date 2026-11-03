@@ -28,6 +28,16 @@ const guardar = (dataUrl, n) => fs.writeFileSync(`${OUT}/${n}`, Buffer.from(Stri
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({ viewport: { width: 1500, height: 950 } });
 const page = await context.newPage();
+
+// Rellena el prompt de todas las zonas de la máscara (UI 3.2+: un campo por zona;
+// en versiones antiguas existía un único #inpaintPrompt).
+async function ponerPromptZonas(texto) {
+  const viejo = page.locator('#inpaintPrompt');
+  if (await viejo.count()) await viejo.fill(texto);
+  const campos = page.locator('[data-zone-prompt]');
+  const total = await campos.count();
+  for (let i = 0; i < total; i += 1) await campos.nth(i).fill(texto);
+}
 const errores = [];
 page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
 page.on('pageerror', (e) => errores.push('pageerror: ' + e.message));
@@ -47,7 +57,7 @@ async function entrar() {
 
 async function abrirEditar() {
   for (let i = 0; i < 3; i += 1) {
-    if (await page.locator('#inpaintPrompt').isVisible()) return;
+    if (await page.locator('#inpaintBtn').isVisible()) return;
     await page.click('.rail-btn[data-tab="edit"]');
     await page.waitForTimeout(600);
   }
@@ -73,7 +83,7 @@ async function pintar(y) {
 
 async function rellenar(prompt) {
   await abrirEditar();
-  await page.fill('#inpaintPrompt', prompt);
+  await ponerPromptZonas(prompt);
   await page.click('#inpaintBtn');
   for (let t = 0; t < 240; t += 2) {
     if (await page.locator('#aiPreview:not(.hidden)').count()) break;

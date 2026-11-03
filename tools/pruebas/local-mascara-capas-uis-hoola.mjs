@@ -31,6 +31,16 @@ await new Promise((ok) => servidor.listen(PORT, '127.0.0.1', ok));
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({ viewport: { width: 1500, height: 950 } });
 const page = await context.newPage();
+
+// Rellena el prompt de todas las zonas de la máscara (UI 3.2+: un campo por zona;
+// en versiones antiguas existía un único #inpaintPrompt).
+async function ponerPromptZonas(texto) {
+  const viejo = page.locator('#inpaintPrompt');
+  if (await viejo.count()) await viejo.fill(texto);
+  const campos = page.locator('[data-zone-prompt]');
+  const total = await campos.count();
+  for (let i = 0; i < total; i += 1) await campos.nth(i).fill(texto);
+}
 const errores = [];
 page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
 page.on('pageerror', (e) => errores.push('pageerror: ' + e.message));
@@ -114,7 +124,7 @@ await page.mouse.down();
 for (let i = 1; i <= 8; i += 1) await page.mouse.move(a.x + (b.x - a.x) * i / 8, a.y, { steps: 2 });
 await page.mouse.up();
 await page.waitForTimeout(400);
-await page.fill('#inpaintPrompt', 'pinta de color fucsia');
+await ponerPromptZonas('pinta de color fucsia');
 await page.click('#inpaintBtn');
 await page.waitForTimeout(1200);
 const aviso = {
@@ -219,7 +229,7 @@ await page.mouse.down();
 for (let i = 1; i <= 8; i += 1) await page.mouse.move(a.x + (b.x - a.x) * i / 8, a.y, { steps: 2 });
 await page.mouse.up();
 await page.waitForTimeout(400);
-await page.fill('#inpaintPrompt', 'pinta de color fucsia');
+await ponerPromptZonas('pinta de color fucsia');
 await page.click('#inpaintBtn');
 await page.waitForTimeout(1500);
 const avisoFalso = (await page.locator('#confirmModal:not(.hidden)').count()) === 1;
@@ -257,7 +267,7 @@ await page.mouse.down();
 for (let i = 1; i <= 8; i += 1) await page.mouse.move(a.x + (b.x - a.x) * i / 8, a.y, { steps: 2 });
 await page.mouse.up();
 await page.waitForTimeout(400);
-await page.fill('#inpaintPrompt', 'pinta de color fucsia');
+await ponerPromptZonas('pinta de color fucsia');
 await page.click('#inpaintBtn');
 await page.waitForTimeout(1200);
 const avisoOculta = {

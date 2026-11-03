@@ -29,6 +29,7 @@ import {
 import {
   MODELS, modelById, loadCatalog, catalog, generate,
   recoverPendingJobs, resumeJob, resourceToDataUrl, clearDataUrlCache, onJob, currentJob,
+  esperarTrabajoLibre,
 } from './ai.js?v=25';
 import {
   FLOW_IMAGE_RATIOS, DEFAULT_FLOW_VIDEO_MODEL,
@@ -40,7 +41,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.2.1 · 2026-11-03 · Flow: la pastilla se refresca sola y la máscara por zonas';
+const BUILD = 'v3.2.2 · 2026-11-03 · relleno por zonas: cada zona con su prompt';
 
 let generationBusy = false;
 let inpaintBusy = false;
@@ -1874,6 +1875,9 @@ async function runInpaint() {
       const base = zona.prompt.trim();
       const prompt = base.length + instruccionAjuste.length + 2 <= 11600 ? `${base}\n\n${instruccionAjuste}` : base;
       try {
+        // Cada zona es un trabajo distinto: hay que esperar a que el anterior
+        // quede libre (generate() lo libera con un margen de 800 ms).
+        await esperarTrabajoLibre();
         const job = await generate({
           prompt,
           model: modeloInpaint,

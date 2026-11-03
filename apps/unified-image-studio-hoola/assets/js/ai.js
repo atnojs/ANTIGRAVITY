@@ -168,8 +168,19 @@ export async function generate({
   }
 }
 
-async function pollJob(jobId, { interval = 2500, timeout = 240000 } = {}) {
-  const started = Date.now();
+/** Espera a que el guard de concurrencia quede libre. Lo necesita el relleno por
+ *  zonas: cada zona lanza su propio trabajo y `generate()` no libera `activeJob`
+ *  hasta 800 ms después de terminar; sin esta espera, la zona 2 fallaba con
+ *  «Ya hay una generación en curso» y solo se rellenaba la primera. */
+export async function esperarTrabajoLibre(limite = 20000) {
+  const inicio = Date.now();
+  while (activeJob && Date.now() - inicio < limite) {
+    await new Promise((resolve) => setTimeout(resolve, 120));
+  }
+  if (activeJob) throw new Error('El proveedor sigue ocupado. Espera unos segundos y vuelve a intentarlo.');
+}
+
+async function pollJob(jobId, { interval = 2500, timeout = 240000 } = {}) {  const started = Date.now();
   let attempts = 0;
   while (Date.now() - started < timeout) {
     await new Promise((resolve) => setTimeout(resolve, interval));
