@@ -1,3 +1,6 @@
+20261103c-flow-studio 2026-11-03
+Interfaz: el texto de la mascara explica que con Pincel se marcan varias zonas y se rellenan juntas; el boton muestra «Aplicar N zonas» y el chip «Mascara: N zonas».
+
 20261103b-flow-studio 2026-11-03
 Reintento por zona: si el proveedor falla en una zona se reintenta una vez antes de avisar, para que una peticion perdida no deje una zona sin rellenar.
 
