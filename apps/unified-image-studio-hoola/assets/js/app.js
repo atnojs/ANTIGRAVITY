@@ -40,7 +40,7 @@ const stageInner = $('stageInner');
 const canvasWrap = $('canvasWrap');
 
 /** Sello de versión: se muestra en la ayuda y en la consola para saber qué build corre. */
-const BUILD = 'v3.2.0 · 2026-11-02 · máscara por zonas numeradas, cada una con su prompt';
+const BUILD = 'v3.2.1 · 2026-11-03 · Flow: la pastilla se refresca sola y la máscara por zonas';
 
 let generationBusy = false;
 let inpaintBusy = false;
@@ -3312,6 +3312,27 @@ function bindFlowUI() {
     await refreshFlowState();
     paintFlowAgent();
   });
+  // El PC de Flow arranca y para solo (su tarea lo relanza cada 2 minutos), así
+  // que el estado leído al abrir la pestaña se queda viejo: se veía «Flow: sin
+  // conexión» con el PC ya conectado. Se refresca solo cada 45 s y al volver a
+  // la pestaña, para que la pastilla diga la verdad sin recargar.
+  let flowStateBusy = false;
+  let flowStateAt = 0;
+  const refrescarEstadoFlow = async () => {
+    if (flowStateBusy || !server.available || !server.writable) return;
+    if (Date.now() - flowStateAt < 10000) return;
+    flowStateBusy = true;
+    flowStateAt = Date.now();
+    try {
+      await refreshFlowState();
+      paintFlowAgent();
+    } catch { /* la siguiente vuelta lo reintenta */ } finally {
+      flowStateBusy = false;
+    }
+  };
+  window.setInterval(() => { if (!document.hidden) void refrescarEstadoFlow(); }, 45000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) void refrescarEstadoFlow(); });
+  window.addEventListener('focus', () => { void refrescarEstadoFlow(); });
   // Cantidad de imágenes por encolado (1–4).
   $('variantGroup').addEventListener('click', (event) => {
     const button = event.target.closest('[data-count]');

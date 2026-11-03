@@ -539,3 +539,16 @@ clave y consume crédito). El bucle y la composición usan el mismo `generate` y
 que el relleno de una zona ya validado en 3.1.1; queda pendiente una generación real de 2+ zonas.
 
 Capturas: `comparativa-zonas-uis.png` (antes 3.1.1 / después 3.2.0).
+
+### 3.2.1 (2026-11-03) — la pastilla de Flow deja de quedarse vieja
+
+Reporte del usuario: «Flow: sin conexión» mientras `api.php?action=flow.state` respondía
+`workerOnline: true`. La app solo pedía el estado al abrir la pestaña y al cambiar de modo; el
+agente del PC arranca y para por ciclos (tarea `UisFlowAgent` cada 2 min, 6 min por pasada), así
+que una lectura hecha en un hueco se quedaba en pantalla aunque el PC ya estuviera conectado.
+
+- La pastilla se refresca **sola cada 45 s** (solo con sesión válida y pestaña visible) y también
+  al volver a la pestaña o a la ventana. Sin recargar.
+- No cambia el circuito de Flow: mismo `flow.state`, misma cola, mismo agente.
+- Comprobado en producción: `flow.state` (sesión del usuario) → `workerOnline: true`,
+  `agentConfigured: true`, `pending: 0`; build servido v3.2.1 y sin errores de consola.
