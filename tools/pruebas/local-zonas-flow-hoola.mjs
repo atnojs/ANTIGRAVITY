@@ -108,7 +108,8 @@ await page.waitForTimeout(300);
 const caja = await page.locator('#maskCanvas').boundingBox();
 if (!caja) throw new Error('sin lienzo de máscara');
 const punto = (fx, fy) => ({ x: caja.x + caja.width * fx, y: caja.y + caja.height * fy });
-for (const [fx, fy] of [[0.27, 0.3], [0.72, 0.68]]) {
+const PUNTOS = MODELO === 'direct-single' ? [[0.5, 0.5]] : [[0.27, 0.3], [0.72, 0.68]];
+for (const [fx, fy] of PUNTOS) {
   const p = punto(fx, fy);
   await page.mouse.move(p.x, p.y);
   await page.mouse.down();
@@ -123,14 +124,20 @@ const zonas = await page.evaluate(() => ({
 }));
 await page.screenshot({ path: `${OUT}/01-dialogo-zonas-${MODELO}.png` });
 const prompts = ['coloca un círculo cian plano', 'coloca un cuadrado verde plano'];
-const campos = page.locator('[data-zone-prompt]');
-for (let i = 0; i < Math.min(2, await campos.count()); i += 1) await campos.nth(i).fill(prompts[i]);
-await page.waitForTimeout(300);
+if (MODELO !== 'direct-single') {
+  const campos = page.locator('[data-zone-prompt]');
+  for (let i = 0; i < Math.min(2, await campos.count()); i += 1) await campos.nth(i).fill(prompts[i]);
+  await page.waitForTimeout(300);
+}
 await page.click('#maskApply');
 await page.waitForTimeout(600);
 const trasAplicar = await page.evaluate(() => ({ nota: document.getElementById('maskNote')?.textContent, sourceNote: document.getElementById('sourceNote')?.textContent }));
 
-if (MODELO === 'flow') {
+if (MODELO === 'direct-single') {
+  await page.evaluate(() => { window.__SINGLE__ = true; });
+  await page.fill('#prompt', 'pinta de cian plano');
+  await page.click('[data-model="openai-image-2-low"]');
+} else if (MODELO === 'flow') {
   await page.click('[data-model="flow-nano-banana-2"]');
 } else {
   await page.click('[data-model="openai-image-2-low"]');
@@ -170,6 +177,7 @@ if (resultado.hayCard) {
     c.getContext('2d').drawImage(img, 0, 0, 256, 256);
     const d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, 256, 256).data;
     const muestra = (x, y) => { const i = (y * 256 + x) * 4; return [d[i], d[i + 1], d[i + 2]]; };
+    if (window.__SINGLE__) return { zona1: muestra(128, 128), zona2: muestra(128, 128) };
     return { zona1: muestra(69, 77), zona2: muestra(184, 174) };
   });
 }
@@ -184,14 +192,17 @@ const info = {
   pixeles,
   errores: errores.filter((e) => !e.includes('404')).slice(0, 8),
 };
-const okZonas = info.zonas.items === 2 && info.zonas.panel;
-const okPrompts = MODELO === 'flow'
+const okZonas = MODELO === 'direct-single' ? (info.zonas.items === 1 && info.zonas.panel) : (info.zonas.items === 2 && info.zonas.panel);
+const okPrompts = MODELO === 'direct-single'
+  ? ((info.mock.jobs.length === 1 && String(info.mock.jobs[0].prompt).includes('cian'))
+    || (info.mock.flowRequests === 1 && String(info.mock.flowPrompts[0] || '').includes('cian')))
+  : MODELO === 'flow'
   ? info.mock.flowRequests === 2 && info.mock.flowPrompts.every((p, i) => p.includes(i === 0 ? 'cian' : 'verde'))
   : info.mock.jobs.length === 2 && info.mock.jobs.every((j, i) => String(j.prompt).includes(i === 0 ? 'cian' : 'verde'));
-const okMascaras = MODELO === 'flow' ? true : (info.mock.jobs.length === 2 && info.mock.jobs.every((j) => String(j.mask).startsWith('data:image/png')) && info.mock.masks[0] > 1000);
-const okColor = info.pixeles
-  && info.pixeles.zona1[2] > 170 && info.pixeles.zona1[0] < 90
-  && info.pixeles.zona2[1] > 120 && info.pixeles.zona2[0] < 120;
+const okMascaras = MODELO === 'flow' || MODELO === 'direct-single' ? true : (info.mock.jobs.length === 2 && info.mock.jobs.every((j) => String(j.mask).startsWith('data:image/png')) && info.mock.masks[0] > 1000);
+const okColor = MODELO === 'direct-single'
+  ? (info.pixeles && info.pixeles.zona1[2] > 170 && info.pixeles.zona1[0] < 90)
+  : (info.pixeles && info.pixeles.zona1[2] > 170 && info.pixeles.zona1[0] < 90 && info.pixeles.zona2[1] > 120 && info.pixeles.zona2[0] < 120);
 const ok = okZonas && okPrompts && okMascaras && info.resultado.hayCard && okColor && info.errores.length === 0;
 info.ok = ok;
 fs.writeFileSync(`${OUT}/03-local-${MODELO}.json`, JSON.stringify(info, null, 2));

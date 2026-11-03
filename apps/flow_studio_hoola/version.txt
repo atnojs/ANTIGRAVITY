@@ -1,3 +1,6 @@
+20261103d-flow-studio 2026-11-03
+Compatibilidad: una sola zona pintada SIN prompt de zona vuelve a usar el prompt principal (pincel unico de siempre). Con 2+ zonas o prompt propio se rellena zona a zona.
+
 20261103c-flow-studio 2026-11-03
 Interfaz: el texto de la mascara explica que con Pincel se marcan varias zonas y se rellenan juntas; el boton muestra «Aplicar N zonas» y el chip «Mascara: N zonas».
 
