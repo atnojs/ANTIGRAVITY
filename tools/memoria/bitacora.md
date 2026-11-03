@@ -20,11 +20,12 @@ Una entrada por sesión de trabajo relevante.
   Immich 2283), copias y comportamiento 24/7.
 - **Evidencia:** `F:\Docker\backup\logs\backup-20261103-033003.log` → 03:30:10 «Volcado Nextcloud
   OK: 546026 bytes»; 03:31:00 «Volcado Immich OK: 91292453 bytes». A las 14:30 ya no escuchaba nada.
-- **Qué quedó pendiente:** confirmar con el usuario (1) que inició sesión en ANTONIO y que Docker
-  Desktop arrancó, y (2) que 8080, 8096 y 2283 responden de nuevo. La causa exacta del corte de hoy
-  **no está confirmada**; la hipótesis que documenta el LEEME es que Windows se quedó en la pantalla
-  de inicio de sesión y Docker no arrancó (`AutoStart` solo actúa al iniciar sesión), con el
-  Resource Saver/`autoPause` como agravante.
+- **Cierre (2026-11-03, 14:55):** verificado desde PRINCIPAL: **`8080`, `8096` y `2283` devuelven
+  `HTTP 200`** (`status.php`, `/health` y `/api/server/ping`) y `\\192.168.18.10\D\Media` es
+  accesible; el usuario confirma que abre las tres apps en los dos PCs. `:2235` sigue sin existir.
+  Pendiente cerrado. La **causa raíz no se investigó más** a petición del usuario («lo dejamos»); lo
+  probable es que Docker Desktop no estuviera arrancado en ANTONIO y volviera al arrancarlo, pero
+  **no está confirmado**.
 - **Lección:** la documentación del servidor **vive en el servidor**; la memoria del repo debe
   apuntar a `\\192.168.18.10\F\Docker\LEEME.md` y no inventar causas. Ante «no veo el servidor»,
   medir por capas (ping/ARP → SMB/discos → puertos HTTP) y usar los puertos reales.

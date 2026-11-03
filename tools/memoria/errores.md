@@ -38,11 +38,17 @@
 - **Solución (según el LEEME):** **iniciar sesión en ANTONIO y abrir Docker Desktop**; los
   contenedores vuelven solos en ~15 s (política `unless-stopped`) y **Immich tarda ~90 s** (migra y
   comprueba la base de datos; aparece `unhealthy` un par de minutos, es normal).
-- **Estado:** **abierto**. Confirmado: ping/SMB OK + puertos timeout + contenedores vivos a las
-  03:30. **No confirmado:** la causa exacta de este corte y que Docker haya vuelto a arrancar.
+- **Estado: resuelto el 2026-11-03 a las 14:55.** Desde PRINCIPAL los tres servicios vuelven a
+  responder `HTTP 200`: `http://192.168.18.10:8080/status.php`,
+  `http://192.168.18.10:8096/health` y `http://192.168.18.10:2283/api/server/ping`; `:2235` sigue
+  sin existir y el usuario confirmó que abría las tres apps en los dos PCs. **Causa raíz no
+  confirmada:** se cerró sin investigarla más a petición del usuario («lo dejamos»); lo probable
+  (documentado en el LEEME) es que Docker Desktop no estuviera arrancado en ANTONIO (sesión sin
+  iniciar o motor parado) y volviera al arrancarlo, pero no se verificó.
 - **Regla:** ante «no veo el servidor», medir por capas antes de tocar nada — ping/ARP → SMB y
   discos → puertos HTTP. Si SMB responde y los puertos del contenedor no, el problema está en
-  Docker/WSL2, no en la red. Usar siempre los puertos reales (8080 / 8096 / **2283**).
+  Docker/WSL2, no en la red. Usar siempre los puertos reales (8080 / 8096 / **2283**) y, al cerrar,
+  dejar en la memoria la verificación real (HTTP 200), no solo un «ya funciona».
 
 ## 2026-11-03 — Un guard de concurrencia con retardo rompía el relleno por zonas (UIS·Hoola 3.2.2)
 
