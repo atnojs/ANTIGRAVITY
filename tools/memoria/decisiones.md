@@ -1,3 +1,13 @@
+## 2026-11-03 — ANTONIO: C: solo sistema y programas; los datos, fuera
+
+- **Decisión:** en el PC ANTONIO, C: queda reservado para Windows y programas. Todo dato —proyectos, descargas, fotos, Docker/WSL, cachés grandes y copias— vive fuera de C:, para poder formatear C: sin perder nada. Al instalar software nuevo, elegir siempre su carpeta de datos fuera de C:.
+- **Por qué:** petición expresa de Antonio (2026-11-03): «en C: solo quiero los programas, el resto de datos los quiero en otra ubicación por si tengo que formatear C: no perder datos».
+- **Mapa de discos (manda la etiqueta, no la letra; las letras cambian al cambiar hardware):** Sistema (C:, 540 GB, Kingston NV2) · Datos (D:, WD Red 4 TB, serie WX82D6FXMJAQ) · Externo (E:, ST500LT012 465 GB, serie W3P6AS1P) · Trabajo (F:, 390 GB, misma NVMe que C:) · BACKUP (R:, WD Red 4 TB, serie WD-WCC7K1TZUN5N).
+- **Dependencia crítica:** la tarea «Servidor - copia de seguridad» ejecuta `F:\Docker\backup\copiar.ps1` y escribe en `R:`. Tras cualquier cambio de hardware, reasignar las letras para que esas rutas sigan siendo válidas.
+- **Pendiente:** C: está al 78 % (117 GB libres) y Trabajo (F:) vacío con 389 GB en el mismo NVMe: mover ahí Docker/WSL y las cachés grandes cuando el equipo esté estable.
+- **Hardware:** pendiente de montar i5-12400 + Asus Prime B760M-A D4-CSM en el ANTONIO (pedido 14102-7ADF3R, 03/11/2026). Nunca volver a un CPU de 2 hilos.
+- **Verificación:** etiquetas puestas y comprobadas en Explorer el 2026-11-03; discos identificados por número de serie con `Get-Volume`/`Get-Disk`, no por letra.
+
 ## 2026-11-01 — Descargas: archivar con la herramienta, no a mano
 
 - **Decisión:** archivar las descargas por mes se hace con `tools/descargas/archivar-mes.ps1` (o los `.cmd` de doble clic), no con un proceso manual ni con el circuito largo de verificación. Mueve cada archivo suelto a la carpeta de **su** mes por `LastWriteTime`, deja sueltos los del mes en curso y no toca carpetas.
