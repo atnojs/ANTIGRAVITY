@@ -24,8 +24,9 @@ await page.setInputFiles('#sourceInput', { name: 'base-1024.png', mimeType: 'ima
 await page.waitForTimeout(1500);
 await page.click('#btnMaskEdit');
 await page.waitForTimeout(700);
-await page.click('#maskToolBrush');
-await page.waitForTimeout(300);
+// La máscara nueva debe abrirse en Pincel: el primer clic numera la zona 1.
+const toolInicial = await page.evaluate(() => ({ brush: document.getElementById('maskToolBrush')?.classList.contains('is-active'), circle: document.getElementById('maskToolCircle')?.classList.contains('is-active') }));
+await page.waitForTimeout(200);
 const caja = await page.locator('#maskCanvas').boundingBox();
 if (!caja) throw new Error('sin lienzo');
 const p = (fx, fy) => ({ x: caja.x + caja.width * fx, y: caja.y + caja.height * fy });
@@ -64,8 +65,10 @@ await page.waitForTimeout(400);
 log.push({ paso: 'clic en el fondo', ...(await estado()) });
 await page.screenshot({ path: `${OUT}/31-produccion-reabierto.png` });
 const clics = await page.evaluate(() => ({ zonas: document.querySelectorAll('[data-zone-prompt]').length }));
-const info = { version, scripts, log, clics, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
-info.ok = version.startsWith('20261103e-flow-studio')
+const info = { version, scripts, toolInicial, log, clics, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
+info.ok = version.startsWith('20261104a-flow-studio')
+  && toolInicial.brush && !toolInicial.circle
+  && log[0].zonas === 1
   && log[1].zonas === 2 && log[1].prompts[0] === 'coloca un círculo cian plano'
   && log[2].zonas === 2 && log[2].prompts[1] === 'coloca un cuadrado verde plano'
   && log[2].dialogOpen && log[3].dialogOpen && log[3].zonas === 2

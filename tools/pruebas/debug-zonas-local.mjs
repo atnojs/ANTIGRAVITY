@@ -36,8 +36,8 @@ await page.setInputFiles('#sourceInput', { name: 'base-1024.png', mimeType: 'ima
 await page.waitForTimeout(1500);
 await page.click('#btnMaskEdit');
 await page.waitForTimeout(700);
-await page.click('#maskToolBrush');
-await page.waitForTimeout(300);
+// La máscara debe abrirse ya en Pincel (varias zonas).
+const toolInicial = await page.evaluate(() => ({ brush: document.getElementById('maskToolBrush')?.classList.contains('is-active'), circle: document.getElementById('maskToolCircle')?.classList.contains('is-active') }));
 const caja = await page.locator('#maskCanvas').boundingBox();
 const p = (fx, fy) => ({ x: caja.x + caja.width * fx, y: caja.y + caja.height * fy });
 const estado = () => page.evaluate(() => {
@@ -57,7 +57,7 @@ const clic = async (fx, fy) => {
   await page.mouse.up();
   await page.waitForTimeout(450);
 };
-const log = [];
+const log = [{ paso: 'abierto', ...(await estado()), toolInicial }];
 await clic(0.25, 0.28);
 log.push({ paso: 'clic 1', ...(await estado()) });
 if (await page.locator('[data-zone-prompt]').count()) {
@@ -83,14 +83,27 @@ await page.screenshot({ path: `${OUT}/21-reabierto.png` });
 await page.mouse.click(8, 8);
 await page.waitForTimeout(400);
 log.push({ paso: 'clic en el fondo', ...(await estado()) });
-const info = { version, log, errores };
+// Cambiar a Círculo: debe aparecer el atajo para volver a Pincel.
+await page.click('#maskToolCircle');
+await page.waitForTimeout(300);
+const ctaCirculo = await page.evaluate(() => ({ cta: Boolean(document.querySelector('.btn-zone-brush')), texto: document.querySelector('.btn-zone-brush')?.textContent || '' }));
+if (await page.locator('.btn-zone-brush').count()) {
+  await page.click('.btn-zone-brush');
+  await page.waitForTimeout(300);
+}
+const toolTrasCta = await page.evaluate(() => ({ brush: document.getElementById('maskToolBrush')?.classList.contains('is-active'), zonas: document.querySelectorAll('[data-zone-prompt]').length }));
+const info = { version, toolInicial, log, ctaCirculo, toolTrasCta, errores };
 fs.writeFileSync(`${OUT}/debug-local.json`, JSON.stringify(info, null, 2));
 console.log(JSON.stringify(info, null, 2));
-const ok = log[1].zonas === 2 && log[1].prompts[0] === 'coloca un círculo cian plano'
-  && log[3].zonas === 2 && log[3].prompts[0] === 'coloca un círculo cian plano'
-  && log[3].prompts[1] === 'coloca un cuadrado verde plano' && log[3].dialogOpen
-  && log[4].dialogOpen && log[4].zonas === 2;
-console.log(ok ? '\nPASS: dos zonas + prompts se conservan al reabrir' : '\nFALLO en el pintado por zonas (local)');
+const ok = toolInicial.brush && !toolInicial.circle
+  && log[1].zonas === 1 && log[1].prompts[0] === ''
+  && log[2].zonas === 2 && log[2].prompts[0] === 'coloca un círculo cian plano'
+  && log[2].prompts[1] === ''
+  && !log[3].dialogOpen
+  && log[4].dialogOpen && log[4].zonas === 2
+  && log[4].prompts[0] === 'coloca un círculo cian plano' && log[4].prompts[1] === 'coloca un cuadrado verde plano'
+  && log[5].dialogOpen && log[5].zonas === 2
+  && ctaCirculo.cta && toolTrasCta.brush;console.log(ok ? '\nPASS: dos zonas + prompts se conservan al reabrir' : '\nFALLO en el pintado por zonas (local)');
 await browser.close();
 servidor.close();
 process.exit(ok ? 0 : 1);
