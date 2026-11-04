@@ -58,11 +58,17 @@ const clic = async (fx, fy) => {
   await page.waitForTimeout(450);
 };
 const log = [{ paso: 'abierto', ...(await estado()), toolInicial }];
+let textoEscrito = '';
 await clic(0.25, 0.28);
 log.push({ paso: 'clic 1', ...(await estado()) });
+let textoTeclado = '';
 if (await page.locator('[data-zone-prompt]').count()) {
-  await page.locator('[data-zone-prompt]').first().fill('coloca un círculo cian plano');
+  // Escribir con el TECLADO (incluida la barra espaciadora) en el prompt de zona.
+  textoTeclado = 'coloca un circulo cian plano - prueba + teclado';
+  await page.locator('[data-zone-prompt]').first().click();
+  await page.keyboard.type(textoTeclado, { delay: 8 });
   await page.waitForTimeout(250);
+  textoEscrito = await page.locator('[data-zone-prompt]').first().inputValue();
 }
 await clic(0.75, 0.72);
 log.push({ paso: 'clic 2 (lejos)', ...(await estado()) });
@@ -92,16 +98,17 @@ if (await page.locator('.btn-zone-brush').count()) {
   await page.waitForTimeout(300);
 }
 const toolTrasCta = await page.evaluate(() => ({ brush: document.getElementById('maskToolBrush')?.classList.contains('is-active'), zonas: document.querySelectorAll('[data-zone-prompt]').length }));
-const info = { version, toolInicial, log, ctaCirculo, toolTrasCta, errores };
+const espaciosOk = textoTeclado.includes(' ') && textoEscrito === textoTeclado;
+const info = { version, toolInicial, log, textoTeclado, textoEscrito, espaciosOk, ctaCirculo, toolTrasCta, errores };
 fs.writeFileSync(`${OUT}/debug-local.json`, JSON.stringify(info, null, 2));
 console.log(JSON.stringify(info, null, 2));
-const ok = toolInicial.brush && !toolInicial.circle
+const ok = espaciosOk && toolInicial.brush && !toolInicial.circle
   && log[1].zonas === 1 && log[1].prompts[0] === ''
-  && log[2].zonas === 2 && log[2].prompts[0] === 'coloca un círculo cian plano'
+  && log[2].zonas === 2 && log[2].prompts[0] === textoTeclado
   && log[2].prompts[1] === ''
   && !log[3].dialogOpen
   && log[4].dialogOpen && log[4].zonas === 2
-  && log[4].prompts[0] === 'coloca un círculo cian plano' && log[4].prompts[1] === 'coloca un cuadrado verde plano'
+  && log[4].prompts[0] === textoTeclado && log[4].prompts[1] === 'coloca un cuadrado verde plano'
   && log[5].dialogOpen && log[5].zonas === 2
   && ctaCirculo.cta && toolTrasCta.brush;console.log(ok ? '\nPASS: dos zonas + prompts se conservan al reabrir' : '\nFALLO en el pintado por zonas (local)');
 await browser.close();

@@ -44,9 +44,14 @@ const clic = async (fx, fy) => {
 const log = [];
 await clic(0.25, 0.28);
 log.push({ paso: 'clic 1', ...(await estado()) });
+let textoTeclado = '';
+let textoEscrito = '';
 if (await page.locator('[data-zone-prompt]').count()) {
-  await page.locator('[data-zone-prompt]').first().fill('coloca un círculo cian plano');
+  textoTeclado = 'coloca un circulo cian plano - prueba + teclado';
+  await page.locator('[data-zone-prompt]').first().click();
+  await page.keyboard.type(textoTeclado, { delay: 8 });
   await page.waitForTimeout(250);
+  textoEscrito = await page.locator('[data-zone-prompt]').first().inputValue();
 }
 await clic(0.75, 0.72);
 log.push({ paso: 'clic 2 (lejos)', ...(await estado()) });
@@ -65,11 +70,12 @@ await page.waitForTimeout(400);
 log.push({ paso: 'clic en el fondo', ...(await estado()) });
 await page.screenshot({ path: `${OUT}/31-produccion-reabierto.png` });
 const clics = await page.evaluate(() => ({ zonas: document.querySelectorAll('[data-zone-prompt]').length }));
-const info = { version, scripts, toolInicial, log, clics, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
-info.ok = version.startsWith('20261104a-flow-studio')
+const espaciosOk = textoTeclado.includes(' ') && textoEscrito === textoTeclado;
+const info = { version, scripts, toolInicial, textoTeclado, textoEscrito, espaciosOk, log, clics, errores: errores.filter((e) => !e.includes('404')).slice(0, 6) };
+info.ok = espaciosOk && version.startsWith('20261104b-flow-studio')
   && toolInicial.brush && !toolInicial.circle
   && log[0].zonas === 1
-  && log[1].zonas === 2 && log[1].prompts[0] === 'coloca un círculo cian plano'
+  && log[1].zonas === 2 && log[1].prompts[0] === textoTeclado
   && log[2].zonas === 2 && log[2].prompts[1] === 'coloca un cuadrado verde plano'
   && log[2].dialogOpen && log[3].dialogOpen && log[3].zonas === 2
   && log[3].dialogOpen && log[3].zonas === 2

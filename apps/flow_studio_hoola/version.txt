@@ -1,3 +1,6 @@
+20261104b-flow-studio 2026-11-04
+La barra espaciadora (y +, - y 0) ya no se interceptan al escribir en los prompts de zona del dialogo de mascara: los atajos de zoom/mover solo actuan fuera de los campos de texto.
+
 20261104a-flow-studio 2026-11-04
 La mascara se abre directamente en Pincel (varias zonas): el primer clic crea la zona 1 numerada. Círculo queda como modo de una sola zona, con aviso y boton para pasar a Pincel; el circulo tambien muestra el numero 1.
 
