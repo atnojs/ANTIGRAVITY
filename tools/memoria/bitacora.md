@@ -4,6 +4,15 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-04 (2) — Flow Studio: la máscara abría en Círculo y no numeraba el primer clic
+
+- **Encargo:** «no funciona, ni siquiera enumera el primer clic» (captura: diálogo en **Círculo** con el círculo movido y sin número).
+- **Causa:** el diálogo se abría en modo **Círculo** (una sola zona): el clic movía el círculo y no creaba zona numerada; el usuario no llegaba a Pincel.
+- **Solución (20261104a, commit `483e2be0`):** una máscara nueva abre directamente en **Pincel (varias zonas)**; el primer clic crea la **zona 1** con número y campo. «Círculo · 1 zona» queda como modo de una zona, con el número 1 visible y un aviso + botón «Usar Pincel · varias zonas». Chips renombrados.
+- **Verificación:** local y producción sin generaciones: al abrir Pincel activo, primer clic → zona 1, segundo → zona 2, prompts conservados al cerrar/reabrir, clic en el fondo no cierra. Captura con zonas 1/2 y «APLICAR 2 ZONAS».
+- **Lección:** el modo por defecto decide si la función se percibe o no; si la acción principal es «zonas», el diálogo debe abrir en el modo que las crea. Un modo alternativo debe explicarse y ofrecer el cambio con un clic.
+
+---
 ## 2026-11-04 — Flow Studio: el segundo clic borraba la zona 1 (pintado por zonas)
 
 - **Encargo:** «clico con el pincel, señala la zona con el número 1 y aparece el campo… cuando clico en otro lugar desaparece la primera selección y su prompt y en ese segundo clic ya ni aparece el número ni el campo».
