@@ -1,3 +1,6 @@
+20261103e-flow-studio 2026-11-03
+Zonas: dos clics separados crean dos zonas (el umbral de union era enorme y fusionaba casi todo en la zona 1); cerrar la mascara ya no borra el borrador; el clic en el fondo ya no cierra el dialogo.
+
 20261103d-flow-studio 2026-11-03
 Compatibilidad: una sola zona pintada SIN prompt de zona vuelve a usar el prompt principal (pincel unico de siempre). Con 2+ zonas o prompt propio se rellena zona a zona.
 
