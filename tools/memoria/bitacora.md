@@ -4,6 +4,18 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-04 — Flow Studio: el segundo clic borraba la zona 1 (pintado por zonas)
+
+- **Encargo:** «clico con el pincel, señala la zona con el número 1 y aparece el campo… cuando clico en otro lugar desaparece la primera selección y su prompt y en ese segundo clic ya ni aparece el número ni el campo».
+- **Causas (reproducidas en Chrome):**
+  1. El umbral para unir un trazo a una zona existente era `2,2 × grosor del pincel` (≈0,385 normalizado, ~394 px): casi cualquier segundo clic se fusionaba con la zona 1 y no creaba número ni campo.
+  2. El `<dialog>` se cerraba al hacer clic en el fondo (fuera de la tarjeta): parecía que desaparecía la selección y el prompt.
+  3. Al reabrir la máscara se recargaba el borrador desde `state.mask` (sin aplicar) y se perdía lo pintado.
+- **Solución (20261103e, commit `dbe5045c`):** unir solo si el trazo empieza dentro del pincel de la zona (`max(0,035, grosor*0,7)`); el clic en el fondo ya no cierra (solo Cancelar/X/Escape); el borrador se conserva al reabrir para la misma imagen (`maskDraft.sourceKey`) y «Quitar máscara» lo reinicia.
+- **Verificación:** local (`debug-zonas-local.mjs`): 2 clics lejanos → 2 zonas, prompts conservados al cerrar y reabrir, clic en el fondo no cierra. Producción (sin generaciones): `verificar-produccion-zonas-ui-flow-hoola.mjs` PASS, captura con zonas 1 y 2 y sus dos campos.
+- **Lección:** un umbral de proximidad demasiado generoso hace que el usuario no vea crear zonas nuevas; y un cierre accidental del modal no puede llevarse el trabajo en curso (borrador persistente).
+
+---
 ## 2026-11-03 (tarde) — Flow Studio: máscara por zonas (varias máscaras en una sola generación)
 
 - **Encargo:** «añade esa misma función a esta app: apps/flow_studio_hoola» y después «solo veo que puedo aplicar una sola máscara y quiero poder utilizar varias máscaras en una sola generación».
