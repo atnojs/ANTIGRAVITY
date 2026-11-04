@@ -4,6 +4,15 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-04 (3) — Flow Studio: la barra espaciadora no escribía en los prompts de zona
+
+- **Encargo:** «no funciona la barra espaciadora del teclado para separar palabras».
+- **Causa:** el diálogo de la máscara intercepta `Espacio` (mover la vista) y `+`/`-`/`0` (zoom) con `preventDefault()`; el handler no miraba dónde estaba el foco, así que al escribir en el prompt de una zona (textarea dentro del diálogo) tampoco entraban espacios ni esos signos.
+- **Solución (20261104b, commit `d110e6e5`):** el handler ignora el evento si viene de `input`, `textarea`, `select` o `[contenteditable]`; los atajos siguen activos cuando el foco no está en un campo.
+- **Verificación:** local y producción mecanizando con teclado real `«coloca un circulo cian plano - prueba + teclado»` en el prompt de zona → valor idéntico (espacios, guion y más incluidos), `espaciosOk:true`; zonas y prompts siguen conservándose. PASS independiente pendiente (ronda 17).
+- **Lección:** todo atajo global de teclado debe comprobar `event.target` y no actuar sobre campos de texto; si no, rompe la escritura (espacios, signos) sin que el usuario sepa por qué.
+
+---
 ## 2026-11-04 (2) — Flow Studio: la máscara abría en Círculo y no numeraba el primer clic
 
 - **Encargo:** «no funciona, ni siquiera enumera el primer clic» (captura: diálogo en **Círculo** con el círculo movido y sin número).
