@@ -12,6 +12,10 @@
    haber leído **todas** las skills de `skills/` (los 26 `SKILL_*.md`), no solo la que
    parezca aplicable. Solo después se toca el archivo. Vale también para cambios de
    memoria y documentación.
+3. **Todo documento generado se guarda SIEMPRE en `D:\Descargas`.** Cualquier
+   documento, hoja, presentación, PDF, imagen o ZIP que generes para el usuario se
+   guarda —o se copia al terminar, si se trabajó en otra ruta— en `D:\Descargas`, y al
+   entregarlo se indica esa ruta. (2026-11-06)
 
 ## Memoria del proyecto (leer al empezar)
 

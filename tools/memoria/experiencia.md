@@ -5,6 +5,14 @@ Formato y reglas: `skills/SKILL_MEJORA_CONTINUA.md`. No escribas credenciales ni
 
 ---
 
+### 2026-11-06 — Los documentos generados se entregan siempre en D:\Descargas
+- **Ámbito:** general
+- **Fallo:** El usuario no encontraba los archivos entregados: tras recibir el DOCX/PDF en la carpeta de trabajo (E:\ANTIGRAVITY\Bingos Gambusinos 2026) preguntó «como puedo descargar los archivos??».
+- **Causa:** Los documentos se generaron y presentaron solo en la carpeta de trabajo del repo; no estaban en D:\Descargas, que es la carpeta que el usuario usa para recoger y enviar archivos.
+- **Regla:** Todo documento generado para el usuario (docx, pdf, xlsx, pptx, imagen o zip) se guarda o copia SIEMPRE en D:\Descargas; la carpeta de trabajo es solo intermedia. Al entregar se indica la ruta de D:\Descargas.
+- **Evidencia:** 2026-11-06: se copió el paquete a D:\Descargas\Bingos Gambusinos 2026\ (docx 65.245 B + pdf 77.556 B + 8 PNG) y el ZIP D:\Descargas\Premios Bingo Los Gambusinos 2026.zip (784.939 B); el usuario pidió anotar la regla en memoria (regla fija nº 3 de claude.md).
+- **Cuándo aplica:** Cualquier entrega de documentos o ficheros al usuario (Word, PDF, hojas, presentaciones, imágenes, ZIP), también en el PC local y en el de red.
+
 ### 2026-10-23 — El CDN de Hostinger cachea app.js y app.css
 - **Ámbito:** proyecto
 - **Fallo:** La app servia el JavaScript anterior aunque el archivo estuviera desplegado

@@ -449,3 +449,10 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 - **Decisión:** app local de Windows en `tools/pasafotos/` (WPF/C#, un solo `.exe` + fuentes), no una web. Destino por defecto `\\192.168.18.10\D\Media\Fotos`, la biblioteca que ya lee Jellyfin. Solo copia: nunca borra ni mueve originales, nunca sobrescribe ficheros distintos sin marcar la casilla, y comprueba el resultado.
 - **Por qué:** el destino está en otro PC y en una ruta SMB: el navegador no puede copiar carpetas locales a una ruta de red con esta fiabilidad. `tools/` está protegido por `.htaccess`, así que el ejecutable y los scripts no quedan públicos en Hostinger.
 - **Cómo se comprueba:** acceso directo `D:\Escritorio\PASAFOTOS.lnk` → ventana «PASAFOTOS»; `--diagnostico`; copia real + `verificar-copia.ps1` (SHA-256 idéntico).
+
+### [2026-11-06] Los documentos generados se entregan siempre en `D:\Descargas`
+
+- **Contexto:** tras entregar el Word/PDF de «Premios Bingo Los Gambusinos 2026» desde la carpeta de trabajo, el usuario preguntó «¿cómo puedo descargar los archivos?».
+- **Decisión:** regla fija nº 3 en `claude.md` (§ Reglas fijas del usuario) y lección en `experiencia.md`: todo documento generado (Word, PDF, hoja, presentación, imagen o ZIP) se guarda o copia siempre en `D:\Descargas`, y al entregarlo se indica esa ruta. La carpeta de trabajo es solo intermedia.
+- **Por qué:** `D:\Descargas` es la carpeta donde el usuario recoge, revisa y reenvía los archivos; entregar solo en la carpeta del proyecto le obliga a buscar y preguntar.
+- **Cómo se comprueba:** `Get-ChildItem D:\Descargas` contiene la entrega; en el mensaje de entrega se indica `D:\Descargas\...`.
