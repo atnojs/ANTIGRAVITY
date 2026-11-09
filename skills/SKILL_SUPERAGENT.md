@@ -82,7 +82,7 @@ Cuando el superagente está instalado y alguien autorizado pide algo:
 
 ## Flujo B — modo superagente sin instalar nada
 
-Hoy el prototipo no está instalado (faltan cuatro requisitos, ver
+Hoy el prototipo no está instalado (faltan cinco requisitos, ver
 `tools/superagent/INSTALAR.md`). El patrón se puede aplicar ya, en cualquier sesión:
 
 1. **Recoger el disparo** con su origen exacto: quién lo pide, dónde y qué texto.

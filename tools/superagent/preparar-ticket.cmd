@@ -41,6 +41,7 @@ git -C "%CLONE%" worktree add -b "agent/%DSH_SUPERAGENT_NAME%" "%DSH_SUPERAGENT_
 if errorlevel 1 (
   echo preparar-ticket: fallo el worktree en "%DSH_SUPERAGENT_DIR%" 1>&2
   echo   Si es un reintento, quedan restos del intento anterior. Limpiar: 1>&2
+  echo     git -C "%CLONE%" worktree remove --force "%DSH_SUPERAGENT_DIR%" 1>&2
   echo     git -C "%CLONE%" worktree prune 1>&2
   echo     git -C "%CLONE%" branch -D "agent/%DSH_SUPERAGENT_NAME%" 1>&2
   exit /b 1

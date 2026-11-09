@@ -29,8 +29,9 @@ copia. Si algo aquí y en `claude.md` discrepa, manda `claude.md` y se corrige e
 - **Herramientas y pruebas en `tools/`**, nunca en la raíz ni en `apps/`.
 - **Obligatorio el gate `autocalidad-90`** antes de entregar: autoevaluación con evidencia y PASS
   independiente ≥ 90,0. Sin PASS no hay entrega; si no se puede verificar, es BLOCKED.
-- **Ramas:** solo `main`, con una excepción: las ramas `agent/<ticket>` del superagente, remotas y
-  efímeras, que una persona mergea con squash y borra. Nunca copias de trabajo locales.
+- **Ramas:** solo `main`. Única excepción: las ramas `agent/<ticket>` del superagente, remotas y
+  efímeras, que una persona mergea con squash y borra; su checkout vive aislado en
+  `E:\_superagent\work\<ticket>`. Nunca copias de trabajo **dentro de `E:\ANTIGRAVITY`**.
 
 ## Si eres un worker del superagente
 

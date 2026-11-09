@@ -7,7 +7,7 @@
   carga y pausa. Devuelve los mismos códigos que el `status` oficial del prototipo:
 
     0  el servicio funciona con normalidad
-    1  no responde, hay un error del runtime o hay dos instancias
+    1  no responde, o hay un error del runtime
     2  funciona, pero una parte (Source, sync:<id>) está en error: reiniciar no lo arregla
     3  funciona pero espera setup: el panel dice qué falta
 

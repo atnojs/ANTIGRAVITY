@@ -6,7 +6,8 @@ manda: `docs/006-deployment.md` del repo del plugin. Esto solo traduce lo que en
 
 > **Estado (2026-11-09): NO instalado.** Este runbook está escrito contra `docs/006-deployment.md`
 > y con el equipo comprobado, pero **no se ha ejecutado**: faltan los requisitos marcados ❌ o ⚠️ en
-> la tabla. Cada paso pendiente va marcado ⏳. No se declara funcionando nada que no se haya arrancado.
+> la tabla, salvo tmux, que no hace falta. Cada paso pendiente va marcado ⏳. No se declara
+> funcionando nada que no se haya arrancado.
 
 ## Requisitos y estado real
 
@@ -78,6 +79,12 @@ pnpm build
 `E:\_superagent` queda **fuera** de `E:\ANTIGRAVITY`: el repo se despliega en la raíz pública y el
 plugin no debe estar dentro.
 
+Clone propio del que salen los tickets (el script de preparación lo exige con `.git`):
+
+```powershell
+git clone https://github.com/atnojs/ANTIGRAVITY.git E:\_superagent\repo
+```
+
 ## Paso 4 — Perfil `superagent` y alta del bundle
 
 ```powershell
@@ -135,21 +142,25 @@ setup). Los cuatro códigos son los del `status` oficial.
 | **Prompts → equipo** | Línea de divulgación en cada mensaje (`This is by an automated agent, not a human`), autor del commit, «never merge: a human merges», y la obligación de leer `AGENTS.md` + `skills/` antes de tocar archivos |
 
 **Comando de preparación.** El de la doc 006 es POSIX y asume variables con sintaxis de shell. Aquí
-se usa `preparar-ticket.cmd`, que resuelve las variables sin depender del intérprete del host y
-elije la base: head del PR en tickets de PR, `main` en tickets de Issue:
+se usa `preparar-ticket.cmd`, que lee las variables del entorno y elige la base: head del PR en
+tickets de PR, `main` en tickets de Issue.
 
 | Bloque | Valor |
 |---|---|
 | `directory` | `E:\_superagent\work` |
-| `prepare` | `E:\_superagent\preparar-ticket.cmd` (desde `tools/superagent/preparar-ticket.cmd`) |
+| `prepare` | `E:\ANTIGRAVITY\tools\superagent\preparar-ticket.cmd` |
 
 El script crea el worktree en `%DSH_SUPERAGENT_DIR%` con rama `agent/%DSH_SUPERAGENT_NAME%`. Si es
-un reintento y quedan restos del intento anterior, falla con las dos órdenes de limpieza escritas
-(`worktree prune` y `branch -D`): no borra nada por su cuenta.
+un reintento y quedan restos del intento anterior, falla con las tres órdenes de limpieza escritas
+(`worktree remove --force`, `worktree prune` y `branch -D`): no borra nada por su cuenta.
 
 Probado contra un repositorio local de prueba, no contra GitHub: Issue (sin head de PR) → OK desde
 `main`; PR con head `feature` → OK desde ese head; rama inexistente → 1 con el motivo; reintento con
-la rama ya creada → 1 con la ayuda. Falta comprobarlo con el host real expandiendo las variables.
+la rama ya creada → 1 con la ayuda.
+
+**⏳ Falta lo importante:** el `.cmd` se ejecuta con `cmd.exe`, y la doc 003 dice que el `prepare`
+corre con `sh`. Antes de dar el ticket por bueno hay que ver con qué intérprete lo lanza este host
+y, si es `sh`, envolver el script (`cmd.exe /c ...`) o portarlo. No se ha probado con el host real.
 
 **No** apuntar `directory` a `E:\ANTIGRAVITY`: los worktrees dentro del repo desplegado acaban
 publicados en la web.
