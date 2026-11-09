@@ -9,7 +9,7 @@
    etc. No empezar por el disco local (`C:\...`) salvo que el usuario lo pida.
 2. **Leer todas las skills antes de tocar cualquier archivo.** Antes de crear,
    editar, mover, renombrar o borrar un archivo —aquí o en el equipo local— hay que
-   haber leído **todas** las skills de `skills/` (los 26 `SKILL_*.md`), no solo la que
+   haber leído **todas** las skills de `skills/` (los 28 `SKILL_*.md`), no solo la que
    parezca aplicable. Solo después se toca el archivo. Vale también para cambios de
    memoria y documentación.
 3. **Todo documento generado se guarda SIEMPRE en `D:\Descargas`.** Cualquier
@@ -47,6 +47,12 @@ skills/
 `.claude/skills/<nombre>/SKILL.md` son solo **punteros** (conservan el front matter para
 que se descubran por su descripción): al abrir uno, lee el archivo `skills/<archivo>.md`
 que indica y aplícalo tal cual. No dupliques el contenido en el puntero.
+
+El `AGENTS.md` de la raíz es el índice de entrada para los agentes que leen ese nombre de archivo
+(entre ellos los workers del superagente, que no leen `claude.md`). Resume las reglas de este
+fichero y añade dos operativas que aquí se dan por sabidas: escenificar con `git add -A -- <rutas>`
+(nunca `git add .`) y dejar pruebas solo en `tools/`. Si discrepa, manda `claude.md` y se corrige
+`AGENTS.md`.
 
 **Antes de tocar cualquier archivo, lee TODAS las skills de `skills/`** (regla 2 del
 usuario, arriba) y después aplica al encargo las que correspondan, además de
@@ -122,6 +128,10 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 
 Úsala para aplicar el estilo hoola/relatos (cian #00D0D0 + verde #26C626, Electrolize, glassmorphism) a una app o web.
 
+### superagente-antigravity
+
+Úsala cuando llegue trabajo por GitHub (issue, comentario o PR que mencione al agente) o cuando haya que instalar, arrancar o diagnosticar el superagente: triaje filtro → router → workers, ticket, rama `agent/<ticket>`, PR en draft sin merge, gate `autocalidad-90` y límites de atención. Runbook y estado: `tools/superagent/`.
+
 ## Reglas críticas del proyecto
 
 - **Ninguna entrega sin PASS de `autocalidad-90`.** Cualquier creación o edición (aunque sea de un archivo suelto) lleva autoevaluación y verificación independiente; si el resultado queda por debajo de 90,0 o queda una mejora asequible, no se entrega: se corrige o se declara BLOCKED. No se admite «aprobado con reservas».
@@ -143,5 +153,6 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 - Haz commit + push tras CADA cambio de archivo siguiendo la skill `publicar-git` (el webhook de Hostinger despliega automáticamente).
 - Trabaja SIEMPRE sobre la rama `main` en `E:\ANTIGRAVITY`. NO crees ramas, worktrees ni copias de trabajo: cada worktree genera una historia paralela con SHAs distintos y deja ramas huérfanas si la tarea se abandona.
 - Si por alguna razón abres una rama o un worktree, bórralos al terminar la tarea y publica siempre en `main`.
+- **Excepción documentada, solo para el superagente:** sus PR salen de ramas `agent/<ticket>`, remotas y efímeras, creadas en un checkout aislado **fuera** del repo (`E:\_superagent\work\<ticket>`). Las mergea una persona con squash, nunca el agente, y se borran al mergear. Prohibido el worktree dentro de `E:\ANTIGRAVITY`: el repo de trabajo no aloja copias.
 - El repositorio se despliega en la RAÍZ PÚBLICA de Hostinger: **cualquier archivo versionado es accesible por web**. Nunca versiones scripts de prueba ni herramientas de desarrollo; déjalas en `tools/`, que está protegida por `.htaccess`.
 - Prioriza soluciones prácticas, seguras y fáciles de aplicar.

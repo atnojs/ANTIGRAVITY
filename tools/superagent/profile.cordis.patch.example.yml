@@ -1,0 +1,21 @@
+# Configuración de máquina del perfil `superagent` (DSH).
+# Copiar a %USERPROFILE%\.dsh\profiles\superagent\cordis.patch.yml y revisar las rutas.
+# El perfil se crea antes con: dsh superagent --from-default-profile web --dump-config
+# Referencia: docs/006-deployment.md del plugin. Guía: tools/superagent/INSTALAR.md
+- id: webserver
+  config:
+    host: 127.0.0.1
+    port: 3082
+- id: dsh-superagent
+  config:
+    # Ruta absoluta, fuera del repo público: base de datos, lock, shims (worker-bin),
+    # configuración git del agente y directorios de ticket. Respaldar antes de actualizar.
+    stateDir: C:\Users\atnoj\.dsh\state\superagent
+    # Límites opcionales: el panel los edita en Settings → Deployment y aplican sin reinicio.
+    # Son valores de partida, no los predeterminados del plugin.
+    # promptMaxChars: 40000
+    # admissionContextMaxPages: 3
+    # admissionContextTimeoutMs: 60000
+# Feishu es opcional: descomentar solo si hay bot y lark-cli propio del bot.
+# - id: dsh-superagent-feishu
+#   disabled: false

@@ -1,6 +1,6 @@
 # Índice de skills — ANTIGRAVITY
 
-**Para qué sirve:** cargar la puerta + la ficha que toca en vez de leer los 27 ficheros (≈360 KB, ≈90k tokens) antes de cada tarea.
+**Para qué sirve:** cargar la puerta + la ficha que toca en vez de leer los 28 ficheros (≈290 KB, ≈75k tokens) antes de cada tarea.
 
 **Qué es y qué no es:** este índice está generado desde el `frontmatter` y la estructura de cada `SKILL_*.md` (2026-11-09). Dice **cuál abrir**; no sustituye su contenido. Cuando una skill entra en juego, se lee entera.
 
@@ -57,6 +57,7 @@
 | `SKILL_METODO_COPILOTO.md` | Construir prompts profesionales con las 3 plantillas maestras (dos fases). | 10,4 |
 | `SKILL_MEJORA_CONTINUA.md` | Un fallo costoso o algo que se repite por tercera vez → regla reutilizable con evidencia. | 4,0 |
 | `SKILL_director-orquestador-multiagente.md` | Coordinar varios agentes en paralelo: roles, dependencias, `.lock`, mensajería. | 6,9 |
+| `SKILL_SUPERAGENT.md` | Trabajo que llega por GitHub (issue/comentario/PR), operar el superagente (filtro→router→workers, tickets, panel) o instalarlo. Fija rama `agent/<ticket>`, PR sin merge y límites de atención. | 8,9 |
 
 ## 7. Apps y medios concretos (cargar solo si el encargo es ese)
 
@@ -83,10 +84,11 @@
 | Cerrar el trabajo | + `GIT_PUBLICAR` |
 | Encargo ambiguo | + `brainstorming-pro` o `planificacion-pro` |
 | «Examina esta URL» | + `investigacion` |
+| Trabajo que llega por GitHub | + `SUPERAGENT` |
 | App concreta | + su ficha de la sección 7 |
 
 ## 9. Mantenimiento
 
 - Al crear, renombrar o borrar un `SKILL_*.md`, **actualizar este índice en el mismo commit**.
 - Origen de cada fila: el campo `description` del frontmatter y los `##` del fichero. Si cambia la descripción, cambia la fila.
-- Discrepancia detectada (2026-11-09): `AGENTS.md` lista 26 skills; en disco hay **27** (falta `SKILL_unified-image-studio-hoola`). Corregido aquí; pendiente en `AGENTS.md`.
+- Conteo vigente (2026-11-09): **28** `SKILL_*.md` en `skills/`. El `AGENTS.md` de la raíz, creado en esa fecha, no lleva lista propia: apunta a este índice. La lista obsoleta de 26 fichas estaba en el `AGENTS.md` del workspace de DeepSeek Harness (fuera de este repo) y sigue sin actualizar allí.
