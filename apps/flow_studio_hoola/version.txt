@@ -1,3 +1,10 @@
+20261109d-flow-studio 2026-11-09
+Cierra la puerta de al lado: apps/flow_studio/flow_queue.php escribia en la MISMA
+cola y su request no pedia sesion, asi que el cierre de 20261109c se esquivaba
+cambiando la URL. Ahora las dos exigen la sesion del proyecto. Ademas el modal de
+acceso deja de decir que Flow funciona sin sesion, un 401 invalida la sesion del
+cliente y los botones de serie y variantes piden la contrasena antes del overlay.
+
 20261109c-flow-studio 2026-11-09
 Encolar en Flow exige la contrasena de acceso. Hasta ahora cualquier persona
 podia enviar trabajos a la cola: llenarla o gastar la cuota del dia con dos
