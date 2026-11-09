@@ -8,7 +8,7 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 ## 🖼️ Flow Studio — límites heredados y siguientes pasos (2026-10-27)
 
 - **Gasto sin tope:** no existe `storage/pricing.json`; `uis_check_budget()` devuelve `known=false`. Siguiente paso: copiar `pricing.example.json` del estudio a `storage/pricing.json` y fijar límites si se quiere presupuesto.
-- **Cola de Flow:** `request/status/img/ping` son públicos; `claim/complete/fail` exigen `QUEUE_TOKEN`, que está en el PHP versionado. Siguiente paso: mover el token al entorno, rotarlo y exigir sesión en `request` solo para los modelos protegidos.
+- **Cola de Flow:** `status`, `ping` e `img/file` siguen públicos; `request` ya exige la sesión del proyecto (2026-11-09, commit `c315f03e`) y `claim/complete/fail` exigen `QUEUE_TOKEN`, que sigue en el PHP versionado. Siguiente paso: mover el token al entorno y rotarlo; eso obliga a cambiar el worker del PC en la misma ventana (ver el aviso de rotación en `errores.md`), así que no se hace a la ligera.
 - **Historial sin auth:** `history.php` lista sin sesión y además permite `delete`/`clear` sin auth (riesgo de borrado). Siguiente paso: exigir la sesión del proyecto al menos para borrar y para listar si se publican imágenes privadas.
 - **Máscara y recarga:** si se recarga la pestaña mientras un trabajo de Flow está en curso, el trabajo se recupera pero la máscara no. Siguiente paso: guardar `mask` + `source` por job en IndexedDB y aplicarla en `restorePending`.
 - **Círculo solo con puntero:** el tamaño se ajusta con el deslizador (accesible), pero mover el círculo requiere arrastre. Siguiente paso: flechas del teclado con el canvas enfocado.
