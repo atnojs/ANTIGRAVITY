@@ -4,6 +4,14 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-09 (3) — Cron de paridad: producción congelada en `c315f03e` y re-disparo
+
+- **Síntoma:** el árbol público servía `c315f03e` en `apps/flow_studio_hoola/index.html` (apuntando a `app.20261109c.js`), `version.txt` (sin la entrada `d`) y `apps/flow_studio/flow_queue.php` (400 de prompt vacío antes de mirar la sesión), mientras `app.20261109d.js` sí respondía 200 y `claude.md`/`AGENTS.md` coincidían con HEAD. La segunda puerta de `1be1c942` no estaba activa: `request` anónimo llegaba al 400 en vez del 401.
+- **Diagnóstico:** git local y remoto idénticos (`3c7c4b01`), sin tracked modificados; 8 commits por detrás en producción. El `Last-Modified` de todo el árbol estaba congelado en 20:54:25 GMT.
+- **Reparación:** el POST al webhook de Hostinger y el redelivery de la última entrega (push de 20:22) devolvieron 200 sin reescribir nada en 15 min. El push de un commit vacío (`1b99e9bb`) sí disparó el despliegue: convergencia en ~1,5 min.
+- **Verificación:** `index.html` y `version.txt` de flow_studio_hoola idénticos byte a byte a `HEAD` (`20261109d`), `app.20261109d.js` 200, los dos `flow_queue.php` responden 401 a `request` sin sesión, `claude.md`/`AGENTS.md` md5 = HEAD.
+- **Lección:** ante producción congelada, el webhook/redelivery puede devolver 200 sin desplegar; el commit vacío + push es el que rearma la cola.
+
 ## 2026-11-09 (2) — Flow Studio: encolar en Flow exige sesión
 
 - **Origen:** hallazgo 1 de la revisión EGM (`action=request` sin autenticación, comprobado abierto en producción).
