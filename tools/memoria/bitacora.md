@@ -3015,3 +3015,14 @@ las cabeceras.
 - **⚠️ No verificado (marcado ⏳ en `INSTALAR.md`):** build del plugin, arranque del perfil `superagent`, panel en el puerto configurado y el intérprete real del `prepare` (`cmd.exe` propio frente al `sh` que documenta la doc 003). No se declara instalado.
 - **Pendiente del dueño:** cuenta de GitHub del agente → `tools/memoria/pendientes.md`.
 - **Commit:** fd98ece0, 356c4052 y 42d03af8 (5796e1bf es el vacío de re-disparo).
+
+## 2026-11-09 (tarde) — Superagente: tooling, perfil y primer arranque; falta la cuenta
+- **Encargo:** Antonio da la cuenta del agente (`24atnoia` / `atnoia24@gmail.com`) y pide instalar el tooling.
+- **Tooling (sin elevación, la sesión no es admin):** Node `24.22.2` y `gh` `2.103.3` desde los ZIP oficiales en `%LOCALAPPDATA%\Programs\node` y `...\Programs\gh\bin` (los MSI de winget piden UAC); `pnpm 11.28.11` global en la carpeta de Node; PATH de usuario con esas rutas + Python. **Python ya estaba** (`3.12.10` en `...\Programs\Python\Python312`): solo lo tapaba el alias de Microsoft Store. Comprobado en consola nueva: `where node` da el `node.exe` real, no el `.cmd` del harness.
+- **Wrapper:** `C:\Users\atnoj\bin\gh-agent.cmd` (su propio `GH_CONFIG_DIR`), probado con `--version`; ⏳ sin `auth login`.
+- **Plugin:** clon en `E:\_superagent\dsh-superagent`, `pnpm install` 2m09s, `pnpm build` 12s (`lib/index.js` 450 kB). En PowerShell `pnpm` resuelve a `pnpm.ps1` y la política lo bloquea: hay que usar `pnpm.cmd` o `cmd.exe`.
+- **Perfil:** `dsh superagent --from-default-profile web`, bundle enlazado con `link:E:/_superagent/dsh-superagent`; `--dump-config` aplica `port: 3082` y el `stateDir`.
+- **Hallazgo que costó el arranque:** el esquema exige `stateDir` con `^\//`. Con `C:\...` el plugin **no activa** (`ValidationError: $.stateDir expect string to match regexp /^\//`). Solución: `stateDir: /Users/atnoj/.dsh/state/superagent` y arrancar con el directorio de trabajo en `C:\`, porque la ruta se resuelve contra la unidad del cwd. Queda en `C:\Users\atnoj\.dsh\state\superagent` (`orchestrator.sqlite` 4 KB).
+- **Arranque verificado:** panel en `http://127.0.0.1:3082` y `estado.ps1` → **3**, `github / repositoryUnset` («The GitHub Source names no repository»), que es exactamente lo que toca sin cuenta ni repo configurados. Todas las partes de salud en `ready`.
+- **Pendiente:** crear la cuenta `24atnoia` (signup + 2FA + Write en el repo), `gh-agent.cmd auth login`, configurar Sources/Policy/Execution/Prompts en el panel, primer Issue de prueba y comprobar el intérprete real del `prepare`.
+- **Commit:** ver `git log -1 -- tools/memoria/bitacora.md`.

@@ -524,14 +524,13 @@ propósito, para que no se pierda de vista.
 
 ---
 
-## 🤖 Superagente (dsh-superagent) — instalación pendiente de 5 bloqueos (2026-11-09)
+## 🤖 Superagente (dsh-superagent) — instalado y arrancando; falta la cuenta (2026-11-09, tarde)
 
-- **Estado:** patrón integrado y runbook escrito; el prototipo **no** está instalado. Ficha: `skills/SKILL_SUPERAGENT.md`. Pasos y comprobaciones: `tools/superagent/INSTALAR.md`.
-- **Bloqueo 1 — cuenta de GitHub del agente (solo Antonio):** usuario nuevo con 2FA y permiso Write en `atnojs/ANTIGRAVITY`. Siguiente paso: pasar login y token al wrapper `C:\Users\atnoj\bin\gh-agent.cmd` con su propio `GH_CONFIG_DIR`.
-- **Bloqueo 2 — herramientas:** faltan `gh` ≥ 2.48, `pnpm` y un Python real; el `node` del PATH es el runtime interno de DSH (sin npm ni corepack) y el `python` es el alias de la Store (exit 9009). Siguiente paso: `winget install --id OpenJS.NodeJS.LTS`, `winget install --id GitHub.cli`, `winget install --id Python.Python.3.12`, luego `corepack enable pnpm`.
-- **Bloqueo 3 — build del plugin:** `pnpm install && pnpm build` en `E:\_superagent\dsh-superagent` (no ejecutado: `tsdown` en Windows sin probar). Siguiente paso: build y luego `dsh plugin --profile superagent add "link:E:/_superagent/dsh-superagent"`.
-- **Bloqueo 4 — arranque sin tmux:** los scripts del prototipo son POSIX y tmux no está. Siguiente paso: `Start-Process dsh.cmd -ArgumentList '--profile','superagent'` y comprobar con `powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\superagent\estado.ps1`.
-- **Bloqueo 5 — intérprete del `prepare`:** `preparar-ticket.cmd` está probado contra un repo local, pero falta ver si este host lanza el `prepare` con `sh` (como dice la doc 003) o con `cmd.exe`. Siguiente paso: primer ticket de prueba y, si es `sh`, envolverlo con `cmd.exe /c`.
-- **Aislamiento pendiente:** los presets corren con `danger-full-access` como el usuario del SO y el worker puede leer el home. Antes de dejarlo fijo: cuenta de Windows dedicada con solo las credenciales del agente.
+- **Estado:** tooling, perfil, bundle compilado y arranque **hechos y comprobados**; el agente aún no puede trabajar porque no hay cuenta de GitHub del agente ni repositorio configurado. Ficha: `skills/SKILL_SUPERAGENT.md`. Pasos: `tools/superagent/INSTALAR.md` (§ «Lo ya verificado»).
+- **Único bloqueo duro — cuenta `24atnoia` (solo Antonio):** crear en `github.com/signup` con `atnoia24@gmail.com`, activar 2FA, añadirla como colaboradora con rol Write en `atnojs/ANTIGRAVITY` y aceptar la invitación. Después: `C:\Users\atnoj\bin\gh-agent.cmd auth login` y `gh-agent.cmd api user --jq .login` debe imprimir `24atnoia`.
+- **Siguiente paso tras la cuenta:** arrancar con directorio de trabajo `C:\` (`Start-Process dsh.cmd -ArgumentList '--profile','superagent','--no-open' -WorkingDirectory 'C:\'`), configurar en el panel Sources (`atnojs/ANTIGRAVITY` + `gh-agent.cmd`), Policy (`atnojs`), Execution (`E:\_superagent\work`, `prepare` = `E:\ANTIGRAVITY\tools\superagent\preparar-ticket.cmd`) y Prompts («never merge»), y abrir un Issue pequeño de prueba.
+- **Pendiente técnico:** ver con qué intérprete lanza el host el `prepare` (`sh` según la doc 003, `cmd.exe` en la práctica). Si es `sh`, envolver `preparar-ticket.cmd` con `cmd.exe /c`.
+- **Riesgo asumido:** `stateDir` va en forma POSIX (`/Users/...`) porque el esquema exige `^\/`; se resuelve contra la unidad del cwd, así que **siempre** hay que arrancar con `C:\` como directorio de trabajo.
+- **Aislamiento pendiente:** los presets corren con `danger-full-access` como el usuario del SO. Antes de dejarlo funcionando 24/7: cuenta de Windows dedicada con solo las credenciales del agente.
 - **Nota de despliegue:** el webhook de Hostinger no desplegó los tres push del encargo; hubo que re-dispararlo con un commit vacío (5796e1bf). Si vuelve a pasar, mismo remedio.
-- **Cierre:** cuando arranque, marcar ✅ cada punto en `INSTALAR.md`, hacer la primera prueba con un Issue real (encargo pequeño) y mover esta entrada a `bitacora.md`.
+- **Cierre:** cuando el primer Issue funcione, marcar ✅ cada punto en `INSTALAR.md`, pasar esta entrada a `bitacora.md` y decidir si se queda arrancado o se levanta a demanda.
