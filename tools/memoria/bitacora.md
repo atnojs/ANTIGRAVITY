@@ -4,6 +4,16 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-09 — Flow Studio: el sondeo de la cola se bloqueaba a partir del trabajo 13
+
+- **Origen:** revisión del subsistema de cola con el método EGM (cuatro lentes de contexto cero). El hallazgo es del revisor estructural, no de la puerta `autocalidad-90`.
+- **Causa:** el cliente pedía estado de todos los trabajos de la sesión, pero `flow_queue.php:513` recorta a 12 ids. `state.jobs` no se vacía al terminar un trabajo, así que desde el 13 la petición dejaba fuera los ids nuevos: nunca recibían estado, `ready >= total` no se cumplía y el overlay quedaba bloqueado para siempre.
+- **Reproducción (sin gastar créditos):** `POST` a `flow_queue.php` con 13 ids de 16 hex → responde 12 claves en `jobs`. Uno desaparece.
+- **Solución (20261109a, commit `38b4b4a2`):** en `pollOnce()` la consulta lleva solo los trabajos en `queued`/`running`; si no queda ninguno, no se llama al servidor. El conteo sigue recorriendo todos los ids y sale de `job.status`.
+- **Verificación:** `node --check` sin errores; producción sirve `app.20261109a.js` (200, 189948 B, contiene `enCurso`, no contiene la llamada vieja); `version.txt` empieza por `20261109a`; `index.html` referencia el asset nuevo.
+- **Límite declarado:** el extremo a extremo (13 generaciones reales) no se ejecutó: gastaría créditos de Flow y requiere el worker del PC.
+- **Queda abierto:** `missing` sin rama en el cliente (trabajo purgado = «en cola» eterno), resultados que nunca se borran, trabajos en `error` que no caducan y cola sin autenticación en `request`.
+
 ## 2026-11-04 (3) — Flow Studio: la barra espaciadora no escribía en los prompts de zona
 
 - **Encargo:** «no funciona la barra espaciadora del teclado para separar palabras».
