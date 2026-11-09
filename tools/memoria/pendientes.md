@@ -520,3 +520,18 @@ propósito, para que no se pierda de vista.
 - **Qué:** la app PASAFOTOS deja las fotos en `D:\Media\Fotos` (biblioteca de Jellyfin). Immich **no** las indexa por su cuenta.
 - **Corrección (2026-11-03):** el acceso desde el móvil **no** era «aislamiento del WiFi doméstico» (era un dato erróneo). La causa real, según `F:\Docker\LEEME.md` § «Acceso desde el móvil (resuelto)», fueron dos cosas: (a) una dirección mal escrita en un intento (`192.168.10:8096`, sin el `.18.`) y (b) el **perfil de Chrome del móvil corrupto** —el firewall no registró ni una conexión a la red mientras Samsung Internet sí entraba a los tres servicios—; se arregló **borrando los datos de Chrome**. Las dos redes WiFi de casa dan acceso.
 - **Siguiente paso concreto:** ya no es corregir ningún aislamiento (no existe). Si Antonio quiere ver las fotos en Immich, importarlas desde la app de Immich (o valorar `immich-go`); lo que sí queda abierto del servidor es **opcional**: (1) **inicio de sesión automático en ANTONIO** para que Docker arranque solo tras un corte de luz, y (2) **tercer disco / copia fuera de casa** (hoy las dos copias están en el mismo equipo). Ambos están en el LEEME § «Pendiente».
+
+
+---
+
+## 🤖 Superagente (dsh-superagent) — instalación pendiente de 5 bloqueos (2026-11-09)
+
+- **Estado:** patrón integrado y runbook escrito; el prototipo **no** está instalado. Ficha: `skills/SKILL_SUPERAGENT.md`. Pasos y comprobaciones: `tools/superagent/INSTALAR.md`.
+- **Bloqueo 1 — cuenta de GitHub del agente (solo Antonio):** usuario nuevo con 2FA y permiso Write en `atnojs/ANTIGRAVITY`. Siguiente paso: pasar login y token al wrapper `C:\Users\atnoj\bin\gh-agent.cmd` con su propio `GH_CONFIG_DIR`.
+- **Bloqueo 2 — herramientas:** faltan `gh` ≥ 2.48, `pnpm` y un Python real; el `node` del PATH es el runtime interno de DSH (sin npm ni corepack) y el `python` es el alias de la Store (exit 9009). Siguiente paso: `winget install --id OpenJS.NodeJS.LTS`, `winget install --id GitHub.cli`, `winget install --id Python.Python.3.12`, luego `corepack enable pnpm`.
+- **Bloqueo 3 — build del plugin:** `pnpm install && pnpm build` en `E:\_superagent\dsh-superagent` (no ejecutado: `tsdown` en Windows sin probar). Siguiente paso: build y luego `dsh plugin --profile superagent add "link:E:/_superagent/dsh-superagent"`.
+- **Bloqueo 4 — arranque sin tmux:** los scripts del prototipo son POSIX y tmux no está. Siguiente paso: `Start-Process dsh.cmd -ArgumentList '--profile','superagent'` y comprobar con `powershell -NoProfile -ExecutionPolicy Bypass -File E:\ANTIGRAVITY\tools\superagent\estado.ps1`.
+- **Bloqueo 5 — intérprete del `prepare`:** `preparar-ticket.cmd` está probado contra un repo local, pero falta ver si este host lanza el `prepare` con `sh` (como dice la doc 003) o con `cmd.exe`. Siguiente paso: primer ticket de prueba y, si es `sh`, envolverlo con `cmd.exe /c`.
+- **Aislamiento pendiente:** los presets corren con `danger-full-access` como el usuario del SO y el worker puede leer el home. Antes de dejarlo fijo: cuenta de Windows dedicada con solo las credenciales del agente.
+- **Nota de despliegue:** el webhook de Hostinger no desplegó los tres push del encargo; hubo que re-dispararlo con un commit vacío (5796e1bf). Si vuelve a pasar, mismo remedio.
+- **Cierre:** cuando arranque, marcar ✅ cada punto en `INSTALAR.md`, hacer la primera prueba con un Issue real (encargo pequeño) y mover esta entrada a `bitacora.md`.
