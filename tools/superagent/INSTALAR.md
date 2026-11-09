@@ -17,7 +17,7 @@ manda: `docs/006-deployment.md` del repo del plugin. Esto solo traduce lo que en
 | Node 22.19+ / 24+ **con npm** | `node --version` | ⚠️ el `node` del PATH es el empaquetado en la app (`…\DeepSeek Harness\resources\runtime\…\node.exe`), **sin npm ni corepack** |
 | pnpm | `pnpm --version` | ❌ no está |
 | git ≥ 2.32 | `git --version` | ✅ `2.55.0` |
-| Python 3.8+ | `python --version` | ❌ el `python` del PATH es el alias de Microsoft Store (no hay intérprete real); la doc 006 lo pide entre los prerrequisitos |
+| Python 3.8+ | `python --version` | ❌ el `python` del PATH es el alias de Microsoft Store (no hay intérprete real); se instala en el Paso 2 |
 | GitHub CLI `gh` ≥ 2.48 | `gh --version` | ❌ no está |
 | Cuenta de GitHub del agente | `gh api user --jq .login` con su propia config | ❌ no existe (la crea Antonio) |
 | tmux | — | ❌ no hace falta: solo lo usan los scripts `.sh` del prototipo, que aquí se sustituyen por el arranque directo del perfil |
@@ -65,6 +65,18 @@ aparte (`winget install --id OpenJS.NodeJS.LTS`) y después:
 corepack enable pnpm
 pnpm --version    # 11.x
 ```
+
+Python 3.8+ (la doc 006 lo pide entre los prerrequisitos; el `python` del PATH es hoy el alias de
+Microsoft Store y no ejecuta nada):
+
+```powershell
+winget install --id Python.Python.3.12
+python --version    # 3.12.x, en una consola nueva
+```
+
+Si `python --version` sigue abriendo la Store, desactivar el alias en
+Configuración → Aplicaciones → Alias de ejecución de aplicaciones, o usar la ruta absoluta que deja
+el instalador (`%LOCALAPPDATA%\Programs\Python\Python312\python.exe`).
 
 ## Paso 3 — Checkout del plugin, fuera del repo público
 
