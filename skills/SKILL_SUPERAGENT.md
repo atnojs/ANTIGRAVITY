@@ -118,7 +118,7 @@ Consulta de estado sin panel: **`tools/superagent/estado.ps1`**. Creación del c
 | Pieza | Dónde queda |
 |---|---|
 | Perfil DSH | `%USERPROFILE%\.dsh\profiles\superagent\` (aislado del perfil de trabajo) |
-| Estado, base de datos y shims | `%USERPROFILE%\.dsh\state\superagent` (fuera del repo público) |
+| Estado, base de datos y shims | `C:\Users\atnoj\.dsh\state\superagent` (fuera del repo público; se arranca con `-WorkingDirectory 'C:\'`) |
 | Checkout del plugin | `E:\_superagent\dsh-superagent` (fuera del repo) |
 | Clone del que salen los tickets | `E:\_superagent\repo` |
 | Directorios de ticket | `E:\_superagent\work\<ticket>` |
@@ -131,6 +131,8 @@ Consulta de estado sin panel: **`tools/superagent/estado.ps1`**. Creación del c
 | La mención no llega como petición | Se añadió editando el cuerpo del Issue | Comentar de nuevo mencionando a la cuenta |
 | `status` sale 3 | Falta un requisito de setup | El panel dice cuál; no reiniciar en bucle |
 | `status` sale 2 | Una parte (Source, sync) falla | Reiniciar no lo arregla: leer `errors` |
+| El plugin no activa: `$.stateDir expect string to match regexp /^\//` | `stateDir` con ruta `C:\...` | Usar forma POSIX (`/Users/...`) y arrancar con `-WorkingDirectory 'C:\'`: se resuelve contra la unidad del cwd |
+| `PSSecurityException` al ejecutar `pnpm` | La política bloquea `pnpm.ps1` | Usar `pnpm.cmd` o lanzar desde `cmd.exe` |
 | El worker propone mergear | Prompt del equipo sin prohibición explícita | Añadir «never merge» y revisar que la condición de auto-merge esté vacía |
 | Un PR toca `tools/` o `.htaccess` | Falta el alcance en el ticket | Cerrar el PR: la raíz pública no admite herramientas ni configuración privada |
 | Ramas huérfanas `agent/*` | Merge sin borrar rama | Borrar en el mismo acto del merge |

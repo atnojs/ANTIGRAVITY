@@ -8,9 +8,13 @@
     port: 3082
 - id: dsh-superagent
   config:
-    # Ruta absoluta, fuera del repo público: base de datos, lock, shims (worker-bin),
-    # configuración git del agente y directorios de ticket. Respaldar antes de actualizar.
-    stateDir: C:\Users\atnoj\.dsh\state\superagent
+    # OJO: el esquema del plugin exige que stateDir empiece por "/" (regex ^\/).
+    # Una ruta `C:\...` se rechaza y el plugin no activa. En Windows, "/Users/..." se
+    # resuelve contra la UNIDAD DEL DIRECTORIO DE TRABAJO: por eso hay que arrancar
+    # siempre con `cd /d C:\` (queda C:\Users\atnoj\.dsh\state\superagent).
+    # Ahí viven base de datos, lock, shims (worker-bin), config git del agente y tickets.
+    # Fuera del repo público y con copia de seguridad antes de actualizar.
+    stateDir: /Users/atnoj/.dsh/state/superagent
     # Límites opcionales: el panel los edita en Settings → Deployment y aplican sin reinicio.
     # Son valores de partida, no los predeterminados del plugin.
     # promptMaxChars: 40000

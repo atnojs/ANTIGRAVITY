@@ -4,53 +4,78 @@ Runbook del prototipo [`deepseek-ai/dsh-superagent-prototype`](https://github.co
 sobre Windows, adaptado a nuestro flujo (`skills/SKILL_SUPERAGENT.md`). La documentación de origen
 manda: `docs/006-deployment.md` del repo del plugin. Esto solo traduce lo que en Windows cambia.
 
-> **Estado (2026-11-09): NO instalado.** Este runbook está escrito contra `docs/006-deployment.md`
-> y con el equipo comprobado, pero **no se ha ejecutado**: faltan los requisitos marcados ❌ o ⚠️ en
-> la tabla, salvo tmux, que no hace falta. Cada paso pendiente va marcado ⏳. No se declara
-> funcionando nada que no se haya arrancado.
+> **Estado (2026-11-09, 20:15): plugin instalado y arranca; falta la cuenta.** Node, pnpm, `gh`,
+> Python, el wrapper `gh-agent.cmd`, el perfil `superagent`, el bundle compilado y el panel en 3082
+> ya funcionan en este equipo. `estado.ps1` sale 3 con `repositoryUnset`, que es lo correcto hasta
+> que exista la cuenta del agente y se configure el repositorio. ⏳ pendiente: `gh auth login` con
+> `24atnoia`, configurar Sources/Policy/Execution y el primer ticket real.
 
 ## Requisitos y estado real
 
 | Requisito | Comprobación | Estado hoy |
 |---|---|---|
 | DeepSeek Harness ≥ `0.2.1-alpha.2` | `dsh --version` | ✅ `0.2.1-rc.3` |
-| Node 22.19+ / 24+ **con npm** | `node --version` | ⚠️ el `node` del PATH es el empaquetado en la app (`…\DeepSeek Harness\resources\runtime\…\node.exe`), **sin npm ni corepack** |
-| pnpm | `pnpm --version` | ❌ no está |
+| Node 22.19+ / 24+ **con npm** | `node --version` | ✅ `24.22.2` en `%LOCALAPPDATA%\Programs\node` (zip oficial; va antes que el `node.cmd` del harness en el PATH del usuario) |
+| pnpm | `pnpm --version` | ✅ `11.28.11` (global, en el mismo directorio que Node) |
 | git ≥ 2.32 | `git --version` | ✅ `2.55.0` |
-| Python 3.8+ | `python --version` | ❌ el `python` del PATH es el alias de Microsoft Store (no hay intérprete real); se instala en el Paso 2 |
-| GitHub CLI `gh` ≥ 2.48 | `gh --version` | ❌ no está |
-| Cuenta de GitHub del agente | `gh api user --jq .login` con su propia config | ❌ no existe (la crea Antonio) |
-| tmux | — | ❌ no hace falta: solo lo usan los scripts `.sh` del prototipo, que aquí se sustituyen por el arranque directo del perfil |
+| Python 3.8+ | `python --version` | ✅ `3.12.10` en `%LOCALAPPDATA%\Programs\Python\Python312` (ya estaba; se añadió al PATH del usuario, que solo tenía el alias de la Store) |
+| GitHub CLI `gh` ≥ 2.48 | `gh --version` | ✅ `2.103.3` en `%LOCALAPPDATA%\Programs\gh\bin` |
+| Wrapper de credenciales del agente | `gh-agent.cmd api user --jq .login` | ✅ existe en `C:\Users\atnoj\bin\gh-agent.cmd`; ⏳ sin autenticar |
+| Cuenta de GitHub del agente | — | ❌ pedida a Antonio: `24atnoia` / `atnoia24@gmail.com`; falta crearla y darle Write en el repo |
+| tmux | — | ➖ no hace falta: solo lo usan los scripts `.sh` del prototipo, que aquí se sustituyen por el arranque directo del perfil |
 
-Coste: la instalación completa son ~20-30 minutos contando creación de cuenta y build.
+**Cómo se instaló (2026-11-09), por si hay que repetirlo en otro PC.** La sesión no tiene
+elevación, así que en vez de los MSI de `winget` (piden UAC) se usaron los ZIP oficiales:
+
+```powershell
+# Node 24 (LTS): zip oficial descomprimido en %LOCALAPPDATA%\Programs\node
+# GitHub CLI:    zip oficial descomprimido en %LOCALAPPDATA%\Programs\gh
+# PATH de usuario: se anteponen node, gh\bin, Python312 y Python312\Scripts
+npm install -g pnpm@11   # queda en el mismo directorio que Node (prefix = carpeta de node.exe)
+```
+
+Comprobado en una consola nueva: `where node` → `node.exe` de `Programs\node` (no el `.cmd` del
+harness), `node -v` 24.22.2, `pnpm -v` 11.28.11, `gh --version` 2.103.3, `python --version` 3.12.10.
+
 
 ## Paso 0 — Cuenta de GitHub del agente (humano)
 
-1. Crear una cuenta de usuario **solo** para el agente (un GitHub App no sirve: el plugin lee las
-   notificaciones de la cuenta).
-2. Darle permiso de **escritura** en `atnojs/ANTIGRAVITY` (colaborador con Write).
-3. Activar 2FA y guardar el código de recuperación junto al resto de credenciales
-   (`tools/memoria/credenciales.md`: solo *dónde vive*, nunca el valor).
+Datos decididos por Antonio (2026-11-09): usuario **`24atnoia`**, correo **`atnoia24@gmail.com`**.
 
-⏳ Pedir a Antonio el nombre de la cuenta y el token **antes** de seguir: los pasos 1-3 no se pueden
-inventar.
+1. Crear la cuenta en `https://github.com/signup` con ese correo y ese usuario (un GitHub App no
+   sirve: el plugin lee las notificaciones de la cuenta). El código de verificación llega al buzón:
+   ese paso solo lo puede hacer Antonio.
+2. Activar 2FA y guardar el código de recuperación. En `tools/memoria/credenciales.md` se anota
+   **dónde vive**, nunca el valor.
+3. Darle permiso de **escritura** en `atnojs/ANTIGRAVITY`: repositorio → Settings → Collaborators →
+   Add people → `24atnoia` con rol **Write**.
+4. Aceptar la invitación desde la cuenta del agente.
+
+⏳ Nada de esto se puede automatizar desde aquí (captcha + código de correo + 2FA). Cuando exista la
+cuenta, el siguiente comando es el `gh auth login` del Paso 1 y a partir de ahí el resto lo hace el
+agente.
 
 ## Paso 1 — `gh` CLI y wrapper de credenciales
 
-Instalar GitHub CLI (`winget install --id GitHub.cli`), abrir una consola nueva y crear el wrapper
-que aísla las credenciales del agente — el equivalente Windows del `gh-agent` de la doc 006:
+`gh` ya está instalado (`%LOCALAPPDATA%\Programs\gh\bin`, 2.103.3) y el wrapper existe en
+`C:\Users\atnoj\bin\gh-agent.cmd`: fija su propio `GH_CONFIG_DIR` para que el token del agente no se
+mezcle con el de Antonio — es el equivalente Windows del `gh-agent` de la doc 006:
 
 ```bat
-rem C:\Users\atnoj\bin\gh-agent.cmd
 @echo off
+setlocal
 set "GH_CONFIG_DIR=%USERPROFILE%\.config\gh-agent"
-gh %*
+set "GH_EXE=%LOCALAPPDATA%\Programs\gh\bin\gh.exe"
+if exist "%GH_EXE%" ( "%GH_EXE%" %* ) else ( gh %* )
+exit /b %ERRORLEVEL%
 ```
 
+⏳ Lo único que falta es autenticarlo, y lo hace Antonio en el navegador (no se pasa ningún token
+por el chat):
+
 ```powershell
-# Iniciar sesión SOLO como la cuenta del agente (nunca la de Antonio)
-& C:\Users\atnoj\bin\gh-agent.cmd auth login
-& C:\Users\atnoj\bin\gh-agent.cmd api user --jq .login   # debe imprimir la cuenta del agente
+& C:\Users\atnoj\bin\gh-agent.cmd auth login          # iniciar sesion como 24atnoia
+& C:\Users\atnoj\bin\gh-agent.cmd api user --jq .login  # debe imprimir: 24atnoia
 ```
 
 `GH_CONFIG_DIR` distinto ⇒ token distinto. Si ese comando imprime `atnojs`, el aislamiento está
@@ -88,6 +113,10 @@ pnpm install
 pnpm build
 ```
 
+En PowerShell, `pnpm` resuelve a `pnpm.ps1` y la política de ejecución de este equipo lo bloquea
+(`PSSecurityException`). Usar `pnpm.cmd` o lanzarlo desde `cmd.exe`; con eso el build pasa
+(comprobado: `lib/index.js` 450 kB, `lib/client.js` 359 kB, 12 s).
+
 `E:\_superagent` queda **fuera** de `E:\ANTIGRAVITY`: el repo se despliega en la raíz pública y el
 plugin no debe estar dentro.
 
@@ -117,7 +146,16 @@ Copiar `profile.cordis.patch.example.yml` (esta carpeta) a
 | Clave | Valor aquí |
 |---|---|
 | `webserver.port` | `3082` (libre; OmniRoute usa 20128 y la GUI de DSH 19387) |
-| `dsh-superagent.stateDir` | `C:\Users\atnoj\.dsh\state\superagent` — absoluto, fuera del repo, **respaldar antes de actualizar** |
+| `dsh-superagent.stateDir` | `/Users/atnoj/.dsh/state/superagent` — **debe empezar por `/`** (el esquema la valida con `^\/`); en Windows se resuelve contra la unidad del directorio de trabajo, así que se arranca con `cd /d C:\` y queda en `C:\Users\atnoj\.dsh\state\superagent`. Fuera del repo; **respaldar antes de actualizar** |
+
+### Lo que se descubrió al arrancar (2026-11-09)
+
+- Con `stateDir: C:\Users\...` el plugin **no activa**: `ValidationError: $.stateDir expect string to
+  match regexp /^\//`. Hay que usar la forma POSIX y fijar el directorio de trabajo al arrancar.
+- Con el perfil arrancado, el panel responde y `estado.ps1` sale **3** con el motivo real:
+  `github / repositoryUnset — The GitHub Source names no repository`. Es decir: el plugin está vivo y
+  solo falta configurar la cuenta y el repositorio.
+- La base de datos se crea en `<stateDir>/orchestrator.sqlite` (+ `-shm`, `-wal`): 4 KB al arrancar.
 
 ## Paso 6 — Arrancar y parar sin tmux
 
@@ -126,15 +164,21 @@ directo del perfil, en segundo plano:
 
 ```powershell
 Start-Process -FilePath "$env:USERPROFILE\bin\dsh.cmd" `
-  -ArgumentList '--profile','superagent' `
+  -ArgumentList '--profile','superagent','--no-open' `
+  -WorkingDirectory 'C:\' `
   -WindowStyle Minimized
 ```
+
+`-WorkingDirectory 'C:\'` no es decorativo: `stateDir` se resuelve contra la unidad del directorio de
+trabajo, y sin eso el estado acaba en la unidad desde la que se lance. `--no-open` evita que abra el
+navegador; la URL con token se imprime en el log.
 
 - Para que sobreviva al cierre de sesión, crear una tarea programada «al iniciar sesión» que lance
   esa misma línea (en este equipo `schtasks` está denegado: usar el patrón de
   `tools/descargador/iniciar-worker.vbs`, que arranca oculto y sin duplicar).
 - Parada ordenada: cerrar la ventana del perfil o `Stop-Process` sobre el proceso `dsh` del perfil.
-  El prototipo espera hasta 5 minutos a los workers; no matar a la fuerza.
+  El prototipo espera hasta 5 minutos a los workers; no matar a la fuerza. Si hace falta forzar,
+  matar el proceso que escucha en 3082.
 - Estado, sin panel:
 
 ```powershell
@@ -206,12 +250,20 @@ publicados en la web.
 | Un ticket falla con «prepare command failed» | La salida del comando dice la causa (ruta del clone, variables sin expandir) |
 | `… was not written by dsh-superagent` | Hay un fichero ajeno en `worker-bin` o `worker-gitconfig`: moverlo o cambiar `stateDir` |
 
+## Lo ya verificado (2026-11-09, 20:15)
+
+- ✅ Build del plugin en Windows: `pnpm build` (`tsdown`) genera `lib/` en 12 s.
+- ✅ Perfil creado, bundle enlazado y composición correcta (`--dump-config` muestra `port: 3082` y el
+  `stateDir` aplicados; los presets `dsh-superagent-worker` y `dsh-superagent-router` aparecen).
+- ✅ Arranque: el panel responde en 3082 y `estado.ps1` devuelve **3** con el motivo exacto
+  (`repositoryUnset`), que es lo que toca mientras no haya cuenta y repositorio configurados.
+
 ## Lo que este runbook no ha verificado
 
-- El build del plugin en Windows (depende de `pnpm build` con `tsdown`).
-- El arranque del perfil `superagent` y el panel en el puerto configurado.
-- El comando de preparación con el host real expandiendo las variables (sí está probado contra un
-  repositorio local: Issue, PR, rama inexistente y reintento).
-- Que la cuenta del agente pueda empujar a `atnojs/ANTIGRAVITY`.
+- Un ticket de verdad de principio a fin: el `prepare` con el host real, la rama `agent/…` y el PR.
+- Con qué intérprete lanza el host el `prepare` (`cmd.exe` propio frente al `sh` que documenta la
+  doc 003). El `.cmd` está probado a mano contra un repositorio local: Issue, PR, rama inexistente y
+  reintento.
+- Que la cuenta `24atnoia` exista, esté autenticada y pueda empujar a `atnojs/ANTIGRAVITY`.
 
 Cada uno se marca ✅ en este fichero cuando se ejecute de verdad.
