@@ -14,6 +14,7 @@ Una entrada por sesión de trabajo relevante.
 - **Lección:** una condición de fin que depende de lo que se deja de consultar es un contrato, no un detalle. El test hay que hacerlo también con lo que **no** se pide.
 - **Verificación:** `node --check` limpio; simulación con el bucle extraído de los tres ficheros (arriba); producción sirve `index.html` con `app.20261109b.js`, el asset responde 200 (190.305 B, con las guardas `info &&` y sin el `continue` de `pollOnce`) y `version.txt` empieza por `20261109b`.
 - **Aviso de árbol compartido:** el push arrastró el commit `4d12437f` (`feat(video-vault)`, de otra sesión, 18:57) porque estaba en el mismo árbol; no es historia reescrita ni trabajo perdido, pero lo publiqué yo sin verificarlo.
+- **Guardia versionada (M-01 del verificador):** `tools/verificar-sondeo-flow.mjs` extrae el bucle de recuento del asset publicado y falla si vuelve el `continue` o si el sondeo no cierra en los tres escenarios (2ª generación, trabajo 13, 13 en curso). Comprobado: exit 0 con `20261109b`, exit 1 con `20261109a`.
 - **Límite declarado:** el extremo a extremo (13 generaciones reales) no se ejecutó: gastaría créditos de Flow y requiere el worker del PC.
 - **Queda abierto:** `missing` sin rama en el cliente (trabajo purgado = «en cola» eterno), resultados que nunca se borran, trabajos en `error` que no caducan y cola sin autenticación en `request`.
 
