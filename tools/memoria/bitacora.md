@@ -4,6 +4,15 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+## 2026-11-09 (2) — Flow Studio: encolar en Flow exige sesión
+
+- **Origen:** hallazgo 1 de la revisión EGM (`action=request` sin autenticación, comprobado abierto en producción).
+- **Riesgo real:** cualquiera podía enviar trabajo desde fuera: llenar los 12 huecos de la cola o gastar el día con dos vídeos (10 puntos cada uno, 50 al día, 2 huecos).
+- **Decisión del dueño:** exigir sesión, descartando el tope por IP (un atacante con dos IPs seguía pudiendo quemar el día).
+- **Cambio (20261109c, commit `c315f03e`):** `flow_queue.php` carga `lib/bootstrap.php` y responde 401 en `request` si no hay sesión; `status`, `ping` e `img/file` siguen abiertos. En el cliente, `generate()` pide la sesión antes de montar el overlay y `post()` la exige para cualquier `action: 'request'` (cubre zonas, variantes, serie y vídeo). Textos de `index.html:45` y `:357` corregidos.
+- **Verificación en producción:** ping 200 · status anónimo 200 · img 404 · api.php 200 · request anónimo 401 · claim con token erróneo 403 · version.txt `20261109c` · asset `c` 200 con la guarda. La sonda de `request` usa prompt vacío: con el código viejo daba 400 sin encolar nada, así que no gastó cuota.
+- **Límite declarado:** no se ha probado el camino con sesión iniciada (haría falta la contraseña). La comprobación humana es generar una imagen y ver que entra en la cola.
+
 ## 2026-11-09 — Flow Studio: el sondeo de la cola se bloqueaba a partir del trabajo 13
 
 - **Origen:** revisión del subsistema de cola con el método EGM (cuatro lentes de contexto cero). El hallazgo es del revisor estructural, no de la puerta `autocalidad-90`.
@@ -16,7 +25,7 @@ Una entrada por sesión de trabajo relevante.
 - **Aviso de árbol compartido:** el push arrastró el commit `4d12437f` (`feat(video-vault)`, de otra sesión, 18:57) porque estaba en el mismo árbol; no es historia reescrita ni trabajo perdido, pero lo publiqué yo sin verificarlo.
 - **Guardia versionada (M-01 del verificador):** `tools/verificar-sondeo-flow.mjs` extrae el bucle de recuento del asset publicado y falla si vuelve el `continue` o si el sondeo no cierra en los tres escenarios (2ª generación, trabajo 13, 13 en curso). Comprobado: exit 0 con `20261109b`, exit 1 con `20261109a`.
 - **Límite declarado:** el extremo a extremo (13 generaciones reales) no se ejecutó: gastaría créditos de Flow y requiere el worker del PC.
-- **Queda abierto:** `missing` sin rama en el cliente (trabajo purgado = «en cola» eterno), resultados que nunca se borran, trabajos en `error` que no caducan y cola sin autenticación en `request`.
+- **Queda abierto:** `missing` sin rama en el cliente (trabajo purgado = «en cola» eterno), resultados que nunca se borran y trabajos en `error` que no caducan. (La cola sin autenticación se cerró el mismo día: ver la entrada de arriba.)
 
 ## 2026-11-04 (3) — Flow Studio: la barra espaciadora no escribía en los prompts de zona
 
