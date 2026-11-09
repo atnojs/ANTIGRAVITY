@@ -1,8 +1,15 @@
+20261109b-flow-studio 2026-11-09
+Corrige 20261109a, que rompia el caso normal: al dejar de consultar los trabajos
+ya terminados, el recuento del sondeo se los saltaba y la pantalla se quedaba en
+"Generando 0 de 2" desde la segunda generacion de la misma pestana. Ahora, si no
+hay respuesta para un id no hay transicion de estado, pero si recuento.
+
 20261109a-flow-studio 2026-11-09
 Sondeo de la cola: solo se consultan los trabajos que siguen en curso. Antes se
 enviaban tambien los ya terminados y, a partir del trabajo 13 de la misma pestana,
 los nuevos quedaban fuera del limite de 12 ids del servidor: no recibian estado
-nunca y la pantalla se quedaba en "generando" para siempre.
+nunca y la pantalla se quedaba en "generando" para siempre. SUSTITUIDA por
+20261109b: dejaba de contar los trabajos ya terminados.
 
 20261104b-flow-studio 2026-11-04
 La barra espaciadora (y +, - y 0) ya no se interceptan al escribir en los prompts de zona del dialogo de mascara: los atajos de zoom/mover solo actuan fuera de los campos de texto.
