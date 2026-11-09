@@ -360,6 +360,19 @@ $token = (string) ($body['token'] ?? ($_SERVER['HTTP_X_QUEUE_TOKEN'] ?? ''));
 
 // --- request: encolar imágenes o vídeos -----------------------------------
 if ($reqAction === 'request') {
+    // Encolar gasta cuota real de Flow (10 puntos por vídeo, 50 al día) y no debe
+    // aceptar trabajo de desconocidos: hasta el 2026-11-09 esta ruta no pedía nada
+    // y cualquiera podía llenar la cola o quemar el día con dos vídeos.
+    // La sesión es la común del proyecto (cookie compartida con el resto de apps).
+    // status, ping e img/file siguen abiertos: solo se cierra la escritura.
+    require_once __DIR__ . '/lib/bootstrap.php';
+    if (!uis_authenticated()) {
+        respond([
+            'ok' => false,
+            'error' => 'Inicia sesión con la contraseña de acceso para encolar en Flow.',
+            'auth' => false,
+        ], 401);
+    }
     $prompt = trim((string) ($body['prompt'] ?? ''));
     // Modo Serie: varias escenas en UNA petición. El worker las reclama juntas
     // y las genera en un solo proyecto de Flow (un Chrome para todas).

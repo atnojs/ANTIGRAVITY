@@ -1,3 +1,9 @@
+20261109c-flow-studio 2026-11-09
+Encolar en Flow exige la contrasena de acceso. Hasta ahora cualquier persona
+podia enviar trabajos a la cola: llenarla o gastar la cuota del dia con dos
+videos. Ahora la app pide sesion antes de enviar y el servidor responde 401 si
+no la hay; status, ping e img siguen abiertos para poder seguir mirando.
+
 20261109b-flow-studio 2026-11-09
 Corrige 20261109a, que rompia el caso normal: al dejar de consultar los trabajos
 ya terminados, el recuento del sondeo se los saltaba y la pantalla se quedaba en
