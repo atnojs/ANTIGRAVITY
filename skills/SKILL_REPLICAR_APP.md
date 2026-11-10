@@ -1,6 +1,6 @@
 ---
 name: replicar-app
-description: "Clona una app o web real a partir de su URL: captura la interfaz y la red con REA, inventaría pantallas, flujos, endpoints y estados, y construye una réplica funcional en el proyecto con paridad medida. Activar con 'clona esta app', 'replica esta web', 'hazme algo igual que X', 'copia esta interfaz' o 'reconstruye esta herramienta'."
+description: "Clona una app o web real a partir de su URL (o de un .exe/.dll en Windows): captura la interfaz y la red con REA, inventaría pantallas, flujos, endpoints y estados, y construye una réplica funcional en el proyecto con paridad medida. Activar con 'clona esta app', 'replica esta web', 'hazme algo igual que X', 'copia esta interfaz' o 'reconstruye esta herramienta'."
 ---
 
 # Replicar una app (clonado funcional con paridad medida)
@@ -13,6 +13,44 @@ Se replica lo observable y lo reconstruible:
 - **No**: el backend privado de la app, su base de datos, sus claves, su lógica antifraude, sus datos de usuarios, su contenido con derechos (logos, ilustraciones, textos largos) ni el acceso a zonas que exigen una cuenta que no es tuya.
 
 Si el encargo pide copiar marca, textos o assets ajenos, se sustituyen por equivalentes propios y se dice en la entrega. Copiar el aspecto y el flujo es legítimo; copiar la identidad o el contenido de terceros, no.
+
+Para apps **nativas de Windows** (.exe/.dll) hay una rama aparte, más abajo: cambia la captura (REA + Ghidra), no el método ni los límites.
+
+## Rama: apps nativas de Windows
+
+Aplica cuando el objetivo no es una web sino un programa de escritorio del que solo tienes el binario.
+
+### Antes de tocar el binario
+
+- Ejecútalo en una **máquina virtual o sandbox**, nunca en el equipo de trabajo.
+- Nada de saltar licencias, DRM, activaciones ni firmas: se reconstruye funcionalidad propia, no se crackea nada.
+- No se clonan malware, herramientas de fraude ni sistemas críticos. Si el binario no es tuyo y no hay permiso, se rechaza.
+
+### Captura
+
+1. Interfaz: capturas de cada ventana, menú, diálogo, barra de herramientas, preferencias y estados (vacío, carga, error). Anota atajos y textos visibles.
+2. Estructura: REA sobre el binario (funciones, imports, strings legibles, recursos) y Ghidra para lo que REA no cubra. Objetivo: entender **qué hace y cómo está organizado**, no copiar código.
+3. Datos: formatos de archivo propios, extensiones, presets y exportaciones. Se documentan para interoperar, no para apropiarse del formato.
+
+### Inventario
+
+`inventario.md` con ventanas, acciones, atajos, menús, flujos por tarea, formatos y estados. Añade una columna **prioridad** (imprescindible / útil / prescindible): en nativo no se replica todo, se replica lo que usa el encargo.
+
+### Reconstrucción
+
+- Reimplementa en el stack propio partiendo del inventario, no del código descompilado.
+- Sustituye iconos, nombres y textos por propios cuando no sean tuyos.
+- Empieza por el flujo imprescindible completo y añade el resto por prioridad.
+
+### Paridad
+
+- Matriz función a función: replicada / parcial / fuera de alcance.
+- Prueba cada flujo con datos propios y compara con las capturas originales.
+- Declara siempre lo que no se ha replicado y por qué (coste, DRM, dependencia de hardware).
+
+### Coste y expectativa
+
+Clonar una app nativa cuesta bastante más que una web: la captura es manual y la reconstrucción no es mecánica. Si el encargo cabe como web, hazlo como web. La promesa de «un clic» no existe: hay que capturar, inventariar, reconstruir y verificar.
 
 ## Entradas
 
