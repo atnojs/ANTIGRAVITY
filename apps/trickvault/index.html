@@ -3411,9 +3411,9 @@ const CAPTURE_COMMANDS = [
     ['/dobleexposicion-musica', 'retrato con auriculares, notas y luces'],
     ['/dobleexposicion-agricultura', 'retrato con campos, tractor y pueblo'],
     ['/dobleexposicion-tigre', 'retrato con tigre, bosque y aves'],
-    ['/white', 'amplía el encuadre y rellena lo que quedaba fuera'],
-    ['/overheadcrowdflow', 'multitud vista desde arriba, tú en medio'],
-    ['/spiral', 'retuerce la escena en un remolino a su alrededor'],
+    ['/white', 'amplía el encuadre y rellena lo que quedaba fuera', '2026-11-10'],
+    ['/overheadcrowdflow', 'multitud vista desde arriba, tú en medio', '2026-11-10'],
+    ['/spiral', 'retuerce la escena en un remolino a su alrededor', '2026-11-10'],
 ];
 
 // Variantes personales recuperadas de la copia de seguridad de Antonio.
@@ -3937,7 +3937,7 @@ const SEED_TRICKS = [
         }];
     }),
     // Entradas de los 108 códigos nuevos de las capturas (2026-10-06).
-    ...CAPTURE_COMMANDS.flatMap(([command, meaning], index) => {
+    ...CAPTURE_COMMANDS.flatMap(([command, meaning, fechaTanda], index) => {
         const id = `cap-cmd-${String(index + 1).padStart(3, '0')}`;
         // Tarjetas retiradas (fusionadas en otras): no vuelven a entrar y su id
         // se borra también de los navegadores que ya las tuvieran guardadas.
@@ -3946,10 +3946,15 @@ const SEED_TRICKS = [
         // su propia fecha de lote para que «Últimas» lo trate como el push más
         // reciente; la tanda del 2026-11-10 también; el resto de capturas sigue en
         // el lote del 6 de octubre.
-        const lote = command.startsWith('/dobleexposicion-') ? '2026-10-23'
-            : CODIGOS_TANDA.has(command) ? LOTE_TANDA : '2026-10-06';
+        // Convención: cada entrada puede llevar su fecha como tercer elemento,
+        // ['/codigo', 'descripción', 'AAAA-MM-DD']. Es la forma de que una tanda
+        // nueva salga en «Últimas» y con su fecha real sin tocar nada más.
+        const lote = fechaTanda || (command.startsWith('/dobleexposicion-') ? '2026-10-23'
+            : CODIGOS_TANDA.has(command) ? LOTE_TANDA : '2026-10-06');
         const [loteY, loteM, loteD] = lote.split('-').map(Number);
-        const sello = CODIGOS_TANDA.has(command) ? SELLO_TANDA : Date.UTC(loteY, loteM - 1, loteD);
+        const sello = fechaTanda
+            ? Date.UTC(loteY, loteM - 1, loteD, 12)
+            : (CODIGOS_TANDA.has(command) ? SELLO_TANDA : Date.UTC(loteY, loteM - 1, loteD));
         return [{
             id,
             title: `${command} — ${meaning}`,
