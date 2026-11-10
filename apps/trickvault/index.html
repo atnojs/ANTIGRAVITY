@@ -884,6 +884,9 @@ const CODE_FOLDER = {
     '/funfacts': 'xl-texto', '/riddle': 'xl-texto', '/challenge': 'xl-texto',
     '/randomfact': 'xl-texto', '/justforfun': 'xl-texto',
     '/white': 'xl-planos', '/overheadcrowdflow': 'xl-planos', '/spiral': 'xl-efectosempaque',
+    '/daytonightDSLR': 'xl-casaviajes', '/rainstorm': 'xl-luzcamara',
+    '/summerVibesMood': 'xl-estilos', '/volumetricLighting': 'xl-luzcamara',
+    '/removeShadowsAndCleanBG': 'xl-fotoproducto',
 };;
 
 const DIFFICULTIES = [
@@ -2857,6 +2860,11 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/white': 'assets/planos/wideangle.jpg',
     '/overheadcrowdflow': 'assets/planos/aerialview.jpg',
     '/spiral': 'assets/xl-otromundo/product wormhole.jpg',
+    '/daytonightDSLR': 'assets/xl-casaviajes/daytonight.jpg',
+    '/rainstorm': 'assets/luz-camara-personas/rain.jpg',
+    '/summerVibesMood': 'assets/xl-juegos/summer.jpg?v=20261015-sujeto-unico',
+    '/volumetricLighting': 'assets/luz-camara-personas/volumetriclight.jpg',
+    '/removeShadowsAndCleanBG': 'assets/xl-estilos/transparent.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -3414,6 +3422,11 @@ const CAPTURE_COMMANDS = [
     ['/white', 'amplía el encuadre y rellena lo que quedaba fuera', '2026-11-10'],
     ['/overheadcrowdflow', 'multitud vista desde arriba, tú en medio', '2026-11-10'],
     ['/spiral', 'retuerce la escena en un remolino a su alrededor', '2026-11-10'],
+    ['/daytonightDSLR', 'día y noche en el mismo encuadre, con acabado de réflex', '2026-11-10'],
+    ['/rainstorm', 'tormenta de lluvia intensa sobre la escena', '2026-11-10'],
+    ['/summerVibesMood', 'ambiente de verano cálido, luminoso y relajado', '2026-11-10'],
+    ['/volumetricLighting', 'haces de luz volumétrica atravesando la niebla', '2026-11-10'],
+    ['/removeShadowsAndCleanBG', 'quita las sombras y deja el fondo limpio', '2026-11-10'],
 ];
 
 // Variantes personales recuperadas de la copia de seguridad de Antonio.
@@ -5750,6 +5763,11 @@ const PROMPT_TEMPLATES = {
     "/white": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Expanded frame of [OBJETO]: the composition is widened and the empty white canvas around the original photo is filled with a seamless continuation of the scene, matching perspective, lighting, colours and detail so the extension looks native, generous negative space around the subject, photorealistic, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/overheadcrowdflow": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Overhead crowd flow view of [OBJETO]: a dense crowd seen from directly above, the subject standing in the middle of the moving crowd, people flowing around in streams and currents, top-down bird's eye composition, dynamic urban energy, cinematic lighting, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
     "/spiral": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Spiral vortex distortion of [OBJETO]: the entire scene twisted into a swirling whirlpool that spirals around the subject, surroundings warped and bent into rotating rings, dramatic radial motion, surreal dreamlike energy, cinematic lighting, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/daytonightDSLR": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Real DSLR photograph of [OBJETO] with a seamless day-to-night transition in a single frame: same subject and composition, one side in warm afternoon sunlight and the other in cool blue night, sky shifting from clear daylight to deep blue with the first stars, windows and street lights glowing on, crisp full-frame sensor detail, natural contrast, fine film grain, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/rainstorm": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] under a violent rainstorm: dense sheets of rain, dark heavy storm clouds, water splashing on every surface, wet reflective ground, wind-blown spray and mist, dramatic grey light breaking behind the storm, deep moody atmosphere, cinematic photography, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/summerVibesMood": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] in a relaxed summer mood: warm golden sunlight, turquoise and coral palette, palm leaf shadows, soft sun flare, gentle heat haze, airy pastel film grade with light grain, effortless holiday atmosphere, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/volumetricLighting": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cinematic volumetric lighting on [OBJETO]: thick atmospheric fog sliced by visible light shafts, glowing god rays and defined beams crossing the scene, dark surroundings, strong chiaroscuro contrast, floating dust particles, deep atmospheric perspective, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
+    "/removeShadowsAndCleanBG": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean product photograph of [OBJETO] with every cast shadow removed and the background cleaned to a single uniform surface: no shadow under or behind the object, no clutter or props, even soft light from the front, seamless neutral backdrop, sharp well-defined object edges, e-commerce ready, 8k resolution, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
 };;
 
 // Prompts de los códigos de las infografías «Viral ChatGPT» y de las 30
