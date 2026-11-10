@@ -3036,3 +3036,11 @@ las cabeceras.
 - **Arranque verificado:** panel en `http://127.0.0.1:3082` y `estado.ps1` → **3**, `github / repositoryUnset` («The GitHub Source names no repository»), que es exactamente lo que toca sin cuenta ni repo configurados. Todas las partes de salud en `ready`.
 - **Pendiente:** crear la cuenta `24atnoia` (signup + 2FA + Write en el repo), `gh-agent.cmd auth login`, configurar Sources/Policy/Execution/Prompts en el panel, primer Issue de prueba y comprobar el intérprete real del `prepare`.
 - **Commit:** ver `git log -1 -- tools/memoria/bitacora.md`.
+
+## 2026-11-10 (tarde) — TrickVault: los cinco códigos del reel (daytonightDSLR, rainstorm, summerVibesMood, volumetricLighting, removeShadowsAndCleanBG)
+- **Encargo:** Antonio pasa cinco capturas de un reel con «códigos para ChatGPT» y pide añadir a `apps/trickvault` los que no tuviéramos.
+- **Comprobado antes:** ninguno de los cinco existía. `/daytonight`, `/rain`, `/storm`, `/summer` y `/volumetriclight` sí están, pero con otro código y otro prompt. Ojo: `rainstorm` «aparecía» en el fichero por ser substring de `/brainstorm`.
+- **Cambios (solo `apps/trickvault/index.html`, +18 líneas):** los cinco en `CODE_FOLDER` (Casa y viajes · Luz, cámara y personas · Estilos y acabado · Luz, cámara y personas · Foto de producto), en `SEED_COMMAND_IMAGES` con un ejemplo ya existente reutilizado, en `CAPTURE_COMMANDS` con la fecha `2026-11-10` por entrada (para que salgan en «Últimas» con su fecha) y en `PROMPT_TEMPLATES` con el preámbulo de siempre, `[OBJETO]` y la coletilla de español.
+- **Verificación:** `@babel/parser` sobre el bloque inline del repo → 0 errores; Chrome headless cuenta **1355 tarjetas antes y 1360 después**; en producción cada búsqueda devuelve **1 resultado** con su tarjeta y su carpeta (capturas en `tools/evidencias/2026-11-10-trickvault-codigos-reel/`); verificador independiente **PASS 10,0/10**.
+- **Pendiente:** el ejemplo de cada tarjeta es una imagen ya existente reutilizada; generar el suyo (`assets/<carpeta>/<codigo>.jpg` con `openai-image-2-low`) toca en el lote de imágenes de `trickvault-imagenes`.
+- **Commit:** 9978d0fd.
