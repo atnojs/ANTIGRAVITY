@@ -3870,6 +3870,14 @@ const TURN_CODES = [
     ['/aging', 'sujeto envejecido por décadas', 'Show [OBJETO] ageing over decades, four-stage progression from young to old, consistent subject.'],
 ];
 
+// Tanda del 2026-11-10: /white, /overheadcrowdflow y /spiral se añadieron al
+// final de CAPTURE_COMMANDS y, sin esto, heredarían el lote del 6 de octubre
+// (no saldrían en «Últimas» y su fecha sería la vieja).
+const CODIGOS_TANDA = new Set(['/white', '/overheadcrowdflow', '/spiral']);
+const LOTE_TANDA = '2026-11-10';
+// Mediodía UTC: el sello se pinta con la fecha LOCAL y debe seguir siendo el 10.
+const SELLO_TANDA = Date.UTC(2026, 10, 10, 12);
+
 const SEED_TRICKS = [
     ...RESTORED_VARIANTS,
     { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'xl-dev', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
@@ -3936,10 +3944,12 @@ const SEED_TRICKS = [
         if (REMOVED_IMAGE_IDS.has(id)) return [];
         // El carrusel de doble exposición (90 códigos) entró el 2026-10-23. Lleva
         // su propia fecha de lote para que «Últimas» lo trate como el push más
-        // reciente; el resto de capturas sigue en el lote del 6 de octubre.
-        const lote = command.startsWith('/dobleexposicion-') ? '2026-10-23' : '2026-10-06';
+        // reciente; la tanda del 2026-11-10 también; el resto de capturas sigue en
+        // el lote del 6 de octubre.
+        const lote = command.startsWith('/dobleexposicion-') ? '2026-10-23'
+            : CODIGOS_TANDA.has(command) ? LOTE_TANDA : '2026-10-06';
         const [loteY, loteM, loteD] = lote.split('-').map(Number);
-        const sello = Date.UTC(loteY, loteM - 1, loteD);
+        const sello = CODIGOS_TANDA.has(command) ? SELLO_TANDA : Date.UTC(loteY, loteM - 1, loteD);
         return [{
             id,
             title: `${command} — ${meaning}`,
@@ -6591,6 +6601,33 @@ function migrateDobleLote(list) {
     return siguiente;
 }
 
+// Migración (2026-11-10): /white, /overheadcrowdflow y /spiral se publicaron con
+// el lote heredado del 6 de octubre, así que no aparecían en «Últimas» y su fecha
+// salía como 6 oct. Se les pone su fecha real una sola vez, también en los
+// navegadores que ya las tuvieran guardadas. Solo toca tarjetas sin editar.
+const TANDA_20261110_KEY = 'trickvault_tanda_20261110';
+function migrateTanda20261110(list) {
+    try {
+        if (localStorage.getItem(TANDA_20261110_KEY) === LOTE_TANDA) return list;
+    } catch { /* sin almacenamiento: se migra igualmente en memoria */ }
+    const selloViejo = Date.UTC(2026, 9, 6);
+    const sello = SELLO_TANDA;
+    let tocadas = 0;
+    const siguiente = (list || []).map(trick => {
+        if (!trick) return trick;
+        const code = String(trick.codeSnippet || '').trim();
+        if (!CODIGOS_TANDA.has(code)) return trick;
+        // Si el usuario ya la editó (updatedAt distinto del sello viejo), no se toca.
+        if (Number(trick.updatedAt || 0) > selloViejo + 60000) return trick;
+        if (String(trick.lote || '') === LOTE_TANDA) return trick;
+        tocadas += 1;
+        return { ...trick, lote: LOTE_TANDA, createdAt: sello, updatedAt: sello };
+    });
+    try { localStorage.setItem(TANDA_20261110_KEY, LOTE_TANDA); } catch { /* ignorar */ }
+    if (tocadas > 0) console.info('[TrickVault] tanda 2026-11-10: ' + tocadas + ' tarjetas movidas al lote ' + LOTE_TANDA);
+    return siguiente;
+}
+
 // Migración (2026-10-24, Antonio): «Doble exposición» se vacía (las 90 tarjetas
 // del carrusel se apagan en REMOVED_IMAGE_IDS) y pasa a contener las tarjetas
 // que Antonio tenía en «Propias». Se hace una sola vez por navegador: primero
@@ -6649,7 +6686,7 @@ function useLocalStorage(key, initial) {
                 localStorage.setItem(key, JSON.stringify(migrated));
             }
             const merged = mergeSeedCards(migrated, initial);
-            return normalizeTrickOrder(cleanLegacyImageCommandDescriptions(migrateGeneratedCardImages(migrateDobleReorganizada(migrateDobleLote(dedupeCardsByCommand(merged))))));
+            return normalizeTrickOrder(cleanLegacyImageCommandDescriptions(migrateGeneratedCardImages(migrateTanda20261110(migrateDobleReorganizada(migrateDobleLote(dedupeCardsByCommand(merged)))))));
         } catch { return initial; }
     });
 
