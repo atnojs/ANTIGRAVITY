@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '../icons.jsx';
 import { Button, Empty } from '../ui.jsx';
 import { useSettings } from '../state.jsx';
-import { convertImage, downloadBlob, humanSize } from '../convert.js';
+import { convertImage, downloadBlob, humanSize, makePreview } from '../convert.js';
 
 const FORMATS = ['JPG', 'PNG', 'WEBP', 'PDF', 'ICO'];
 const TYPE_LABEL = { svg: 'SVG', pdf: 'PDF', png: 'PNG', jpg: 'JPG', webp: 'WEBP', ico: 'ICO', error: 'ERR' };
@@ -74,17 +74,16 @@ export default function Home() {
         name: f.name,
         size: f.size,
         dims: null,
-        preview: URL.createObjectURL(f),
+        preview: null,
       })),
     ]);
-    // Las dimensiones se leen aparte para no retrasar la vista previa.
+    // La miniatura y las dimensiones se generan aparte, sin bloquear la lista.
     images.forEach(async (f) => {
       try {
-        const bmp = await createImageBitmap(f);
-        const dims = `${bmp.width}×${bmp.height}`;
-        setPending((list) => list.map((it) => (it.file === f ? { ...it, dims } : it)));
+        const { dataUrl, width, height } = await makePreview(f);
+        setPending((list) => list.map((it) => (it.file === f ? { ...it, preview: dataUrl, dims: `${width}×${height}` } : it)));
       } catch {
-        /* sin dimensiones */
+        /* sin vista previa */
       }
     });
     if (images.length < files.length) {
@@ -108,7 +107,6 @@ export default function Home() {
         toast(String(err.message || err));
       }
     }
-    pending.forEach((p) => URL.revokeObjectURL(p.preview));
     setPending([]);
     setConverting(null);
 
@@ -191,8 +189,7 @@ export default function Home() {
                   type="button"
                   className="link-btn"
                   onClick={() => {
-                    pending.forEach((p) => URL.revokeObjectURL(p.preview));
-                    setPending([]);
+                                    setPending([]);
                   }}
                 >
                   Vaciar
@@ -216,7 +213,6 @@ export default function Home() {
                       className="icon-btn"
                       aria-label={`Quitar ${p.name}`}
                       onClick={() => {
-                        URL.revokeObjectURL(p.preview);
                         setPending((list) => list.filter((x) => x.id !== p.id));
                       }}
                     >
