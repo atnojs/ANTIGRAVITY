@@ -1,0 +1,20 @@
+{
+  "name": "filee-clone",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Réplica en React de la landing de filee.sh (proyecto MIT de Myeonggu Kim). Demostración no oficial.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4188 --strictPort"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.11"
+  }
+}
