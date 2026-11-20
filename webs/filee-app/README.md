@@ -18,7 +18,7 @@ son los que muestra la app en español.
 
 | Sección | Qué incluye |
 |---|---|
-| **Inicio** | Zona de suelta, «Conversiones recientes» con búsqueda, y acciones Abrir archivo / Abrir con / Abrir carpeta / Deshacer. |
+| **Inicio** | Zona de suelta compacta, **menú circular integrado** y lista de «Preparados» con miniatura ampliable. La imagen no se toca hasta que eliges formato. Después, «Conversiones recientes» con búsqueda y acciones Abrir archivo / Abrir con / Abrir carpeta / Deshacer. |
 | **General** | Idioma, inicio de sesión, al cerrar la ventana, menú contextual, carpeta de guardado, fechas originales, arrastre desde el navegador, proxy, historial, exportar/importar y carpeta de ajustes. |
 | **Atajos** | Gestos (Ctrl + Left, Ctrl + Alt + Space, Ctrl + Alt + Left), tecla de giro y apps excluidas. |
 | **Menú circular** | Perfiles, formatos del menú con interruptores, opacidad y vista previa del anillo en vivo. |
@@ -31,8 +31,13 @@ son los que muestra la app en español.
 
 ## Qué funciona de verdad
 
-- **Conversión de imágenes**: lo que sueltas en Inicio se convierte a PNG en el
-  navegador con `canvas`, y «Abrir archivo» descarga el resultado.
+- **Flujo de conversión en dos pasos**, como la app: sueltas una imagen y se queda
+  en «Preparados» con su miniatura (clic para verla en grande), su peso y sus
+  dimensiones. **No se convierte nada** hasta que pulsas un formato del menú
+  circular; entonces se genera el archivo y se añade al historial.
+- **Formatos que produce de verdad**: JPG, PNG y WEBP con `canvas`; ICO
+  (contenedor con PNG dentro); y PDF de una página con la imagen incrustada en
+  JPEG. Todo en el navegador, sin subir nada.
 - **Ajustes persistentes**: interruptores, idioma, acento, redondeo, opacidad,
   escala, tema y carpetas supervisadas se guardan en `localStorage`.
 - **Tema en vivo**: el acento cambia toda la interfaz, el aspecto pasa a claro y el
