@@ -14,7 +14,10 @@ export default function Footer() {
           </a>
           <p>Arrastra. Suelta. Convertido.</p>
           <a className="footer-badge" href="https://alternativeto.net/software/filee-1/about/" target="_blank" rel="noopener noreferrer">
-            <img src="media/badges/alternativeto-light.svg" alt="Filee en AlternativeTo" height="44" loading="lazy" decoding="async" />
+            <picture>
+              <source srcSet="media/badges/alternativeto-dark.svg" media="(prefers-color-scheme: dark)" />
+              <img src="media/badges/alternativeto-light.svg" alt="Filee en AlternativeTo" height="44" loading="lazy" decoding="async" />
+            </picture>
           </a>
         </div>
 
