@@ -92,7 +92,22 @@ desviación 0 px.
 
 ## Verificación
 
-28 comprobaciones automáticas en Chrome (estructura, demo con ratón y teclado,
+30 comprobaciones automáticas en Chrome (estructura, demo con ratón y teclado,
 selector de descarga, clips, preguntas, idiomas, scroll, tres anchos sin
-desbordamiento, consola y red): **28/28 OK**, consola limpia y sin peticiones
-fallidas.
+desbordamiento, enlaces internos, autoplay del vídeo, consola y red): **30/30 OK**,
+consola limpia y sin peticiones fallidas.
+
+Además se pasó una **verificación independiente** (agente distinto, con su propio
+banco de pruebas) que detectó y se corrigieron estos fallos:
+
+| Defecto | Estado |
+|---|---|
+| 18 tarjetas de categoría enlazaban a anclas `#cat-…` inexistentes | corregido: enlazan al catálogo real (`filee.sh/es/formats/#…`) |
+| El vídeo «Míralo en 27 segundos» no arrancaba solo | corregido: se reproduce al entrar en pantalla |
+| El atajo del primer gesto se leía «Ctrl Mantén y arrastra» | corregido: «Mantén <kbd>Ctrl</kbd> y arrastra» |
+| Faltaba «Política de firma de código» en el pie | añadido |
+| Los clips no usaban la variante oscura (`expand-dark`) | corregido: se elige según `prefers-color-scheme` |
+
+Pendiente y consciente: el contador de estrellas es estático (la API de GitHub
+devuelve 403 desde el entorno de verificación) y solo se ha probado en Chrome
+headless en tema oscuro.
