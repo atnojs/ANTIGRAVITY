@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '../icons.jsx';
-import { Button, Empty } from '../ui.jsx';
+import { Button, Empty, Select } from '../ui.jsx';
 import { useSettings } from '../state.jsx';
+import { CONVERTIBLE, PROFILES } from '../profiles.js';
 import { convertImage, downloadBlob, humanSize, makePreview } from '../convert.js';
 
-const FORMATS = ['JPG', 'PNG', 'WEBP', 'PDF', 'ICO'];
-const TYPE_LABEL = { svg: 'SVG', pdf: 'PDF', png: 'PNG', jpg: 'JPG', webp: 'WEBP', ico: 'ICO', error: 'ERR' };
+const TYPE_LABEL = { svg: 'SVG', pdf: 'PDF', png: 'PNG', jpg: 'JPG', webp: 'WEBP', avif: 'AVIF', ico: 'ICO', error: 'ERR' };
 
 const point = (r, deg) => [r * Math.sin((deg * Math.PI) / 180), -r * Math.cos((deg * Math.PI) / 180)];
 
@@ -28,10 +28,29 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [dragging, setDragging] = useState(false);
   const [hover, setHover] = useState(null);
-  const [converting, setConverting] = useState(null); // formato en curso
-  const [preview, setPreview] = useState(null); // imagen ampliada
+  const [profileId, setProfileId] = useState('default');
+  const [converting, setConverting] = useState(null);
+  const [preview, setPreview] = useState(null);
   const input = useRef(null);
   const blobs = useRef(new Map());
+
+  const profile = PROFILES.find((p) => p.id === profileId) || PROFILES[0];
+  const formats = profile.formats;
+
+  const segments = useMemo(() => {
+    const step = 360 / Math.max(formats.length, 1);
+    return formats.map((name, i) => {
+      const a0 = i * step + 1.2;
+      const a1 = (i + 1) * step - 1.2;
+      return { name, d: segmentPath(a0, a1, 104, 56), mid: (a0 + a1) / 2 };
+    });
+  }, [formats]);
+
+  const items = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return settings.history;
+    return settings.history.filter((h) => `${h.title} ${h.file} ${h.type}`.toLowerCase().includes(q));
+  }, [settings.history, query]);
 
   useEffect(() => {
     if (!preview) return;
@@ -42,22 +61,7 @@ export default function Home() {
     return () => window.removeEventListener('keydown', onKey);
   }, [preview]);
 
-  const segments = useMemo(() => {
-    const step = 360 / FORMATS.length;
-    return FORMATS.map((name, i) => {
-      const a0 = i * step + 1.4;
-      const a1 = (i + 1) * step - 1.4;
-      return { name, d: segmentPath(a0, a1, 104, 58), mid: (a0 + a1) / 2 };
-    });
-  }, []);
-
-  const items = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return settings.history;
-    return settings.history.filter((h) => `${h.title} ${h.file} ${h.type}`.toLowerCase().includes(q));
-  }, [settings.history, query]);
-
-  /* ── Añadir archivos: solo se preparan, no se convierten ───────── */
+  /* ── Preparar: no se convierte nada todavía ───────────────────── */
   const addFiles = (fileList) => {
     const files = Array.from(fileList || []);
     if (!files.length) return;
@@ -77,7 +81,6 @@ export default function Home() {
         preview: null,
       })),
     ]);
-    // La miniatura y las dimensiones se generan aparte, sin bloquear la lista.
     images.forEach(async (f) => {
       try {
         const { dataUrl, width, height } = await makePreview(f);
@@ -91,16 +94,19 @@ export default function Home() {
     }
   };
 
-  /* ── Convertir cuando el usuario elige un formato ─────────────── */
+  /* ── Convertir al elegir formato en el menú ───────────────────── */
   const convertAll = async (format) => {
     if (!pending.length || converting) return;
+    if (!CONVERTIBLE.has(format)) {
+      toast(`${format} lo convierte la app de escritorio; en el navegador no está disponible.`);
+      return;
+    }
     setConverting(format);
     const results = [];
     for (const item of pending) {
       try {
         const { blob, ext } = await convertImage(item.file, format);
         const name = `${item.name.replace(/\.[^.]+$/, '')}.${ext}`;
-        // Se guarda el Blob, no su URL: así la descarga no depende de fetch(blob:).
         blobs.current.set(name, blob);
         results.push({ name, type: ext, size: blob.size });
       } catch (err) {
@@ -109,7 +115,6 @@ export default function Home() {
     }
     setPending([]);
     setConverting(null);
-
     if (!results.length) return;
 
     results.forEach((r) =>
@@ -124,9 +129,7 @@ export default function Home() {
       }),
     );
 
-    if (results.length === 1) {
-      downloadBlob(blobs.current.get(results[0].name), results[0].name);
-    }
+    if (results.length === 1) downloadBlob(blobs.current.get(results[0].name), results[0].name);
     toast(results.length === 1 ? `Listo: ${results[0].name}` : `${results.length} archivos convertidos a ${format}`);
   };
 
@@ -143,8 +146,9 @@ export default function Home() {
     <>
       <h1 className="page-title">Inicio</h1>
 
-      <div className="workspace">
-        <div className="workspace-main">
+      <div className="home-grid">
+        {/* ── Zona izquierda: subida + miniatura ─────────────────── */}
+        <section className="home-col home-col-upload" aria-label="Archivo">
           <div
             className={`dropzone${dragging ? ' is-over' : ''}`}
             onDragOver={(e) => {
@@ -181,56 +185,61 @@ export default function Home() {
             />
           </div>
 
-          {pending.length > 0 ? (
-            <div className="pending">
-              <div className="section-row">
-                <h2 className="section-title">Preparados ({pending.length})</h2>
-                <button
-                  type="button"
-                  className="link-btn"
-                  onClick={() => {
-                                    setPending([]);
-                  }}
-                >
-                  Vaciar
-                </button>
-              </div>
-              <ul className="pending-list">
-                {pending.map((p) => (
-                  <li key={p.id} className="pending-item">
-                    <button type="button" className="pending-thumb-btn" onClick={() => setPreview(p)} aria-label={`Ver ${p.name} en grande`}>
-                      <img src={p.preview} alt="" className="pending-thumb" />
-                    </button>
+          {pending.length === 0 ? (
+            <p className="pending-empty">La imagen que sueltes aparecerá aquí y no se tocará hasta que elijas un formato.</p>
+          ) : (
+            <ul className="pending-list">
+              {pending.map((p) => (
+                <li key={p.id} className="pending-card">
+                  <button type="button" className="pending-figure" onClick={() => setPreview(p)} aria-label={`Ver ${p.name} en grande`}>
+                    {p.preview ? <img src={p.preview} alt={p.name} /> : <span className="pending-loading">Preparando vista previa…</span>}
+                  </button>
+                  <div className="pending-bar">
                     <div className="pending-meta">
-                      <span className="pending-name">{p.name}</span>
+                      <span className="pending-name" title={p.name}>
+                        {p.name}
+                      </span>
                       <span className="pending-sub">
                         {humanSize(p.size)}
                         {p.dims ? ` · ${p.dims}` : ''}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      className="icon-btn"
-                      aria-label={`Quitar ${p.name}`}
-                      onClick={() => {
-                        setPending((list) => list.filter((x) => x.id !== p.id));
-                      }}
-                    >
+                    <button type="button" className="icon-btn" aria-label={`Quitar ${p.name}`} onClick={() => setPending((list) => list.filter((x) => x.id !== p.id))}>
                       <Icon name="close" />
                     </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <p className="pending-empty">Suelta una imagen: aparecerá aquí y no se tocará hasta que elijas un formato.</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
-        </div>
 
-        <div className={`menu-panel${pending.length ? ' is-active' : ''}`}>
-          <h2 className="section-title">Menú circular</h2>
+          {pending.length > 1 ? (
+            <button type="button" className="link-btn pending-clear" onClick={() => setPending([])}>
+              Vaciar la lista
+            </button>
+          ) : null}
+        </section>
+
+        {/* ── Zona central: perfil activo ────────────────────────── */}
+        <section className="home-col home-col-profile" aria-label="Perfil activo">
+          <h2 className="home-col-title">Perfil</h2>
+          <label className="field-label" htmlFor="home-profile">
+            Perfil activo
+          </label>
+          <Select id="home-profile" value={profileId} onChange={setProfileId} options={PROFILES.map((p) => ({ value: p.id, label: p.label }))} width="100%" />
+          <p className="home-col-note">
+            {profile.formats.length} formatos en este perfil. El menú circular de la derecha los muestra; pulsa uno para convertir.
+          </p>
+          <p className="home-col-note muted">
+            {pending.length ? `${pending.length} archivo(s) listos.` : 'Sin archivos preparados.'}
+          </p>
+        </section>
+
+        {/* ── Zona derecha: menú circular ────────────────────────── */}
+        <section className={`home-col home-col-menu${pending.length ? ' is-active' : ''}`} aria-label="Menú circular">
+          <h2 className="home-col-title">Menú circular</h2>
           <div className="menu-stage">
-            <svg viewBox="-120 -120 240 240" className="menu-svg" role="group" aria-label="Elegir formato de destino">
+            <svg viewBox="-120 -120 240 240" className="menu-svg" role="group" aria-label={`Formatos de ${profile.label}`}>
               <circle className="menu-back" r="112" />
               {segments.map((s, i) => (
                 <g
@@ -251,15 +260,15 @@ export default function Home() {
                   }}
                 >
                   <path d={s.d} />
-                  <text transform={`translate(${point(81, s.mid)[0].toFixed(1)} ${point(81, s.mid)[1].toFixed(1)})`}>{s.name}</text>
+                  <text transform={`translate(${point(80, s.mid)[0].toFixed(1)} ${point(80, s.mid)[1].toFixed(1)})`}>{s.name}</text>
                 </g>
               ))}
-              <circle className="menu-hub" r="54" />
-              <text className="menu-hub-title" x="0" y="-2">
-                {converting ? 'Convirtiendo' : pending.length ? (pending.length === 1 ? '1 listo' : `${pending.length} listos`) : 'Sin archivos'}
+              <circle className="menu-hub" r="52" />
+              <text className="menu-hub-title" x="0" y="-4">
+                {converting ? 'Convirtiendo' : profile.label}
               </text>
               <text className="menu-hub-hint" x="0" y="12">
-                {converting ? converting : pending.length ? 'elige un formato' : 'suelta una imagen'}
+                {converting ? converting : `${profile.formats.length} formatos`}
               </text>
             </svg>
           </div>
@@ -267,10 +276,10 @@ export default function Home() {
             {converting
               ? 'Generando el archivo…'
               : pending.length
-                ? 'Pulsa un formato para convertir. Hasta entonces no se toca la imagen.'
-                : 'Cuando prepares una imagen, este menú se activa.'}
+                ? 'Pasa el ratón por una porción para resaltarla y pulsa para convertir.'
+                : 'Cuando prepares una imagen, el menú se activa.'}
           </p>
-        </div>
+        </section>
       </div>
 
       <div className="section-row">

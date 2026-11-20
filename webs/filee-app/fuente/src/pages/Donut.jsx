@@ -1,17 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Button, Card, Field, Segmented, Select, Slider, Switch } from '../ui.jsx';
 import { useSettings } from '../state.jsx';
+import { PROFILES } from '../profiles.js';
 
 function toast(text) {
   window.dispatchEvent(new CustomEvent('filee-toast', { detail: text }));
 }
-
-const PROFILES = [
-  { id: 'default', label: 'Predeterminado', formats: ['JPG', 'PNG', 'WEBP', 'PDF', 'AVIF', 'ICO'] },
-  { id: 'image', label: 'Imágenes', formats: ['JPG', 'PNG', 'WEBP', 'AVIF', 'HEIC', 'TIFF', 'PDF', 'ICO'] },
-  { id: 'doc', label: 'Documentos', formats: ['PDF', 'DOCX', 'TXT', 'MD', 'HTML', 'EPUB'] },
-  { id: 'video', label: 'Vídeo', formats: ['MP4', 'WEBM', 'MKV', 'GIF', 'MP3'] },
-];
 
 const point = (r, deg) => [r * Math.sin((deg * Math.PI) / 180), -r * Math.cos((deg * Math.PI) / 180)];
 

@@ -1,6 +1,6 @@
 // Conversiones reales en el navegador: imagen → JPG/PNG/WEBP, ICO y PDF.
 
-const MIME = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp' };
+const MIME = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp', avif: 'image/avif' };
 
 /** Dibuja el archivo en un canvas (con fondo blanco opcional). */
 export async function toCanvas(file, background) {
