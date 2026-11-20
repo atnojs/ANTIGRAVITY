@@ -31,7 +31,7 @@ export default function Home() {
   const [converting, setConverting] = useState(null); // formato en curso
   const [preview, setPreview] = useState(null); // imagen ampliada
   const input = useRef(null);
-  const urls = useRef(new Map());
+  const blobs = useRef(new Map());
 
   useEffect(() => {
     if (!preview) return;
@@ -101,7 +101,8 @@ export default function Home() {
       try {
         const { blob, ext } = await convertImage(item.file, format);
         const name = `${item.name.replace(/\.[^.]+$/, '')}.${ext}`;
-        urls.current.set(name, URL.createObjectURL(blob));
+        // Se guarda el Blob, no su URL: así la descarga no depende de fetch(blob:).
+        blobs.current.set(name, blob);
         results.push({ name, type: ext, size: blob.size });
       } catch (err) {
         toast(String(err.message || err));
@@ -126,19 +127,18 @@ export default function Home() {
     );
 
     if (results.length === 1) {
-      const blob = await (await fetch(urls.current.get(results[0].name))).blob();
-      downloadBlob(blob, results[0].name);
+      downloadBlob(blobs.current.get(results[0].name), results[0].name);
     }
     toast(results.length === 1 ? `Listo: ${results[0].name}` : `${results.length} archivos convertidos a ${format}`);
   };
 
-  const openFile = async (item) => {
-    const url = urls.current.get(item.file);
-    if (!url) {
+  const openFile = (item) => {
+    const blob = blobs.current.get(item.file);
+    if (!blob) {
       toast('Entrada de ejemplo: prepara una imagen y elige un formato para convertirla de verdad.');
       return;
     }
-    downloadBlob(await (await fetch(url)).blob(), item.file);
+    downloadBlob(blob, item.file);
   };
 
   return (
