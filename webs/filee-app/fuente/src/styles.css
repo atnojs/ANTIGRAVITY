@@ -1927,8 +1927,8 @@ code {
 .pending-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 9px 10px;
+  gap: 16px;
+  padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--border-soft);
   background: var(--panel);
@@ -2131,8 +2131,8 @@ code {
 }
 
 .pending-thumb {
-  width: 96px;
-  height: 96px;
+  width: 132px;
+  height: 132px;
   display: block;
   object-fit: cover;
   border-radius: 8px;
