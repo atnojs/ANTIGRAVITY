@@ -22,17 +22,28 @@ export default function Footer() {
           <h2>Producto</h2>
           <ul>
             <li>
-              <a href="#formats">Todos los formatos</a>
+              <a href={`${SITE}/es/formats/`} rel="noopener">
+                Todos los formatos
+              </a>
             </li>
             <li>
-              <a href="#automation">Línea de comandos</a>
+              <a href={`${SITE}/es/cli/`} rel="noopener">
+                Línea de comandos
+              </a>
             </li>
             <li>
-              <a href="#gallery">Galería de ajustes preestablecidos</a>
+              <a href={`${SITE}/es/presets/`} rel="noopener">
+                Galería de ajustes preestablecidos
+              </a>
             </li>
             <li>
               <a href={`${GITHUB}/releases`} target="_blank" rel="noopener noreferrer">
                 Todas las versiones
+              </a>
+            </li>
+            <li>
+              <a href={`${GITHUB}#code-signing-policy`} target="_blank" rel="noopener noreferrer">
+                Política de firma de código
               </a>
             </li>
           </ul>
@@ -72,9 +83,11 @@ export default function Footer() {
         <nav className="footer-col footer-popular" aria-label="Conversiones populares">
           <h2>Conversiones populares</h2>
           <ul>
-            {popular.map(([label]) => (
+            {popular.map(([label, slug]) => (
               <li key={label}>
-                <a href="#formats">{label}</a>
+                <a href={`${SITE}/es/convert/${slug}/`} rel="noopener">
+                  {label}
+                </a>
               </li>
             ))}
           </ul>

@@ -8,6 +8,7 @@ export default function Clip({
   poster,
   posterDark,
   video,
+  videoDark,
   wide = false,
   autoPlayInView = false,
   playLabel = 'Reproducir clip',
@@ -35,8 +36,9 @@ export default function Clip({
           /* el navegador puede bloquear la reproducción sin interacción */
         });
     if (!v.getAttribute('src')) {
+      const dark = typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches;
       v.addEventListener('canplay', start, { once: true });
-      v.setAttribute('src', video);
+      v.setAttribute('src', dark && videoDark ? videoDark : video);
       v.load();
     } else {
       start();

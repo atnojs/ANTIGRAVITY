@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Clip from './Clip.jsx';
 import Logo from './Logo.jsx';
 import Icon from '../icons.jsx';
+import { useInView } from '../hooks.js';
 import {
   AUTO_CHECKS,
   CATEGORIES,
@@ -18,6 +19,7 @@ import {
   SCREENS,
   SHOWCASE,
   SPECS,
+  SITE,
   STEPS,
   VERSION,
 } from '../data.js';
@@ -35,11 +37,34 @@ function Head({ eyebrow, title, children }) {
 
 /* ── Vídeo de presentación ───────────────────────────────────────── */
 export function VideoSection() {
+  const box = useRef(null);
+  const vid = useRef(null);
+  const inView = useInView(box, { threshold: 0.4 });
+
+  // Se reproduce solo al entrar en pantalla, como en la web original.
+  useEffect(() => {
+    const v = vid.current;
+    if (!v || !inView) return;
+    v.play().catch(() => {
+      /* si el navegador lo bloquea queda el control de reproducción */
+    });
+  }, [inView]);
+
   return (
     <section className="section video-section" id="video">
       <Head title="Míralo en 27 segundos">El mismo gesto convierte imágenes sueltas, lotes de documentos y archivos HWP sin Hancom Office.</Head>
-      <div className="video-frame" data-reveal="">
-        <video className="promo" src="media/promo-en.mp4" poster="media/poster-en.jpg" muted playsInline loop controls preload="none" />
+      <div className="video-frame" data-reveal="" ref={box}>
+        <video
+          className="promo"
+          ref={vid}
+          src="media/promo-en.mp4"
+          poster="media/poster-en.jpg"
+          muted
+          playsInline
+          loop
+          controls
+          preload="metadata"
+        />
       </div>
     </section>
   );
@@ -84,11 +109,18 @@ export function Showcase() {
                 <h3>{f.title}</h3>
                 <p>{f.text}</p>
                 <p className="feature-hint">
-                  {f.key ? <kbd>{f.key}</kbd> : null} {f.hint}
+                  {f.hintBefore ? `${f.hintBefore} ` : null}
+                  {f.key ? <kbd>{f.key}</kbd> : null} {f.hintAfter}
                 </p>
               </div>
               <div className="feature-media">
-                <Clip poster={`media/${f.poster}`} posterDark={f.posterDark ? `media/${f.posterDark}` : undefined} video={`media/${f.video}`} autoPlayInView />
+                <Clip
+                  poster={`media/${f.poster}`}
+                  posterDark={f.posterDark ? `media/${f.posterDark}` : undefined}
+                  video={`media/${f.video}`}
+                  videoDark={f.videoDark ? `media/${f.videoDark}` : undefined}
+                  autoPlayInView
+                />
               </div>
             </li>
           ))}
@@ -174,7 +206,7 @@ export function Formats() {
       <ul className="cat-grid">
         {CATEGORIES.map((c, i) => (
           <li key={c.slug} data-reveal="" style={{ '--i': i }}>
-            <a className="cat-card" href={`#cat-${c.slug}`} style={{ '--cat': c.color }}>
+            <a className="cat-card" href={`${SITE}/es/formats/#${c.slug}`} style={{ '--cat': c.color }} rel="noopener">
               <Icon name={c.icon} className="cat-icon" />
               <span className="cat-name">{c.name}</span>
               <span className="cat-count">{c.count}</span>
@@ -194,16 +226,16 @@ export function Formats() {
       <div className="popular" data-reveal="">
         <h3>Conversiones populares</h3>
         <ul className="pills">
-          {POPULAR.map(([label]) => (
+          {POPULAR.map(([label, slug]) => (
             <li key={label}>
-              <a className="pill" href="#formats">
+              <a className="pill" href={`${SITE}/es/convert/${slug}/`} rel="noopener">
                 {label}
               </a>
             </li>
           ))}
         </ul>
         <p className="more-link">
-          <a href="#formats">
+          <a href={`${SITE}/es/formats/`} rel="noopener">
             Ver los 255 formatos en el catálogo <Icon name="arrow" />
           </a>
         </p>
@@ -230,9 +262,9 @@ export function Hwp() {
         </ul>
         <p className="guides-label">Guías de HWP</p>
         <ul className="pills">
-          {HWP_GUIDES.map(([label]) => (
+          {HWP_GUIDES.map(([label, slug]) => (
             <li key={label}>
-              <a className="pill" href="#hwp">
+              <a className="pill" href={`${SITE}/es/convert/${slug}/`} rel="noopener">
                 {label}
               </a>
             </li>
@@ -288,7 +320,7 @@ export function Automation() {
           ))}
         </ul>
         <p className="more-link">
-          <a href="#automation">
+          <a href={`${SITE}/es/cli/`} rel="noopener">
             Leer la guía de la línea de comandos <Icon name="arrow" />
           </a>
         </p>
@@ -363,9 +395,9 @@ export function Faq() {
               ))}
               {item.pills ? (
                 <ul className="pills">
-                  {item.pills.map(([label]) => (
+                  {item.pills.map(([label, slug]) => (
                     <li key={label}>
-                      <a className="pill" href="#formats">
+                      <a className="pill" href={`${SITE}/es/convert/${slug}/`} rel="noopener">
                         {label}
                       </a>
                     </li>
@@ -374,7 +406,7 @@ export function Faq() {
               ) : null}
               {item.link ? (
                 <p className="more-link">
-                  <a href={item.link.href}>
+                  <a href={item.link.href} rel="noopener">
                     {item.link.label} <Icon name="arrow" />
                   </a>
                 </p>
