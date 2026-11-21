@@ -1,15 +1,20 @@
 {
   "name": "filee-app",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "Réplica web de la interfaz de Filee 2.5 (app de escritorio, MIT de Myeonggu Kim) con la estética de la casa.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview --port 4192 --strictPort"
+    "preview": "vite preview --port 4192 --strictPort",
+    "build:test": "vite build --config vite.config.test.js"
   },
   "dependencies": {
+    "docx-preview": "^0.3.7",
+    "fflate": "^0.8.3",
+    "html2canvas": "^1.4.1",
+    "pdfjs-dist": "^4.10.38",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

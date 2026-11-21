@@ -1,4 +1,4 @@
-// Conversiones reales en el navegador: imagen → JPG/PNG/WEBP, ICO y PDF.
+﻿// Conversiones reales en el navegador: imagen → JPG/PNG/WEBP, ICO y PDF.
 
 const MIME = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp', avif: 'image/avif' };
 
@@ -17,12 +17,12 @@ export async function toCanvas(file, background) {
   return canvas;
 }
 
-function canvasBlob(canvas, mime, quality) {
+export function canvasBlobOf(canvas, mime, quality) {
   return new Promise((res) => canvas.toBlob(res, mime, quality));
 }
 
 /** ICO con una imagen PNG dentro (formato válido, hasta 256 px). */
-async function toIco(canvas) {
+export async function icoFromCanvas(canvas) {
   const side = Math.min(256, Math.max(canvas.width, canvas.height));
   const square = document.createElement('canvas');
   square.width = side;
@@ -30,7 +30,7 @@ async function toIco(canvas) {
   const ctx = square.getContext('2d');
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(canvas, 0, 0, side, side);
-  const png = new Uint8Array(await (await canvasBlob(square, 'image/png')).arrayBuffer());
+  const png = new Uint8Array(await (await canvasBlobOf(square, 'image/png')).arrayBuffer());
 
   const header = new Uint8Array(22);
   const view = new DataView(header.buffer);
@@ -54,7 +54,7 @@ async function toIco(canvas) {
 
 /** PDF de una página con la imagen en JPEG (sin dependencias). */
 async function toPdf(canvas) {
-  const jpeg = new Uint8Array(await (await canvasBlob(canvas, 'image/jpeg', 0.9)).arrayBuffer());
+  const jpeg = new Uint8Array(await (await canvasBlobOf(canvas, 'image/jpeg', 0.9)).arrayBuffer());
   const w = canvas.width;
   const h = canvas.height;
   const enc = new TextEncoder();
@@ -108,12 +108,12 @@ export async function convertImage(file, format) {
   // El JPG no tiene transparencia: se aplana sobre blanco.
   const canvas = await toCanvas(file, fmt === 'jpg' ? '#ffffff' : null);
 
-  if (fmt === 'ico') return { blob: await toIco(canvas), ext: 'ico' };
+  if (fmt === 'ico') return { blob: await icoFromCanvas(canvas), ext: 'ico' };
   if (fmt === 'pdf') return { blob: await toPdf(canvas), ext: 'pdf' };
 
   const mime = MIME[fmt];
   if (!mime) throw new Error(`Formato no soportado: ${format}`);
-  const blob = await canvasBlob(canvas, mime, fmt === 'jpg' ? 0.92 : undefined);
+  const blob = await canvasBlobOf(canvas, mime, fmt === 'jpg' ? 0.92 : undefined);
   if (!blob) throw new Error(`El navegador no puede generar ${format}`);
   return { blob, ext: fmt };
 }
@@ -148,3 +148,5 @@ export function humanSize(bytes) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
+
+

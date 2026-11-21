@@ -3,9 +3,42 @@ import Icon from '../icons.jsx';
 import { Button, Empty, Select } from '../ui.jsx';
 import { useSettings } from '../state.jsx';
 import { CONVERTIBLE, PROFILES } from '../profiles.js';
-import { convertImage, downloadBlob, humanSize, makePreview } from '../convert.js';
+import {
+  canvasBlobOf,
+  convertImage,
+  downloadBlob,
+  humanSize,
+  icoFromCanvas,
+  makePreview,
+  toCanvas,
+} from '../convert.js';
+import {
+  canvasesToDocx,
+  canvasesToPdf,
+  docxPreview,
+  docxToCanvases,
+  fileKind,
+  imageToDocx,
+  openPdf,
+  pdfPreview,
+  pdfToCanvases,
+  pdfToDocx,
+  zipFiles,
+} from '../docs.js';
 
-const TYPE_LABEL = { svg: 'SVG', pdf: 'PDF', png: 'PNG', jpg: 'JPG', webp: 'WEBP', avif: 'AVIF', ico: 'ICO', error: 'ERR' };
+const TYPE_LABEL = {
+  svg: 'SVG',
+  pdf: 'PDF',
+  png: 'PNG',
+  jpg: 'JPG',
+  webp: 'WEBP',
+  avif: 'AVIF',
+  ico: 'ICO',
+  docx: 'DOCX',
+  error: 'ERR',
+};
+
+const KIND_LABEL = { image: 'Imagen', pdf: 'PDF', docx: 'DOCX' };
 
 const point = (r, deg) => [r * Math.sin((deg * Math.PI) / 180), -r * Math.cos((deg * Math.PI) / 180)];
 
@@ -22,21 +55,43 @@ function toast(text) {
   window.dispatchEvent(new CustomEvent('filee-toast', { detail: text }));
 }
 
+/** Nombre sin extensión. */
+const baseName = (name) => String(name || 'archivo').replace(/\.[^.]+$/, '');
+
+/** Salidas de imagen a partir de una o varias páginas. */
+async function imageOutputs(canvases, base, fmt) {
+  if (fmt === 'ico') {
+    const blob = await icoFromCanvas(canvases[0]);
+    return [{ blob, name: `${base}.ico`, type: 'ico' }];
+  }
+  const mime = fmt === 'jpg' ? 'image/jpeg' : `image/${fmt}`;
+  const pages = [];
+  for (let i = 0; i < canvases.length; i++) {
+    const blob = await canvasBlobOf(canvases[i], mime, fmt === 'jpg' ? 0.92 : undefined);
+    if (!blob) throw new Error(`El navegador no puede generar ${fmt.toUpperCase()}`);
+    pages.push({ blob, name: canvases.length > 1 ? `${base}-pagina-${i + 1}.${fmt}` : `${base}.${fmt}` });
+  }
+  if (pages.length === 1) return [{ blob: pages[0].blob, name: pages[0].name, type: fmt }];
+  const zip = await zipFiles(pages);
+  return [{ blob: zip, name: `${base}-${fmt}.zip`, type: fmt }];
+}
+
 export default function Home() {
-  const { settings, addHistory, set } = useSettings();
+  const { settings, addHistory, set, toggleFormat } = useSettings();
   const [pending, setPending] = useState([]);
   const [query, setQuery] = useState('');
   const [dragging, setDragging] = useState(false);
   const [hover, setHover] = useState(null);
-  const [profileId, setProfileId] = useState('default');
   const [converting, setConverting] = useState(null);
   const [lastDone, setLastDone] = useState(null);
   const [preview, setPreview] = useState(null);
   const input = useRef(null);
   const blobs = useRef(new Map());
 
-  const profile = PROFILES.find((p) => p.id === profileId) || PROFILES[0];
-  const formats = profile.formats;
+  const profile = PROFILES.find((p) => p.id === settings.profile) || PROFILES[0];
+  // Sólo los formatos marcados en «Perfil» llegan al círculo, y en el orden del perfil.
+  const checked = settings.profileFormats?.[profile.id] ?? profile.formats;
+  const formats = useMemo(() => profile.formats.filter((f) => checked.includes(f)).slice(0, 8), [profile, checked]);
 
   const segments = useMemo(() => {
     const step = 360 / Math.max(formats.length, 1);
@@ -66,39 +121,97 @@ export default function Home() {
   const addFiles = (fileList) => {
     const files = Array.from(fileList || []);
     if (!files.length) return;
-    const images = files.filter((f) => f.type.startsWith('image/'));
-    if (!images.length) {
-      toast('En esta réplica se pueden preparar imágenes. El resto de formatos los convierte la app de escritorio.');
+    const accepted = files
+      .map((f) => ({ file: f, kind: fileKind(f) }))
+      .filter((x) => x.kind !== 'other');
+    const rejected = files.length - accepted.length;
+    if (!accepted.length) {
+      toast('Formatos admitidos: imágenes (JPG, PNG, WEBP, AVIF, ICO…), PDF y DOCX.');
       return;
     }
     setLastDone(null);
     setPending((list) => [
       ...list,
-      ...images.map((f) => ({
+      ...accepted.map(({ file: f, kind }) => ({
         id: `${f.name}-${f.size}-${Math.random().toString(36).slice(2, 7)}`,
         file: f,
         name: f.name,
         size: f.size,
+        kind,
+        pages: null,
         dims: null,
         preview: null,
       })),
     ]);
-    images.forEach(async (f) => {
+
+    accepted.forEach(async ({ file: f, kind }) => {
+      const patch = (data) =>
+        setPending((list) => list.map((it) => (it.file === f ? { ...it, ...data } : it)));
       try {
-        const { dataUrl, width, height } = await makePreview(f);
-        setPending((list) => list.map((it) => (it.file === f ? { ...it, preview: dataUrl, dims: `${width}×${height}` } : it)));
-      } catch {
-        /* sin vista previa */
+        if (kind === 'image') {
+          const { dataUrl, width, height } = await makePreview(f);
+          patch({ preview: dataUrl, dims: `${width}×${height}`, pages: 1 });
+        } else if (kind === 'pdf') {
+          const { dataUrl, width, height, pages } = await pdfPreview(f);
+          patch({ preview: dataUrl, dims: `${width}×${height}`, pages });
+        } else if (kind === 'docx') {
+          const { dataUrl, width, height, pages } = await docxPreview(await f.arrayBuffer());
+          patch({ preview: dataUrl, dims: `${width}×${height}`, pages: pages || 1 });
+        }
+      } catch (err) {
+        toast(`No se pudo leer ${f.name}: ${err?.message || err}`);
       }
     });
-    if (images.length < files.length) {
-      toast(`${files.length - images.length} archivo(s) no son imágenes y se han omitido.`);
+
+    if (rejected) {
+      toast(`${rejected} archivo(s) con formato no admitido se han omitido.`);
     }
+  };
+
+  /** Convierte un elemento preparado al formato pedido. */
+  const convertItem = async (item, format) => {
+    const fmt = format.toLowerCase();
+    const base = baseName(item.name);
+
+    if (item.kind === 'image') {
+      if (fmt === 'docx') {
+        const canvas = await toCanvas(item.file, null);
+        return [{ blob: await imageToDocx(canvas), name: `${base}.docx`, type: 'docx' }];
+      }
+      const { blob, ext } = await convertImage(item.file, format);
+      return [{ blob, name: `${base}.${ext}`, type: ext }];
+    }
+
+    if (item.kind === 'pdf') {
+      if (fmt === 'pdf') return [{ blob: item.file, name: `${base}.pdf`, type: 'pdf' }];
+      const doc = await openPdf(item.file);
+      try {
+        if (fmt === 'docx') {
+          return [{ blob: await pdfToDocx(doc), name: `${base}.docx`, type: 'docx' }];
+        }
+        const canvases = await pdfToCanvases(doc, 2200);
+        return await imageOutputs(canvases, base, fmt);
+      } finally {
+        try {
+          doc.destroy?.();
+        } catch {
+          /* nada */
+        }
+      }
+    }
+
+    // .docx
+    if (fmt === 'docx') return [{ blob: item.file, name: `${base}.docx`, type: 'docx' }];
+    const canvases = await docxToCanvases(await item.file.arrayBuffer(), 2200);
+    if (fmt === 'pdf') {
+      return [{ blob: await canvasesToPdf(canvases), name: `${base}.pdf`, type: 'pdf' }];
+    }
+    return await imageOutputs(canvases, base, fmt);
   };
 
   /* ── Convertir al elegir formato en el menú ───────────────────── */
   const convertAll = async (format) => {
-    if (!pending.length || converting) return;
+    if (!pending.length || converting || !formats.length) return;
     if (!CONVERTIBLE.has(format)) {
       toast(`${format} lo convierte la app de escritorio; en el navegador no está disponible.`);
       return;
@@ -108,12 +221,13 @@ export default function Home() {
     const results = [];
     for (const item of pending) {
       try {
-        const { blob, ext } = await convertImage(item.file, format);
-        const name = `${item.name.replace(/\.[^.]+$/, '')}.${ext}`;
-        blobs.current.set(name, blob);
-        results.push({ name, type: ext, size: blob.size });
+        const out = await convertItem(item, format);
+        for (const r of out) {
+          blobs.current.set(r.name, r.blob);
+          results.push({ name: r.name, type: r.type, size: r.blob.size });
+        }
       } catch (err) {
-        toast(String(err.message || err));
+        toast(String(err?.message || err));
       }
     }
     // El archivo se queda preparado: se puede volver a convertir a otro formato.
@@ -140,7 +254,7 @@ export default function Home() {
   const openFile = (item) => {
     const blob = blobs.current.get(item.file);
     if (!blob) {
-      toast('Entrada de ejemplo: prepara una imagen y elige un formato para convertirla de verdad.');
+      toast('Entrada de ejemplo: prepara un archivo y elige un formato para convertirlo de verdad.');
       return;
     }
     downloadBlob(blob, item.file);
@@ -171,7 +285,7 @@ export default function Home() {
             </span>
             <div className="drop-copy">
               <p className="drop-title">Suelta archivos aquí</p>
-              <p className="drop-sub">o mantén Ctrl mientras arrastras en el Explorador</p>
+              <p className="drop-sub">Imágenes, PDF y DOCX · o mantén Ctrl mientras arrastras en el Explorador</p>
             </div>
             <button type="button" className="drop-link" onClick={() => input.current?.click()}>
               Elegir archivo
@@ -179,7 +293,7 @@ export default function Home() {
             <input
               ref={input}
               type="file"
-              accept="image/*"
+              accept="image/*,.pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               multiple
               hidden
               onChange={(e) => {
@@ -190,7 +304,9 @@ export default function Home() {
           </div>
 
           {pending.length === 0 ? (
-            <p className="pending-empty">La imagen que sueltes aparecerá aquí y no se tocará hasta que elijas un formato.</p>
+            <p className="pending-empty">
+              El archivo que sueltes aparecerá aquí y no se tocará hasta que elijas un formato. Se admiten imágenes, PDF y DOCX.
+            </p>
           ) : (
             <ul className="pending-list">
               {pending.map((p) => (
@@ -204,7 +320,8 @@ export default function Home() {
                         {p.name}
                       </span>
                       <span className="pending-sub">
-                        {humanSize(p.size)}
+                        {KIND_LABEL[p.kind] || 'Archivo'}
+                        {p.pages && p.pages > 1 ? ` · ${p.pages} pág.` : ''} · {humanSize(p.size)}
                         {p.dims ? ` · ${p.dims}` : ''}
                       </span>
                     </div>
@@ -230,9 +347,33 @@ export default function Home() {
           <label className="field-label" htmlFor="home-profile">
             Perfil activo
           </label>
-          <Select id="home-profile" value={profileId} onChange={setProfileId} options={PROFILES.map((p) => ({ value: p.id, label: p.label }))} width="100%" />
+          <Select id="home-profile" value={profile.id} onChange={(v) => set({ profile: v })} options={PROFILES.map((p) => ({ value: p.id, label: p.label }))} width="100%" />
+          <div className="format-list" role="group" aria-label="Formatos del menú circular">
+            <p className="field-label">Formatos del menú circular</p>
+            {profile.formats.map((f) => {
+              const on = formats.includes(f);
+              return (
+                <button
+                  key={f}
+                  type="button"
+                  className={`format-row${on ? ' is-on' : ''}`}
+                  aria-pressed={on}
+                  onClick={() => toggleFormat(profile.id, f)}
+                >
+                  <span>{f}</span>
+                  <span className={`switch${on ? ' is-on' : ''}`} aria-hidden="true">
+                    <span className="switch-track">
+                      <span className="switch-knob" />
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
           <p className="home-col-note">
-            {profile.formats.length} formatos en este perfil. El menú circular de la derecha los muestra; pulsa uno para convertir.
+            {formats.length
+              ? `${formats.length === 1 ? '1 formato marcado' : `${formats.length} formatos marcados`} · el círculo de la derecha los muestra. Pulsa uno para convertir.`
+              : 'Ningún formato marcado: el círculo está vacío. Marca en la lista los formatos que quieras ver.'}
           </p>
           <p className="home-col-note muted">
             {pending.length ? `${pending.length} archivo(s) listos.` : 'Sin archivos preparados.'}
@@ -245,6 +386,7 @@ export default function Home() {
           <div className="menu-stage">
             <svg viewBox="-120 -120 240 240" className="menu-svg" role="group" aria-label={`Formatos de ${profile.label}`}>
               <circle className="menu-back" r="112" />
+              {!segments.length ? <circle className="menu-empty" r="96" /> : null}
               {segments.map((s, i) => (
                 <g
                   key={s.name}
@@ -253,9 +395,9 @@ export default function Home() {
                   onMouseLeave={() => setHover(null)}
                   onClick={() => convertAll(s.name)}
                   role="button"
-                  tabIndex={pending.length && !converting ? 0 : -1}
+                  tabIndex={pending.length && !converting && formats.length ? 0 : -1}
                   aria-label={`Convertir a ${s.name}`}
-                  aria-disabled={!pending.length || !!converting}
+                  aria-disabled={!pending.length || !!converting || !formats.length}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
@@ -272,18 +414,20 @@ export default function Home() {
                 {converting ? 'Convirtiendo' : profile.label}
               </text>
               <text className="menu-hub-hint" x="0" y="12">
-                {converting ? converting : `${profile.formats.length} formatos`}
+                {converting ? converting : formats.length ? `${formats.length} formatos` : 'sin formatos'}
               </text>
             </svg>
           </div>
           <p className="menu-hint">
             {converting
               ? 'Generando el archivo…'
-              : pending.length
-                ? lastDone
-                  ? `Listo: ${lastDone}. La imagen sigue preparada: pulsa otro formato para volver a convertirla.`
-                  : 'Pasa el ratón por una porción para resaltarla y pulsa para convertir.'
-                : 'Cuando prepares una imagen, el menú se activa.'}
+              : !formats.length
+                ? 'Marca formatos en «Perfil» y aparecerán aquí.'
+                : pending.length
+                  ? lastDone
+                    ? `Listo: ${lastDone}. El archivo sigue preparado: pulsa otro formato para volver a convertirlo.`
+                    : 'Pasa el ratón por una porción para resaltarla y pulsa para convertir.'
+                  : 'Cuando prepares un archivo, el menú se activa.'}
           </p>
         </section>
       </div>
@@ -309,7 +453,7 @@ export default function Home() {
 
       {items.length === 0 ? (
         <Empty icon="clock" title={query ? 'Ningún resultado para esa búsqueda.' : 'Todavía no hay conversiones.'}>
-          {query ? null : <p className="empty-sub">Prepara una imagen, elige un formato en el menú circular y aparecerá aquí.</p>}
+          {query ? null : <p className="empty-sub">Prepara un archivo, elige un formato en el menú circular y aparecerá aquí.</p>}
         </Empty>
       ) : (
         <ul className="history">
@@ -355,15 +499,16 @@ export default function Home() {
         </ul>
       )}
 
-      <p className="foot-note">La conversión se ejecuta en tu navegador: la imagen no sale de este equipo.</p>
+      <p className="foot-note">La conversión se ejecuta en tu navegador: los archivos no salen de este equipo.</p>
 
       {preview ? (
         <div className="lightbox" role="dialog" aria-modal="true" aria-label={preview.name} onClick={() => setPreview(null)}>
           <figure className="lightbox-figure" onClick={(e) => e.stopPropagation()}>
-            <img src={preview.preview} alt={preview.name} />
+            {preview.preview ? <img src={preview.preview} alt={preview.name} /> : null}
             <figcaption>
               <span>
                 {preview.name}
+                {preview.pages && preview.pages > 1 ? ` · ${preview.pages} páginas` : ''}
                 {preview.dims ? ` · ${preview.dims}` : ''}
               </span>
               <button type="button" className="icon-btn" aria-label="Cerrar la vista previa" onClick={() => setPreview(null)}>

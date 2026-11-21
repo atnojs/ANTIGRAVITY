@@ -6,7 +6,6 @@ export const NAV = [
   { id: 'inicio', label: 'Inicio', icon: 'home' },
   { id: 'general', label: 'General', icon: 'cog' },
   { id: 'atajos', label: 'Atajos', icon: 'keyboard' },
-  { id: 'donut', label: 'Menú circular', icon: 'donut' },
   { id: 'presets', label: 'Ajustes preestablecidos', icon: 'presets' },
   { id: 'areas', label: 'Áreas', icon: 'areas' },
   { id: 'watch', label: 'Carpetas supervisadas', icon: 'folder' },

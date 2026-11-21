@@ -464,3 +464,10 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 - **Decisión:** regla fija nº 3 en `claude.md` (§ Reglas fijas del usuario) y lección en `experiencia.md`: todo documento generado (Word, PDF, hoja, presentación, imagen o ZIP) se guarda o copia siempre en `D:\Descargas`, y al entregarlo se indica esa ruta. La carpeta de trabajo es solo intermedia.
 - **Por qué:** `D:\Descargas` es la carpeta donde el usuario recoge, revisa y reenvía los archivos; entregar solo en la carpeta del proyecto le obliga a buscar y preguntar.
 - **Cómo se comprueba:** `Get-ChildItem D:\Descargas` contiene la entrega; en el mensaje de entrega se indica `D:\Descargas\...`.
+
+### [2026-11-21] FILEE-APP: los formatos del círculo se guardan en el navegador (la app no tiene backend)
+
+- **Contexto:** la réplica de Filee es 100 % cliente (Vite + React, sin PHP ni servidor propio) y la skill maestra dice que «el servidor es la fuente de verdad» de los ajustes.
+- **Decisión:** el perfil activo y los formatos marcados por perfil se guardan en `localStorage` (clave `filee-app-settings-v1`), igual que el resto de ajustes de la app. Se declara como excepción consciente en la autoevaluación.
+- **Por qué:** el usuario pide expresamente que lo marcado persista al refrescar; sin backend, `localStorage` es el único almacén disponible y ya era el patrón del resto de ajustes.
+- **Cómo se comprueba:** desmarcar un formato, recargar y leer `localStorage`; capturas `03-ico-desmarcado.png` y `04-tras-recargar.png` en `tools/evidencias/2026-11-21-filee-app/`.

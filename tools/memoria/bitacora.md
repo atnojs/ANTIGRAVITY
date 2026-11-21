@@ -3064,3 +3064,10 @@ las cabeceras.
 - **Verificación:** `@babel/parser` sobre el bloque inline del repo → 0 errores; Chrome headless cuenta **1355 tarjetas antes y 1360 después**; en producción cada búsqueda devuelve **1 resultado** con su tarjeta y su carpeta (capturas en `tools/evidencias/2026-11-10-trickvault-codigos-reel/`); verificador independiente **PASS 10,0/10**.
 - **Pendiente:** el ejemplo de cada tarjeta es una imagen ya existente reutilizada; generar el suyo (`assets/<carpeta>/<codigo>.jpg` con `openai-image-2-low`) toca en el lote de imágenes de `trickvault-imagenes`.
 - **Commit:** 9978d0fd.
+
+## 2026-11-21 (tarde) — filee-app: formatos del círculo en «Perfil» y menú circular fuera
+- **Encargo:** Antonio pide que la web `webs/filee-app` (https://atnojs.es/webs/filee-app/) quede igual que su captura en Inicio, que desaparezca «Menú circular» del menú lateral y que los formatos marcados en el perfil persistan y manden en el círculo.
+- **Causa raíz:** en producción se servía el build antiguo (`index-HF43QJPG.js`, sólo imágenes); el trabajo de PDF/DOCX estaba compilado y sin commitear. Además los formatos del círculo vivían en un `useState` de la página «Menú circular» y se perdían al recargar.
+- **Cambios:** `state.jsx` guarda `profile` y `profileFormats` (migración `page:'donut' -> 'inicio'` y saneado de formatos); la tarjeta «Perfil» de Inicio lleva los interruptores; el círculo dibuja sólo los marcados (con estado vacío); se borran `pages/Donut.jsx`, su ruta y su entrada del menú; README y estilos al día.
+- **Verificación:** Chrome vía `playwright-cli`: desmarcar ICO -> 6 porciones y sigue desmarcado tras recargar; perfil «Documentos» conserva TXT/MD/HTML/EPUB fuera; PDF de 2 páginas -> JPG genera `texto-jpg.zip` con 2 JPEG válidos; 0 errores de consola; 393/768/1484 px sin desbordes. Capturas en `tools/evidencias/2026-11-21-filee-app/`.
+- **Commit:** ver `git log -1 -- webs/filee-app`.

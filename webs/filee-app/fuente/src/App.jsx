@@ -4,7 +4,6 @@ import { Sidebar, TitleBar } from './shell.jsx';
 import Home from './pages/Home.jsx';
 import General from './pages/General.jsx';
 import Shortcuts from './pages/Shortcuts.jsx';
-import Donut from './pages/Donut.jsx';
 import Presets from './pages/Presets.jsx';
 import Areas from './pages/Areas.jsx';
 import Watched from './pages/Watched.jsx';
@@ -16,7 +15,6 @@ const PAGES = {
   inicio: Home,
   general: General,
   atajos: Shortcuts,
-  donut: Donut,
   presets: Presets,
   areas: Areas,
   watch: Watched,

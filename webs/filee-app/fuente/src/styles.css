@@ -1067,8 +1067,29 @@ code {
 .badge-jpg {
   background: #ffd479;
 }
+.badge-webp,
+.badge-avif {
+  background: #a7c8ff;
+}
+.badge-ico {
+  background: #d9c2ff;
+}
+.badge-docx {
+  background: #9fd0ff;
+}
 .badge-error {
   background: var(--danger);
+}
+
+/* Contenedor oculto donde docx-preview maqueta el documento antes de capturarlo. */
+[data-filee-docx],
+[data-filee-docx-style] {
+  position: fixed !important;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .history-main {
@@ -2021,6 +2042,13 @@ code {
   fill: color-mix(in srgb, var(--panel-solid) 85%, transparent);
 }
 
+.menu-empty {
+  fill: color-mix(in srgb, var(--panel-solid) 94%, transparent);
+  stroke: color-mix(in srgb, var(--acc) 22%, transparent);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 7;
+}
+
 .menu-seg path {
   fill: color-mix(in srgb, var(--acc) 9%, var(--panel-solid));
   stroke: color-mix(in srgb, var(--acc) 38%, transparent);
@@ -2224,6 +2252,30 @@ code {
 
 .home-col-profile .field-label {
   margin-bottom: 4px;
+}
+
+.home-col-profile .format-list {
+  margin: 4px 0 0;
+  gap: 2px;
+}
+
+.home-col-profile .format-row {
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+.home-col-profile .format-row .switch-track {
+  width: 36px;
+  height: 20px;
+}
+
+.home-col-profile .format-row .switch-knob {
+  width: 14px;
+  height: 14px;
+}
+
+.home-col-profile .format-row .switch.is-on .switch-knob {
+  transform: translateX(16px);
 }
 
 .home-col-note {
