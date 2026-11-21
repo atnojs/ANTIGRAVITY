@@ -57,10 +57,12 @@ También se puede forzar por variables de entorno: `MOVI_PORT`, `MOVI_HOST`,
   el nombre: imágenes, vídeo, audio, **PDF** (dibujado con pdf.js, también en el móvil),
   **DOCX** (convertido a HTML con mammoth), texto y código. Para formatos sin visor
   (Excel, PPT, ZIP…) se muestra la ficha con descarga y compartir.
-- **Compartir** con un botón por archivo: menú del sistema (si hay HTTPS), WhatsApp,
-  Gmail, correo, copiar enlace o descargar. En HTTP, WhatsApp/Gmail comparten un enlace
-  que solo abre dentro de la Wi‑Fi; para enviar el archivo en sí hay que descargarlo y
-  compartirlo desde la app de Archivos/Fotos.
+- **Compartir** con un botón por archivo. En HTTP (red local) el navegador **no puede
+  entregar el archivo a otra app**: la Web Share API exige HTTPS. Por eso el menú
+  prioriza **«Descargar para compartir»** y explica los pasos para adjuntarlo en
+  WhatsApp/Gmail; además ofrece **enlaces cortos** (`/d/…`, solo funcionan en tu Wi‑Fi),
+  copiar enlace y descargar. Servida por HTTPS, aparece «Compartir archivo» con el menú
+  nativo del móvil.
 - **Borrado** con confirmación.
 
 ## Límites y seguridad

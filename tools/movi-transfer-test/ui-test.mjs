@@ -133,15 +133,43 @@ async function main() {
   check('botón copiar deja la URL en el portapapeles', portapapeles === textoUrl, portapapeles);
 
   // Vista previa de un PDF real, dibujado con pdf.js
+  const antesPdf = (await (await fetch(`${BASE}/api/files`)).json()).files.find((file) => file.name === pdfNombre);
   await page.click(`li.archivo:has-text("${pdfNombre}") .archivo__nombre`);
   await page.waitForSelector('#capaVista:not([hidden])');
   await page.waitForSelector('.visor__pdf canvas', { timeout: 30_000 });
-  const anchoPdf = await page.evaluate(() => document.querySelector('.visor__pdf canvas')?.width ?? 0);
-  check('el PDF se dibuja dentro de la app (pdf.js)', anchoPdf > 100, `${anchoPdf}px`);
+  // Espera a que el canvas tenga tinta de verdad (el render es asíncrono).
+  await page.waitForFunction(
+    () => {
+      const lienzo = document.querySelector('.visor__pdf canvas');
+      if (!lienzo) return false;
+      const datos = lienzo.getContext('2d').getImageData(0, 0, lienzo.width, lienzo.height).data;
+      for (let i = 0; i < datos.length; i += 4) if (datos[i] < 200) return true;
+      return false;
+    },
+    undefined,
+    { timeout: 20_000 },
+  );
+  const tintaPdf = await page.evaluate(() => {
+    const lienzo = document.querySelector('.visor__pdf canvas');
+    if (!lienzo) return 0;
+    const datos = lienzo.getContext('2d').getImageData(0, 0, lienzo.width, lienzo.height).data;
+    let pintados = 0;
+    for (let i = 0; i < datos.length; i += 4) if (datos[i] < 200) pintados += 1;
+    return pintados;
+  });
+  check('el PDF se dibuja con contenido real (pdf.js)', tintaPdf > 500, `${tintaPdf} px pintados`);
   await page.waitForTimeout(350);
   await page.screenshot({ path: path.join(EVIDENCIA, 'vista-previa-pdf.png') });
   await page.keyboard.press('Escape');
   await page.waitForFunction(() => document.querySelector('#capaVista')?.hidden === true);
+  const focoTrasPdf = await page.evaluate(() => document.activeElement?.className ?? '');
+  check('al cerrar el PDF el foco vuelve a la fila', String(focoTrasPdf).includes('archivo__nombre'), String(focoTrasPdf));
+  const despuesPdf = (await (await fetch(`${BASE}/api/files`)).json()).files.find((file) => file.name === pdfNombre);
+  check(
+    'abrir la vista previa del PDF no cuenta como descarga',
+    (antesPdf?.lastDownload ?? null) === (despuesPdf?.lastDownload ?? null),
+    `${antesPdf?.lastDownload ?? 'null'} → ${despuesPdf?.lastDownload ?? 'null'}`,
+  );
 
   // Vista previa de un DOCX real, convertido con mammoth
   await page.click(`li.archivo:has-text("${docxNombre}") .archivo__nombre`);
@@ -199,10 +227,11 @@ async function main() {
   const whatsapp = await page.getAttribute('#compartirOpciones a[href^="https://wa.me/"]', 'href');
   const gmail = await page.getAttribute('#compartirOpciones a[href*="mail.google.com"]', 'href');
   check('el menú de compartir ofrece WhatsApp y Gmail', Boolean(whatsapp) && Boolean(gmail));
+  const textoCompartir = decodeURIComponent(whatsapp ?? '');
   check(
-    'los enlaces de compartir llevan el nombre y la URL del archivo',
-    Boolean(whatsapp?.includes(encodeURIComponent(nombreSelector)) && whatsapp?.includes('http')),
-    whatsapp?.slice(0, 80),
+    'los enlaces de compartir llevan el nombre y un enlace corto',
+    textoCompartir.includes(nombreSelector) && /\/d\/[0-9a-f]{10}/.test(textoCompartir),
+    textoCompartir.slice(0, 100),
   );
   await page.waitForTimeout(400);
   await page.screenshot({ path: path.join(EVIDENCIA, 'compartir.png') });
@@ -225,6 +254,34 @@ async function main() {
   );
   const filasTrasBorrar = await page.locator(`li.archivo:has-text("${nombreSelector}")`).count();
   check('borrado desde la interfaz', filasTrasBorrar === 0);
+
+  // En la IP LAN (sin contexto seguro) el menú debe priorizar descargar y explicar
+  // que WhatsApp no recibe el archivo: es lo que ve el móvil de verdad.
+  const lanBase = `http://${estadoServidor.ip}:${estadoServidor.port}`;
+  const contextoLan = await navegador.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+    locale: 'es-ES',
+  });
+  const paginaLan = await contextoLan.newPage();
+  await paginaLan.goto(lanBase, { waitUntil: 'networkidle' });
+  await paginaLan.locator('.accion--compartir').first().click();
+  await paginaLan.waitForSelector('#capaCompartir:not([hidden])');
+  const notaHttp = (await paginaLan.textContent('#compartirNota')) ?? '';
+  const destacada = (await paginaLan.textContent('.hoja__opciones .opcion--destacada')) ?? '';
+  check('en HTTP el menú prioriza «Descargar para compartir»', destacada.includes('Descargar para compartir'), destacada);
+  check('el aviso explica que el navegador no puede adjuntar el archivo', notaHttp.includes('no puede adjuntar'));
+  await paginaLan.waitForTimeout(350);
+  await paginaLan.screenshot({ path: path.join(EVIDENCIA, 'compartir-http.png') });
+
+  const descargaLan = paginaLan.waitForEvent('download', { timeout: 15_000 });
+  await paginaLan.click('.hoja__opciones .opcion--destacada');
+  await descargaLan;
+  await paginaLan.waitForSelector('.hoja__pasos', { timeout: 10_000 });
+  const pasos = (await paginaLan.textContent('.hoja__pasos')) ?? '';
+  check('tras descargar, el menú explica cómo adjuntar en WhatsApp', pasos.includes('adjuntar'), pasos.slice(0, 90));
+  await contextoLan.close();
 
   const auditoriaEscritorio = await auditarAuditoria(navegador, { width: 1440, height: 900 });
   check(

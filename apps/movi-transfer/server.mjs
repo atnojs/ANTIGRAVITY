@@ -16,9 +16,9 @@ import path from 'node:path';
 import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, createHash } from 'node:crypto';
 
-const VERSION = '1.3.0';
+const VERSION = '1.4.0';
 const APP_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(APP_DIR, 'public');
 
@@ -234,6 +234,10 @@ function registrarActividad(nombre, tipo) {
   guardarActividad();
 }
 
+function idCorto(nombre) {
+  return createHash('sha1').update(nombre).digest('hex').slice(0, 10);
+}
+
 async function listFiles() {
   const entries = await fsp.readdir(INBOX_DIR, { withFileTypes: true });
   const files = [];
@@ -247,6 +251,7 @@ async function listFiles() {
           const historial = actividad.get(entry.name);
           files.push({
             name: entry.name,
+            shortId: idCorto(entry.name),
             size: stat.size,
             mtime: stat.mtimeMs,
             lastUpload: historial?.u ?? null,
@@ -574,6 +579,25 @@ const server = http.createServer(async (req, res) => {
     }
     if (pathname === '/api/download') {
       await handleDownload(req, res, url);
+      return;
+    }
+    if (pathname.startsWith('/d/')) {
+      const id = pathname.slice(3);
+      if (!/^[0-9a-f]{10}$/.test(id)) {
+        sendError(res, 404, 'Enlace no válido.');
+        return;
+      }
+      const encontrado = (await listFiles()).find((file) => file.shortId === id);
+      if (!encontrado) {
+        sendError(res, 404, 'El archivo no existe.');
+        return;
+      }
+      res.writeHead(302, {
+        ...SECURITY_HEADERS,
+        Location: `/api/download?name=${encodeURIComponent(encontrado.name)}`,
+        'Cache-Control': 'no-store',
+      });
+      res.end();
       return;
     }
     if (pathname.startsWith('/api/')) {

@@ -140,12 +140,26 @@
     capaAbierta = capa;
   }
 
+  function enfocarOrigen() {
+    if (focoPrevio && document.contains(focoPrevio) && focoPrevio.offsetParent !== null) {
+      focoPrevio.focus();
+      return;
+    }
+    // La lista pudo repintarse mientras la capa estaba abierta: se busca la fila
+    // del mismo archivo y, si no existe, se vuelve al buscador.
+    const titulo = el.vistaTitulo?.textContent?.trim();
+    const enlace = titulo
+      ? [...document.querySelectorAll('.archivo__nombre')].find((nodo) => nodo.textContent === titulo)
+      : null;
+    (enlace ?? el.buscar)?.focus();
+  }
+
   function cerrarCapa(capa, restaurarFoco = true) {
     if (!capa || capa.hidden) return;
     capa.hidden = true;
     capaAbierta = null;
     document.body.classList.remove('sin-scroll');
-    if (restaurarFoco && focoPrevio && typeof focoPrevio.focus === 'function') focoPrevio.focus();
+    if (restaurarFoco) enfocarOrigen();
   }
 
   async function copiarTexto(texto) {
@@ -171,8 +185,9 @@
     }
   }
 
-  function enlaceCompleto(nombre) {
-    return new URL(urlDescarga(nombre), window.location.origin).href;
+  function enlaceCompleto(file) {
+    if (file.shortId) return `${window.location.origin}/d/${file.shortId}`;
+    return new URL(urlDescarga(file.name), window.location.origin).href;
   }
 
   function puedeCompartirArchivos() {
@@ -228,9 +243,47 @@
     cerrarCapa(el.capaCompartir);
   }
 
+  function mostrarInstruccionesCompartir(file) {
+    el.compartirOpciones.textContent = '';
+
+    const pasos = document.createElement('ol');
+    pasos.className = 'hoja__pasos';
+    for (const texto of [
+      `El archivo «${file.name}» se está descargando.`,
+      'Abre WhatsApp o Gmail.',
+      'Pulsa adjuntar (📎) y elige el archivo desde Descargas.',
+    ]) {
+      const paso = document.createElement('li');
+      paso.textContent = texto;
+      pasos.append(paso);
+    }
+
+    el.compartirOpciones.append(
+      pasos,
+      crearOpcion({
+        etiqueta: 'Abrir WhatsApp',
+        icono: ICONOS.whatsapp,
+        href: 'https://wa.me/',
+      }),
+      crearOpcion({
+        etiqueta: 'Abrir Gmail',
+        icono: ICONOS.correo,
+        href: 'https://mail.google.com/mail/',
+      }),
+      crearOpcion({
+        etiqueta: 'Cerrar',
+        icono: ICONOS.compartir,
+        accion: async () => cerrarCapa(el.capaCompartir),
+      }),
+    );
+
+    el.compartirNota.textContent =
+      'El navegador no puede entregar el archivo directamente desde una página HTTP: hay que adjuntarlo desde la app de destino.';
+  }
+
   function abrirCompartir(file) {
     if (!el.capaVista.hidden) cerrarCapa(el.capaVista, false);
-    const enlace = enlaceCompleto(file.name);
+    const enlace = enlaceCompleto(file);
     const texto = `${file.name}\n${enlace}`;
     const nativo = puedeCompartirArchivos();
 
@@ -248,19 +301,33 @@
       );
     }
 
+    const descargarOpcion = crearOpcion({
+      etiqueta: nativo ? 'Descargar archivo' : 'Descargar para compartir',
+      icono: ICONOS.descargar,
+      href: urlDescarga(file.name),
+      descargar: file.name,
+      destacada: !nativo,
+    });
+    if (!nativo) {
+      descargarOpcion.addEventListener('click', () => {
+        window.setTimeout(() => mostrarInstruccionesCompartir(file), 900);
+      });
+    }
+
     el.compartirOpciones.append(
+      descargarOpcion,
       crearOpcion({
-        etiqueta: 'WhatsApp',
+        etiqueta: 'Enviar enlace por WhatsApp',
         icono: ICONOS.whatsapp,
         href: `https://wa.me/?text=${encodeURIComponent(texto)}`,
       }),
       crearOpcion({
-        etiqueta: 'Gmail',
+        etiqueta: 'Enviar enlace por Gmail',
         icono: ICONOS.correo,
         href: `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(file.name)}&body=${encodeURIComponent(texto)}`,
       }),
       crearOpcion({
-        etiqueta: 'Correo electrónico',
+        etiqueta: 'Enviar enlace por correo',
         icono: ICONOS.correo,
         href: `mailto:?subject=${encodeURIComponent(file.name)}&body=${encodeURIComponent(texto)}`,
       }),
@@ -273,17 +340,12 @@
           if (ok) cerrarCapa(el.capaCompartir);
         },
       }),
-      crearOpcion({
-        etiqueta: 'Descargar archivo',
-        icono: ICONOS.descargar,
-        href: urlDescarga(file.name),
-        descargar: file.name,
-      }),
     );
 
     el.compartirNota.textContent = nativo
       ? 'Se abrirá el menú de tu móvil para elegir WhatsApp, Gmail u otra app.'
-      : 'WhatsApp y Gmail comparten un enlace que solo abre el archivo dentro de tu Wi-Fi. Para enviar el archivo en sí, descárgalo y compártelo desde la app de Archivos o Fotos.';
+      : 'El navegador no puede adjuntar el archivo desde HTTP. Usa «Descargar para compartir» y adjúntalo en WhatsApp. Los enlaces solo funcionan dentro de tu Wi-Fi.';
+    el.compartirNota.classList.toggle('hoja__nota--aviso', !nativo);
 
     abrirCapa(el.capaCompartir);
     el.cerrarCompartir.focus();
@@ -351,7 +413,7 @@
     try {
       const pdfjs = await import('./vendor/pdf.min.mjs');
       pdfjs.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.mjs';
-      const pdf = await pdfjs.getDocument({ url: urlDescarga(file.name) }).promise;
+      const pdf = await pdfjs.getDocument({ url: urlInline(file.name) }).promise;
       if (token !== vistaToken) return;
 
       contenedor.textContent = '';
@@ -392,7 +454,7 @@
     el.vistaCuerpo.textContent = 'Abriendo el documento…';
     try {
       if (typeof window.mammoth?.convertToHtml !== 'function') throw new Error('Sin convertidor DOCX');
-      const respuesta = await fetch(urlDescarga(file.name), { cache: 'no-store' });
+      const respuesta = await fetch(urlInline(file.name), { cache: 'no-store' });
       const buffer = await respuesta.arrayBuffer();
       const resultado = await window.mammoth.convertToHtml({ arrayBuffer: buffer });
       const contenedor = document.createElement('div');
@@ -454,7 +516,7 @@
       texto.className = 'visor__texto';
       texto.textContent = 'Cargando…';
       el.vistaCuerpo.append(texto);
-      fetch(urlDescarga(file.name), { headers: { Range: 'bytes=0-262143' }, cache: 'no-store' })
+      fetch(urlInline(file.name), { headers: { Range: 'bytes=0-262143' }, cache: 'no-store' })
         .then((respuesta) => respuesta.text())
         .then((contenido) => {
           texto.textContent = contenido || '(archivo vacío)';

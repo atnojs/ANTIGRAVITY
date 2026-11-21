@@ -109,6 +109,15 @@ async function main() {
   creados.push(subidaJson.name);
   check('subida devuelve 201', subida.status === 201 && subidaJson.ok === true, subidaJson.name);
 
+  const entradaCorta = (await listar()).find((file) => file.name === subidaJson.name);
+  check('el listado incluye un enlace corto', /^[0-9a-f]{10}$/.test(entradaCorta?.shortId ?? ''), entradaCorta?.shortId);
+  const corto = await fetch(`${BASE}/d/${entradaCorta.shortId}`, { redirect: 'manual' });
+  check(
+    'el enlace corto redirige a la descarga',
+    corto.status === 302 && (corto.headers.get('location') ?? '').includes('/api/download'),
+    `${corto.status} ${corto.headers.get('location') ?? ''}`,
+  );
+
   const bajada = await descargar(subidaJson.name);
   const bytes = Buffer.from(await bajada.arrayBuffer());
   check('descarga byte a byte (SHA-256)', sha(bytes) === sha(contenido), `${bytes.length} bytes`);
