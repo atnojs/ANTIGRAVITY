@@ -433,16 +433,59 @@ function abrirCarpetaEnElPc(rutaFichero, carpeta) {
  *  - carpeta : abre el Explorador en `download_dir`; si se pasa `ruta`, deja
  *              ese fichero seleccionado.
  */
-async function manejarAbrir(modo, ruta) {
+/**
+ * Busca en la carpeta de descargas un fichero por su nombre exacto.
+ *
+ * Hace falta cuando la descarga ya se subió a la nube: el servidor guarda el
+ * nombre del fichero pero no su ruta en el PC, y el fichero sigue aquí. Si hay
+ * varios con el mismo nombre, se elige el más reciente.
+ */
+function buscarEnDescargas(nombre) {
+  const buscado = path.basename(String(nombre || '').replace(/\\/g, '/')).trim();
+  if (buscado === '') {
+    return '';
+  }
+  try {
+    const base = path.resolve(config.downloadDir);
+    let mejor = '';
+    let mejorFecha = -1;
+    for (const entrada of fs.readdirSync(base, { withFileTypes: true })) {
+      if (!entrada.isFile()) {
+        continue;
+      }
+      if (entrada.name.toLowerCase() !== buscado.toLowerCase()) {
+        continue;
+      }
+      const ruta = path.join(base, entrada.name);
+      const fecha = fs.statSync(ruta).mtimeMs;
+      if (fecha > mejorFecha) {
+        mejorFecha = fecha;
+        mejor = ruta;
+      }
+    }
+    return mejor;
+  } catch (e) {
+    return '';
+  }
+}
+
+async function manejarAbrir(modo, ruta, nombre = '') {
   const carpeta = config.downloadDir;
+  let pedida = String(ruta || '').trim();
+
+  // Si el servidor no conoce la ruta (fichero subido a la nube), se busca por
+  // su nombre en la carpeta de descargas.
+  if (pedida === '' && String(nombre || '').trim() !== '') {
+    pedida = buscarEnDescargas(nombre);
+  }
 
   if (modo === 'carpeta') {
     let fichero = '';
-    if (ruta !== '') {
-      if (!fs.existsSync(ruta) || !rutaDentroDeDescargas(ruta)) {
+    if (pedida !== '') {
+      if (!fs.existsSync(pedida) || !rutaDentroDeDescargas(pedida)) {
         return { ok: false, error: 'Ese fichero ya no está en la carpeta de descargas.' };
       }
-      fichero = ruta;
+      fichero = pedida;
     }
     if (!fs.existsSync(carpeta)) {
       return { ok: false, error: 'No existe la carpeta de descargas: ' + carpeta };
@@ -456,29 +499,38 @@ async function manejarAbrir(modo, ruta) {
   }
 
   if (modo === 'ver') {
-    if (ruta === '') {
-      return { ok: false, error: 'Falta la ruta del fichero.' };
+    if (pedida === '') {
+      return { ok: false, error: 'No encuentro ese fichero en la carpeta de descargas.' };
     }
     let esFichero = false;
     try {
-      esFichero = fs.existsSync(ruta) && fs.statSync(ruta).isFile();
+      esFichero = fs.existsSync(pedida) && fs.statSync(pedida).isFile();
     } catch (e) {
       esFichero = false;
     }
-    if (!esFichero || !rutaDentroDeDescargas(ruta)) {
+    if (!esFichero || !rutaDentroDeDescargas(pedida)) {
       return { ok: false, error: 'Ese fichero ya no está en la carpeta de descargas.' };
     }
-    const abierto = await abrirConProgramaPredeterminado(ruta);
+    const abierto = await abrirConProgramaPredeterminado(pedida);
     if (abierto.ok) {
-      logInfo(`Fichero abierto desde la web: ${ruta}`);
-      consola(`Abriendo en el PC: ${path.basename(ruta)}`);
+      logInfo(`Fichero abierto desde la web: ${pedida}`);
+      consola(`Abriendo en el PC: ${path.basename(pedida)}`);
     } else {
-      logAviso(`No se pudo abrir ${ruta}: ${abierto.error}`);
+      logAviso(`No se pudo abrir ${pedida}: ${abierto.error}`);
     }
     return abierto;
   }
 
   return { ok: false, error: 'Modo no reconocido (usa ver o carpeta).' };
+}
+
+/** Atiende las peticiones «ver» / «carpeta» que vienen en la respuesta. */
+function atenderAbrir(respuesta) {
+  const pedidos = Array.isArray(respuesta && respuesta.abrir) ? respuesta.abrir : [];
+  for (const pedido of pedidos) {
+    manejarAbrir(String(pedido.modo || ''), String(pedido.ruta || ''), String(pedido.nombre || ''))
+      .catch((e) => logAviso(`Fallo abriendo desde la web: ${e && e.message ? e.message : e}`));
+  }
 }
 
 /** Orígenes que pueden usar el puerto local. Cualquier web NO puede. */
@@ -527,7 +579,8 @@ function arrancarServidorLocal() {
       }
       const modo = String(url.searchParams.get('modo') || '').toLowerCase();
       const ruta = String(url.searchParams.get('ruta') || '').trim();
-      manejarAbrir(modo, ruta)
+      const nombre = String(url.searchParams.get('nombre') || '').trim();
+      manejarAbrir(modo, ruta, nombre)
         .then((resultado) => responder(resultado.ok ? 200 : 400, resultado))
         .catch((e) => responder(500, { ok: false, error: e && e.message ? e.message : 'Error inesperado.' }));
       return;
@@ -2027,6 +2080,8 @@ async function principal() {
       if (respuesta && respuesta.abrir_dialogo) {
         pedirCarpetaConDialogo().catch((e) => logAviso(`Fallo el explorador de carpetas: ${e.message}`));
       }
+      // Botones «Ver» y «Carpeta» de la cola: se abren sin bloquear el latido.
+      atenderAbrir(respuesta);
     } catch (e) {
       logAviso(`Heartbeat fallido: ${e.message}`);
     }
@@ -2058,6 +2113,9 @@ async function principal() {
       if (respuesta && respuesta.abrir_dialogo) {
         pedirCarpetaConDialogo().catch((e) => logAviso(`Fallo el explorador de carpetas: ${e.message}`));
       }
+
+      // Botones «Ver» y «Carpeta» de la cola: se atienden aquí y no paran la cola.
+      atenderAbrir(respuesta);
 
       // Los «traer a la web» pendientes se atienden en segundo plano: no deben
       // parar la cola.

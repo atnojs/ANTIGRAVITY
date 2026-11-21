@@ -809,36 +809,23 @@ function ficherosDelTrabajo(id) {
 }
 
 /**
- * Pide al worker del PC que abra algo (un fichero o su carpeta).
- * El worker escucha en 127.0.0.1: si contesta, estamos en el PC.
- * Si no contesta, no es un error del servidor: es que la página se está viendo
- * desde otro sitio (el móvil).
+ * Pide al PC que abra algo (un fichero o su carpeta).
+ *
+ * Va por la API (mismo origen) y no por el puerto local del worker porque la
+ * CSP del sitio bloquea las conexiones a http://127.0.0.1 desde la página. El
+ * worker recoge la petición en su sondeo (cada 5 s) y abre lo que toque él, que
+ * es quien ve el disco del PC.
  */
-async function pedirAlPc(modo, ruta) {
-  const control = new AbortController();
-  const reloj = setTimeout(() => control.abort(), 8000);
-  try {
-    let respuesta;
-    try {
-      const consulta = 'modo=' + encodeURIComponent(modo) +
-        (ruta ? '&ruta=' + encodeURIComponent(ruta) : '');
-      respuesta = await fetch('http://127.0.0.1:' + PUERTO_LOCAL + '/abrir?' + consulta, {
-        cache: 'no-store',
-        signal: control.signal,
-      });
-    } catch (e) {
-      const sinPc = new Error('No se pudo hablar con el PC.');
-      sinPc.sinPc = true;
-      throw sinPc;
-    }
-    const datos = await respuesta.json().catch(() => ({}));
-    if (!respuesta.ok || !datos || datos.ok !== true) {
-      throw new Error((datos && datos.error) || 'El PC no ha podido abrirlo.');
-    }
-    return datos;
-  } finally {
-    clearTimeout(reloj);
+async function pedirAlPc(modo, jobId, itemId) {
+  const resultado = await postJson(API + '?action=abrir', {
+    modo,
+    job_id: jobId,
+    item_id: itemId || '',
+  });
+  if (!resultado.ok) {
+    throw new Error((resultado.data && resultado.data.error) || 'No se pudo pedir al PC que lo abra.');
   }
+  return resultado.data;
 }
 
 /**
@@ -903,16 +890,17 @@ async function verTrabajo(id) {
     return;
   }
 
+  // Solo está en el PC: se lo pedimos al worker, que lo abre con el programa
+  // predeterminado (VLC, Reproductor…).
+  if (!enPc.length) {
+    mostrarAviso('Esta descarga no tiene un fichero que se pueda abrir.', 'error');
+    return;
+  }
+  mostrarAviso('Abriendo en el PC…');
   try {
-    for (const fichero of enPc) {
-      await pedirAlPc('ver', fichero.ruta_local);
-    }
+    await pedirAlPc('ver', id, enPc[0].id);
   } catch (e) {
-    if (e.sinPc) {
-      mostrarAviso('Ese fichero está en el PC. Ábrelo desde el PC o pulsa «Traer a la web» para verlo en el móvil.', 'error');
-    } else {
-      mostrarAviso(e.message, 'error');
-    }
+    mostrarAviso(e.message, 'error');
   }
 }
 
@@ -925,21 +913,9 @@ async function abrirCarpetaDelTrabajo(id) {
   const conRuta = ficheros.find((f) => f.local && f.ruta_local);
 
   try {
-    await pedirAlPc('carpeta', conRuta ? conRuta.ruta_local : '');
+    await pedirAlPc('carpeta', id, conRuta ? conRuta.id : '');
     mostrarAviso('Abriendo la carpeta en el PC…');
   } catch (e) {
-    if (e.sinPc) {
-      mostrarAviso('Abrir la carpeta solo funciona desde el PC.', 'error');
-      return;
-    }
-    // La ruta guardada puede haber cambiado (se movió el fichero o la carpeta):
-    // se reintenta con la carpeta de descargas actual.
-    if (conRuta) {
-      try {
-        await pedirAlPc('carpeta', '');
-        return;
-      } catch (e2) { /* se muestra el error de abajo */ }
-    }
     mostrarAviso(e.message, 'error');
   }
 }

@@ -44,6 +44,9 @@ const BUSQUEDAS_FILE = 'data/busquedas.json';
 const BUSQUEDAS_LOCK = 'data/busquedas.lock';
 const MAX_RESULTADOS = 12;
 const CLEANUP_STAMP  = 'data/.cleanup';
+/** Peticiones «ver» / «carpeta» pendientes de que las recoja el worker. */
+const ABRIR_FILE     = 'data/abrir.json';
+const ABRIR_LOCK     = 'data/abrir.lock';
 const HISTORY_DIR    = 'history_store';
 const HISTORY_FILE   = 'history_store/history.json';
 const HISTORY_LOCK   = 'history_store/history.lock';
@@ -612,6 +615,66 @@ function marcarHistorialEnWeb(string $itemId, int $bytes): void {
  * atiende desde el sondeo (cada 5 s) o desde el latido, el que llegue antes,
  * para que el dialogo salga rapido al pulsar el boton.
  */
+/**
+ * Apunta una peticion de «ver» o «carpeta» para que la recoja el worker.
+ *
+ * No se usa el puerto local del worker porque la CSP del sitio bloquea las
+ * conexiones a http://127.0.0.1 desde la pagina; el worker se lleva la peticion
+ * en su sondeo de cada 5 s (o en el latido) y la ejecuta el, que es quien ve el
+ * disco del PC. Si el PC esta apagado, la peticion caduca en 2 minutos.
+ */
+function pedirAbrir(string $modo, string $ruta, string $nombre): void {
+    $lock = @fopen(__DIR__ . '/' . ABRIR_LOCK, 'c+');
+    if ($lock === false || !flock($lock, LOCK_EX)) {
+        if ($lock !== false) { fclose($lock); }
+        return;
+    }
+    $datos = readJsonFile(ABRIR_FILE, ['peticiones' => []]);
+    $lista = is_array($datos['peticiones'] ?? null) ? $datos['peticiones'] : [];
+    $lista[] = [
+        'modo'   => $modo,
+        'ruta'   => substr($ruta, 0, 260),
+        'nombre' => substr($nombre, 0, 260),
+        'ts'     => time(),
+    ];
+    $datos['peticiones'] = array_slice($lista, -10);
+    writeJsonFile(ABRIR_FILE, $datos);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+}
+
+/** El worker se lleva las peticiones pendientes. Son de un solo uso. */
+function reclamarAbrir(): array {
+    $lock = @fopen(__DIR__ . '/' . ABRIR_LOCK, 'c+');
+    if ($lock === false) {
+        return [];
+    }
+    if (!flock($lock, LOCK_EX)) {
+        fclose($lock);
+        return [];
+    }
+    $datos = readJsonFile(ABRIR_FILE, ['peticiones' => []]);
+    $lista = is_array($datos['peticiones'] ?? null) ? $datos['peticiones'] : [];
+    $ahora = time();
+    $validas = [];
+    foreach ($lista as $peticion) {
+        if (!is_array($peticion)) { continue; }
+        if ($ahora - (int)($peticion['ts'] ?? 0) > 120) { continue; } // PC apagado: caduca
+        $validas[] = [
+            'modo'   => (string)($peticion['modo'] ?? ''),
+            'ruta'   => (string)($peticion['ruta'] ?? ''),
+            'nombre' => (string)($peticion['nombre'] ?? ''),
+        ];
+        if (count($validas) >= 5) { break; }
+    }
+    if (is_array($datos['peticiones'] ?? null) && $datos['peticiones'] !== []) {
+        writeJsonFile(ABRIR_FILE, ['peticiones' => []]);
+    }
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    return $validas;
+}
+
 function reclamarDialogo(): bool {
     $estado = readJsonFile(DIR_FILE, []);
     if (empty($estado['dialog_pending'])) {
@@ -1112,6 +1175,12 @@ if (in_array($action, $workerActions, true)) {
             // El worker aplica el cambio y confirma con `dir_applied`.
             $respuesta['cambiar_dir'] = (string)$estadoDir['pending'];
         }
+        // «Ver» y «Carpeta»: el worker los abre al volver del latido. Es la red
+        // de seguridad de los 30 s, por si el PC esta descargando y no pregunta.
+        $peticionesAbrir = reclamarAbrir();
+        if ($peticionesAbrir) {
+            $respuesta['abrir'] = $peticionesAbrir;
+        }
         flock($lock, LOCK_UN);
         fclose($lock);
         respond(200, $respuesta);
@@ -1213,7 +1282,7 @@ if (in_array($action, $workerActions, true)) {
             $subidas = subidasPendientes($queue);
             flock($lock, LOCK_UN);
             fclose($lock);
-            respond(200, ['success' => true, 'job' => null, 'subidas' => $subidas, 'abrir_dialogo' => reclamarDialogo(), 'busquedas' => reclamarBusquedas()]);
+            respond(200, ['success' => true, 'job' => null, 'subidas' => $subidas, 'abrir_dialogo' => reclamarDialogo(), 'abrir' => reclamarAbrir(), 'busquedas' => reclamarBusquedas()]);
         }
         $queue['jobs'][$chosen]['status'] = 'running';
         $queue['jobs'][$chosen]['claimed_at'] = nowIso();
@@ -1243,6 +1312,8 @@ if (in_array($action, $workerActions, true)) {
             'subidas' => subidasPendientes($queue),
             // Y si toca abrir el explorador de carpetas, que salga ya (sondeo 5 s).
             'abrir_dialogo' => reclamarDialogo(),
+            // «Ver» y «Carpeta» de la cola.
+            'abrir' => reclamarAbrir(),
             'busquedas' => reclamarBusquedas(),
         ]);
     }
@@ -1695,6 +1766,57 @@ if ($action === 'list') {
 }
 
 /**
+ * «Ver» y «Carpeta» de la cola: pide al worker que abra un fichero o su carpeta
+ * EN EL PC. La peticion se queda apuntada y el worker la recoge en su sondeo.
+ */
+if ($action === 'abrir') {
+    $modo = strtolower((string)($body['modo'] ?? ''));
+    if ($modo !== 'ver' && $modo !== 'carpeta') {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(400, ['success' => false, 'error' => 'Modo no valido (ver o carpeta).']);
+    }
+
+    $jobId = cleanId((string)($body['job_id'] ?? ''));
+    $itemId = cleanId((string)($body['item_id'] ?? ''));
+    $index = findJob($queue, $jobId);
+    if ($index === null) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(404, ['success' => false, 'error' => 'Esa descarga ya no esta en la cola.']);
+    }
+
+    $ruta = '';
+    $nombre = '';
+    foreach ((array)($queue['jobs'][$index]['items'] ?? []) as $item) {
+        if (!is_array($item)) { continue; }
+        if ($itemId !== '' && (string)($item['id'] ?? '') !== $itemId) { continue; }
+        $ruta = (string)($item['ruta_local'] ?? '');
+        $nombre = (string)($item['filename'] ?? '');
+        break;
+    }
+    if ($modo === 'ver' && $ruta === '' && $nombre === '') {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(400, ['success' => false, 'error' => 'Esa descarga no tiene ningun fichero.']);
+    }
+
+    flock($lock, LOCK_UN);
+    fclose($lock);
+
+    // Sin el PC encendido no tiene sentido apuntar la peticion: caducaria sin
+    // que nadie la abriera y el usuario se quedaria esperando.
+    $worker = readJsonFile(WORKER_FILE, []);
+    $ultimoLatido = isset($worker['time']) ? (int)$worker['time'] : 0;
+    if ($ultimoLatido === 0 || time() - $ultimoLatido > 120) {
+        respond(503, ['success' => false, 'error' => 'El PC esta desconectado: enciendelo y vuelve a intentarlo.']);
+    }
+
+    pedirAbrir($modo, $ruta, $nombre);
+    respond(200, ['success' => true, 'modo' => $modo]);
+}
+
+/**
  * Cambia la carpeta donde el PC guarda las descargas (por ejemplo a un USB).
  * Aqui solo se deja apuntada la peticion: quien la aplica es el worker, que es
  * el unico que ve el sistema de ficheros del PC, y confirma con `dir_applied`.
@@ -1986,7 +2108,7 @@ fclose($lock);
 respond(400, [
     'success' => false,
     'error'   => 'Accion no valida.',
-    'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download', 'set_dir', 'subir_item', 'elegir_carpeta', 'retry', 'search', 'search_status', 'whatsapp_estado', 'whatsapp_config', 'whatsapp_test',
+    'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download', 'set_dir', 'subir_item', 'elegir_carpeta', 'abrir', 'retry', 'search', 'search_status', 'whatsapp_estado', 'whatsapp_config', 'whatsapp_test',
                        'next', 'progress', 'upload_chunk', 'search_results', 'item_done', 'item_local', 'finish', 'fail',
                        'heartbeat', 'dir_applied'],
 ]);

@@ -237,20 +237,33 @@ La cola de la app tiene dos botones por descarga terminada:
 - **Carpeta**: abre el Explorador en `download_dir` (`D:\Descargas Y, I y T`), con el fichero
   seleccionado cuando la app conoce su ruta.
 
-El worker los atiende en su puerto local (el mismo de `/pc`, por defecto **8125**):
+**Cómo viaja la petición (importante): por la API, no por el puerto local.** La CSP del sitio
+(la del `.htaccess` raíz) solo deja `connect-src` a `'self'` y a unos CDN, así que el navegador
+bloquea cualquier `fetch` a `http://127.0.0.1`. Por eso:
+
+1. La web hace `POST api.php?action=abrir` con `{modo, job_id, item_id}`.
+2. `api.php` apunta la petición en `data/abrir.json`, pero **solo si el PC ha dado señales en
+   los últimos 2 minutos** (si no, responde 503 «PC desconectado»).
+3. El worker la recoge en su sondeo (`next`, cada 5 s) o en el latido (30 s), la ejecuta y la
+   borra: es de un solo uso y caduca a los 2 minutos.
+4. Si la descarga ya se subió a la nube, el servidor **no conoce la ruta** del fichero: manda
+   su nombre y el worker lo busca en `download_dir` (nombre exacto, el más reciente).
+
+El puerto local se conserva para pruebas manuales (misma lógica, sin pasar por la API):
 
 ```text
-GET http://127.0.0.1:8125/abrir?modo=ver&ruta=<ruta completa>
+GET http://127.0.0.1:8125/pc
+GET http://127.0.0.1:8125/abrir?modo=ver&ruta=<ruta completa>[&nombre=<fichero>]
 GET http://127.0.0.1:8125/abrir?modo=carpeta[&ruta=<ruta completa>]
 ```
 
 Reglas de seguridad (no quitarlas):
 
-1. **Solo orígenes del proyecto**: `https://atnojs.es`, `https://www.atnojs.es` y
-   `http://127.0.0.1`/`http://localhost`. Cualquier otra web recibe `403`.
+1. **Solo orígenes del proyecto** en el puerto local: `https://atnojs.es`, `https://www.atnojs.es`
+   y `http://127.0.0.1`/`http://localhost`. Cualquier otra web recibe `403`.
 2. **Solo rutas dentro de `download_dir`**: se resuelve la ruta y se comprueba que cuelga de
-   la carpeta de descargas; si no, `400`. Así una página abierta en el navegador no puede
-   abrir cualquier fichero del disco.
+   la carpeta de descargas; si no, no se abre. Así el navegador no puede abrir cualquier
+   fichero del disco.
 3. La ruta viaja por **variable de entorno** a PowerShell (`Start-Process -LiteralPath`), no
    concatenada en la orden: no hay forma de inyectar comandos.
 
@@ -262,7 +275,7 @@ curl -i -H "Origin: https://atnojs.es" "http://127.0.0.1:8125/abrir?modo=carpeta
 ```
 
 La primera debe devolver `{"pc":true,...,"acciones":["ver","carpeta"]}`. Si el worker es
-anterior a la 1.2, no trae `acciones` y la web mostrará que no puede abrirlo.
+anterior a la 1.2, no trae `acciones`.
 
 ---
 
