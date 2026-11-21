@@ -529,6 +529,11 @@ function atenderAbrir(respuesta) {
   const pedidos = Array.isArray(respuesta && respuesta.abrir) ? respuesta.abrir : [];
   for (const pedido of pedidos) {
     manejarAbrir(String(pedido.modo || ''), String(pedido.ruta || ''), String(pedido.nombre || ''))
+      .then((resultado) => {
+        if (!resultado || !resultado.ok) {
+          logAviso(`No se pudo abrir desde la web: ${resultado && resultado.error ? resultado.error : 'sin detalle'}`);
+        }
+      })
       .catch((e) => logAviso(`Fallo abriendo desde la web: ${e && e.message ? e.message : e}`));
   }
 }
