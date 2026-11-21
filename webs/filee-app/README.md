@@ -17,7 +17,7 @@ sus textos con UI Automation, así que los rótulos son los que muestra la app e
 
 | Sección | Qué incluye |
 |---|---|
-| **Inicio** | Zona de suelta compacta, **perfil activo** (eliges el perfil y marcas los formatos que salen en el círculo; se guardan entre visitas), **menú circular integrado** y lista de «Preparados» con miniatura ampliable. Nada se toca hasta que eliges formato. Después, «Conversiones recientes» con búsqueda y acciones Abrir archivo / Abrir con / Abrir carpeta / Deshacer. |
+| **Inicio** | Zona de suelta compacta, **perfil activo** (eliges el perfil y marcas los formatos que salen en el círculo; se guardan entre visitas), **menú circular integrado** y lista de «Preparados» con miniatura ampliable (rueda del ratón para acercar, arrastrar para mover, doble clic para el tamaño normal). Nada se toca hasta que eliges formato. Después, «Conversiones recientes» con búsqueda y acciones Abrir con / Abrir carpeta / Deshacer. |
 | **General** | Idioma, inicio de sesión, al cerrar la ventana, menú contextual, carpeta de guardado, fechas originales, arrastre desde el navegador, proxy, historial, exportar/importar y carpeta de ajustes. |
 | **Atajos** | Gestos (Ctrl + Left, Ctrl + Alt + Space, Ctrl + Alt + Left), tecla de giro y apps excluidas. |
 | **Ajustes preestablecidos** | Lista de ajustes y editor: nombre, formato, nombre corto, opciones de imagen y salida. |
@@ -30,9 +30,11 @@ sus textos con UI Automation, así que los rótulos son los que muestra la app e
 ## Qué funciona de verdad
 
 - **Flujo de conversión en dos pasos**, como la app: sueltas un archivo y se queda
-  en «Preparados» con su miniatura (clic para verla en grande), su peso y sus
-  dimensiones o páginas. **No se convierte nada** hasta que pulsas un formato del
-  menú circular; entonces se genera el archivo y se añade al historial.
+  en «Preparados» con su miniatura (clic para verla en grande y **zoom con la rueda
+  del ratón**, botones o teclas `+` / `-`; arrastra para mover y doble clic para
+  volver al tamaño normal), su peso y sus dimensiones o páginas. **No se convierte
+  nada** hasta que pulsas un formato del menú circular; entonces se genera el
+  archivo y se añade al historial.
 - **Imágenes** (JPG, PNG, WEBP, AVIF, GIF, BMP…): salida JPG, PNG y WEBP con
   `canvas`; ICO (contenedor con PNG dentro); PDF de una página con la imagen
   incrustada en JPEG; y DOCX con la imagen a página completa.

@@ -85,8 +85,14 @@ export default function Home() {
   const [converting, setConverting] = useState(null);
   const [lastDone, setLastDone] = useState(null);
   const [preview, setPreview] = useState(null);
+  /** Zoom de la vista previa: escala y desplazamiento en píxeles. */
+  const [zoom, setZoom] = useState({ scale: 1, x: 0, y: 0 });
+  const [panning, setPanning] = useState(false);
   const input = useRef(null);
   const blobs = useRef(new Map());
+  const lightbox = useRef(null);
+  const lightboxImg = useRef(null);
+  const panStart = useRef(null);
 
   const profile = PROFILES.find((p) => p.id === settings.profile) || PROFILES[0];
   // Sólo los formatos marcados en «Perfil» llegan al círculo, y en el orden del perfil.
@@ -108,10 +114,97 @@ export default function Home() {
     return settings.history.filter((h) => `${h.title} ${h.file} ${h.type}`.toLowerCase().includes(q));
   }, [settings.history, query]);
 
+  /* ── Vista previa ampliable: rueda para acercar, arrastrar para mover ── */
+  const clampZoom = (value) => Math.min(6, Math.max(1, value));
+
+  /** Limita el desplazamiento para que la imagen no se pierda de vista. */
+  const limitPan = (next) => {
+    const img = lightboxImg.current;
+    if (!img || next.scale <= 1) return { scale: next.scale, x: 0, y: 0 };
+    const maxX = ((next.scale - 1) * img.offsetWidth) / 2;
+    const maxY = ((next.scale - 1) * img.offsetHeight) / 2;
+    return { ...next, x: Math.max(-maxX, Math.min(maxX, next.x)), y: Math.max(-maxY, Math.min(maxY, next.y)) };
+  };
+
+  /** Acerca o aleja alrededor del centro de la imagen (botones y teclas). */
+  function zoomBy(factor) {
+    setZoom((z) => limitPan({ ...z, scale: clampZoom(z.scale * factor) }));
+  }
+
+  /** Doble clic: tamaño normal o 2× en el punto pulsado. */
+  const toggleZoomAt = (e) => {
+    e.stopPropagation();
+    if (zoom.scale > 1) {
+      setZoom({ scale: 1, x: 0, y: 0 });
+      return;
+    }
+    const img = lightboxImg.current;
+    if (!img) return;
+    const box = img.getBoundingClientRect();
+    const cx = e.clientX - box.left - box.width / 2;
+    const cy = e.clientY - box.top - box.height / 2;
+    setZoom(limitPan({ scale: 2, x: -cx, y: -cy }));
+  };
+
+  const startPan = (e) => {
+    if (zoom.scale <= 1 || e.button !== 0) return;
+    if (e.target.closest('button')) return;
+    panStart.current = { px: e.clientX, py: e.clientY, x: zoom.x, y: zoom.y };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    setPanning(true);
+  };
+
+  const movePan = (e) => {
+    const start = panStart.current;
+    if (!start) return;
+    setZoom((z) => limitPan({ ...z, x: start.x + (e.clientX - start.px), y: start.y + (e.clientY - start.py) }));
+  };
+
+  const endPan = () => {
+    panStart.current = null;
+    setPanning(false);
+  };
+
+  // El zoom arranca limpio en cada vista previa y la rueda amplía sobre el cursor.
+  useEffect(() => {
+    setZoom({ scale: 1, x: 0, y: 0 });
+    setPanning(false);
+    panStart.current = null;
+  }, [preview]);
+
+  useEffect(() => {
+    const el = lightbox.current;
+    if (!preview || !el) return;
+    const onWheel = (e) => {
+      e.preventDefault();
+      const img = lightboxImg.current;
+      const box = (img || el).getBoundingClientRect();
+      const cx = e.clientX - box.left - box.width / 2;
+      const cy = e.clientY - box.top - box.height / 2;
+      setZoom((z) => {
+        const scale = clampZoom(z.scale * Math.exp(-e.deltaY * 0.0018));
+        if (scale === z.scale) return z;
+        if (scale === 1) return { scale: 1, x: 0, y: 0 };
+        return limitPan({ scale, x: cx - ((cx - z.x) * scale) / z.scale, y: cy - ((cy - z.y) * scale) / z.scale });
+      });
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      document.body.style.overflow = previous;
+    };
+  }, [preview]);
+
   useEffect(() => {
     if (!preview) return;
     const onKey = (e) => {
       if (e.key === 'Escape') setPreview(null);
+      else if (e.key === '+' || e.key === '=') zoomBy(1.3);
+      else if (e.key === '-') zoomBy(1 / 1.3);
+      else if (e.key === '0') setZoom({ scale: 1, x: 0, y: 0 });
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -249,15 +342,6 @@ export default function Home() {
 
     if (results.length === 1) downloadBlob(blobs.current.get(results[0].name), results[0].name);
     toast(results.length === 1 ? `Listo: ${results[0].name}` : `${results.length} archivos convertidos a ${format}`);
-  };
-
-  const openFile = (item) => {
-    const blob = blobs.current.get(item.file);
-    if (!blob) {
-      toast('Entrada de ejemplo: prepara un archivo y elige un formato para convertirlo de verdad.');
-      return;
-    }
-    downloadBlob(blob, item.file);
   };
 
   return (
@@ -474,9 +558,6 @@ export default function Home() {
               </div>
               {h.ok ? <Icon name="check" className="history-ok" /> : null}
               <div className="history-actions">
-                <Button variant="ghost" icon="file" onClick={() => openFile(h)}>
-                  Abrir archivo
-                </Button>
                 <button type="button" className="icon-btn" aria-label="Abrir con" onClick={() => toast('En la app de escritorio se elige el programa con el que abrir.')}>
                   <Icon name="external" />
                 </button>
@@ -502,19 +583,64 @@ export default function Home() {
       <p className="foot-note">La conversión se ejecuta en tu navegador: los archivos no salen de este equipo.</p>
 
       {preview ? (
-        <div className="lightbox" role="dialog" aria-modal="true" aria-label={preview.name} onClick={() => setPreview(null)}>
-          <figure className="lightbox-figure" onClick={(e) => e.stopPropagation()}>
-            {preview.preview ? <img src={preview.preview} alt={preview.name} /> : null}
+        <div
+          className={`lightbox${panning ? ' is-panning' : ''}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Vista previa de ${preview.name}`}
+          onClick={() => setPreview(null)}
+        >
+          <figure
+            className="lightbox-figure"
+            ref={lightbox}
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={startPan}
+            onPointerMove={movePan}
+            onPointerUp={endPan}
+            onPointerCancel={endPan}
+          >
+            {preview.preview ? (
+              <img
+                ref={lightboxImg}
+                className={`lightbox-img${zoom.scale > 1 ? ' is-zoomed' : ''}`}
+                src={preview.preview}
+                alt={preview.name}
+                draggable={false}
+                style={{ transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.scale})` }}
+                onDoubleClick={toggleZoomAt}
+              />
+            ) : null}
             <figcaption>
               <span>
                 {preview.name}
                 {preview.pages && preview.pages > 1 ? ` · ${preview.pages} páginas` : ''}
                 {preview.dims ? ` · ${preview.dims}` : ''}
               </span>
-              <button type="button" className="icon-btn" aria-label="Cerrar la vista previa" onClick={() => setPreview(null)}>
-                <Icon name="close" />
-              </button>
+              <div className="lightbox-tools">
+                <button type="button" className="icon-btn" aria-label="Alejar" title="Alejar (rueda hacia abajo)" onClick={() => zoomBy(1 / 1.3)}>
+                  <Icon name="minus" />
+                </button>
+                <span className="lightbox-zoom" aria-live="polite">
+                  {Math.round(zoom.scale * 100)}%
+                </span>
+                <button type="button" className="icon-btn" aria-label="Acercar" title="Acercar (rueda hacia arriba)" onClick={() => zoomBy(1.3)}>
+                  <Icon name="plus" />
+                </button>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label="Tamaño normal"
+                  title="Tamaño normal (doble clic)"
+                  onClick={() => setZoom({ scale: 1, x: 0, y: 0 })}
+                >
+                  <Icon name="undo" />
+                </button>
+                <button type="button" className="icon-btn" aria-label="Cerrar la vista previa" onClick={() => setPreview(null)}>
+                  <Icon name="close" />
+                </button>
+              </div>
             </figcaption>
+            <p className="lightbox-hint">Rueda del ratón: ampliar · arrastrar: mover · doble clic: tamaño normal · Esc: cerrar</p>
           </figure>
         </div>
       ) : null}
