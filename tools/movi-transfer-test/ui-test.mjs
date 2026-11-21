@@ -120,17 +120,13 @@ async function main() {
   await page.goto(BASE, { waitUntil: 'networkidle' });
   check('título de la página', (await page.title()).includes('Movi Transfer'));
 
-  const textoUrl = (await page.textContent('#urlLan'))?.trim() ?? '';
-  check('la página muestra la URL exacta de la red local', textoUrl === urlEsperada, textoUrl);
+  const textoUrl = (await page.textContent('#pieUrl'))?.trim() ?? '';
+  check('el pie muestra la URL exacta de la red local', textoUrl === urlEsperada, textoUrl);
   check('estado del servidor activo', ((await page.textContent('#estadoTexto')) ?? '').includes('Servidor activo'));
   check('Electrolize carga de verdad', await page.evaluate(() => document.fonts.check('16px Electrolize')));
   await page.evaluate(() => document.fonts.ready);
 
   await page.screenshot({ path: path.join(EVIDENCIA, 'escritorio-1440.png') });
-
-  await page.click('#copiar');
-  const portapapeles = await page.evaluate(() => navigator.clipboard.readText());
-  check('botón copiar deja la URL en el portapapeles', portapapeles === textoUrl, portapapeles);
 
   // Vista previa de un PDF real, dibujado con pdf.js
   const antesPdf = (await (await fetch(`${BASE}/api/files`)).json()).files.find((file) => file.name === pdfNombre);

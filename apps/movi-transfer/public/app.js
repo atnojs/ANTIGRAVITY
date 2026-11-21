@@ -13,7 +13,6 @@
     query: '',
     subiendo: false,
     cola: [],
-    url: '',
   };
 
   let firmaRender = '';
@@ -23,9 +22,9 @@
     estado: $('#estado'),
     estadoTexto: $('#estadoTexto'),
     version: $('#version'),
-    urlLan: $('#urlLan'),
-    copiar: $('#copiar'),
-    pistaRed: $('#pistaRed'),
+    pieHost: $('#pieHost'),
+    pieUrl: $('#pieUrl'),
+    pieBandeja: $('#pieBandeja'),
     zona: $('#zona'),
     archivos: $('#archivos'),
     cola: $('#cola'),
@@ -35,8 +34,6 @@
     buscar: $('#buscar'),
     refrescar: $('#refrescar'),
     aviso: $('#aviso'),
-    pieHost: $('#pieHost'),
-    pieBandeja: $('#pieBandeja'),
     capaCompartir: $('#capaCompartir'),
     compartirArchivo: $('#compartirArchivo'),
     compartirOpciones: $('#compartirOpciones'),
@@ -558,26 +555,15 @@
       const info = await api('/api/state');
       estado.info = info;
       const url = `http://${info.ip}:${info.port}`;
-      estado.url = url;
-      el.urlLan.textContent = url;
+      el.pieUrl.textContent = url;
       el.version.textContent = `v${info.version}`;
       el.pieHost.textContent = info.hostname;
       el.pieBandeja.textContent = info.inbox ? ` · Bandeja: ${nombreBase(info.inbox)}` : '';
       pintarEstado(true, 'Servidor activo');
-
-      const partes = info.ip.split('.');
-      if (partes.length === 4 && info.ip !== '127.0.0.1') {
-        el.pistaRed.textContent = `Los dos equipos deben estar en la misma Wi-Fi (${partes.slice(0, 3).join('.')}.*).`;
-        el.pistaRed.classList.remove('pista--aviso');
-      } else {
-        el.pistaRed.textContent = 'No se ha detectado una red local. Conecta el PC a la Wi-Fi y reinicia el servidor.';
-        el.pistaRed.classList.add('pista--aviso');
-      }
       return true;
     } catch {
       pintarEstado(false, 'Sin conexión con el servidor');
-      el.pistaRed.textContent = 'El servidor no responde. Comprueba que «iniciar.cmd» sigue abierto en el PC.';
-      el.pistaRed.classList.add('pista--aviso');
+      el.pieUrl.textContent = 'http://—';
       return false;
     }
   }
@@ -910,12 +896,6 @@
       await cargarEstado();
       await cargarArchivos();
       mostrarAviso('Lista actualizada');
-    });
-
-    el.copiar.addEventListener('click', async () => {
-      if (!estado.url) return;
-      const ok = await copiarTexto(estado.url);
-      mostrarAviso(ok ? 'Enlace copiado' : 'Copia la dirección a mano', !ok);
     });
 
     for (const boton of [el.cerrarCompartir, el.cerrarVista]) {

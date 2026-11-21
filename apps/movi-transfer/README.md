@@ -14,8 +14,8 @@ móvil  ──Wi-Fi──►  PC (Node en :8099)  ──►  apps/movi-transfer/
    En este PC el firewall ya permite `node.exe` en redes privadas; si Windows
    preguntara, pulsa **Permitir**. En otro PC donde no conecte, ejecuta una vez
    **`permitir-firewall.cmd`** (pide administrador y abre el puerto 8099).
-2. En el móvil: escribe la dirección `http://IP-DEL-PC:8099` en el navegador (la
-   página del PC la muestra y tiene botón **Copiar**). Tienen que estar en la misma Wi-Fi.
+2. En el móvil: escribe la dirección `http://IP-DEL-PC:8099` en el navegador (aparece
+   como texto pequeño en el pie de la página). Tienen que estar en la misma Wi-Fi.
 3. Arrastra o elige archivos en el móvil → se guardan en la bandeja del PC.
    Desde el PC, cada archivo de la lista se descarga al móvil con su botón.
 
@@ -47,8 +47,8 @@ También se puede forzar por variables de entorno: `MOVI_PORT`, `MOVI_HOST`,
 
 ## Qué hace la página
 
-- **Subida** de varios archivos a la vez, con barra de progreso, velocidad y cancelación.
-  Acepta arrastrar y soltar y el selector del móvil.
+- **Subida** con una barra compacta («Añadir archivos») que se pulsa o admite arrastrar y
+  soltar; varios archivos a la vez, con barra de progreso, velocidad y cancelación.
 - **Lista** de la bandeja con nombre, tamaño, fecha relativa y tipo; buscador y refresco.
   El último archivo **subido o descargado** aparece siempre primero (el orden se guarda
   en `_inbox/.descargas.json` y sobrevive a reinicios). Los ficheros basura de Windows

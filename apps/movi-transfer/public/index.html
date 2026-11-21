@@ -68,41 +68,17 @@
     </header>
 
     <main class="rejilla" id="contenido">
-      <section class="panel panel--conectar" aria-labelledby="tituloConectar">
-        <h2 id="tituloConectar"><span class="num">01</span> Conecta el móvil</h2>
-        <p class="panel__texto">
-          Abre esta dirección en el navegador del móvil. Los dos equipos tienen que estar en la misma red
-          Wi-Fi.
-        </p>
-
-        <div class="url">
-          <code id="urlLan">http://—</code>
-          <button class="boton boton--fantasma" id="copiar" type="button">Copiar</button>
-        </div>
-        <p class="pista" id="pistaRed">Comprobando la red local…</p>
-      </section>
-
       <section class="panel panel--enviar" aria-labelledby="tituloEnviar">
-        <h2 id="tituloEnviar"><span class="num">02</span> Manda archivos al PC</h2>
-        <p class="panel__texto">
-          Elige archivos o arrástralos. Se guardan en la bandeja del PC y aparecen abajo al terminar.
-        </p>
+        <h2 id="tituloEnviar" class="visualmente-oculto">Añadir archivos</h2>
 
-        <label class="zona" id="zona" for="archivos">
+        <label class="zona zona--compacta" id="zona" for="archivos">
           <span class="zona__icono" aria-hidden="true">
-            <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
-              <path d="M32 44V16m0 0-10 10m10-10 10 10" stroke="url(#flecha)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M12 44v5a7 7 0 0 0 7 7h26a7 7 0 0 0 7-7v-5" stroke="rgba(0,208,208,.6)" stroke-width="3.5" stroke-linecap="round" />
-              <defs>
-                <linearGradient id="flecha" x1="32" y1="16" x2="32" y2="44" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#26C626" />
-                  <stop offset="1" stop-color="#00D0D0" />
-                </linearGradient>
-              </defs>
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
           </span>
-          <span class="zona__titulo">Toca para elegir o arrastra aquí</span>
-          <span class="zona__pista">Fotos, vídeos, documentos… varios a la vez</span>
+          <span class="zona__titulo">Añadir archivos</span>
+          <span class="zona__pista">Toca aquí o arrastra</span>
           <input id="archivos" class="zona__input" type="file" multiple />
         </label>
 
@@ -111,7 +87,7 @@
 
       <section class="panel panel--lista" aria-labelledby="tituloLista">
         <div class="lista__cabecera">
-          <h2 id="tituloLista"><span class="num">03</span> Archivos en el PC</h2>
+          <h2 id="tituloLista">Archivos en el PC</h2>
           <div class="lista__acciones">
             <label class="buscar">
               <span class="visualmente-oculto">Buscar archivos por nombre</span>
@@ -147,7 +123,7 @@
 
     <footer class="pie">
       <p>
-        Servidor local <strong id="pieHost">·</strong> · Los archivos no salen de tu red.
+        <span id="pieUrl">http://—</span> · Servidor local <strong id="pieHost">·</strong> · Los archivos no salen de tu red.
         <span id="pieBandeja"></span>
       </p>
     </footer>
