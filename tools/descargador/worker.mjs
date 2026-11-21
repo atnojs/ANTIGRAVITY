@@ -413,18 +413,52 @@ function abrirConProgramaPredeterminado(ruta) {
   });
 }
 
-/** Abre el Explorador en la carpeta de descargas, con el fichero seleccionado. */
+/**
+ * Abre el Explorador en la carpeta (con el fichero seleccionado) y TRAE LA
+ * VENTANA AL FRENTE.
+ *
+ * Lo hace `abrir-carpeta.ps1`: abrirla directamente desde este proceso en
+ * segundo plano dejaba la ventana DETRÁS del navegador, así que Antonio pulsaba
+ * «Carpeta» y parecía que no hacía nada. PowerShell usa `SwitchToThisWindow`
+ * para que la ventana salga delante de verdad.
+ */
 function abrirCarpetaEnElPc(rutaFichero, carpeta) {
-  try {
-    const hijo = rutaFichero
-      ? spawn('explorer.exe', ['/select,' + rutaFichero], { windowsHide: true, stdio: 'ignore', detached: true })
-      : spawn('explorer.exe', [carpeta], { windowsHide: true, stdio: 'ignore', detached: true });
-    hijo.on('error', () => { /* el Explorador no da más información */ });
-    hijo.unref();
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: 'no se pudo abrir el Explorador: ' + e.message };
-  }
+  return new Promise((resolve) => {
+    let terminado = false;
+    let reloj = null;
+    const terminar = (valor) => {
+      if (terminado) return;
+      terminado = true;
+      if (reloj) clearTimeout(reloj);
+      resolve(valor);
+    };
+
+    const script = path.join(DIR_SCRIPT, 'abrir-carpeta.ps1');
+    const argumentos = [
+      '-NoProfile', '-ExecutionPolicy', 'Bypass',
+      '-File', script,
+      '-Carpeta', carpeta,
+    ];
+    if (rutaFichero) {
+      argumentos.push('-Fichero', rutaFichero);
+    }
+
+    let hijo;
+    try {
+      hijo = spawn('powershell.exe', argumentos, { windowsHide: true, stdio: 'ignore' });
+    } catch (e) {
+      terminar({ ok: false, error: 'no se pudo abrir el Explorador: ' + e.message });
+      return;
+    }
+
+    hijo.on('error', (e) => terminar({ ok: false, error: 'no se pudo abrir el Explorador: ' + e.message }));
+    hijo.on('close', (codigo) => {
+      if (codigo === 0) terminar({ ok: true });
+      else terminar({ ok: false, error: 'Windows no pudo abrir el Explorador (código ' + codigo + ')' });
+    });
+    // Si el Explorador tarda, no se deja la petición colgada.
+    reloj = setTimeout(() => terminar({ ok: true }), 12000);
+  });
 }
 
 /**
@@ -490,7 +524,7 @@ async function manejarAbrir(modo, ruta, nombre = '') {
     if (!fs.existsSync(carpeta)) {
       return { ok: false, error: 'No existe la carpeta de descargas: ' + carpeta };
     }
-    const abierto = abrirCarpetaEnElPc(fichero, carpeta);
+    const abierto = await abrirCarpetaEnElPc(fichero, carpeta);
     if (abierto.ok) {
       logInfo(`Explorador abierto desde la web (${fichero || carpeta})`);
       consola(`Abriendo el Explorador en: ${fichero || carpeta}`);

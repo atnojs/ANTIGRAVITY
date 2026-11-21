@@ -25,6 +25,7 @@ descargas, descarga con **yt-dlp** y sube el resultado al servidor **por trozos*
 | Fichero | Para qué sirve |
 |---|---|
 | `worker.mjs` | El worker. Es lo único que hay que ejecutar. |
+| `abrir-carpeta.ps1` | Abre el Explorador en la carpeta de descargas (con el fichero seleccionado) y **trae la ventana al frente**. Lo usa el botón «Carpeta» de la web. |
 | `iniciar-worker.bat` | Lanzador con doble clic (relanza el worker si se cae). |
 | `LEEME.md` | Este documento. |
 | `_prueba\` | Servidor de prueba y config de prueba (ignorado por git). |
@@ -235,7 +236,9 @@ La cola de la app tiene dos botones por descarga terminada:
   también desde el móvil). Si el fichero **solo** está en el PC, la app pide al worker que lo
   abra con el programa predeterminado de Windows.
 - **Carpeta**: abre el Explorador en `download_dir` (`D:\Descargas Y, I y T`), con el fichero
-  seleccionado cuando la app conoce su ruta.
+  seleccionado cuando la app conoce su ruta. La ventana se trae **al frente** con
+  `abrir-carpeta.ps1` (`SwitchToThisWindow`): abrirla desde el worker, que es un proceso en
+  segundo plano, la dejaba detrás del navegador y parecía que el botón no hacía nada.
 
 **Cómo viaja la petición (importante): por la API, no por el puerto local.** La CSP del sitio
 (la del `.htaccess` raíz) solo deja `connect-src` a `'self'` y a unos CDN, así que el navegador
