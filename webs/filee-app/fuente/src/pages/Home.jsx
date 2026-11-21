@@ -131,8 +131,9 @@ export default function Home() {
     setZoom((z) => limitPan({ ...z, scale: clampZoom(z.scale * factor) }));
   }
 
-  /** Doble clic: tamaño normal o 2× en el punto pulsado. */
+  /** Doble clic en la vista: tamaño normal o 2× en el punto pulsado. */
   const toggleZoomAt = (e) => {
+    if (e.target.closest('button')) return;
     e.stopPropagation();
     if (zoom.scale > 1) {
       setZoom({ scale: 1, x: 0, y: 0 });
@@ -141,8 +142,8 @@ export default function Home() {
     const img = lightboxImg.current;
     if (!img) return;
     const box = img.getBoundingClientRect();
-    const cx = e.clientX - box.left - box.width / 2;
-    const cy = e.clientY - box.top - box.height / 2;
+    const cx = e.clientX - (box.left + box.width / 2);
+    const cy = e.clientY - (box.top + box.height / 2);
     setZoom(limitPan({ scale: 2, x: -cx, y: -cy }));
   };
 
@@ -177,14 +178,17 @@ export default function Home() {
     if (!preview || !el) return;
     const onWheel = (e) => {
       e.preventDefault();
-      const img = lightboxImg.current;
-      const box = (img || el).getBoundingClientRect();
-      const cx = e.clientX - box.left - box.width / 2;
-      const cy = e.clientY - box.top - box.height / 2;
       setZoom((z) => {
         const scale = clampZoom(z.scale * Math.exp(-e.deltaY * 0.0018));
         if (scale === z.scale) return z;
         if (scale === 1) return { scale: 1, x: 0, y: 0 };
+        const img = lightboxImg.current;
+        const box = (img || lightbox.current)?.getBoundingClientRect();
+        if (!box) return z;
+        // El rect ya está transformado: su centro es el centro del diseño más
+        // (x, y), así que se deshace el desplazamiento para anclar el cursor.
+        const cx = e.clientX - (box.left + box.width / 2 - z.x);
+        const cy = e.clientY - (box.top + box.height / 2 - z.y);
         return limitPan({ scale, x: cx - ((cx - z.x) * scale) / z.scale, y: cy - ((cy - z.y) * scale) / z.scale });
       });
     };
@@ -594,6 +598,7 @@ export default function Home() {
             className="lightbox-figure"
             ref={lightbox}
             onClick={(e) => e.stopPropagation()}
+            onDoubleClick={toggleZoomAt}
             onPointerDown={startPan}
             onPointerMove={movePan}
             onPointerUp={endPan}
@@ -607,7 +612,6 @@ export default function Home() {
                 alt={preview.name}
                 draggable={false}
                 style={{ transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.scale})` }}
-                onDoubleClick={toggleZoomAt}
               />
             ) : null}
             <figcaption>
