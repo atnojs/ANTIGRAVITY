@@ -289,7 +289,7 @@
     el.cerrarCompartir.focus();
   }
 
-  function mostrarVacioEnVista(file) {
+  function mostrarVacioEnVista(file, extra = null) {
     el.vistaCuerpo.textContent = '';
     const caja = document.createElement('div');
     caja.className = 'visor__vacio';
@@ -301,12 +301,122 @@
     const detalle = document.createElement('p');
     detalle.textContent = `${file.name} · ${bytes(file.size)}. Descárgalo o compártelo para abrirlo con la app adecuada.`;
     caja.append(icono, titulo, detalle);
+    if (extra) {
+      const enlace = document.createElement('a');
+      enlace.className = 'boton';
+      enlace.href = extra.enlace;
+      enlace.target = '_blank';
+      enlace.rel = 'noopener';
+      enlace.textContent = extra.texto;
+      caja.append(enlace);
+    }
     el.vistaCuerpo.append(caja);
   }
 
+  function sanitizarHtml(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.querySelectorAll('script, style, iframe, object, embed, link, meta').forEach((nodo) => nodo.remove());
+    for (const nodo of doc.body.querySelectorAll('*')) {
+      for (const atributo of [...nodo.attributes]) {
+        const nombre = atributo.name.toLowerCase();
+        if (nombre.startsWith('on')) nodo.removeAttribute(atributo.name);
+        if (
+          (nombre === 'href' || nombre === 'src') &&
+          /^\s*(javascript|data:text\/html|vbscript)/i.test(atributo.value)
+        ) {
+          nodo.removeAttribute(atributo.name);
+        }
+      }
+      if (nodo.tagName === 'A') {
+        nodo.setAttribute('target', '_blank');
+        nodo.setAttribute('rel', 'noopener');
+      }
+      if (nodo.tagName === 'IMG') nodo.setAttribute('loading', 'lazy');
+    }
+    return doc.body.innerHTML;
+  }
+
+  let vistaToken = 0;
+
+  async function vistaPdf(file, token) {
+    const contenedor = document.createElement('div');
+    contenedor.className = 'visor__pdf';
+    const carga = document.createElement('p');
+    carga.className = 'visor__nota';
+    carga.textContent = 'Cargando el PDF…';
+    contenedor.append(carga);
+    el.vistaCuerpo.textContent = '';
+    el.vistaCuerpo.append(contenedor);
+
+    try {
+      const pdfjs = await import('./vendor/pdf.min.mjs');
+      pdfjs.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.mjs';
+      const pdf = await pdfjs.getDocument({ url: urlDescarga(file.name) }).promise;
+      if (token !== vistaToken) return;
+
+      contenedor.textContent = '';
+      const limite = Math.min(pdf.numPages, 15);
+      const ancho = Math.max(300, Math.min(el.vistaCuerpo.clientWidth - 40, 900));
+      for (let numero = 1; numero <= limite; numero += 1) {
+        const pagina = await pdf.getPage(numero);
+        if (token !== vistaToken) return;
+        const base = pagina.getViewport({ scale: 1 });
+        const escala = Math.min(2, ancho / base.width);
+        const viewport = pagina.getViewport({ scale: escala });
+        const lienzo = document.createElement('canvas');
+        lienzo.className = 'visor__pagina';
+        lienzo.width = Math.floor(viewport.width);
+        lienzo.height = Math.floor(viewport.height);
+        lienzo.setAttribute('aria-label', `Página ${numero} de ${pdf.numPages}`);
+        contenedor.append(lienzo);
+        await pagina.render({ canvasContext: lienzo.getContext('2d'), viewport }).promise;
+      }
+      const nota = document.createElement('p');
+      nota.className = 'visor__nota';
+      nota.textContent =
+        limite < pdf.numPages
+          ? `Mostrando las primeras ${limite} de ${pdf.numPages} páginas. Descarga el PDF para verlo entero.`
+          : `${pdf.numPages} ${pdf.numPages === 1 ? 'página' : 'páginas'}`;
+      contenedor.append(nota);
+    } catch {
+      if (token === vistaToken) {
+        mostrarVacioEnVista(file, {
+          enlace: urlInline(file.name),
+          texto: 'Abrir el PDF en una pestaña',
+        });
+      }
+    }
+  }
+
+  async function vistaDocx(file) {
+    el.vistaCuerpo.textContent = 'Abriendo el documento…';
+    try {
+      if (typeof window.mammoth?.convertToHtml !== 'function') throw new Error('Sin convertidor DOCX');
+      const respuesta = await fetch(urlDescarga(file.name), { cache: 'no-store' });
+      const buffer = await respuesta.arrayBuffer();
+      const resultado = await window.mammoth.convertToHtml({ arrayBuffer: buffer });
+      const contenedor = document.createElement('div');
+      contenedor.className = 'visor__docx';
+      contenedor.innerHTML = sanitizarHtml(resultado.value);
+      el.vistaCuerpo.textContent = '';
+      el.vistaCuerpo.append(contenedor);
+      if (Array.isArray(resultado.messages) && resultado.messages.length > 0) {
+        const nota = document.createElement('p');
+        nota.className = 'visor__nota';
+        nota.textContent = 'El documento se ha convertido a HTML; algunas maquetaciones complejas pueden variar.';
+        el.vistaCuerpo.append(nota);
+      }
+    } catch {
+      mostrarVacioEnVista(file);
+    }
+  }
+
   function abrirVista(file) {
+    vistaToken += 1;
+    const token = vistaToken;
     el.vistaTitulo.textContent = file.name;
     el.vistaCuerpo.textContent = '';
+    el.vistaCuerpo.className = 'visor__cuerpo';
     el.vistaDescargar.href = urlDescarga(file.name);
     el.vistaDescargar.download = file.name;
     el.vistaCompartir.onclick = () => {
@@ -334,10 +444,11 @@
       audio.controls = true;
       el.vistaCuerpo.append(audio);
     } else if (ext === 'pdf') {
-      const marco = document.createElement('iframe');
-      marco.src = urlInline(file.name);
-      marco.title = `Vista previa de ${file.name}`;
-      el.vistaCuerpo.append(marco);
+      el.vistaCuerpo.classList.add('visor__cuerpo--documento');
+      vistaPdf(file, token);
+    } else if (ext === 'docx') {
+      el.vistaCuerpo.classList.add('visor__cuerpo--documento');
+      vistaDocx(file);
     } else if (TEXTO_EXT.has(ext)) {
       const texto = document.createElement('pre');
       texto.className = 'visor__texto';
@@ -495,7 +606,12 @@
   }
 
   function firmaActual() {
-    const lista = estado.files.map((file) => `${file.name}:${file.size}:${Math.round(file.mtime)}`).join('\u0001');
+    const lista = estado.files
+      .map(
+        (file) =>
+          `${file.name}:${file.size}:${Math.round(file.mtime)}:${file.lastUpload ?? 0}:${file.lastDownload ?? 0}`,
+      )
+      .join('\u0001');
     return `${estado.query}\u0000${lista}`;
   }
 

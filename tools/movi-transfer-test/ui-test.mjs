@@ -80,6 +80,24 @@ async function main() {
   const estadoServidor = await (await fetch(`${BASE}/api/state`)).json();
   const urlEsperada = `http://${estadoServidor.ip}:${estadoServidor.port}`;
 
+  // Fixtures para las vistas previas de PDF y DOCX (nombres únicos por pasada).
+  const sello = Date.now();
+  const fixtures = [
+    { nombre: `prueba-${sello}.pdf`, archivo: 'prueba.pdf' },
+    { nombre: `prueba-${sello}.docx`, archivo: 'prueba.docx' },
+  ];
+  const subidos = [];
+  for (const fixture of fixtures) {
+    const contenido = await fs.readFile(path.join(ROOT, 'tools', 'movi-transfer-test', 'fixtures', fixture.archivo));
+    const respuesta = await fetch(`${BASE}/api/upload?name=${encodeURIComponent(fixture.nombre)}`, {
+      method: 'POST',
+      body: contenido,
+    });
+    if (respuesta.status === 201) subidos.push((await respuesta.json()).name);
+  }
+  const [pdfNombre, docxNombre] = subidos;
+  check('fixtures PDF y DOCX subidas', Boolean(pdfNombre && docxNombre));
+
   navegador = await chromium.launch({
     executablePath: CHROME,
     headless: true,
@@ -113,6 +131,32 @@ async function main() {
   await page.click('#copiar');
   const portapapeles = await page.evaluate(() => navigator.clipboard.readText());
   check('botón copiar deja la URL en el portapapeles', portapapeles === textoUrl, portapapeles);
+
+  // Vista previa de un PDF real, dibujado con pdf.js
+  await page.click(`li.archivo:has-text("${pdfNombre}") .archivo__nombre`);
+  await page.waitForSelector('#capaVista:not([hidden])');
+  await page.waitForSelector('.visor__pdf canvas', { timeout: 30_000 });
+  const anchoPdf = await page.evaluate(() => document.querySelector('.visor__pdf canvas')?.width ?? 0);
+  check('el PDF se dibuja dentro de la app (pdf.js)', anchoPdf > 100, `${anchoPdf}px`);
+  await page.waitForTimeout(350);
+  await page.screenshot({ path: path.join(EVIDENCIA, 'vista-previa-pdf.png') });
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => document.querySelector('#capaVista')?.hidden === true);
+
+  // Vista previa de un DOCX real, convertido con mammoth
+  await page.click(`li.archivo:has-text("${docxNombre}") .archivo__nombre`);
+  await page.waitForSelector('.visor__docx', { timeout: 30_000 });
+  await page.waitForFunction(
+    () => document.querySelector('.visor__docx')?.textContent.includes('DOCX DE PRUEBA'),
+    undefined,
+    { timeout: 15_000 },
+  );
+  const textoDocx = (await page.textContent('.visor__docx')) ?? '';
+  check('el DOCX se convierte y se lee dentro de la app', textoDocx.includes('DOCX DE PRUEBA'));
+  await page.waitForTimeout(350);
+  await page.screenshot({ path: path.join(EVIDENCIA, 'vista-previa-docx.png') });
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => document.querySelector('#capaVista')?.hidden === true);
 
   // El selector real del móvil: tocar la zona abre el diálogo de archivos.
   const [selector] = await Promise.all([
@@ -248,6 +292,34 @@ async function main() {
   const restantesPrueba = await page.locator(`li.archivo:has-text("${nombrePrueba}")`).count();
   check('borrado del archivo de prueba', restantesPrueba === 0);
 
+  // Regresión: el orden por última descarga debe refrescarse en la interfaz.
+  const ordenA = `orden-a-${sello}.bin`;
+  const ordenB = `orden-b-${sello}.bin`;
+  await fetch(`${BASE}/api/upload?name=${encodeURIComponent(ordenA)}`, { method: 'POST', body: Buffer.from('A') });
+  await new Promise((resolve) => setTimeout(resolve, 60));
+  await fetch(`${BASE}/api/upload?name=${encodeURIComponent(ordenB)}`, { method: 'POST', body: Buffer.from('B') });
+  await page.click('#refrescar');
+  await page.waitForFunction(
+    (nombre) => document.querySelector('.archivo__nombre')?.textContent === nombre,
+    ordenB,
+    { timeout: 15_000 },
+  );
+  const primeroAntes = (await page.textContent('.archivo__nombre')) ?? '';
+  check('el último subido es el primero', primeroAntes === ordenB, primeroAntes);
+
+  const descargaOrden = page.waitForEvent('download', { timeout: 15_000 });
+  await page.click(`li.archivo:has-text("${ordenA}") .accion--descargar`);
+  await descargaOrden;
+  await page.waitForFunction(
+    (nombre) => document.querySelector('.archivo__nombre')?.textContent === nombre,
+    ordenA,
+    { timeout: 15_000 },
+  );
+  const primeroDespues = (await page.textContent('.archivo__nombre')) ?? '';
+  check('el último descargado vuelve a ser el primero', primeroDespues === ordenA, primeroDespues);
+  await fetch(`${BASE}/api/files?name=${encodeURIComponent(ordenA)}`, { method: 'DELETE' });
+  await fetch(`${BASE}/api/files?name=${encodeURIComponent(ordenB)}`, { method: 'DELETE' });
+
   // Accesibilidad básica de los controles visibles.
   const controlesSinNombre = await page.evaluate(() =>
     Array.from(document.querySelectorAll('button, a[href]'))
@@ -327,6 +399,10 @@ async function main() {
 
   check('sin errores de consola en escritorio', erroresConsola.length === 0, erroresConsola.join(' | '));
   check('sin errores de consola en móvil', erroresMovil.length === 0, erroresMovil.join(' | '));
+
+  for (const nombre of [pdfNombre, docxNombre]) {
+    if (nombre) await fetch(`${BASE}/api/files?name=${encodeURIComponent(nombre)}`, { method: 'DELETE' });
+  }
 
   await navegador.close();
   navegador = null;

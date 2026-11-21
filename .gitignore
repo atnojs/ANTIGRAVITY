@@ -314,4 +314,8 @@ tools/pruebas/tmp-old-uis/
 # las reglas globales de .htaccess y *.png.
 !apps/movi-transfer/.htaccess
 !apps/movi-transfer/public/icons/*.png
+# Fixtures binarias de las pruebas de vista previa (DOCX/PDF), no son documentos
+# del usuario ni se sirven por web: sólo las usa tools/movi-transfer-test.
+!tools/movi-transfer-test/fixtures/*.pdf
+!tools/movi-transfer-test/fixtures/*.docx
 

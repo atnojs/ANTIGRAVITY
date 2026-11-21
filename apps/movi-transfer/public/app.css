@@ -1003,12 +1003,99 @@ h1 {
   width: 100%;
 }
 
-.visor__cuerpo iframe {
+.visor__cuerpo--documento {
+  place-items: start stretch;
+}
+
+.visor__pdf {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
   width: 100%;
-  height: 70vh;
-  border: 0;
+}
+
+.visor__pagina {
+  max-width: 100%;
+  height: auto;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.visor__docx {
+  width: 100%;
+  max-height: 66vh;
+  padding: 22px 24px;
+  overflow: auto;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  text-align: left;
+  background: rgba(0, 16, 24, 0.55);
+  border: 1px solid var(--border-suave);
   border-radius: 8px;
-  background: #e9ffff;
+}
+
+.visor__docx h1,
+.visor__docx h2,
+.visor__docx h3,
+.visor__docx h4 {
+  margin: 0.9em 0 0.4em;
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: 0.03em;
+}
+
+.visor__docx h1 {
+  font-size: 1.5rem;
+}
+
+.visor__docx h2 {
+  font-size: 1.25rem;
+}
+
+.visor__docx h3 {
+  font-size: 1.08rem;
+}
+
+.visor__docx p {
+  margin: 0.6em 0;
+}
+
+.visor__docx ul,
+.visor__docx ol {
+  margin: 0.6em 0;
+  padding-left: 1.5em;
+}
+
+.visor__docx img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.visor__docx table {
+  width: 100%;
+  margin: 0.8em 0;
+  border-collapse: collapse;
+}
+
+.visor__docx th,
+.visor__docx td {
+  padding: 6px 8px;
+  text-align: left;
+  border: 1px solid var(--border-suave);
+}
+
+.visor__docx a {
+  color: var(--acc);
+}
+
+.visor__docx blockquote {
+  margin: 0.8em 0;
+  padding-left: 12px;
+  color: var(--muted);
+  border-left: 2px solid var(--border);
 }
 
 .visor__texto {
@@ -1157,10 +1244,6 @@ h1 {
     padding: 14px;
     border-radius: 0;
     border: 0;
-  }
-
-  .visor__cuerpo iframe {
-    height: 62vh;
   }
 
   .visor__pie .boton {

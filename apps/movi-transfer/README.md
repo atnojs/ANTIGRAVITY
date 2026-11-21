@@ -54,8 +54,9 @@ También se puede forzar por variables de entorno: `MOVI_PORT`, `MOVI_HOST`,
   en `_inbox/.descargas.json` y sobrevive a reinicios). Los ficheros basura de Windows
   (`Thumbs.db`, `desktop.ini`, `~$…`) no se muestran.
 - **Descarga** individual (con soporte `Range` para vídeos) y **vista previa** al pulsar
-  el nombre: imágenes, vídeo, audio, PDF y texto se ven dentro de la app; para formatos
-  sin visor (Word, Excel, ZIP…) se muestra la ficha con descarga y compartir.
+  el nombre: imágenes, vídeo, audio, **PDF** (dibujado con pdf.js, también en el móvil),
+  **DOCX** (convertido a HTML con mammoth), texto y código. Para formatos sin visor
+  (Excel, PPT, ZIP…) se muestra la ficha con descarga y compartir.
 - **Compartir** con un botón por archivo: menú del sistema (si hay HTTPS), WhatsApp,
   Gmail, correo, copiar enlace o descargar. En HTTP, WhatsApp/Gmail comparten un enlace
   que solo abre dentro de la Wi‑Fi; para enviar el archivo en sí hay que descargarlo y
@@ -84,7 +85,7 @@ También se puede forzar por variables de entorno: `MOVI_PORT`, `MOVI_HOST`,
 | Archivo | Papel |
 |---|---|
 | `server.mjs` | Servidor HTTP sin dependencias: estáticos, subida, descarga, borrado. |
-| `public/` | Página (`index.html`, `app.css`, `app.js`), fuente e iconos. |
+| `public/` | Página (`index.html`, `app.css`, `app.js`), fuente, iconos y librerías vendorizadas (`pdf.js`, `mammoth`) para ver PDF y DOCX sin conexión. |
 | `config.json` | Puerto, bandeja y límite de tamaño. |
 | `iniciar.cmd` / `iniciar-oculto.vbs` | Arranque manual / oculto al iniciar sesión. |
 | `permitir-firewall.cmd` | Regla de entrada para el puerto 8099 (UAC). |

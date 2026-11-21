@@ -18,7 +18,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
 
-const VERSION = '1.2.1';
+const VERSION = '1.3.0';
 const APP_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(APP_DIR, 'public');
 
@@ -83,6 +83,7 @@ const SECURITY_HEADERS = {
   'Content-Security-Policy':
     "default-src 'self'; img-src 'self' data: blob:; media-src 'self'; " +
     "style-src 'self'; script-src 'self'; connect-src 'self'; font-src 'self'; " +
+    "worker-src 'self'; " +
     "object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
 };
 
