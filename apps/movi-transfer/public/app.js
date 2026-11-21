@@ -38,6 +38,17 @@
     aviso: $('#aviso'),
     pieHost: $('#pieHost'),
     pieBandeja: $('#pieBandeja'),
+    capaCompartir: $('#capaCompartir'),
+    compartirArchivo: $('#compartirArchivo'),
+    compartirOpciones: $('#compartirOpciones'),
+    compartirNota: $('#compartirNota'),
+    cerrarCompartir: $('#cerrarCompartir'),
+    capaVista: $('#capaVista'),
+    vistaTitulo: $('#vistaTitulo'),
+    vistaCuerpo: $('#vistaCuerpo'),
+    vistaCompartir: $('#vistaCompartir'),
+    vistaDescargar: $('#vistaDescargar'),
+    cerrarVista: $('#cerrarVista'),
   };
 
   const ICONOS = {
@@ -53,6 +64,14 @@
       '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true"><path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14v1.5A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5V14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
     borrar:
       '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true"><path d="M4 6h12M8 6V4.5A1.5 1.5 0 0 1 9.5 3h1A1.5 1.5 0 0 1 12 4.5V6m-6.5 0 .7 9.1A1.5 1.5 0 0 0 7.7 16.5h4.6a1.5 1.5 0 0 0 1.5-1.4L14.5 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    compartir:
+      '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true"><circle cx="15" cy="5" r="2.2" stroke="currentColor" stroke-width="1.7"/><circle cx="5" cy="10" r="2.2" stroke="currentColor" stroke-width="1.7"/><circle cx="15" cy="15" r="2.2" stroke="currentColor" stroke-width="1.7"/><path d="m7 9 5.8-3M7 11l5.8 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+    whatsapp:
+      '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true"><path d="M3.5 16.5 4.6 13A6.5 6.5 0 1 1 7 15.4l-3.5 1.1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.2 7.4c.3 2 2 3.7 4 4 .6.1 1-.3 1-.9v-.4l-1.5-.6-.6.7c-.8-.4-1.5-1.1-1.9-1.9l.7-.6-.6-1.5h-.4c-.6 0-1 .4-.9 1Z" fill="currentColor"/></svg>',
+    correo:
+      '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true"><rect x="2.5" y="4.5" width="15" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="m3.5 6 6.5 4.5L16.5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    enlace:
+      '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true"><path d="M8.5 11.5 11.5 8.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7 13.5 5.8 14.7a3 3 0 0 1-4.2-4.2L5 7.1a3 3 0 0 1 4.2 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" transform="translate(2 0)"/><path d="M13 6.5l1.2-1.2a3 3 0 0 1 4.2 4.2L15 12.9a3 3 0 0 1-4.2 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" transform="translate(-2 0)"/></svg>',
   };
 
   function mostrarAviso(texto, esError = false) {
@@ -90,6 +109,259 @@
 
   function nombreBase(ruta) {
     return String(ruta ?? '').split(/[\\/]/).filter(Boolean).pop() ?? '';
+  }
+
+  const TEXTO_EXT = new Set(
+    'txt md markdown csv tsv json log xml yml yaml ini conf js mjs cjs ts tsx jsx css scss py php rb go rs java c h cpp sh bat ps1 sql html htm svg srt vtt env'.split(
+      ' ',
+    ),
+  );
+
+  function extensionDe(nombre) {
+    const punto = nombre.lastIndexOf('.');
+    return punto > 0 ? nombre.slice(punto + 1).toLowerCase() : '';
+  }
+
+  function urlDescarga(nombre) {
+    return `/api/download?name=${encodeURIComponent(nombre)}`;
+  }
+
+  function urlInline(nombre) {
+    return `${urlDescarga(nombre)}&inline=1`;
+  }
+
+  let capaAbierta = null;
+  let focoPrevio = null;
+
+  function abrirCapa(capa) {
+    if (capaAbierta && capaAbierta !== capa) cerrarCapa(capaAbierta, false);
+    focoPrevio = document.activeElement;
+    capa.hidden = false;
+    document.body.classList.add('sin-scroll');
+    capaAbierta = capa;
+  }
+
+  function cerrarCapa(capa, restaurarFoco = true) {
+    if (!capa || capa.hidden) return;
+    capa.hidden = true;
+    capaAbierta = null;
+    document.body.classList.remove('sin-scroll');
+    if (restaurarFoco && focoPrevio && typeof focoPrevio.focus === 'function') focoPrevio.focus();
+  }
+
+  async function copiarTexto(texto) {
+    try {
+      await navigator.clipboard.writeText(texto);
+      return true;
+    } catch {
+      const temporal = document.createElement('textarea');
+      temporal.value = texto;
+      temporal.setAttribute('readonly', '');
+      temporal.style.position = 'fixed';
+      temporal.style.opacity = '0';
+      document.body.append(temporal);
+      temporal.select();
+      let ok = false;
+      try {
+        ok = document.execCommand('copy');
+      } catch {
+        ok = false;
+      }
+      temporal.remove();
+      return ok;
+    }
+  }
+
+  function enlaceCompleto(nombre) {
+    return new URL(urlDescarga(nombre), window.location.origin).href;
+  }
+
+  function puedeCompartirArchivos() {
+    try {
+      if (typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return false;
+      const prueba = new File([new Blob(['x'])], 'prueba.txt', { type: 'text/plain' });
+      return navigator.canShare({ files: [prueba] });
+    } catch {
+      return false;
+    }
+  }
+
+  function crearOpcion({ etiqueta, icono, href, accion, descargar, destacada = false }) {
+    const nodo = document.createElement(href ? 'a' : 'button');
+    nodo.className = `opcion${destacada ? ' opcion--destacada' : ''}`;
+    if (href) {
+      nodo.href = href;
+      if (descargar) nodo.download = descargar;
+      else {
+        nodo.target = '_blank';
+        nodo.rel = 'noopener';
+      }
+    } else {
+      nodo.type = 'button';
+    }
+    const cajaIcono = document.createElement('span');
+    cajaIcono.className = 'opcion__icono';
+    cajaIcono.innerHTML = icono;
+    const texto = document.createElement('span');
+    texto.textContent = etiqueta;
+    nodo.append(cajaIcono, texto);
+    if (accion) {
+      nodo.addEventListener('click', async (evento) => {
+        evento.preventDefault();
+        try {
+          await accion();
+        } catch {
+          mostrarAviso('No se pudo completar la acción', true);
+        }
+      });
+    }
+    return nodo;
+  }
+
+  async function compartirNativo(file) {
+    if (!puedeCompartirArchivos()) return;
+    const respuesta = await fetch(urlDescarga(file.name), { cache: 'no-store' });
+    if (!respuesta.ok) throw new Error('No se pudo leer el archivo');
+    const blob = await respuesta.blob();
+    const archivo = new File([blob], file.name, { type: blob.type || 'application/octet-stream' });
+    if (!navigator.canShare({ files: [archivo] })) throw new Error('El sistema no acepta este archivo');
+    await navigator.share({ files: [archivo], title: file.name });
+    cerrarCapa(el.capaCompartir);
+  }
+
+  function abrirCompartir(file) {
+    if (!el.capaVista.hidden) cerrarCapa(el.capaVista, false);
+    const enlace = enlaceCompleto(file.name);
+    const texto = `${file.name}\n${enlace}`;
+    const nativo = puedeCompartirArchivos();
+
+    el.compartirArchivo.textContent = `${file.name} · ${bytes(file.size)}`;
+    el.compartirOpciones.textContent = '';
+
+    if (nativo) {
+      el.compartirOpciones.append(
+        crearOpcion({
+          etiqueta: 'Compartir archivo con otra app…',
+          icono: ICONOS.compartir,
+          accion: () => compartirNativo(file),
+          destacada: true,
+        }),
+      );
+    }
+
+    el.compartirOpciones.append(
+      crearOpcion({
+        etiqueta: 'WhatsApp',
+        icono: ICONOS.whatsapp,
+        href: `https://wa.me/?text=${encodeURIComponent(texto)}`,
+      }),
+      crearOpcion({
+        etiqueta: 'Gmail',
+        icono: ICONOS.correo,
+        href: `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(file.name)}&body=${encodeURIComponent(texto)}`,
+      }),
+      crearOpcion({
+        etiqueta: 'Correo electrónico',
+        icono: ICONOS.correo,
+        href: `mailto:?subject=${encodeURIComponent(file.name)}&body=${encodeURIComponent(texto)}`,
+      }),
+      crearOpcion({
+        etiqueta: 'Copiar enlace',
+        icono: ICONOS.enlace,
+        accion: async () => {
+          const ok = await copiarTexto(enlace);
+          mostrarAviso(ok ? 'Enlace copiado' : 'No se pudo copiar el enlace', !ok);
+          if (ok) cerrarCapa(el.capaCompartir);
+        },
+      }),
+      crearOpcion({
+        etiqueta: 'Descargar archivo',
+        icono: ICONOS.descargar,
+        href: urlDescarga(file.name),
+        descargar: file.name,
+      }),
+    );
+
+    el.compartirNota.textContent = nativo
+      ? 'Se abrirá el menú de tu móvil para elegir WhatsApp, Gmail u otra app.'
+      : 'WhatsApp y Gmail comparten un enlace que solo abre el archivo dentro de tu Wi-Fi. Para enviar el archivo en sí, descárgalo y compártelo desde la app de Archivos o Fotos.';
+
+    abrirCapa(el.capaCompartir);
+    el.cerrarCompartir.focus();
+  }
+
+  function mostrarVacioEnVista(file) {
+    el.vistaCuerpo.textContent = '';
+    const caja = document.createElement('div');
+    caja.className = 'visor__vacio';
+    const icono = document.createElement('span');
+    icono.className = 'archivo__icono';
+    icono.innerHTML = ICONOS[file.kind] ?? ICONOS.file;
+    const titulo = document.createElement('strong');
+    titulo.textContent = 'No hay vista previa para este formato';
+    const detalle = document.createElement('p');
+    detalle.textContent = `${file.name} · ${bytes(file.size)}. Descárgalo o compártelo para abrirlo con la app adecuada.`;
+    caja.append(icono, titulo, detalle);
+    el.vistaCuerpo.append(caja);
+  }
+
+  function abrirVista(file) {
+    el.vistaTitulo.textContent = file.name;
+    el.vistaCuerpo.textContent = '';
+    el.vistaDescargar.href = urlDescarga(file.name);
+    el.vistaDescargar.download = file.name;
+    el.vistaCompartir.onclick = () => {
+      cerrarCapa(el.capaVista, false);
+      abrirCompartir(file);
+    };
+
+    const ext = extensionDe(file.name);
+    if (file.kind === 'image') {
+      const imagen = document.createElement('img');
+      imagen.alt = file.name;
+      imagen.src = urlInline(file.name);
+      imagen.addEventListener('error', () => mostrarVacioEnVista(file));
+      el.vistaCuerpo.append(imagen);
+    } else if (file.kind === 'video') {
+      const video = document.createElement('video');
+      video.src = urlInline(file.name);
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      el.vistaCuerpo.append(video);
+    } else if (file.kind === 'audio') {
+      const audio = document.createElement('audio');
+      audio.src = urlInline(file.name);
+      audio.controls = true;
+      el.vistaCuerpo.append(audio);
+    } else if (ext === 'pdf') {
+      const marco = document.createElement('iframe');
+      marco.src = urlInline(file.name);
+      marco.title = `Vista previa de ${file.name}`;
+      el.vistaCuerpo.append(marco);
+    } else if (TEXTO_EXT.has(ext)) {
+      const texto = document.createElement('pre');
+      texto.className = 'visor__texto';
+      texto.textContent = 'Cargando…';
+      el.vistaCuerpo.append(texto);
+      fetch(urlDescarga(file.name), { headers: { Range: 'bytes=0-262143' }, cache: 'no-store' })
+        .then((respuesta) => respuesta.text())
+        .then((contenido) => {
+          texto.textContent = contenido || '(archivo vacío)';
+          if (file.size > 262_144) {
+            const nota = document.createElement('p');
+            nota.className = 'visor__nota';
+            nota.textContent = 'Mostrando los primeros 256 KB. Descarga el archivo para verlo entero.';
+            el.vistaCuerpo.append(nota);
+          }
+        })
+        .catch(() => mostrarVacioEnVista(file));
+    } else {
+      mostrarVacioEnVista(file);
+    }
+
+    abrirCapa(el.capaVista);
+    el.cerrarVista.focus();
   }
 
   async function api(ruta, opciones = {}) {
@@ -188,16 +460,12 @@
     const enlace = document.createElement('a');
     enlace.className = 'archivo__nombre';
     enlace.textContent = file.name;
-    enlace.title = file.name;
-    const esMedia = file.kind === 'image' || file.kind === 'video' || file.kind === 'audio';
-    const url = `/api/download?name=${encodeURIComponent(file.name)}`;
-    enlace.href = esMedia ? `${url}&inline=1` : url;
-    if (esMedia) {
-      enlace.target = '_blank';
-      enlace.rel = 'noopener';
-    } else {
-      enlace.download = file.name;
-    }
+    enlace.title = `Ver ${file.name}`;
+    enlace.href = urlInline(file.name);
+    enlace.addEventListener('click', (evento) => {
+      evento.preventDefault();
+      abrirVista(file);
+    });
     cuerpo.append(enlace);
 
     const meta = document.createElement('p');
@@ -223,9 +491,17 @@
     const acciones = document.createElement('div');
     acciones.className = 'archivo__acciones';
 
+    const compartir = document.createElement('button');
+    compartir.type = 'button';
+    compartir.className = 'accion accion--compartir';
+    compartir.title = `Compartir ${file.name}`;
+    compartir.setAttribute('aria-label', `Compartir ${file.name}`);
+    compartir.innerHTML = ICONOS.compartir;
+    compartir.addEventListener('click', () => abrirCompartir(file));
+
     const descargar = document.createElement('a');
-    descargar.className = 'accion';
-    descargar.href = url;
+    descargar.className = 'accion accion--descargar';
+    descargar.href = urlDescarga(file.name);
     descargar.download = file.name;
     descargar.title = `Descargar ${file.name}`;
     descargar.setAttribute('aria-label', `Descargar ${file.name}`);
@@ -239,7 +515,7 @@
     borrar.innerHTML = ICONOS.borrar;
     borrar.addEventListener('click', () => eliminarArchivo(file.name));
 
-    acciones.append(descargar, borrar);
+    acciones.append(compartir, descargar, borrar);
     li.append(acciones);
 
     // Al descargar (o abrir la vista previa) se refresca la lista para que el
@@ -492,24 +768,24 @@
 
     el.copiar.addEventListener('click', async () => {
       if (!estado.url) return;
-      try {
-        await navigator.clipboard.writeText(estado.url);
-        mostrarAviso('Enlace copiado');
-      } catch {
-        const temporal = document.createElement('textarea');
-        temporal.value = estado.url;
-        temporal.setAttribute('readonly', '');
-        temporal.style.position = 'fixed';
-        temporal.style.opacity = '0';
-        document.body.append(temporal);
-        temporal.select();
-        try {
-          document.execCommand('copy');
-          mostrarAviso('Enlace copiado');
-        } catch {
-          mostrarAviso('Copia la dirección a mano', true);
-        }
-        temporal.remove();
+      const ok = await copiarTexto(estado.url);
+      mostrarAviso(ok ? 'Enlace copiado' : 'Copia la dirección a mano', !ok);
+    });
+
+    for (const boton of [el.cerrarCompartir, el.cerrarVista]) {
+      boton.addEventListener('click', () => cerrarCapa(boton.closest('.capa')));
+    }
+
+    for (const capa of [el.capaCompartir, el.capaVista]) {
+      capa.addEventListener('click', (evento) => {
+        if (evento.target === capa) cerrarCapa(capa);
+      });
+    }
+
+    document.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape' && capaAbierta) {
+        evento.preventDefault();
+        cerrarCapa(capaAbierta);
       }
     });
 

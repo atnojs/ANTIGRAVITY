@@ -158,6 +158,40 @@
 
     <p class="aviso" id="aviso" role="status" aria-live="polite"></p>
 
+    <!-- Capa: compartir -->
+    <div class="capa" id="capaCompartir" hidden>
+      <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="compartirTitulo">
+        <div class="hoja__cabecera">
+          <div>
+            <p class="eyebrow">Enviar a otra app</p>
+            <h2 id="compartirTitulo">Compartir</h2>
+          </div>
+          <button class="cerrar" id="cerrarCompartir" type="button" aria-label="Cerrar el menú de compartir">✕</button>
+        </div>
+        <p class="hoja__archivo" id="compartirArchivo"></p>
+        <div class="hoja__opciones" id="compartirOpciones"></div>
+        <p class="hoja__nota" id="compartirNota"></p>
+      </div>
+    </div>
+
+    <!-- Capa: vista previa -->
+    <div class="capa" id="capaVista" hidden>
+      <div class="visor" role="dialog" aria-modal="true" aria-labelledby="vistaTitulo">
+        <div class="visor__cabecera">
+          <div class="visor__titulo">
+            <p class="eyebrow">Vista previa</p>
+            <h2 id="vistaTitulo"></h2>
+          </div>
+          <button class="cerrar" id="cerrarVista" type="button" aria-label="Cerrar la vista previa">✕</button>
+        </div>
+        <div class="visor__cuerpo" id="vistaCuerpo"></div>
+        <div class="visor__pie">
+          <button class="boton" id="vistaCompartir" type="button">Compartir</button>
+          <a class="boton" id="vistaDescargar" href="#" download>Descargar</a>
+        </div>
+      </div>
+    </div>
+
     <noscript>
       <p class="sin-js">Movi Transfer necesita JavaScript activado en el navegador.</p>
     </noscript>

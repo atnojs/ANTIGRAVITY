@@ -53,8 +53,13 @@ También se puede forzar por variables de entorno: `MOVI_PORT`, `MOVI_HOST`,
   El último archivo **subido o descargado** aparece siempre primero (el orden se guarda
   en `_inbox/.descargas.json` y sobrevive a reinicios). Los ficheros basura de Windows
   (`Thumbs.db`, `desktop.ini`, `~$…`) no se muestran.
-- **Descarga** individual (con soporte `Range` para vídeos) y **vista previa** de
-  imágenes, vídeo y audio.
+- **Descarga** individual (con soporte `Range` para vídeos) y **vista previa** al pulsar
+  el nombre: imágenes, vídeo, audio, PDF y texto se ven dentro de la app; para formatos
+  sin visor (Word, Excel, ZIP…) se muestra la ficha con descarga y compartir.
+- **Compartir** con un botón por archivo: menú del sistema (si hay HTTPS), WhatsApp,
+  Gmail, correo, copiar enlace o descargar. En HTTP, WhatsApp/Gmail comparten un enlace
+  que solo abre dentro de la Wi‑Fi; para enviar el archivo en sí hay que descargarlo y
+  compartirlo desde la app de Archivos/Fotos.
 - **Borrado** con confirmación.
 - **QR** con la dirección de la red local y botón de copiar.
 

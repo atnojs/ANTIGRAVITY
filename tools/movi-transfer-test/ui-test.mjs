@@ -133,6 +133,38 @@ async function main() {
   const filasSelector = await page.locator(`li.archivo:has-text("${nombreSelector}")`).count();
   check('tocar la zona abre el selector de archivos', filasSelector === 1, nombreSelector);
 
+  // Vista previa de un archivo de texto al pulsar su nombre
+  await page.click(`li.archivo:has-text("${nombreSelector}") .archivo__nombre`);
+  await page.waitForSelector('#capaVista:not([hidden])');
+  await page.waitForFunction(
+    () => document.querySelector('.visor__texto')?.textContent.includes('archivo elegido desde el selector'),
+    { timeout: 10_000 },
+  );
+  const textoVista = (await page.textContent('.visor__texto')) ?? '';
+  check('la vista previa muestra el contenido del texto', textoVista.includes('archivo elegido desde el selector'));
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: path.join(EVIDENCIA, 'vista-previa-texto.png') });
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => document.querySelector('#capaVista')?.hidden === true);
+  const vistaCerrada = await page.evaluate(() => document.querySelector('#capaVista')?.hidden === true);
+  check('Escape cierra la vista previa', vistaCerrada);
+
+  // Menú de compartir con WhatsApp y Gmail
+  await page.click(`li.archivo:has-text("${nombreSelector}") .accion--compartir`);
+  await page.waitForSelector('#capaCompartir:not([hidden])');
+  const whatsapp = await page.getAttribute('#compartirOpciones a[href^="https://wa.me/"]', 'href');
+  const gmail = await page.getAttribute('#compartirOpciones a[href*="mail.google.com"]', 'href');
+  check('el menú de compartir ofrece WhatsApp y Gmail', Boolean(whatsapp) && Boolean(gmail));
+  check(
+    'los enlaces de compartir llevan el nombre y la URL del archivo',
+    Boolean(whatsapp?.includes(encodeURIComponent(nombreSelector)) && whatsapp?.includes('http')),
+    whatsapp?.slice(0, 80),
+  );
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: path.join(EVIDENCIA, 'compartir.png') });
+  await page.click('#cerrarCompartir');
+  await page.waitForFunction(() => document.querySelector('#capaCompartir')?.hidden === true);
+
   // El refresco de 15 s no debe robar el foco ni repintar la lista.
   await page.focus(`li.archivo:has-text("${nombreSelector}") .accion--borrar`);
   const focoAntes = await page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? '');
@@ -178,11 +210,19 @@ async function main() {
   );
   const filasPrueba = await page.locator(`li.archivo:has-text("${nombrePrueba}")`).count();
   check('el archivo aparece en la lista', filasPrueba === 1, nombrePrueba);
+
+  // Cualquier archivo abre su ficha de vista previa al pulsar el nombre
+  await page.click(`li.archivo:has-text("${nombrePrueba}") .archivo__nombre`);
+  await page.waitForSelector('#capaVista:not([hidden])');
+  const vacioVista = (await page.textContent('.visor__vacio strong')) ?? '';
+  check('un formato sin visor muestra su ficha con descarga y compartir', vacioVista.includes('No hay vista previa'));
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => document.querySelector('#capaVista')?.hidden === true);
   await page.waitForTimeout(3600); // deja terminar animación y aviso
   await page.screenshot({ path: path.join(EVIDENCIA, 'escritorio-con-archivo.png') });
 
   const descarga = page.waitForEvent('download', { timeout: 15_000 });
-  await page.click(`li.archivo:has-text("${nombrePrueba}") .accion`);
+  await page.click(`li.archivo:has-text("${nombrePrueba}") .accion--descargar`);
   const evento = await descarga;
   const destino = path.join(EVIDENCIA, 'descarga.bin');
   await evento.saveAs(destino);
@@ -244,6 +284,18 @@ async function main() {
   await paginaMovil.locator('#lista').scrollIntoViewIfNeeded();
   await paginaMovil.waitForTimeout(250);
   await paginaMovil.screenshot({ path: path.join(EVIDENCIA, 'movil-390-lista.png') });
+
+  await paginaMovil.locator('.accion--compartir').first().click();
+  await paginaMovil.waitForSelector('#capaCompartir:not([hidden])');
+  await paginaMovil.waitForTimeout(400);
+  await paginaMovil.screenshot({ path: path.join(EVIDENCIA, 'movil-compartir.png') });
+  const altoHoja = await paginaMovil.evaluate(() => {
+    const hoja = document.querySelector('.hoja');
+    return hoja ? Math.round(hoja.getBoundingClientRect().height) : 0;
+  });
+  check('el menú de compartir cabe en el móvil', altoHoja > 0 && altoHoja <= 844, `${altoHoja}px`);
+  await paginaMovil.keyboard.press('Escape');
+  await paginaMovil.waitForFunction(() => document.querySelector('#capaCompartir')?.hidden === true);
 
   const desborde390 = await medirDesborde(paginaMovil);
   check('sin desbordamiento horizontal en 390 px', desborde390 <= 1, `${desborde390}px`);
