@@ -264,7 +264,7 @@ Reglas de seguridad (no quitarlas):
 2. **Solo rutas dentro de `download_dir`**: se resuelve la ruta y se comprueba que cuelga de
    la carpeta de descargas; si no, no se abre. Así el navegador no puede abrir cualquier
    fichero del disco.
-3. La ruta viaja por **variable de entorno** a PowerShell (`Start-Process -LiteralPath`), no
+3. La ruta viaja por **variable de entorno** a PowerShell (`Start-Process -FilePath`), no
    concatenada en la orden: no hay forma de inyectar comandos.
 
 Comprobación rápida desde una consola (`curl` de Windows 10/11):
