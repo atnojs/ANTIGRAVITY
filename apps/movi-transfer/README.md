@@ -10,12 +10,13 @@ móvil  ──Wi-Fi──►  PC (Node en :8099)  ──►  apps/movi-transfer/
 
 ## Arranque rápido
 
-1. Doble clic en **`permitir-firewall.cmd`** (sólo la primera vez). Pide permisos de
-   administrador y abre el puerto 8099 en redes privadas.
-2. Doble clic en **`iniciar.cmd`**. Se abre el navegador del PC con la página.
-3. En el móvil: escanea el **QR** que aparece, o escribe la dirección
+1. Doble clic en **`iniciar.cmd`**. Se abre el navegador del PC con la página.
+   En este PC el firewall ya permite `node.exe` en redes privadas; si Windows
+   preguntara, pulsa **Permitir**. En otro PC donde no conecte, ejecuta una vez
+   **`permitir-firewall.cmd`** (pide administrador y abre el puerto 8099).
+2. En el móvil: escanea el **QR** que aparece, o escribe la dirección
    `http://IP-DEL-PC:8099` en el navegador. Tienen que estar en la misma Wi-Fi.
-4. Arrastra o elige archivos en el móvil → se guardan en la bandeja del PC.
+3. Arrastra o elige archivos en el móvil → se guardan en la bandeja del PC.
    Desde el PC, cada archivo de la lista se descarga al móvil con su botón.
 
 Para parar el servidor, cierra la ventana de `iniciar.cmd`.
