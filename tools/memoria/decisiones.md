@@ -471,3 +471,9 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 - **Decisión:** el perfil activo y los formatos marcados por perfil se guardan en `localStorage` (clave `filee-app-settings-v1`), igual que el resto de ajustes de la app. Se declara como excepción consciente en la autoevaluación.
 - **Por qué:** el usuario pide expresamente que lo marcado persista al refrescar; sin backend, `localStorage` es el único almacén disponible y ya era el patrón del resto de ajustes.
 - **Cómo se comprueba:** desmarcar un formato, recargar y leer `localStorage`; capturas `03-ico-desmarcado.png` y `04-tras-recargar.png` en `tools/evidencias/2026-11-21-filee-app/`.
+### [2026-11-21] DESCARGAS: cola FIFO con pausa que conserva el `.part` y errores clasificados
+
+- **Contexto:** la cola era LIFO (el último trabajo empezaba primero), no se podía pausar ni reordenar, y los fallos llegaban como texto crudo de yt-dlp.
+- **Decisión:** orden explícito `orden` (FIFO), pausa que mata yt-dlp **sin borrar** la carpeta de trabajo para que `--continue` reanude, clasificación de fallos en el worker (`login`/`actualizar`/`limite`/`bloqueo`/`espacio`/`nodisponible`/`red`/`otro`) y botón de arreglo según la clase.
+- **Por qué:** FIFO es lo que espera cualquiera de una cola; conservar el `.part` evita volver a bajar lo ya descargado; la clase del fallo es lo que permite ofrecer el botón correcto sin que el usuario lea el log.
+- **Cómo se comprueba:** pruebas de API (`move`/`pause`/`resume`/`clear_finished`) y en producción: pausa 720p con límite 1 MB/s → «En pausa» → «Reanudar» → «Listo».
