@@ -1162,6 +1162,9 @@ function pararSonda() {
 function pintarProbe() {
   const caja = $('probe-box');
   if (!caja) return;
+  // Las calidades apagadas de un enlace no valen para el siguiente: se recalcula
+  // siempre (sin datos, se vuelven a encender todas).
+  aplicarCalidadesDisponibles();
   const probe = state.probe;
   if (!probe) {
     caja.innerHTML = '';
@@ -1197,7 +1200,7 @@ function pintarProbe() {
   caja.innerHTML =
     '<div class="probe-card">' +
       (info.thumbnail
-        ? '<img class="probe-thumb" src="' + esc(info.thumbnail) + '" alt="" loading="lazy" referrerpolicy="no-referrer">'
+        ? '<img class="probe-thumb" src="' + esc(info.thumbnail) + '" alt="' + esc(info.title || 'Miniatura del vídeo') + '" loading="lazy" referrerpolicy="no-referrer">'
         : '') +
       '<div class="probe-copy">' +
         '<p class="probe-title">' + esc(info.title || 'Sin título') + '</p>' +

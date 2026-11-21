@@ -1127,7 +1127,12 @@ function construirArgumentos(job, dirJob) {
   }
 
   args.push('--ffmpeg-location', config.ffmpegDir);
-  args.push('--force-overwrites');        // los reintentos no deben fallar
+  // OJO: `--force-overwrites` incluye `--no-continue`. Solo se pone en el PRIMER
+  // intento: al reanudar (intentos > 1) tiraría el .part que conserva la pausa y
+  // volvería a bajar el fichero desde cero.
+  if ((Number(job.attempts) || 0) <= 1) {
+    args.push('--force-overwrites');
+  }
   args.push('--write-info-json');         // título y duración fiables (no se sube)
   args.push(job.playlist ? '--yes-playlist' : '--no-playlist');
   args.push(job.url);
@@ -1209,6 +1214,9 @@ function ejecutarYtDlp(job, dirJob, { alProgreso }) {
 
     if (usarFichero) {
       try { fdLectura = fs.openSync(rutaLogYtDlp, 'r'); } catch { fdLectura = null; }
+      // El fichero se abre en modo 'a': al reanudar hay lineas del intento
+      // anterior. Se empieza a leer desde el final para no repetir el progreso.
+      try { posLectura = fs.statSync(rutaLogYtDlp).size; } catch { posLectura = 0; }
     }
 
     const contexto = {
@@ -2332,6 +2340,16 @@ async function principal() {
       // «Actualizar yt-dlp» pedido desde la web.
       if (respuesta.herramienta === 'ytdlp') {
         actualizarHerramienta('ytdlp').catch((e) => logAviso(`Fallo al actualizar yt-dlp: ${e.message}`));
+      }
+
+      // Carpetas temporales de trabajos pausados que se cancelaron o borraron.
+      const limpiar = Array.isArray(respuesta.limpiar) ? respuesta.limpiar : [];
+      for (const idViejo of limpiar) {
+        const dirViejo = path.join(config.downloadDir, '.descargas-tmp', String(idViejo));
+        if (fs.existsSync(dirViejo)) {
+          borrarCarpetaDeTrabajo(dirViejo);
+          logInfo(`Carpeta temporal borrada: ${dirViejo}`);
+        }
       }
 
       // Los «traer a la web» pendientes se atienden en segundo plano: no deben

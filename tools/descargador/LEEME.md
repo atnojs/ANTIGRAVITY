@@ -208,8 +208,9 @@ powershell -NoProfile -Command "Get-Content -Wait -Tail 40 -Encoding UTF8 '$env:
   cada 2 s.
 - Un trabajo con `playlist: false` añade `--no-playlist`; con `true`, `--yes-playlist` y
   numeración `001 - Título [id].ext`.
-- `--force-overwrites` está activado a propósito: los reintentos no deben quedarse parados
-  pidiendo confirmación.
+- `--force-overwrites` **solo en el primer intento**: los reintentos no deben quedarse
+  parados pidiendo confirmación, pero al reanudar un trabajo en pausa ese flag incluye
+  `--no-continue` y tiraría el `.part` ya descargado.
 - **Matar yt-dlp es matar un ÁRBOL.** `yt-dlp.exe` es un ejecutable empaquetado con
   PyInstaller: el proceso que lanza el worker es un padre que crea un hijo (y éste puede
   crear un `ffmpeg`). Por eso, al cancelar un trabajo o al pulsar Ctrl+C, el worker usa

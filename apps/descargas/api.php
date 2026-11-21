@@ -47,6 +47,9 @@ const SONDAS_FILE    = 'data/sondas.json';
 const SONDAS_LOCK    = 'data/sondas.lock';
 /** Peticiones de herramientas al PC (actualizar yt-dlp) y su ultimo resultado. */
 const TOOL_FILE      = 'data/tool.json';
+/** Carpetas temporales del PC que hay que borrar (trabajos pausados anulados). */
+const LIMPIAR_FILE   = 'data/limpiar.json';
+const LIMPIAR_LOCK   = 'data/limpiar.lock';
 const MAX_RESULTADOS = 12;
 const CLEANUP_STAMP  = 'data/.cleanup';
 /** Peticiones «ver» / «carpeta» pendientes de que las recoja el worker. */
@@ -822,9 +825,47 @@ function reclamarSondas(): array {
     return $pendientes;
 }
 
+/** Apunta una carpeta temporal del PC que el worker debe borrar. */
+function anotarLimpieza(string $jobId): void {
+    if ($jobId === '') {
+        return;
+    }
+    $lock = lockFile(LIMPIAR_LOCK);
+    if (!flock($lock, LOCK_EX)) {
+        fclose($lock);
+        return;
+    }
+    $lista = readJsonFile(LIMPIAR_FILE, []);
+    if (!is_array($lista)) {
+        $lista = [];
+    }
+    $lista[] = $jobId;
+    writeJsonFile(LIMPIAR_FILE, array_values(array_unique($lista)));
+    flock($lock, LOCK_UN);
+    fclose($lock);
+}
+
+/** El worker recoge las carpetas temporales que hay que borrar. */
+function reclamarLimpieza(): array {
+    $lock = lockFile(LIMPIAR_LOCK);
+    if (!flock($lock, LOCK_EX)) {
+        fclose($lock);
+        return [];
+    }
+    $lista = readJsonFile(LIMPIAR_FILE, []);
+    if (!is_array($lista)) {
+        $lista = [];
+    }
+    if ($lista) {
+        writeJsonFile(LIMPIAR_FILE, []);
+    }
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    return array_values(array_filter($lista, 'is_string'));
+}
+
 /** Siguiente numero de orden para un trabajo nuevo (la cola va por orden). */
-function siguienteOrden(array $queue): int {
-    $max = 0;
+function siguienteOrden(array $queue): int {    $max = 0;
     foreach ($queue['jobs'] as $job) {
         $orden = (int)($job['orden'] ?? 0);
         if ($orden > $max) {
@@ -1410,6 +1451,7 @@ if (in_array($action, $workerActions, true)) {
                 'sondas' => reclamarSondas(),
                 'pausado' => !empty($queue['paused']),
                 'herramienta' => (string)(readJsonFile(TOOL_FILE, [])['estado'] ?? '') === 'pendiente' ? 'ytdlp' : '',
+                'limpiar' => reclamarLimpieza(),
             ]);
         }
         $queue['jobs'][$chosen]['status'] = 'running';
@@ -1450,6 +1492,7 @@ if (in_array($action, $workerActions, true)) {
             'sondas' => reclamarSondas(),
             'pausado' => false,
             'herramienta' => (string)(readJsonFile(TOOL_FILE, [])['estado'] ?? '') === 'pendiente' ? 'ytdlp' : '',
+            'limpiar' => reclamarLimpieza(),
         ]);
     }
 
@@ -2280,7 +2323,14 @@ if ($action === 'resume_all') {
     $queue['paused'] = false;
     $reanudados = 0;
     foreach ($queue['jobs'] as $i => $job) {
-        if ((string)($job['status'] ?? '') === 'paused') {
+        $status = (string)($job['status'] ?? '');
+        // Tambien se quita el «pausar» a los que estaban en marcha: si no, un
+        // «Pausar todo» seguido de «Reanudar todo» los dejaria pausandose igual.
+        if ($status === 'running' && !empty($job['pause_requested'])) {
+            $queue['jobs'][$i]['pause_requested'] = false;
+            $queue['jobs'][$i]['stage'] = 'descargando';
+        }
+        if ($status === 'paused') {
             $queue['jobs'][$i]['status'] = 'queued';
             $queue['jobs'][$i]['stage'] = 'en cola';
             $queue['jobs'][$i]['pause_requested'] = false;
@@ -2511,6 +2561,12 @@ if ($action === 'cancel') {
     if (($queue['jobs'][$index]['status'] ?? '') === 'queued') {
         $queue['jobs'][$index]['status'] = 'cancelled';
         $queue['jobs'][$index]['finished_at'] = nowIso();
+    } elseif (($queue['jobs'][$index]['status'] ?? '') === 'paused') {
+        $queue['jobs'][$index]['status'] = 'cancelled';
+        $queue['jobs'][$index]['finished_at'] = nowIso();
+        // Un trabajo pausado puede tener medio fichero en el PC: que el worker
+        // borre su carpeta temporal.
+        anotarLimpieza($jobId);
     }
     $queue['jobs'][$index]['updated_at'] = nowIso();
     writeJsonFile(QUEUE_FILE, $queue);
@@ -2538,6 +2594,10 @@ if ($action === 'delete') {
     unset($jobs[$index]);
     $queue['jobs'] = array_values($jobs);
     writeJsonFile(QUEUE_FILE, $queue);
+    // Si estaba pausado, su carpeta temporal del PC se queda a medias.
+    if (in_array($status, ['paused', 'queued'], true)) {
+        anotarLimpieza($jobId);
+    }
     removeJobFiles($jobId);
     flock($lock, LOCK_UN);
     fclose($lock);

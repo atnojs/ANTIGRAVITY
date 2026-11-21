@@ -3096,3 +3096,9 @@ las cabeceras.
 - **Web:** tarjeta de previsualización con miniatura real y calidades apagadas, filtros con contadores, ↑/↓, pausar/reanudar, «limpiar terminadas», registro/comando desplegable, límite de velocidad recordado, Ctrl+Enter/teclado y aviso del navegador al terminar.
 - **Verificación:** pruebas de API locales (23 comprobaciones OK) contra una copia con `auth.php` de prueba; en producción (login real): sonda real «Me at the zoo» (240p), descarga 720p con límite 1 MB/s a ~1 MiB/s, pausa en 4 s, reanudación y «Listo», error real con pista y registro, reordenar en cola pausada, móvil 393 sin desbordes. Ficheros de prueba borrados (servidor y `D:\Descargas Y, I y T`).
 - **Commit:** `9412d248`.
+### 2026-11-21 (tarde, 3) — Descargas: arreglada la reanudación real tras la pausa
+- **Fallo que vio el verificador:** el worker pasaba siempre `--force-overwrites` (incluye `--no-continue`), así que al reanudar un trabajo pausado yt-dlp tiraba el `.part` y volvía a bajar desde 0.
+- **Arreglo:** el flag solo se pasa si `attempts <= 1`; además el progreso se lee desde el tamaño actual de `_ytdlp.log` (no se repite el intento anterior), `resume_all` limpia `pause_requested` de los que estaban en marcha, las calidades se recalculan al cambiar de enlace y una cola `limpiar.json` permite que el worker borre la carpeta temporal de un trabajo pausado cancelado o borrado. Nuevo asset `app.20261121e.js`.
+- **Comprobado en producción:** pausa al 34,2 % (`.part` 19.912.616 B) → reanudar → log de yt-dlp `Resuming download at byte 19912616` y sigue por 36 %→41,7 %.
+- **Limpieza:** trabajos y ficheros de prueba borrados; historial de prueba eliminado (71→68 entradas).
+- **Commit:** ver `git log -1 -- apps/descargas`.
