@@ -4,7 +4,7 @@
 - **Por qué:** el objetivo es transferir por la Wi-Fi de casa sin instalar nada en el móvil. LocalSend obligaría a instalar app en el teléfono; un servidor propio en Node (cero dependencias) hace el trabajo con el navegador y deja los archivos en disco.
 - **Contrapartida:** es HTTP sin cifrar y sin autenticación (sólo red local, documentado). La copia del repo se publica en la raíz de Hostinger, así que la carpeta lleva un `.htaccess` que la deniega y la bandeja está ignorada por git. El arranque automático es opcional (acceso en Inicio), no una tarea programada: `schtasks` está denegado en este equipo.
 - **Alternativa descartada:** PWA con service worker; el navegador exige HTTPS (o localhost) para instalarla y aquí se sirve por IP en HTTP.
-- **Verificación:** ver `bitacora.md` 2026-11-21 (API 23/23, UI 20/20, axe 0 violaciones, acceso de red desde WSL).
+- **Verificación:** ver `bitacora.md` 2026-11-21 (API 32/32, UI 22/22, axe 0 violaciones, acceso de red desde WSL).
 
 ## 2026-11-03 — ANTONIO: C: solo sistema y programas; los datos, fuera
 

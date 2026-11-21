@@ -57,13 +57,19 @@ También se puede forzar por variables de entorno: `MOVI_PORT`, `MOVI_HOST`,
 
 ## Límites y seguridad
 
-- Es **HTTP sin cifrar**, pensado para la red de casa. No lo publiques en internet ni lo
-  abras en redes públicas: cualquiera en esa red podría subir o descargar archivos.
-- El firewall abre el puerto **solo en el perfil de red privada**.
+- Es **HTTP sin cifrar y sin autenticación**, pensado para la red de casa. No lo publiques
+  en internet ni lo dejes arrancado en redes públicas o compartidas: cualquiera que llegue
+  al puerto puede subir, descargar **y borrar** archivos.
+- En este PC la regla de firewall existente para `node.exe` es TCP y está activa en los
+  perfiles **Privada y Pública** (la creó Windows al usar Node). Si eso te preocupa,
+  restringe esa regla al perfil Privada o ejecuta `permitir-firewall.cmd` y desactiva la
+  genérica; el servidor no comprueba el perfil de red.
 - La carpeta lleva un `.htaccess` que la deniega por web en Hostinger; el servidor Node
   no se ejecuta allí, así que la copia desplegada es sólo respaldo de código.
 - En subidas muy largas desde el móvil, mantén la pantalla encendida: si el navegador se
   suspende, la subida se corta (no hay reanudación por trozos en esta versión).
+- Los nombres repetidos se guardan como `foto (2).jpg`: dos subidas simultáneas con el
+  mismo nombre se reservan antes de escribir y nunca comparten archivo.
 - Límite por archivo de 25 GB; el resto depende del espacio del disco del PC.
 
 ## Estructura

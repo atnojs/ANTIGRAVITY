@@ -16,6 +16,9 @@
     url: '',
   };
 
+  let firmaRender = '';
+  let nombresPrevios = new Set();
+
   const el = {
     estado: $('#estado'),
     estadoTexto: $('#estadoTexto'),
@@ -235,14 +238,30 @@
     return li;
   }
 
-  function pintarArchivos() {
+  function firmaActual() {
+    const lista = estado.files.map((file) => `${file.name}:${file.size}:${Math.round(file.mtime)}`).join('\u0001');
+    return `${estado.query}\u0000${lista}`;
+  }
+
+  function pintarArchivos(force = false) {
+    const firma = firmaActual();
+    // El refresco periódico no repinta si no ha cambiado nada: así no se pierde
+    // el foco del teclado ni se repite la animación de entrada cada 15 s.
+    if (!force && firma === firmaRender) return;
+    firmaRender = firma;
+
     const filtro = estado.query.trim().toLowerCase();
     const visibles = filtro
       ? estado.files.filter((file) => file.name.toLowerCase().includes(filtro))
       : estado.files;
 
     el.lista.textContent = '';
-    for (const file of visibles) el.lista.append(crearFilaArchivo(file));
+    for (const file of visibles) {
+      const fila = crearFilaArchivo(file);
+      if (!nombresPrevios.has(file.name)) fila.classList.add('archivo--nuevo');
+      el.lista.append(fila);
+    }
+    nombresPrevios = new Set(estado.files.map((file) => file.name));
 
     const total = estado.files.reduce((suma, file) => suma + file.size, 0);
     const cuenta = estado.files.length;
@@ -313,6 +332,11 @@
 
     const progreso = document.createElement('div');
     progreso.className = 'progreso';
+    progreso.setAttribute('role', 'progressbar');
+    progreso.setAttribute('aria-valuemin', '0');
+    progreso.setAttribute('aria-valuemax', '100');
+    progreso.setAttribute('aria-valuenow', '0');
+    progreso.setAttribute('aria-label', `Progreso de ${file.name}`);
     const barra = document.createElement('div');
     barra.className = 'progreso__barra';
     progreso.append(barra);
@@ -320,10 +344,11 @@
     linea.append(nombre, info, cancelar);
     li.append(linea, progreso);
 
-    li._cancelar = () => cancelar.click();
-    li._set = (texto, pct) => {
+    li._set = (texto, pct, barraPct = pct) => {
+      const valor = Math.max(0, Math.min(100, pct));
       info.textContent = texto;
-      barra.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+      barra.style.transform = `scaleX(${Math.max(0, Math.min(100, barraPct)) / 100})`;
+      progreso.setAttribute('aria-valuenow', valor.toFixed(0));
     };
     li._fin = () => progreso.remove();
     return li;
@@ -382,7 +407,7 @@
 
       xhr.addEventListener('abort', () => {
         fila.remove();
-        if (!cancelada) mostrarAviso(`${file.name}: subida cancelada`);
+        if (cancelada) mostrarAviso(`${file.name}: subida cancelada`);
         resolver(false);
       });
 

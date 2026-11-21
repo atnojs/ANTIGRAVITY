@@ -10,6 +10,7 @@
 
 import { createHash, randomBytes } from 'node:crypto';
 import fs from 'node:fs/promises';
+import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -51,6 +52,21 @@ async function borrar(nombre) {
   return fetch(`${BASE}/api/files?name=${encodeURIComponent(nombre)}`, { method: 'DELETE' });
 }
 
+function peticionCruda(pathname) {
+  const url = new URL(BASE);
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      { host: url.hostname, port: url.port || 80, path: pathname, method: 'GET' },
+      (res) => {
+        res.resume();
+        res.on('end', () => resolve(res.statusCode));
+      },
+    );
+    req.on('error', reject);
+    req.end();
+  });
+}
+
 const creados = [];
 
 async function main() {
@@ -65,6 +81,7 @@ async function main() {
     Boolean(estado.ip) && Number(estado.port) > 0 && Boolean(estado.inbox),
     `${estado.ip}:${estado.port}`,
   );
+  check('state no filtra la ruta absoluta de la bandeja', !/[\\/]/.test(estado.inbox ?? ''), estado.inbox);
 
   // 2. Página y cabeceras
   const index = await fetch(`${BASE}/`);
@@ -72,6 +89,11 @@ async function main() {
   const csp = index.headers.get('content-security-policy') ?? '';
   check('index sirve HTML', index.status === 200 && html.includes('Movi Transfer'));
   check('index con CSP y nosniff', csp.includes("default-src 'self'") && index.headers.get('x-content-type-options') === 'nosniff');
+
+  const malformada = await peticionCruda('/%E0%A4%A');
+  check('URL malformada devuelve 400', malformada === 400, String(malformada));
+  const nula = await peticionCruda('/%00');
+  check('URL con %00 devuelve 400', nula === 400, String(nula));
 
   // 3. Subida y descarga idéntica
   const contenido = randomBytes(256 * 1024);
@@ -135,6 +157,12 @@ async function main() {
   check('nombre unicode se conserva', unicode.status === 201 && unicodeJson.name === 'foto ñandú – 2026 (1).txt', unicodeJson.name);
   await borrar(unicodeJson.name);
 
+  const literal = await subir('a%20b.txt', Buffer.from('x'));
+  const literalJson = await literal.json();
+  creados.push(literalJson.name);
+  check('nombre con % literal no se decodifica dos veces', literalJson.name === 'a%20b.txt', literalJson.name);
+  await borrar(literalJson.name);
+
   // 7. Rutas maliciosas y nombres prohibidos
   const traversal = await subir('..\\..\\fuera-de-la-bandeja.txt', Buffer.from('x'));
   const traversalJson = await traversal.json();
@@ -158,6 +186,14 @@ async function main() {
   const getSubida = await fetch(`${BASE}/api/upload`);
   check('GET en /api/upload devuelve 405', getSubida.status === 405);
 
+  const csrf = await fetch(`${BASE}/api/upload?name=csrf.txt`, {
+    method: 'POST',
+    body: Buffer.from('x'),
+    headers: { Origin: 'http://evil.test' },
+  });
+  check('POST con Origin ajeno devuelve 403', csrf.status === 403);
+  check('no se creó el archivo del intento CSRF', !(await listar()).some((file) => file.name === 'csrf.txt'));
+
   // 9. Concurrencia
   const lotes = Array.from({ length: 5 }, (_, i) => ({
     nombre: `concurrente-${i}.bin`,
@@ -167,6 +203,35 @@ async function main() {
   const creadosLote = await Promise.all(respuestas.map((res) => res.json()));
   creadosLote.forEach((item) => item.ok && creados.push(item.name));
   check('5 subidas concurrentes', respuestas.every((res) => res.status === 201), `${respuestas.filter((r) => r.status === 201).length}/5`);
+
+  // Mismo nombre a la vez: la reserva debe dar 8 archivos distintos e íntegros.
+  const mismoNombre = Array.from({ length: 8 }, (_, i) => ({
+    contenido: Buffer.concat([Buffer.from(`#${i}|`), randomBytes(256 * 1024)]),
+  }));
+  const resMismo = await Promise.all(mismoNombre.map((item) => subir('dos-moviles.jpg', item.contenido)));
+  const jsonMismo = await Promise.all(resMismo.map((res) => res.json()));
+  jsonMismo.forEach((item) => item.ok && creados.push(item.name));
+  check(
+    '8 subidas simultáneas con el mismo nombre: todas 201',
+    resMismo.every((res) => res.status === 201),
+    resMismo.map((r) => r.status).join(','),
+  );
+  const nombresMismo = jsonMismo.map((item) => item.name);
+  check(
+    '8 nombres distintos reservados',
+    new Set(nombresMismo.map((nombre) => nombre.toLowerCase())).size === 8,
+    nombresMismo.join(' | '),
+  );
+  const hashesEsperados = new Set(mismoNombre.map((item) => sha(item.contenido)));
+  const hashesBajados = new Set();
+  for (const nombre of nombresMismo) {
+    hashesBajados.add(sha(Buffer.from(await (await descargar(nombre)).arrayBuffer())));
+  }
+  check(
+    'contenido íntegro de las 8 subidas simultáneas',
+    hashesBajados.size === 8 && [...hashesEsperados].every((hash) => hashesBajados.has(hash)),
+    `${hashesBajados.size}/8`,
+  );
 
   // 10. Descarga inexistente y borrado
   const noExiste = await descargar('no-existe-jamas.bin');

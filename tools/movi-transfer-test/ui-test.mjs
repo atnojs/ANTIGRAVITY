@@ -5,10 +5,10 @@
  * Uso:
  *   node tools/movi-transfer-test/ui-test.mjs [--base=http://127.0.0.1:8099]
  *
- * Requiere `playwright-core` instalado fuera del repo (por defecto en
- * %TEMP%\movi-pw) y Chrome instalado. Hace el flujo completo —carga, QR,
- * subida, descarga, búsqueda, copia, borrado— en escritorio y móvil, comprueba
- * consola y desbordes, y guarda capturas + informe en tools/evidencias/.
+ * Requiere `playwright-core` y `axe-core` instalados fuera del repo (por
+ * defecto en %TEMP%\movi-pw) y Chrome instalado. Recorre el flujo completo
+ * —carga, QR, selector, foco, subida, descarga, búsqueda, copia, borrado— en
+ * escritorio, móvil y tableta; audita WCAG con axe y guarda capturas + informe.
  */
 
 import { createHash, randomBytes } from 'node:crypto';
@@ -47,20 +47,43 @@ async function auditar(page) {
     const resultado = await window.axe.run(document, {
       runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
     });
-    return resultado.violations.map(
-      (violacion) => `${violacion.id} (${violacion.impact}): ${violacion.nodes.length} nodo(s)`,
-    );
+    return {
+      violaciones: resultado.violations.map(
+        (violacion) => `${violacion.id} (${violacion.impact}): ${violacion.nodes.length} nodo(s)`,
+      ),
+      incompletos: resultado.incomplete
+        .filter((item) => item.id === 'color-contrast')
+        .reduce((suma, item) => suma + item.nodes.length, 0),
+    };
+  });
+}
+
+/** Mide el desbordamiento horizontal anulando el overflow-x:hidden que lo tapa. */
+async function medirDesborde(page) {
+  return page.evaluate(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const htmlPrevio = html.style.overflowX;
+    const bodyPrevio = body.style.overflowX;
+    html.style.overflowX = 'visible';
+    body.style.overflowX = 'visible';
+    const desborde = html.scrollWidth - window.innerWidth;
+    html.style.overflowX = htmlPrevio;
+    body.style.overflowX = bodyPrevio;
+    return desborde;
   });
 }
 
 async function main() {
   await fs.mkdir(EVIDENCIA, { recursive: true });
-  const navegadorAbierto = await chromium.launch({
+  const estadoServidor = await (await fetch(`${BASE}/api/state`)).json();
+  const urlEsperada = `http://${estadoServidor.ip}:${estadoServidor.port}`;
+
+  navegador = await chromium.launch({
     executablePath: CHROME,
     headless: true,
     args: ['--no-first-run', '--no-default-browser-check', '--force-device-scale-factor=1'],
   });
-  navegador = navegadorAbierto;
 
   const erroresConsola = [];
   const contexto = await navegador.newContext({
@@ -79,27 +102,19 @@ async function main() {
   check('título de la página', (await page.title()).includes('Movi Transfer'));
 
   const textoUrl = (await page.textContent('#urlLan'))?.trim() ?? '';
-  const esperado = new URL(BASE).host;
-  check(
-    'la página muestra la URL de la red local',
-    textoUrl.startsWith('http://') && textoUrl.endsWith(esperado.split(':').pop()),
-    textoUrl,
-  );
+  check('la página muestra la URL exacta de la red local', textoUrl === urlEsperada, textoUrl);
   check('QR generado en SVG', (await page.locator('#qr svg').count()) === 1);
   check('estado del servidor activo', ((await page.textContent('#estadoTexto')) ?? '').includes('Servidor activo'));
-  check(
-    'Electrolize carga de verdad',
-    await page.evaluate(() => document.fonts.check('16px Electrolize')),
-  );
+  check('Electrolize carga de verdad', await page.evaluate(() => document.fonts.check('16px Electrolize')));
+  await page.evaluate(() => document.fonts.ready);
 
-  await page.screenshot({ path: path.join(EVIDENCIA, 'escritorio-1440.png'), fullPage: true });
+  await page.screenshot({ path: path.join(EVIDENCIA, 'escritorio-1440.png') });
 
-  // Copiar el enlace
   await page.click('#copiar');
   const portapapeles = await page.evaluate(() => navigator.clipboard.readText());
   check('botón copiar deja la URL en el portapapeles', portapapeles === textoUrl, portapapeles);
 
-  // El selector real del móvil: tocar la zona abre el diálogo de archivos
+  // El selector real del móvil: tocar la zona abre el diálogo de archivos.
   const [selector] = await Promise.all([
     page.waitForEvent('filechooser', { timeout: 10_000 }),
     page.click('#zona'),
@@ -115,7 +130,16 @@ async function main() {
     nombreSelector,
     { timeout: 15_000 },
   );
-  check('tocar la zona abre el selector de archivos', true, nombreSelector);
+  const filasSelector = await page.locator(`li.archivo:has-text("${nombreSelector}")`).count();
+  check('tocar la zona abre el selector de archivos', filasSelector === 1, nombreSelector);
+
+  // El refresco de 15 s no debe robar el foco ni repintar la lista.
+  await page.focus(`li.archivo:has-text("${nombreSelector}") .accion--borrar`);
+  const focoAntes = await page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? '');
+  await page.waitForTimeout(16_500);
+  const focoDespues = await page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? '');
+  check('el refresco periódico conserva el foco del teclado', focoAntes !== '' && focoAntes === focoDespues, focoDespues);
+
   page.once('dialog', (dialogo) => dialogo.accept());
   await page.click(`li.archivo:has-text("${nombreSelector}") .accion--borrar`);
   await page.waitForFunction(
@@ -123,20 +147,17 @@ async function main() {
     nombreSelector,
     { timeout: 15_000 },
   );
+  const filasTrasBorrar = await page.locator(`li.archivo:has-text("${nombreSelector}")`).count();
+  check('borrado desde la interfaz', filasTrasBorrar === 0);
 
-  // Auditoría automática de accesibilidad (contexto aparte con bypassCSP sólo
-  // para poder inyectar axe; la página auditada es la misma).
-  const contextoAuditoria = await navegador.newContext({
-    viewport: { width: 1440, height: 900 },
-    bypassCSP: true,
-    locale: 'es-ES',
-  });
-  const paginaAuditoria = await contextoAuditoria.newPage();
-  await paginaAuditoria.goto(BASE, { waitUntil: 'networkidle' });
-  const violaciones = await auditar(paginaAuditoria);
-  check('axe sin violaciones WCAG A/AA (escritorio)', violaciones.length === 0, violaciones.join(' | '));
+  const auditoriaEscritorio = await auditarAuditoria(navegador, { width: 1440, height: 900 });
+  check(
+    'axe sin violaciones WCAG A/AA (escritorio)',
+    auditoriaEscritorio.violaciones.length === 0,
+    `${auditoriaEscritorio.violaciones.join(' | ')} · ${auditoriaEscritorio.incompletos} contraste(s) incompleto(s) por fondo degradado`,
+  );
 
-  // Subida desde el "móvil" (input file)
+  // Subida desde el input file, con descarga real y comparación de bytes.
   const contenido = randomBytes(300 * 1024);
   const nombrePrueba = `prueba-ui-${Date.now()}.bin`;
   const origen = path.join(EVIDENCIA, 'origen.bin');
@@ -155,10 +176,11 @@ async function main() {
     nombrePrueba,
     { timeout: 15_000 },
   );
-  check('el archivo aparece en la lista', true, nombrePrueba);
-  await page.screenshot({ path: path.join(EVIDENCIA, 'escritorio-con-archivo.png'), fullPage: true });
+  const filasPrueba = await page.locator(`li.archivo:has-text("${nombrePrueba}")`).count();
+  check('el archivo aparece en la lista', filasPrueba === 1, nombrePrueba);
+  await page.waitForTimeout(3600); // deja terminar animación y aviso
+  await page.screenshot({ path: path.join(EVIDENCIA, 'escritorio-con-archivo.png') });
 
-  // Descarga real y comparación de bytes
   const descarga = page.waitForEvent('download', { timeout: 15_000 });
   await page.click(`li.archivo:has-text("${nombrePrueba}") .accion`);
   const evento = await descarga;
@@ -167,7 +189,6 @@ async function main() {
   const descargado = await fs.readFile(destino);
   check('descarga desde la interfaz, byte a byte', sha(descargado) === sha(contenido), `${descargado.length} bytes`);
 
-  // Búsqueda
   await page.fill('#buscar', 'zzz-no-existe');
   await page.waitForFunction(() => document.querySelector('#vacio')?.hidden === false);
   check(
@@ -177,7 +198,6 @@ async function main() {
   await page.fill('#buscar', '');
   await page.waitForFunction(() => document.querySelector('#vacio')?.hidden === true);
 
-  // Borrado con confirmación
   page.once('dialog', (dialogo) => dialogo.accept());
   await page.click(`li.archivo:has-text("${nombrePrueba}") .accion--borrar`);
   await page.waitForFunction(
@@ -185,9 +205,10 @@ async function main() {
     nombrePrueba,
     { timeout: 15_000 },
   );
-  check('borrado desde la interfaz', true);
+  const restantesPrueba = await page.locator(`li.archivo:has-text("${nombrePrueba}")`).count();
+  check('borrado del archivo de prueba', restantesPrueba === 0);
 
-  // Accesibilidad básica de los controles visibles
+  // Accesibilidad básica de los controles visibles.
   const controlesSinNombre = await page.evaluate(() =>
     Array.from(document.querySelectorAll('button, a[href]'))
       .filter((nodo) => nodo.offsetParent !== null)
@@ -196,7 +217,14 @@ async function main() {
   );
   check('todos los controles visibles tienen nombre accesible', controlesSinNombre.length === 0, controlesSinNombre.join(' | '));
 
-  // Móvil real (390 × 844) y comprobación de desbordes
+  // Móvil real (390 × 844), con un archivo de muestra para que la captura
+  // enseñe la lista tal y como la ve el usuario.
+  const demoNombre = `demo-movil-${Date.now()}.txt`;
+  await fetch(`${BASE}/api/upload?name=${encodeURIComponent(demoNombre)}`, {
+    method: 'POST',
+    body: Buffer.from('Archivo de demostración para la captura móvil.\n'),
+  });
+
   const movil = await navegador.newContext({
     viewport: { width: 390, height: 844 },
     deviceScaleFactor: 3,
@@ -211,44 +239,45 @@ async function main() {
   });
   paginaMovil.on('pageerror', (error) => erroresMovil.push(`pageerror: ${error.message}`));
   await paginaMovil.goto(BASE, { waitUntil: 'networkidle' });
-  const desborde = await paginaMovil.evaluate(
-    () => document.documentElement.scrollWidth - window.innerWidth,
-  );
-  check('sin desbordamiento horizontal en 390 px', desborde <= 1, `${desborde}px`);
-  await paginaMovil.screenshot({ path: path.join(EVIDENCIA, 'movil-390.png'), fullPage: true });
+  await paginaMovil.evaluate(() => document.fonts.ready);
+  await paginaMovil.screenshot({ path: path.join(EVIDENCIA, 'movil-390.png') });
+  await paginaMovil.locator('#lista').scrollIntoViewIfNeeded();
+  await paginaMovil.waitForTimeout(250);
+  await paginaMovil.screenshot({ path: path.join(EVIDENCIA, 'movil-390-lista.png') });
 
-  const contextoAxeMovil = await navegador.newContext({
-    viewport: { width: 390, height: 844 },
+  const desborde390 = await medirDesborde(paginaMovil);
+  check('sin desbordamiento horizontal en 390 px', desborde390 <= 1, `${desborde390}px`);
+
+  const auditoriaMovil = await auditarAuditoria(navegador, {
+    width: 390,
+    height: 844,
     isMobile: true,
     hasTouch: true,
-    bypassCSP: true,
-    locale: 'es-ES',
   });
-  const paginaAxeMovil = await contextoAxeMovil.newPage();
-  await paginaAxeMovil.goto(BASE, { waitUntil: 'networkidle' });
-  const violacionesMovil = await auditar(paginaAxeMovil);
-  check('axe sin violaciones WCAG A/AA (móvil)', violacionesMovil.length === 0, violacionesMovil.join(' | '));
+  check(
+    'axe sin violaciones WCAG A/AA (móvil)',
+    auditoriaMovil.violaciones.length === 0,
+    `${auditoriaMovil.violaciones.join(' | ')} · ${auditoriaMovil.incompletos} contraste(s) incompleto(s) por fondo degradado`,
+  );
 
   await paginaMovil.setViewportSize({ width: 360, height: 780 });
-  const desborde360 = await paginaMovil.evaluate(
-    () => document.documentElement.scrollWidth - window.innerWidth,
-  );
+  const desborde360 = await medirDesborde(paginaMovil);
   check('sin desbordamiento horizontal en 360 px', desborde360 <= 1, `${desborde360}px`);
-  await paginaMovil.screenshot({ path: path.join(EVIDENCIA, 'movil-360.png'), fullPage: true });
+  await paginaMovil.screenshot({ path: path.join(EVIDENCIA, 'movil-360.png') });
 
   const tableta = await navegador.newContext({ viewport: { width: 768, height: 1024 }, locale: 'es-ES' });
   const paginaTableta = await tableta.newPage();
   await paginaTableta.goto(BASE, { waitUntil: 'networkidle' });
-  const desbordeTableta = await paginaTableta.evaluate(
-    () => document.documentElement.scrollWidth - window.innerWidth,
-  );
+  const desbordeTableta = await medirDesborde(paginaTableta);
   check('sin desbordamiento horizontal en 768 px', desbordeTableta <= 1, `${desbordeTableta}px`);
-  await paginaTableta.screenshot({ path: path.join(EVIDENCIA, 'tableta-768.png'), fullPage: true });
+  await paginaTableta.screenshot({ path: path.join(EVIDENCIA, 'tableta-768.png') });
+  await fetch(`${BASE}/api/files?name=${encodeURIComponent(demoNombre)}`, { method: 'DELETE' });
 
   check('sin errores de consola en escritorio', erroresConsola.length === 0, erroresConsola.join(' | '));
   check('sin errores de consola en móvil', erroresMovil.length === 0, erroresMovil.join(' | '));
 
   await navegador.close();
+  navegador = null;
 
   await fs.writeFile(
     path.join(EVIDENCIA, 'ui.json'),
@@ -261,6 +290,15 @@ async function main() {
   process.stdout.write(`\n${resultados.length - fallos}/${resultados.length} comprobaciones correctas\n`);
   process.stdout.write(`Evidencias: ${EVIDENCIA}\n`);
   if (fallos > 0) process.exitCode = 1;
+}
+
+async function auditarAuditoria(contextoPadre, opciones) {
+  const contexto = await contextoPadre.newContext({ ...opciones, bypassCSP: true, locale: 'es-ES' });
+  const pagina = await contexto.newPage();
+  await pagina.goto(BASE, { waitUntil: 'networkidle' });
+  const resultado = await auditar(pagina);
+  await contexto.close();
+  return resultado;
 }
 
 main().catch(async (error) => {

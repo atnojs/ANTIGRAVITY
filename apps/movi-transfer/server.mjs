@@ -101,15 +101,26 @@ function sendError(res, status, message) {
   sendJson(res, status, { ok: false, error: message });
 }
 
+/**
+ * Bloquea peticiones de escritura lanzadas desde otra web abierta en el
+ * navegador (CSRF): si el navegador envía `Origin`, tiene que ser el nuestro.
+ * Sin `Origin` (curl, apps nativas) se permite, porque no hay cookie que robar.
+ */
+function origenPermitido(req) {
+  const origin = req.headers.origin;
+  if (!origin) return true;
+  try {
+    return new URL(origin).host === req.headers.host;
+  } catch {
+    return false;
+  }
+}
+
 /** Convierte cualquier nombre recibido en un nombre de archivo seguro. */
 export function safeName(raw) {
   if (typeof raw !== 'string') return null;
+  // El nombre llega ya decodificado por URLSearchParams: no se decodifica otra vez.
   let name = raw;
-  try {
-    name = decodeURIComponent(name);
-  } catch {
-    /* se queda tal cual */
-  }
   // Corta cualquier intento de ruta (Windows y POSIX) quedándose con el último tramo.
   name = name.split(/[\\/]/).pop() ?? '';
   name = name.replace(/[\u0000-\u001f\u007f<>:"|?*]/g, '_').trim();
@@ -133,24 +144,34 @@ function inboxPath(rawName) {
   return { name, full };
 }
 
-async function uniquePath(name) {
-  const wanted = inboxPath(name);
-  if (!wanted) return null;
-  try {
-    await fsp.access(wanted.full);
-  } catch {
-    return wanted;
-  }
-  const ext = path.extname(name);
-  const base = name.slice(0, name.length - ext.length);
-  for (let i = 2; i < 500; i += 1) {
-    const candidate = inboxPath(`${base} (${i})${ext}`);
-    if (!candidate) return null;
+// Reserva en memoria de los nombres que se están subiendo ahora mismo. El
+// servidor es un único proceso, así que este Set elimina la carrera entre dos
+// subidas simultáneas del mismo nombre (antes la segunda pisaba a la primera).
+const reservas = new Set();
+
+function reservarNombre(rawName) {
+  const baseName = safeName(rawName);
+  if (!baseName) return null;
+  const ext = path.extname(baseName);
+  const base = baseName.slice(0, baseName.length - ext.length);
+  for (let i = 1; i < 500; i += 1) {
+    const nombre = i === 1 ? baseName : `${base} (${i})${ext}`;
+    const candidato = inboxPath(nombre);
+    if (!candidato) return null;
+    const clave = nombre.toLowerCase();
+    if (reservas.has(clave)) continue;
+    // Reserva síncrona antes de comprobar el disco: al ser un único proceso,
+    // no hay ventana entre «está libre» y «queda reservado».
+    reservas.add(clave);
+    let ocupado = false;
     try {
-      await fsp.access(candidate.full);
+      fs.accessSync(candidato.full);
+      ocupado = true;
     } catch {
-      return candidate;
+      /* libre */
     }
+    if (!ocupado) return { ...candidato, clave };
+    reservas.delete(clave);
   }
   return null;
 }
@@ -203,8 +224,18 @@ function localAddress() {
 }
 
 function serveStatic(req, res, pathname) {
-  let relative = decodeURIComponent(pathname);
+  let relative;
+  try {
+    relative = decodeURIComponent(pathname);
+  } catch {
+    sendError(res, 400, 'Dirección no válida.');
+    return;
+  }
   if (relative === '/') relative = '/index.html';
+  if (relative.includes('\u0000')) {
+    sendError(res, 400, 'Dirección no válida.');
+    return;
+  }
   const full = path.resolve(PUBLIC_DIR, `.${relative}`);
   const rel = path.relative(PUBLIC_DIR, full);
   if (rel.startsWith('..') || path.isAbsolute(rel)) {
@@ -252,7 +283,7 @@ async function handleState(res) {
     hostname: os.hostname(),
     ip: localAddress(),
     port: PORT,
-    inbox: INBOX_DIR,
+    inbox: path.basename(INBOX_DIR),
     count,
     totalSize,
     maxFileBytes: MAX_FILE_BYTES,
@@ -260,14 +291,17 @@ async function handleState(res) {
 }
 
 async function handleUpload(req, res, url) {
-  const name = url.searchParams.get('name') ?? req.headers['x-file-name'];
-  const target = await uniquePath(name ?? '');
+  const name = url.searchParams.get('name') ?? req.headers['x-file-name'] ?? '';
+  const target = reservarNombre(name);
   if (!target) {
     sendError(res, 400, 'Nombre de archivo no válido.');
     return;
   }
+  const liberar = () => reservas.delete(target.clave);
+
   const length = Number(req.headers['content-length'] ?? 0);
   if (length > MAX_FILE_BYTES) {
+    liberar();
     sendError(res, 413, 'El archivo supera el límite configurado.');
     return;
   }
@@ -276,14 +310,21 @@ async function handleUpload(req, res, url) {
   const out = fs.createWriteStream(tmp, { flags: 'wx' });
   let bytes = 0;
   let aborted = false;
+  let limpiado = false;
 
   const cleanup = async () => {
+    if (limpiado) return;
+    limpiado = true;
     aborted = true;
     out.destroy();
     await fsp.rm(tmp, { force: true }).catch(() => {});
+    liberar();
   };
 
   req.on('aborted', cleanup);
+  res.on('close', () => {
+    if (!res.writableEnded) cleanup();
+  });
   out.on('error', async () => {
     await cleanup();
     if (!res.headersSent) sendError(res, 500, 'No se pudo escribir el archivo.');
@@ -308,6 +349,8 @@ async function handleUpload(req, res, url) {
     } catch {
       await fsp.rm(tmp, { force: true }).catch(() => {});
       if (!res.headersSent) sendError(res, 500, 'No se pudo guardar el archivo.');
+    } finally {
+      liberar();
     }
   });
 }
@@ -412,6 +455,10 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'GET') {
         sendJson(res, 200, { ok: true, files: await listFiles() });
       } else if (req.method === 'DELETE') {
+        if (!origenPermitido(req)) {
+          sendError(res, 403, 'Origen no permitido.');
+          return;
+        }
         await handleDelete(res, url);
       } else {
         sendError(res, 405, 'Método no permitido.');
@@ -420,6 +467,10 @@ const server = http.createServer(async (req, res) => {
     }
     if (pathname === '/api/upload') {
       if (req.method === 'POST') {
+        if (!origenPermitido(req)) {
+          sendError(res, 403, 'Origen no permitido.');
+          return;
+        }
         await handleUpload(req, res, url);
       } else {
         sendError(res, 405, 'Método no permitido.');
