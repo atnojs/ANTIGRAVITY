@@ -5,6 +5,18 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-11-21 (2) — Descargas: botones «Ver» y «Carpeta», y el nombre ya no descarga
+
+- **Qué se pidió:** dos botones por tarjeta de la cola (ver/escuchar el fichero y abrir `D:\Descargas Y, I y T`) y que pulsar el nombre del fichero dejara de descargarlo (ya está guardado en el PC).
+- **Cómo queda:** `VER` reproduce la copia de la nube (`api.php?action=download&item=…&ver=1`, `Content-Type` real, `inline` y `Range`); si la copia caducó (48 h) avisa y pide al worker que abra el fichero del PC; si el fichero solo está en el PC, lo abre el worker con el programa predeterminado (VLC). `CARPETA` abre el Explorador en `download_dir` con el fichero seleccionado. El nombre es texto (`<span class="file-chip estatico">`), sin enlace de descarga.
+- **Decisión técnica (CSP):** el primer intento usaba el puerto local del worker (8125), pero la CSP del sitio solo permite `connect-src 'self'` + CDN y bloquea `fetch` a `http://127.0.0.1`. Se pasó a `POST api.php?action=abrir` → `data/abrir.json` → el worker lo recoge en su sondeo de 5 s (o en el latido). La ruta se restringe a `download_dir` y viaja a PowerShell por variable de entorno con `Start-Process -FilePath` (en PowerShell 5.1 no existe `-LiteralPath`).
+- **Hallazgos:** (1) los assets con el mismo nombre se quedan cacheados en el navegador: hubo que renombrar `app.20261121a` → `b` → `c` y subir el `.sw` a `descargas-v6`; (2) `Start-Process -LiteralPath` no existe en Windows PowerShell 5.1 (devolvía código 1 y no abría nada); (3) de las 29 copias «en la nube» solo 3 seguían en el servidor (caducan a las 48 h); de ahí la caída al fichero del PC cuando `ver=1` da 404.
+- **Verificación:** API (401 sin sesión, 400 modo, 404 trabajo, 200 real, 503 sin PC por código), `ver=1` 206 `video/mp4` + `Content-Range` y `attachment` sin `ver`; UI con Playwright contra producción (32 tarjetas, 32 VER/CARPETA, 0 enlaces, chip sin acción, Carpeta abre Explorer, Ver local, en la nube y caducada, 393 px sin desborde). Evidencia en `tools/evidencias/2026-11-21-descargas/` y comparativa `tools/comparativa_botones-cola_descargas.png`. Verificador independiente: **PASS 93,8/100** (3 menores, ninguno bloqueante).
+- **Pendiente declarado:** la detección «estoy en el PC» por puerto local sigue bloqueada por la CSP (no afecta a los botones); si se quiere, añadir `http://127.0.0.1:*` a `connect-src` en el `.htaccess` raíz desde hPanel.
+- **Commit:** `06b6c4c0` (botones + sin descarga en el nombre), `5cf34344` (aviso de copia caducada), `a1ec9a9c` (abrir por la API), `e84765d8` (versiones b y `Start-Process`), `9d48bb1f` (caída al fichero del PC), `21c1ece9` (log de fallos del worker).
+
+---
+
 ## 2026-11-21 — Movi Transfer: puente de archivos móvil ↔ PC por Wi-Fi
 
 - **Qué se hizo:** app local `apps/movi-transfer/` (Node 24, **cero dependencias**) que sirve una página en `:8099` para subir archivos desde el móvil y descargarlos al móvil por la red de casa. Incluye QR con la URL, cola de subida con progreso/velocidad/cancelación, lista con búsqueda, descarga con `Range`, vista previa de medios, borrado y PWA básica (manifest + iconos).
