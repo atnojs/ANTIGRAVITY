@@ -53,6 +53,7 @@ Ficha de la máquina y del entorno del agente. Si algo de aquí cambia, se actua
 |---|---|---|
 | 20128 | OmniRoute (panel + API) | `0.0.0.0` (toda la red local) |
 | 19387 | GUI web de DSH | `127.0.0.1` (solo este PC) |
+| 8099 | Movi Transfer (servidor local de archivos) | `0.0.0.0` (solo cuando se arranca) |
 
 ## Red doméstica
 

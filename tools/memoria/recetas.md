@@ -584,3 +584,39 @@ $p='\\?\UNC\192.168.18.10\D\Media\Fotos\carpeta'; [IO.Directory]::Delete($p,$tru
 # diagnóstico de usuario/permisos del ejecutable
 E:\ANTIGRAVITY\tools\pasafotos\PasaFotos.exe --diagnostico --destino "\\192.168.18.10\D\Media\Fotos"
 ```
+
+## Movi Transfer (pasar archivos móvil ↔ PC por Wi-Fi)
+
+App local Node en `apps/movi-transfer/`. El móvil abre `http://<IP-del-PC>:8099`
+(el QR de la página ya trae la IP). Bandeja: `apps/movi-transfer/_inbox/`.
+
+```powershell
+# arrancar en primer plano (abre el navegador) o en segundo plano sin abrirlo
+cd E:\ANTIGRAVITY\apps\movi-transfer; node server.mjs --open
+cd E:\ANTIGRAVITY\apps\movi-transfer; node server.mjs
+
+# ¿está escuchando?
+netstat -ano | Select-String ':8099\s' | Select-String 'LISTENING'
+
+# salud desde la red (no desde 127.0.0.1, que no prueba el firewall)
+wsl.exe -e wget -qO- -T 8 http://192.168.18.10:8099/api/health
+
+# pruebas (API y UI real en Chrome)
+cd E:\ANTIGRAVITY; node tools/movi-transfer-test/verify.mjs
+cd E:\ANTIGRAVITY; node tools/movi-transfer-test/ui-test.mjs
+```
+
+- **Firewall:** en este PC ya existe una regla `node.exe` (TCP, Privada+Pública,
+  `App=...\Programs\node\node.exe`) que permite cualquier puerto local; por eso el móvil
+  conecta sin tocar nada. Si en otro PC no conecta: `permitir-firewall.cmd` (UAC).
+- **Config:** `config.json` (`port`, `inbox`, `maxFileBytes`) o variables `MOVI_PORT`,
+  `MOVI_INBOX`, `MOVI_MAX_BYTES`.
+- **UI test:** necesita `playwright-core` y `axe-core` fuera del repo, en
+  `%TEMP%\movi-pw` (`npm install --prefix %TEMP%\movi-pw playwright-core axe-core`),
+  y usa el Chrome del sistema. Las capturas quedan en
+  `tools/evidencias/<fecha>-movi-transfer/`.
+- **Arranque con Windows (opcional):** `instalar-en-inicio.vbs` crea el acceso en Inicio;
+  `desinstalar-de-inicio.vbs` lo quita.
+- **Ojo:** la carpeta está en la raíz pública del despliegue; su `.htaccess` la deniega y
+  `_inbox/` está ignorada por git. No metas archivos recibidos en el repo.
+

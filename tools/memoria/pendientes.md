@@ -5,6 +5,19 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
+## 📱 Movi Transfer — pendiente de prueba en el móvil físico (2026-11-21)
+
+- **Falta lo único que no se puede simular:** abrir `http://192.168.18.10:8099` desde el
+  móvil real de Antonio, escanear el QR, subir una foto y descargarla. Siguiente paso:
+  con `iniciar.cmd` abierto, probar en el teléfono; si no conecta, comprobar que está en
+  la misma Wi-Fi y ejecutar `permitir-firewall.cmd`.
+- **Arranque automático:** decidir si se instala `instalar-en-inicio.vbs` (queda como
+  servidor permanente al iniciar sesión) o se deja manual.
+- **Mejoras posibles (no bloquean):** reanudación por trozos para vídeos grandes,
+  contraseña opcional, miniaturas de imágenes y descarga de todo en ZIP.
+
+---
+
 ## 🖼️ Flow Studio — límites heredados y siguientes pasos (2026-10-27)
 
 - **Gasto sin tope:** no existe `storage/pricing.json`; `uis_check_budget()` devuelve `known=false`. Siguiente paso: copiar `pricing.example.json` del estudio a `storage/pricing.json` y fijar límites si se quiere presupuesto.

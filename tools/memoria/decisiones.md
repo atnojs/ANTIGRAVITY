@@ -1,3 +1,11 @@
+## 2026-11-21 — Movi Transfer: servidor Node local, no app PHP/Hostinger
+
+- **Decisión:** la app para pasar archivos móvil ↔ PC es un servidor **Node local** en `apps/movi-transfer/` (página servida en `:8099`, bandeja en `_inbox/`). No lleva `proxy.php`, `history.php` ni `history_store/` porque Node no se ejecuta en Hostinger: el backend tiene que correr en el PC del usuario.
+- **Por qué:** el objetivo es transferir por la Wi-Fi de casa sin instalar nada en el móvil. LocalSend obligaría a instalar app en el teléfono; un servidor propio en Node (cero dependencias) hace el trabajo con el navegador y deja los archivos en disco.
+- **Contrapartida:** es HTTP sin cifrar y sin autenticación (sólo red local, documentado). La copia del repo se publica en la raíz de Hostinger, así que la carpeta lleva un `.htaccess` que la deniega y la bandeja está ignorada por git. El arranque automático es opcional (acceso en Inicio), no una tarea programada: `schtasks` está denegado en este equipo.
+- **Alternativa descartada:** PWA con service worker; el navegador exige HTTPS (o localhost) para instalarla y aquí se sirve por IP en HTTP.
+- **Verificación:** ver `bitacora.md` 2026-11-21 (API 23/23, UI 20/20, axe 0 violaciones, acceso de red desde WSL).
+
 ## 2026-11-03 — ANTONIO: C: solo sistema y programas; los datos, fuera
 
 - **Decisión:** en el PC ANTONIO, C: queda reservado para Windows y programas. Todo dato —proyectos, descargas, fotos, Docker/WSL, cachés grandes y copias— vive fuera de C:, para poder formatear C: sin perder nada. Al instalar software nuevo, elegir siempre su carpeta de datos fuera de C:.

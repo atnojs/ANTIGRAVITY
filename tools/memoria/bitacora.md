@@ -4,6 +4,19 @@ Qué se hizo, cuándo y con qué commit. De lo más reciente a lo más antiguo.
 Una entrada por sesión de trabajo relevante.
 
 ---
+
+## 2026-11-21 — Movi Transfer: puente de archivos móvil ↔ PC por Wi-Fi
+
+- **Qué se hizo:** app local `apps/movi-transfer/` (Node 24, **cero dependencias**) que sirve una página en `:8099` para subir archivos desde el móvil y descargarlos al móvil por la red de casa. Incluye QR con la URL, cola de subida con progreso/velocidad/cancelación, lista con búsqueda, descarga con `Range`, vista previa de medios, borrado y PWA básica (manifest + iconos).
+- **Por qué así:** el usuario quería «pasar archivos sin cables, tipo red». Se descartó LocalSend (obliga a instalar app en el móvil) y se hizo servidor propio: el móvil sólo abre el navegador. No es una app PHP/Hostinger: Node no corre en el hosting, así que la copia desplegada es sólo respaldo y su `.htaccess` la deniega.
+- **Piezas:** `server.mjs` (estáticos, subida por streaming, descarga, `Range`, borrado, saneado de nombres y rutas), `public/` (Hoola: cian/verde, Electrolize, vidrio), `config.json`, `iniciar.cmd`, `iniciar-oculto.vbs`, `instalar-en-inicio.vbs`, `permitir-firewall.cmd`.
+- **Hallazgos:** (1) el `<ul>` de la lista compartía `id="archivos"` con el `<input file>` y las filas se pintaban dentro del input invisible — corregido a `id="lista"`. (2) `Range: bytes=-N` se interpretaba como 0–N; corregido a rango sufijo. (3) La regla de firewall existente `node.exe` (registro: `App=...\node\node.exe`, TCP, Privada+Pública) ya permite el puerto; no hace falta UAC. (4) El reloj del share `\\Principal` va ~1 día atrás: los mtime de archivos subidos salen con «ayer» aunque se acaben de crear.
+- **Verificación:** API 23/23 (`verify.mjs`: SHA-256, Range normal/sufijo/416, 0 B, 20 MB, unicode, traversal, dotfiles, 405, 5 concurrentes, borrado) · UI 20/20 en Chrome real (`ui-test.mjs`: QR, selector de archivos, subida, descarga byte a byte, búsqueda, copia, borrado, 360/390/768 px sin desborde, consola limpia, **axe 0 violaciones WCAG A/AA**). Acceso de red probado desde WSL a `http://192.168.18.10:8099/api/health` → 200.
+- **Límites:** HTTP sin cifrar (sólo red local); sin reanudación por trozos; falta la prueba desde el móvil físico de Antonio.
+- **Commit:** `95871916` (app + pruebas + `.gitignore`).
+
+---
+
 ## 2026-11-09 (3) — Cron de paridad: producción congelada en `c315f03e` y re-disparo
 
 - **Síntoma:** el árbol público servía `c315f03e` en `apps/flow_studio_hoola/index.html` (apuntando a `app.20261109c.js`), `version.txt` (sin la entrada `d`) y `apps/flow_studio/flow_queue.php` (400 de prompt vacío antes de mirar la sesión), mientras `app.20261109d.js` sí respondía 200 y `claude.md`/`AGENTS.md` coincidían con HEAD. La segunda puerta de `1be1c942` no estaba activa: `request` anónimo llegaba al 400 en vez del 401.
