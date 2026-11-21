@@ -312,3 +312,46 @@ cd /d E:\ANTIGRAVITY\tools\descargador
 node worker.mjs
 :: en otra consola:  curl http://127.0.0.1:8099/__estado   y   /__ensamblar
 ```
+
+---
+
+## Novedades de la versión 1.3 (21/11/2026)
+
+### Previsualizar el enlace antes de bajarlo
+La web pide al PC una **sonda** del enlace (`action: probe`). El worker lanza
+`yt-dlp -J` y contesta con `sonda_result`: título, canal, duración, miniatura,
+calidades disponibles y si es una lista. Si el enlace es de una lista pura
+(`/playlist?list=…`) reintenta con `--flat-playlist` y devuelve el primer
+elemento. La web enseña la tarjeta y apaga las calidades que el vídeo no tiene.
+
+### Pausar y reanudar
+- «Pausar» en una descarga **en curso**: la web marca `pause_requested` y el
+  worker, al ver `pause: true` en la respuesta de `progress`, mata yt-dlp **sin
+  borrar** la carpeta de trabajo y avisa con `action: paused`.
+- «Reanudar»: el trabajo vuelve a `queued` y yt-dlp **continúa el `.part`** donde
+  se quedó (misma carpeta `.descargas-tmp\<id>`).
+- «Pausar todo» / «Reanudar todo» usan `pause_all` / `resume_all` (bandera
+  `paused` de la cola).
+
+### Cola con orden y filtros
+- Cada trabajo nuevo lleva `orden` (FIFO): el worker coge el de menor `orden`.
+- `move` intercambia el orden con el vecino (botones ↑ ↓).
+- `clear_finished` quita de la lista las terminadas y borra sus copias del
+  servidor (los ficheros del PC no se tocan).
+
+### Errores explicados y registro
+En `fail` el worker manda además `pista` (frase en castellano), `clase`
+(`login`, `actualizar`, `limite`, `bloqueo`, `espacio`, `nodisponible`, `red`,
+`otro`), `log_tail` (últimas 30 líneas) y `comando` (la orden exacta de yt-dlp).
+La web los enseña con «Ver registro» / «Copiar registro» y un botón según la
+clase. `update_tool` + `tool_result` permiten pedirle al PC **actualizar yt-dlp**
+(`yt-dlp -U`).
+
+### Límite de velocidad
+`limit_rate` (MB/s: 1, 2, 3, 5 o 10) se guarda en el trabajo y el worker añade
+`--limit-rate <n>M`.
+
+### Pruebas locales sin servidor real
+En `E:\ANTIGRAVITY\.tmp-build\descargas-test` hay una copia con un `auth.php`
+que entra sin contraseña (solo pruebas) y un `fake-worker.mjs` que contesta
+sondas, herramientas y late. No se versiona: vive fuera del repo.

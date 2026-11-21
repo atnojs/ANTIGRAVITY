@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Descargas">
-<link rel="stylesheet" href="app.20261121b.css">
+<link rel="stylesheet" href="app.20261121d.css">
 </head>
 <body>
 
@@ -79,6 +79,7 @@
           <div class="url-acciones">
             <button type="button" id="url-limpiar" class="btn-sm">Limpiar campo</button>
           </div>
+          <div id="probe-box" class="probe" aria-live="polite"></div>
         </div>
 
         <div class="selectors">
@@ -110,6 +111,18 @@
               <button type="button" class="model-toggle" data-format="m4a" aria-pressed="false">M4A</button>
             </div>
           </div>
+        </div>
+
+        <div class="field">
+          <label for="limite">Límite de velocidad (si no quieres que se coma toda la conexión)</label>
+          <select id="limite">
+            <option value="">Sin límite</option>
+            <option value="1">1 MB/s</option>
+            <option value="2">2 MB/s</option>
+            <option value="3">3 MB/s</option>
+            <option value="5">5 MB/s</option>
+            <option value="10">10 MB/s</option>
+          </select>
         </div>
 
         <label class="check">
@@ -153,6 +166,24 @@
         <h2 id="queue-title" class="section-title">
           Cola <span id="queue-count" class="badge">0</span>
         </h2>
+
+        <div class="queue-tools" id="queue-tools">
+          <button type="button" class="btn-sm" id="queue-pausar" hidden>Pausar todo</button>
+          <button type="button" class="btn-sm" id="queue-notif" hidden>Avisarme al terminar</button>
+          <button type="button" class="btn-sm" id="queue-limpiar" hidden>Limpiar terminadas</button>
+        </div>
+
+        <p class="aviso-pausa" id="queue-pausado" role="status" hidden>
+          La cola está en pausa: no empieza ninguna descarga nueva.
+        </p>
+
+        <div class="queue-filtros" id="queue-filtros" role="group" aria-label="Filtrar por estado">
+          <button type="button" class="model-toggle active" data-filtro="todo" aria-pressed="true">Todo <b>0</b></button>
+          <button type="button" class="model-toggle" data-filtro="activas" aria-pressed="false">En marcha <b>0</b></button>
+          <button type="button" class="model-toggle" data-filtro="cola" aria-pressed="false">En cola <b>0</b></button>
+          <button type="button" class="model-toggle" data-filtro="listas" aria-pressed="false">Listas <b>0</b></button>
+          <button type="button" class="model-toggle" data-filtro="fallos" aria-pressed="false">Fallos <b>0</b></button>
+        </div>
 
         <!-- Buscador por fecha: un día concreto o un rango -->
         <div class="fecha-filtro">
@@ -199,7 +230,7 @@
 </div>
 
 
-<script src="app.20261121c.js"></script>
+<script src="app.20261121d.js"></script>
 <script src="/apps/_shared/password-eye.js?v=20261025b" defer></script>
 </body>
 </html>

@@ -34,7 +34,7 @@ import { fileURLToPath } from 'node:url';
 // ---------------------------------------------------------------------
 // Constantes generales
 // ---------------------------------------------------------------------
-const VERSION_WORKER = '1.2';
+const VERSION_WORKER = '1.3';
 const NOMBRE_WORKER = 'pc-antonio';
 const VERSION_YTDLP_POR_DEFECTO = '2026.08.19';
 
@@ -1007,6 +1007,8 @@ function normalizarJob(job) {
     // solo en el PC (en casa y sin casilla marcada, se queda en el PC).
     subir: job.subir !== false,
     origen: job.origen === 'casa' ? 'casa' : 'fuera',
+    // Tope de velocidad en MB/s ('' = sin tope).
+    limitRate: ['1', '2', '3', '5', '10'].includes(String(job.limit_rate || '')) ? String(job.limit_rate) : '',
   };
 }
 
@@ -1101,6 +1103,11 @@ function construirArgumentos(job, dirJob) {
         args.push('-S', 'vcodec:h264,acodec:aac,ext:mp4:m4a');
       }
     }
+  }
+
+  // Tope de velocidad opcional (MB/s). Lo pide la web en el formulario.
+  if (job.limitRate) {
+    args.push('--limit-rate', job.limitRate + 'M');
   }
 
   // Cookies opcionales. YouTube responde 403 o pide "confirma que no eres un
@@ -1198,6 +1205,7 @@ function ejecutarYtDlp(job, dirJob, { alProgreso }) {
     let fdLectura = null;
     let intervalo = null;
     let cancelado = false;
+    let pausado = false;
 
     if (usarFichero) {
       try { fdLectura = fs.openSync(rutaLogYtDlp, 'r'); } catch { fdLectura = null; }
@@ -1247,6 +1255,14 @@ function ejecutarYtDlp(job, dirJob, { alProgreso }) {
           consola('  El servidor ha pedido cancelar el trabajo. Deteniendo yt-dlp…');
           const detenido = matarArbol(hijo.pid);
           logInfo(`Cancelación: proceso yt-dlp ${detenido ? 'detenido con su árbol' : 'NO detenido'}.`);
+        }
+        // Pausa: se para yt-dlp igual que al cancelar, pero NO se borra lo
+        // descargado (al reanudar, yt-dlp continua el .part).
+        if (datos && datos.pause === true && !pausado && !cancelado) {
+          pausado = true;
+          logAviso('El servidor ha pedido PAUSAR el trabajo; matando yt-dlp (se conserva lo descargado).');
+          consola('  Pausa pedida desde la web: se detiene yt-dlp y se conserva lo descargado.');
+          matarArbol(hijo.pid);
         }
       }).catch((e) => {
         logAviso(`No se pudo enviar el progreso: ${e.message}`);
@@ -1390,7 +1406,7 @@ function ejecutarYtDlp(job, dirJob, { alProgreso }) {
       hijoActual = null;
       hijosActivos.delete(job.id);
       if (hijoActual && hijoActual.pid === hijo.pid) hijoActual = null;
-      resolve({ codigo, cancelado, lineas, rutaLogYtDlp });
+      resolve({ codigo, cancelado, pausado, lineas, rutaLogYtDlp });
     };
 
     hijo.on('error', (e) => {
@@ -1524,11 +1540,31 @@ function esErrorTemporal(mensaje) {
   return temporal.test(t);
 }
 
-async function informarFallo(job, mensaje) {
+/**
+ * Clasifica un fallo para que la web sepa que boton ofrecer:
+ * login (cookies), actualizar (yt-dlp viejo), limite (rate limit), bloqueo
+ * (403/robot), espacio (disco), nodisponible, red u otro.
+ */
+function claseDeError(texto) {
+  const t = String(texto || '').toLowerCase();
+  if (/login required|sign in|cookies|iniciar sesi[oó]n|sesi[oó]n|private account|follow this account/.test(t)) return 'login';
+  if (/unsupported url|extractor|actualiza|update|version/.test(t)) return 'actualizar';
+  if (/rate.?limit|429|too many requests|peticiones seguidas|slow down|limite/.test(t)) return 'limite';
+  if (/403|bot|robot|blocked/.test(t)) return 'bloqueo';
+  if (/no space|disk|espacio|disco lleno/.test(t)) return 'espacio';
+  if (/no (est[aá] )?disponible|unavailable|private|removed|borrado|restriccion de edad|age/.test(t)) return 'nodisponible';
+  if (/conectar|internet|getaddrinfo|enotfound|econn|timeout|timed out/.test(t)) return 'red';
+  return 'otro';
+}
+
+async function informarFallo(job, mensaje, extra = {}) {
   if (parando) {
     logInfo('Parada en curso: no se envía "fail" (el servidor reintentará el trabajo).');
     return;
   }
+  const partes = String(mensaje || '').split(' || ');
+  const pista = recortar(partes[0] || 'La descarga fallo.', 700);
+  const clase = claseDeError(String(mensaje || ''));
   const reintentar = esErrorTemporal(mensaje);
   try {
     const respuesta = await peticion({
@@ -1536,6 +1572,10 @@ async function informarFallo(job, mensaje) {
       job_id: job && job.id,
       error: recortar(mensaje, 900),
       reintentar,
+      pista,
+      clase,
+      log_tail: recortar(String(extra.log_tail || ''), 4000),
+      comando: recortar(String(extra.comando || ''), 1900),
     }, { etiqueta: 'fail' });
     if (respuesta && respuesta.reintento) {
       logInfo(`Se reintentara solo (intento ${respuesta.reintento}) en ${respuesta.espera} s`);
@@ -1752,6 +1792,106 @@ async function buscarEnYoutube(peticionBusqueda) {
   }
 }
 
+/* ── Previsualizar un enlace (sonda) y actualizar yt-dlp ───────────────── */
+
+/** Saca el JSON que imprime yt-dlp con -J, aunque venga con avisos delante. */
+function extraerJson(texto) {
+  const limpio = String(texto || '').trim();
+  if (!limpio) return null;
+  try { return JSON.parse(limpio); } catch { /* vienen mas lineas */ }
+  const lineas = limpio.split(/\r?\n/);
+  for (let i = lineas.length - 1; i >= 0; i--) {
+    const linea = lineas[i].trim();
+    if (!linea.startsWith('{')) continue;
+    try { return JSON.parse(linea); } catch { /* siguiente */ }
+  }
+  return null;
+}
+
+/** Resumen pequeño y serializable de lo que yt-dlp sabe del enlace. */
+function resumirInfo(json, url) {
+  if (!json || typeof json !== 'object') throw new Error('yt-dlp no devolvio datos del enlace');
+  const esLista = json._type === 'playlist';
+  const entradas = Array.isArray(json.entries) ? json.entries.filter(Boolean) : [];
+  const base = esLista ? (entradas[0] || {}) : json;
+  const formatos = Array.isArray(base.formats) ? base.formats : [];
+  const alturas = [...new Set(formatos.map((f) => Number(f.height)).filter((h) => Number.isFinite(h) && h > 0))]
+    .sort((a, b) => b - a)
+    .slice(0, 10);
+  const miniaturas = Array.isArray(base.thumbnails) ? base.thumbnails : [];
+  const elegida = miniaturas.find((m) => Number(m.width) >= 480) || miniaturas[miniaturas.length - 1] || {};
+  return {
+    kind: esLista ? 'playlist' : 'video',
+    title: String(base.title || json.title || 'Sin titulo').slice(0, 200),
+    channel: String(base.uploader || base.channel || json.uploader || '').slice(0, 120),
+    duration: Math.round(Number(base.duration || json.duration) || 0),
+    thumbnail: String(base.thumbnail || elegida.url || '').slice(0, 500),
+    webpage: String(base.webpage_url || url).slice(0, 500),
+    heights: alturas,
+    playlist: /[?&]list=/.test(url) || esLista,
+    playlist_count: esLista ? (entradas.length || Number(json.playlist_count) || 0) : (Number(base.playlist_count) || 0),
+    live: String(base.live_status || '').slice(0, 30),
+    extractor: String(base.extractor_key || json.extractor_key || '').slice(0, 40),
+  };
+}
+
+async function sondearEnlace(sonda) {
+  const id = String((sonda && sonda.id) || '');
+  const url = String((sonda && sonda.url) || '').trim();
+  if (!id || !/^https?:\/\//i.test(url)) return;
+  logInfo(`Sonda de enlace ${id}: ${url}`);
+  const args = ['-J', '--no-warnings', '--no-color', '--no-playlist', url];
+  const enviar = async (ok, info, error) => {
+    await peticion({ action: 'sonda_result', id, ok, info: info || {}, error: error || '' }, { etiqueta: 'sonda_result' });
+  };
+  try {
+    let salida = await ejecutarCapturando(config.ytdlp, args, { timeoutMs: 60_000 });
+    let json = salida.codigo === 0 ? extraerJson(salida.texto) : null;
+    if (!json) {
+      // Enlaces de lista pura ("/playlist?list=...") no salen con --no-playlist:
+      // se reintenta en modo lista plana y se devuelve el primer elemento.
+      const argsLista = ['-J', '--flat-playlist', '--no-warnings', '--no-color', '--playlist-items', '1', url];
+      salida = await ejecutarCapturando(config.ytdlp, argsLista, { timeoutMs: 60_000 });
+      json = salida.codigo === 0 ? extraerJson(salida.texto) : null;
+      if (!json) throw new Error(recortar(salida.texto || 'yt-dlp no pudo leer el enlace', 300));
+    }
+    const info = resumirInfo(json, url);
+    await enviar(true, info, '');
+    consola(`  Enlace mirado: ${recortar(info.title, 60)}`);
+    logInfo(`Sonda ${id} lista: ${info.kind} · ${info.title}`);
+  } catch (e) {
+    logAviso(`Fallo la sonda ${id}: ${e.message}`);
+    consola(`  No se pudo mirar el enlace: ${recortar(e.message, 120)}`);
+    await enviar(false, null, mensajeUtil(e.message, url)).catch(() => {});
+  }
+}
+
+/** Actualiza yt-dlp (-U) y deja el resultado en el servidor. */
+async function actualizarHerramienta(nombre) {
+  if (nombre !== 'ytdlp') return;
+  logInfo('Actualizando yt-dlp a peticion de la web');
+  consola('Actualizando yt-dlp…');
+  let ok = false;
+  let texto = '';
+  try {
+    const salida = await ejecutarCapturando(config.ytdlp, ['-U'], { timeoutMs: 180_000 });
+    texto = String(salida.texto || '').trim();
+    ok = salida.codigo === 0 && !/error|failed|no se pudo|cannot|denied/i.test(texto);
+    if (ok) {
+      try { versionYtDlp = await detectarVersionYtDlp(); } catch { /* se queda la anterior */ }
+    }
+  } catch (e) {
+    texto = e.message;
+  }
+  await peticion({
+    action: 'tool_result',
+    tool: 'ytdlp',
+    ok,
+    message: recortar(texto || (ok ? 'yt-dlp actualizado.' : 'No se pudo actualizar yt-dlp.'), 900),
+  }, { etiqueta: 'tool_result' }).catch(() => {});
+  consola(ok ? '  yt-dlp actualizado.' : '  No se pudo actualizar yt-dlp (mira el log).');
+}
+
 async function procesarJob(jobBruto) {
   let job;
   try {
@@ -1778,16 +1918,33 @@ async function procesarJob(jobBruto) {
 
   const contexto = { titulo: '', itemCount: 1 };
   const alProgreso = (cuerpo) => peticion({ action: 'progress', ...cuerpo }, { etiqueta: 'progress' });
+  // La orden exacta que se lanza: se guarda con el fallo para poder verla en la web.
+  const comando = [config.ytdlp, ...construirArgumentos(job, dirJob)]
+    .map((parte) => (/\s/.test(parte) ? `"${parte}"` : parte))
+    .join(' ');
 
   // 1) Descarga
   const resultado = await ejecutarYtDlp(job, dirJob, { alProgreso });
   const cola = resultado.lineas.filter((l) => l.trim());
 
+  if (resultado.pausado) {
+    // Pausa pedida desde la web: NO se borra la carpeta de trabajo, para que al
+    // reanudar yt-dlp continue el fichero a medias en vez de bajarlo de nuevo.
+    consola(`Trabajo ${job.id} EN PAUSA (se conserva lo descargado).`);
+    logAviso(`Trabajo ${job.id} pausado por el usuario; se conserva ${dirJob}`);
+    await peticion({
+      action: 'paused',
+      job_id: job.id,
+      log_tail: recortar(cola.slice(-20).join('\n'), 4000),
+    }, { etiqueta: 'paused' });
+    return;
+  }
+
   if (resultado.cancelado) {
     consola(`Trabajo ${job.id} CANCELADO por el usuario.`);
     logAviso(`Trabajo ${job.id} cancelado por el usuario.`);
     borrarCarpetaDeTrabajo(dirJob);
-    await informarFallo(job, 'Cancelado por el usuario');
+    await informarFallo(job, 'Cancelado por el usuario', { log_tail: cola.slice(-30).join('\n'), comando });
     return;
   }
 
@@ -1798,7 +1955,10 @@ async function procesarJob(jobBruto) {
     borrarCarpetaDeTrabajo(dirJob);
     // Se antepone una explicacion en castellano: el log crudo de yt-dlp no le
     // dice nada al usuario y estos fallos se repiten.
-    await informarFallo(job, `${mensajeUtil(resumen, job.url)} || yt-dlp código ${resultado.codigo}: ${resumen}`);
+    await informarFallo(job, `${mensajeUtil(resumen, job.url)} || yt-dlp código ${resultado.codigo}: ${resumen}`, {
+      log_tail: cola.slice(-30).join('\n'),
+      comando,
+    });
     return;
   }
 
@@ -1808,7 +1968,10 @@ async function procesarJob(jobBruto) {
     const resumen = cola.slice(-5).join(' | ') || 'sin salida de yt-dlp';
     logError(`Trabajo ${job.id}: yt-dlp terminó bien pero no hay ficheros. ${resumen}`);
     borrarCarpetaDeTrabajo(dirJob);
-    await informarFallo(job, `No se generó ningún fichero. ${resumen}`);
+    await informarFallo(job, `No se generó ningún fichero. ${resumen}`, {
+      log_tail: cola.slice(-30).join('\n'),
+      comando,
+    });
     return;
   }
 
@@ -2158,6 +2321,18 @@ async function principal() {
 
       // Botones «Ver» y «Carpeta» de la cola: se atienden aquí y no paran la cola.
       atenderAbrir(respuesta);
+
+      // Previsualizaciones de enlaces pedidas desde la web (titulo, miniatura,
+      // duracion y calidades). Se lanzan en segundo plano, sin frenar la cola.
+      const sondas = Array.isArray(respuesta.sondas) ? respuesta.sondas : [];
+      for (const sonda of sondas) {
+        sondearEnlace(sonda).catch((e) => logAviso(`Fallo la sonda ${sonda && sonda.id}: ${e.message}`));
+      }
+
+      // «Actualizar yt-dlp» pedido desde la web.
+      if (respuesta.herramienta === 'ytdlp') {
+        actualizarHerramienta('ytdlp').catch((e) => logAviso(`Fallo al actualizar yt-dlp: ${e.message}`));
+      }
 
       // Los «traer a la web» pendientes se atienden en segundo plano: no deben
       // parar la cola.

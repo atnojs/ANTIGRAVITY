@@ -42,6 +42,11 @@ const WORKER_FILE    = 'data/worker.json';
 const DIR_FILE       = 'data/dir.json';
 const BUSQUEDAS_FILE = 'data/busquedas.json';
 const BUSQUEDAS_LOCK = 'data/busquedas.lock';
+/** Sondas de enlace: el PC mira titulo, duracion, miniatura y calidades. */
+const SONDAS_FILE    = 'data/sondas.json';
+const SONDAS_LOCK    = 'data/sondas.lock';
+/** Peticiones de herramientas al PC (actualizar yt-dlp) y su ultimo resultado. */
+const TOOL_FILE      = 'data/tool.json';
 const MAX_RESULTADOS = 12;
 const CLEANUP_STAMP  = 'data/.cleanup';
 /** Peticiones «ver» / «carpeta» pendientes de que las recoja el worker. */
@@ -74,7 +79,7 @@ const ESPERAS_REINTENTO = [30, 120, 300]; // segundos entre reintentos
 const CLEANUP_EVERY_S  = 300;
 
 const APP_NAME     = 'descargas';
-const APP_VERSION  = '1.2.0';
+const APP_VERSION  = '1.3.0';
 
 function respond(int $status, array $payload): never {
     http_response_code($status);
@@ -765,6 +770,98 @@ function reclamarBusquedas(): array {
     return $pendientes;
 }
 
+/* ── Sondas de enlace: previsualizar antes de descargar ─────────────────── */
+
+/**
+ * El navegador pide mirar un enlace; el PC (que tiene yt-dlp) devuelve titulo,
+ * duracion, miniatura y calidades disponibles. Mismo patron que las busquedas:
+ * la peticion vive 10 minutos en `data/sondas.json` y la recoge el worker.
+ */
+function leerSondas(): array {
+    $datos = readJsonFile(SONDAS_FILE, []);
+    if (!is_array($datos) || !isset($datos['peticiones']) || !is_array($datos['peticiones'])) {
+        return ['peticiones' => []];
+    }
+    $ahora = time();
+    $datos['peticiones'] = array_values(array_filter($datos['peticiones'], static function (array $p) use ($ahora): bool {
+        return ($ahora - (int)($p['creada'] ?? 0)) < 600;
+    }));
+    if (count($datos['peticiones']) > 20) {
+        $datos['peticiones'] = array_slice($datos['peticiones'], -20);
+    }
+    return $datos;
+}
+
+function guardarSondas(array $datos): void {
+    writeJsonFile(SONDAS_FILE, $datos);
+}
+
+/** El worker pide las sondas pendientes (y se marcan como en curso). */
+function reclamarSondas(): array {
+    $lock = lockFile(SONDAS_LOCK);
+    if (!flock($lock, LOCK_EX)) {
+        return [];
+    }
+    $datos = leerSondas();
+    $pendientes = [];
+    foreach ($datos['peticiones'] as $i => $peticion) {
+        if (($peticion['estado'] ?? '') !== 'pendiente') {
+            continue;
+        }
+        $datos['peticiones'][$i]['estado'] = 'en_curso';
+        $pendientes[] = ['id' => (string)$peticion['id'], 'url' => (string)$peticion['url']];
+        if (count($pendientes) >= 2) {
+            break;
+        }
+    }
+    if ($pendientes) {
+        guardarSondas($datos);
+    }
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    return $pendientes;
+}
+
+/** Siguiente numero de orden para un trabajo nuevo (la cola va por orden). */
+function siguienteOrden(array $queue): int {
+    $max = 0;
+    foreach ($queue['jobs'] as $job) {
+        $orden = (int)($job['orden'] ?? 0);
+        if ($orden > $max) {
+            $max = $orden;
+        }
+    }
+    return $max + 1;
+}
+
+/** Siguiente trabajo de la cola: el de menor orden que toque. */
+function indiceSiguienteTrabajo(array &$queue): ?int {
+    $elegido = null;
+    $mejorOrden = null;
+    foreach ($queue['jobs'] as $index => $job) {
+        $status = (string)($job['status'] ?? 'queued');
+        $claimable = $status === 'queued';
+        if (!$claimable && $status === 'running') {
+            $claimedAt = (int)strtotime((string)($job['claimed_at'] ?? ''));
+            $claimable = $claimedAt > 0 && time() - $claimedAt > STALE_RUNNING_S;
+        }
+        if (!$claimable || !empty($job['cancel_requested'])) {
+            continue;
+        }
+        // Reintento automatico: hasta que no pase la espera no se vuelve a coger.
+        $reintentoEn = (int)strtotime((string)($job['retry_at'] ?? ''));
+        if ($reintentoEn > 0 && $reintentoEn > time()) {
+            continue;
+        }
+        $orden = (int)($job['orden'] ?? 0);
+        if ($mejorOrden === null || $orden < $mejorOrden) {
+            $elegido = $index;
+            $mejorOrden = $orden;
+        }
+    }
+    return $elegido;
+}
+
 /** Carpeta de descarga del PC, tal y como la cuenta el worker. */
 function dirInfo(): array {
     $worker = readJsonFile(WORKER_FILE, []);
@@ -1130,7 +1227,7 @@ function avisarTrabajoTerminado(array $job): void {
 }
 /* ── Acciones del worker (multipart o JSON) ─────────────────────────────── */
 
-$workerActions = ['next', 'progress', 'upload_chunk', 'search_results', 'item_done', 'item_local', 'finish', 'fail', 'heartbeat', 'dir_applied'];
+$workerActions = ['next', 'progress', 'upload_chunk', 'search_results', 'sonda_result', 'tool_result', 'paused', 'item_done', 'item_local', 'finish', 'fail', 'heartbeat', 'dir_applied'];
 if (in_array($action, $workerActions, true)) {
     requireWorker();
     $lock = lockFile(QUEUE_LOCK);
@@ -1184,6 +1281,47 @@ if (in_array($action, $workerActions, true)) {
         flock($lock, LOCK_UN);
         fclose($lock);
         respond(200, $respuesta);
+    }
+
+    if ($action === 'sonda_result') {
+        $idSonda = cleanId((string)($body['id'] ?? ''));
+        $lockS = lockFile(SONDAS_LOCK);
+        $guardada = false;
+        if (flock($lockS, LOCK_EX)) {
+            $datos = leerSondas();
+            foreach ($datos['peticiones'] as $i => $peticion) {
+                if ((string)($peticion['id'] ?? '') !== $idSonda) {
+                    continue;
+                }
+                $datos['peticiones'][$i]['estado'] = !empty($body['ok']) ? 'listo' : 'error';
+                $datos['peticiones'][$i]['info'] = is_array($body['info'] ?? null) ? $body['info'] : [];
+                $datos['peticiones'][$i]['error'] = substr((string)($body['error'] ?? ''), 0, 400);
+                $guardada = true;
+                break;
+            }
+            if ($guardada) {
+                guardarSondas($datos);
+            }
+            flock($lockS, LOCK_UN);
+        }
+        fclose($lockS);
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond($guardada ? 200 : 404, ['success' => $guardada]);
+    }
+
+    if ($action === 'tool_result') {
+        // Lo unico que hace el worker tras actualizar yt-dlp: dejar el resultado.
+        writeJsonFile(TOOL_FILE, [
+            'estado'  => 'hecha',
+            'ok'      => !empty($body['ok']),
+            'tool'    => substr((string)($body['tool'] ?? 'ytdlp'), 0, 40),
+            'mensaje' => substr((string)($body['message'] ?? ''), 0, 1200),
+            'at'      => nowIso(),
+        ]);
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(200, ['success' => true]);
     }
 
     if ($action === 'search_results') {
@@ -1252,29 +1390,9 @@ if (in_array($action, $workerActions, true)) {
     }
 
     if ($action === 'next') {
-        $now = time();
-        $chosen = null;
-        foreach ($queue['jobs'] as $index => $job) {
-            $status = (string)($job['status'] ?? 'queued');
-            $claimable = false;
-            if ($status === 'queued') {
-                $claimable = true;
-            } elseif ($status === 'running') {
-                $claimedAt = (int)strtotime((string)($job['claimed_at'] ?? ''));
-                if ($claimedAt > 0 && $now - $claimedAt > STALE_RUNNING_S) {
-                    $claimable = true; // el worker anterior murio: se reintenta
-                }
-            }
-            if ($claimable && empty($job['cancel_requested'])) {
-                // Reintento automatico: hasta que no pase la espera no se vuelve a coger.
-                $reintentoEn = (int)strtotime((string)($job['retry_at'] ?? ''));
-                if ($reintentoEn > $now) {
-                    continue;
-                }
-                $chosen = $index;
-                break;
-            }
-        }
+        // Cola en pausa (boton «Pausar todo»): no se entrega trabajo nuevo, pero
+        // el worker sigue recogiendo avisos (abrir, buscar, sondear).
+        $chosen = empty($queue['paused']) ? indiceSiguienteTrabajo($queue) : null;
         if ($chosen === null) {
             // Sin trabajo que dar, pero puede haber «traer a la web» pendientes:
             // si no se devuelven aqui, el worker no se entera nunca (una cola
@@ -1282,7 +1400,17 @@ if (in_array($action, $workerActions, true)) {
             $subidas = subidasPendientes($queue);
             flock($lock, LOCK_UN);
             fclose($lock);
-            respond(200, ['success' => true, 'job' => null, 'subidas' => $subidas, 'abrir_dialogo' => reclamarDialogo(), 'abrir' => reclamarAbrir(), 'busquedas' => reclamarBusquedas()]);
+            respond(200, [
+                'success' => true,
+                'job' => null,
+                'subidas' => $subidas,
+                'abrir_dialogo' => reclamarDialogo(),
+                'abrir' => reclamarAbrir(),
+                'busquedas' => reclamarBusquedas(),
+                'sondas' => reclamarSondas(),
+                'pausado' => !empty($queue['paused']),
+                'herramienta' => (string)(readJsonFile(TOOL_FILE, [])['estado'] ?? '') === 'pendiente' ? 'ytdlp' : '',
+            ]);
         }
         $queue['jobs'][$chosen]['status'] = 'running';
         $queue['jobs'][$chosen]['claimed_at'] = nowIso();
@@ -1307,6 +1435,9 @@ if (in_array($action, $workerActions, true)) {
                 // Si es false, el worker se queda el fichero en el PC y NO lo sube.
                 'subir'     => (bool)($job['subir'] ?? true),
                 'origen'    => (string)($job['origen'] ?? 'fuera'),
+                // Tope de velocidad opcional (MB/s) y orden en la cola.
+                'limit_rate' => (string)($job['limit_rate'] ?? ''),
+                'orden'      => (int)($job['orden'] ?? 0),
             ],
             // Elementos que el usuario ha pedido traer a la web desde el PC.
             'subidas' => subidasPendientes($queue),
@@ -1315,6 +1446,10 @@ if (in_array($action, $workerActions, true)) {
             // «Ver» y «Carpeta» de la cola.
             'abrir' => reclamarAbrir(),
             'busquedas' => reclamarBusquedas(),
+            // Previsualizaciones pedidas desde la web.
+            'sondas' => reclamarSondas(),
+            'pausado' => false,
+            'herramienta' => (string)(readJsonFile(TOOL_FILE, [])['estado'] ?? '') === 'pendiente' ? 'ytdlp' : '',
         ]);
     }
 
@@ -1374,7 +1509,25 @@ if (in_array($action, $workerActions, true)) {
         writeJsonFile(QUEUE_FILE, $queue);
         flock($lock, LOCK_UN);
         fclose($lock);
-        respond(200, ['success' => true, 'cancel' => $cancelRequested]);
+        respond(200, [
+            'success' => true,
+            'cancel'  => $cancelRequested,
+            'pause'   => !empty($queue['jobs'][$index]['pause_requested']),
+        ]);
+    }
+
+    if ($action === 'paused') {
+        // El worker ha parado yt-dlp sin borrar lo descargado: el trabajo queda
+        // en pausa y se puede reanudar (yt-dlp continua el .part).
+        $queue['jobs'][$index]['status'] = 'paused';
+        $queue['jobs'][$index]['pause_requested'] = false;
+        $queue['jobs'][$index]['stage'] = 'en pausa';
+        $queue['jobs'][$index]['updated_at'] = nowIso();
+        $queue['jobs'][$index]['log_tail'] = substr((string)($body['log_tail'] ?? ''), -2000);
+        writeJsonFile(QUEUE_FILE, $queue);
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(200, ['success' => true]);
     }
 
     if ($action === 'upload_chunk') {
@@ -1588,6 +1741,7 @@ if (in_array($action, $workerActions, true)) {
         }
         $queue['jobs'][$index]['finished_at'] = nowIso();
         $queue['jobs'][$index]['updated_at'] = nowIso();
+        $queue['jobs'][$index]['pause_requested'] = false;
         $queue['jobs'][$index]['log_tail'] = substr((string)($body['log_tail'] ?? ''), -2000);
         writeJsonFile(QUEUE_FILE, $queue);
         $trabajoTerminado = $queue['jobs'][$index];
@@ -1599,6 +1753,10 @@ if (in_array($action, $workerActions, true)) {
 
     if ($action === 'fail') {
         $mensaje = substr((string)($body['error'] ?? 'Error desconocido.'), 0, 500);
+        // Explicacion corta y clasificacion del fallo (las manda el worker).
+        $pista = substr((string)($body['pista'] ?? ''), 0, 700);
+        $clase = substr((string)($body['clase'] ?? ''), 0, 40);
+        $comando = substr((string)($body['comando'] ?? ''), 0, 2000);
         $intentos = (int)($queue['jobs'][$index]['attempts'] ?? 0);
         $temporal = !empty($body['reintentar']) && !$cancelRequested;
         if ($temporal && $intentos < MAX_AUTO_REINTENTOS) {
@@ -1612,6 +1770,9 @@ if (in_array($action, $workerActions, true)) {
             $queue['jobs'][$index]['finished_at'] = '';
             $queue['jobs'][$index]['updated_at'] = nowIso();
             $queue['jobs'][$index]['log_tail'] = substr((string)($body['log_tail'] ?? ''), -2000);
+            $queue['jobs'][$index]['error_pista'] = $pista;
+            $queue['jobs'][$index]['error_clase'] = $clase;
+            $queue['jobs'][$index]['comando'] = $comando;
             writeJsonFile(QUEUE_FILE, $queue);
             removeJobFiles($jobId);
             flock($lock, LOCK_UN);
@@ -1624,6 +1785,9 @@ if (in_array($action, $workerActions, true)) {
         $queue['jobs'][$index]['finished_at'] = nowIso();
         $queue['jobs'][$index]['updated_at'] = nowIso();
         $queue['jobs'][$index]['log_tail'] = substr((string)($body['log_tail'] ?? ''), -2000);
+        $queue['jobs'][$index]['error_pista'] = $pista;
+        $queue['jobs'][$index]['error_clase'] = $clase;
+        $queue['jobs'][$index]['comando'] = $comando;
         writeJsonFile(QUEUE_FILE, $queue);
         removeJobFiles($jobId);
         flock($lock, LOCK_UN);
@@ -1697,6 +1861,14 @@ if ($action === 'add') {
         respond(429, ['success' => false, 'error' => 'Hay 20 descargas en cola: espera a que terminen.']);
     }
 
+    // Tope de velocidad opcional, en MB/s (lo aplica el worker con --limit-rate).
+    $limite = (string)($body['limit_rate'] ?? '');
+    if (!in_array($limite, ['', '1', '2', '3', '5', '10'], true)) {
+        $limite = '';
+    }
+    // Titulo que ya trae la previsualizacion: asi la ficha no nace sin nombre.
+    $tituloPrevio = substr(trim((string)($body['title'] ?? '')), 0, 200);
+
     // En casa el fichero se queda en el PC (como la .bat) salvo que se pida lo
     // contrario; desde fuera se sube siempre, que es la razon de la app.
     // Si la pagina ha comprobado que se abre en el propio PC (hablandole al
@@ -1726,13 +1898,18 @@ if ($action === 'add') {
         'speed'            => '',
         'eta'              => '',
         'stage'            => 'en cola',
-        'title'            => etiquetaDesdeEnlace($url, $fuente),
+        'title'            => $tituloPrevio !== '' ? $tituloPrevio : etiquetaDesdeEnlace($url, $fuente),
         'item_index'       => 0,
         'item_count'       => 0,
         'items'            => [],
         'error'            => '',
         'cancel_requested' => false,
+        'pause_requested'  => false,
         'attempts'         => 0,
+        // Cola FIFO: se ejecuta antes el que menos `orden` tiene.
+        'orden'            => siguienteOrden($queue),
+        // Tope de velocidad (MB/s) o '' sin tope.
+        'limit_rate'       => $limite,
         'created_at'       => nowIso(),
         'updated_at'       => nowIso(),
         'started_at'       => '',
@@ -1762,6 +1939,8 @@ if ($action === 'list') {
         'server_time' => nowIso(),
         'disk_free'   => $free === false ? '' : humanBytes((int)$free),
         'dir'         => dirInfo(),
+        // Cola en pausa desde «Pausar todo».
+        'pausado'     => !empty($queue['paused']),
     ]);
 }
 
@@ -1916,6 +2095,268 @@ if ($action === 'search_status') {
         'estado'     => (string)($peticion['estado'] ?? 'pendiente'),
         'resultados' => is_array($peticion['resultados'] ?? null) ? $peticion['resultados'] : [],
         'error'      => (string)($peticion['error'] ?? ''),
+    ]);
+}
+
+/* ── Previsualizar un enlace (la sonda la resuelve el PC) ───────────────── */
+
+if ($action === 'probe') {
+    $url = trim((string)($body['url'] ?? ''));
+    $partes = parse_url($url);
+    if ($url === '' || strlen($url) > MAX_URL_LEN || !is_array($partes)
+        || !in_array(strtolower((string)($partes['scheme'] ?? '')), ['http', 'https'], true)
+        || empty($partes['host'])) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(400, ['success' => false, 'error' => 'Pega un enlace valido (http:// o https://).']);
+    }
+    $idSonda = 's_' . bin2hex(random_bytes(6));
+    $lockS = lockFile(SONDAS_LOCK);
+    if (flock($lockS, LOCK_EX)) {
+        $datos = leerSondas();
+        $datos['peticiones'][] = [
+            'id'     => $idSonda,
+            'url'    => $url,
+            'estado' => 'pendiente',
+            'creada' => time(),
+        ];
+        guardarSondas($datos);
+        flock($lockS, LOCK_UN);
+    }
+    fclose($lockS);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'id' => $idSonda]);
+}
+
+if ($action === 'probe_status') {
+    $idSonda = cleanId((string)($body['id'] ?? ''));
+    $lockS = lockFile(SONDAS_LOCK);
+    $peticion = null;
+    if (flock($lockS, LOCK_SH)) {
+        $datos = leerSondas();
+        foreach ($datos['peticiones'] as $p) {
+            if ((string)($p['id'] ?? '') === $idSonda) {
+                $peticion = $p;
+                break;
+            }
+        }
+        flock($lockS, LOCK_UN);
+    }
+    fclose($lockS);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    if ($peticion === null) {
+        respond(404, ['success' => false, 'error' => 'Sonda no encontrada o caducada.']);
+    }
+    respond(200, [
+        'success' => true,
+        'estado'  => (string)($peticion['estado'] ?? 'pendiente'),
+        'info'    => is_array($peticion['info'] ?? null) ? $peticion['info'] : [],
+        'error'   => (string)($peticion['error'] ?? ''),
+    ]);
+}
+
+/* ── Cola: mover, pausar, reanudar y limpiar ────────────────────────────── */
+
+if ($action === 'move') {
+    $index = findJob($queue, (string)($body['job_id'] ?? ''));
+    $dir = strtolower((string)($body['dir'] ?? 'up')) === 'down' ? 'down' : 'up';
+    if ($index === null) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(404, ['success' => false, 'error' => 'Esa descarga ya no esta en la cola.']);
+    }
+    $movibles = [];
+    foreach ($queue['jobs'] as $i => $job) {
+        $st = (string)($job['status'] ?? '');
+        if ($st === 'queued' || $st === 'paused') {
+            $movibles[] = $i;
+        }
+    }
+    usort($movibles, static function (int $a, int $b) use ($queue): int {
+        return ((int)($queue['jobs'][$a]['orden'] ?? 0)) <=> ((int)($queue['jobs'][$b]['orden'] ?? 0));
+    });
+    $pos = array_search($index, $movibles, true);
+    $otroPos = $dir === 'down' ? $pos + 1 : $pos - 1;
+    if ($pos === false || !isset($movibles[$otroPos])) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(200, ['success' => true, 'movido' => false]);
+    }
+    // Se renumeran todas las movibles para que el orden sea siempre 1..n y el
+    // intercambio funcione aunque vengan trabajos viejos sin `orden`.
+    foreach ($movibles as $n => $i) {
+        $queue['jobs'][$i]['orden'] = $n + 1;
+    }
+    $a = $movibles[$pos];
+    $b = $movibles[$otroPos];
+    $queue['jobs'][$a]['orden'] = $otroPos + 1;
+    $queue['jobs'][$b]['orden'] = $pos + 1;
+    $queue['jobs'][$a]['updated_at'] = nowIso();
+    $queue['jobs'][$b]['updated_at'] = nowIso();
+    writeJsonFile(QUEUE_FILE, $queue);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'movido' => true]);
+}
+
+if ($action === 'pause') {
+    $index = findJob($queue, (string)($body['job_id'] ?? ''));
+    if ($index === null) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(404, ['success' => false, 'error' => 'Esa descarga ya no esta en la cola.']);
+    }
+    $status = (string)($queue['jobs'][$index]['status'] ?? '');
+    if ($status === 'running') {
+        // El worker lo ve en el siguiente progreso y para yt-dlp sin borrar nada.
+        $queue['jobs'][$index]['pause_requested'] = true;
+        $queue['jobs'][$index]['stage'] = 'pausando…';
+    } elseif ($status === 'queued') {
+        $queue['jobs'][$index]['status'] = 'paused';
+        $queue['jobs'][$index]['stage'] = 'en pausa';
+        $queue['jobs'][$index]['pause_requested'] = false;
+    } else {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(409, ['success' => false, 'error' => 'Esa descarga no se puede pausar ahora.']);
+    }
+    $queue['jobs'][$index]['updated_at'] = nowIso();
+    writeJsonFile(QUEUE_FILE, $queue);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true]);
+}
+
+if ($action === 'resume') {
+    $index = findJob($queue, (string)($body['job_id'] ?? ''));
+    if ($index === null) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(404, ['success' => false, 'error' => 'Esa descarga ya no esta en la cola.']);
+    }
+    $status = (string)($queue['jobs'][$index]['status'] ?? '');
+    if ($status !== 'paused' && $status !== 'error' && $status !== 'cancelled') {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(409, ['success' => false, 'error' => 'Esa descarga no esta en pausa.']);
+    }
+    $queue['jobs'][$index]['status'] = 'queued';
+    $queue['jobs'][$index]['stage'] = 'en cola';
+    $queue['jobs'][$index]['pause_requested'] = false;
+    $queue['jobs'][$index]['cancel_requested'] = false;
+    $queue['jobs'][$index]['error'] = '';
+    $queue['jobs'][$index]['finished_at'] = '';
+    unset($queue['jobs'][$index]['retry_at']);
+    $queue['jobs'][$index]['updated_at'] = nowIso();
+    writeJsonFile(QUEUE_FILE, $queue);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true]);
+}
+
+if ($action === 'pause_all') {
+    $queue['paused'] = true;
+    $pausados = 0;
+    foreach ($queue['jobs'] as $i => $job) {
+        $status = (string)($job['status'] ?? '');
+        if ($status === 'queued') {
+            $queue['jobs'][$i]['status'] = 'paused';
+            $queue['jobs'][$i]['stage'] = 'en pausa';
+            $pausados++;
+        } elseif ($status === 'running') {
+            $queue['jobs'][$i]['pause_requested'] = true;
+            $queue['jobs'][$i]['stage'] = 'pausando…';
+        }
+    }
+    writeJsonFile(QUEUE_FILE, $queue);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'pausados' => $pausados]);
+}
+
+if ($action === 'resume_all') {
+    $queue['paused'] = false;
+    $reanudados = 0;
+    foreach ($queue['jobs'] as $i => $job) {
+        if ((string)($job['status'] ?? '') === 'paused') {
+            $queue['jobs'][$i]['status'] = 'queued';
+            $queue['jobs'][$i]['stage'] = 'en cola';
+            $queue['jobs'][$i]['pause_requested'] = false;
+            $queue['jobs'][$i]['cancel_requested'] = false;
+            $queue['jobs'][$i]['error'] = '';
+            $queue['jobs'][$i]['finished_at'] = '';
+            $reanudados++;
+        }
+    }
+    writeJsonFile(QUEUE_FILE, $queue);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'reanudados' => $reanudados]);
+}
+
+if ($action === 'clear_finished') {
+    $quedan = [];
+    $fuera = [];
+    foreach ($queue['jobs'] as $job) {
+        $status = (string)($job['status'] ?? '');
+        if (in_array($status, ['done', 'error', 'cancelled'], true)) {
+            $fuera[] = (string)($job['id'] ?? '');
+            continue;
+        }
+        $quedan[] = $job;
+    }
+    $queue['jobs'] = $quedan;
+    writeJsonFile(QUEUE_FILE, $queue);
+    foreach ($fuera as $idViejo) {
+        if ($idViejo !== '') {
+            removeJobFiles($idViejo);
+        }
+    }
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'limpiados' => count($fuera)]);
+}
+
+/* ── Herramientas del PC: actualizar yt-dlp ─────────────────────────────── */
+
+if ($action === 'update_tool') {
+    $herramienta = strtolower((string)($body['tool'] ?? 'ytdlp')) === 'ytdlp' ? 'ytdlp' : '';
+    if ($herramienta === '') {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(400, ['success' => false, 'error' => 'Herramienta no valida.']);
+    }
+    $worker = readJsonFile(WORKER_FILE, []);
+    if (empty($worker['time']) || time() - (int)$worker['time'] > 120) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(503, ['success' => false, 'error' => 'El PC esta desconectado: enciendelo y vuelve a intentarlo.']);
+    }
+    writeJsonFile(TOOL_FILE, [
+        'estado'  => 'pendiente',
+        'tool'    => $herramienta,
+        'pedida'  => time(),
+        'mensaje' => '',
+        'ok'      => false,
+    ]);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'tool' => $herramienta]);
+}
+
+if ($action === 'tool_status') {
+    $tool = readJsonFile(TOOL_FILE, []);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    $pedida = (int)($tool['pedida'] ?? 0);
+    respond(200, [
+        'success' => true,
+        'estado'  => (string)($tool['estado'] ?? ''),
+        'ok'      => !empty($tool['ok']),
+        'mensaje' => (string)($tool['mensaje'] ?? ($tool['message'] ?? '')),
+        'at'      => (string)($tool['at'] ?? ''),
     ]);
 }
 
@@ -2109,6 +2550,7 @@ respond(400, [
     'success' => false,
     'error'   => 'Accion no valida.',
     'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download', 'set_dir', 'subir_item', 'elegir_carpeta', 'abrir', 'retry', 'search', 'search_status', 'whatsapp_estado', 'whatsapp_config', 'whatsapp_test',
-                       'next', 'progress', 'upload_chunk', 'search_results', 'item_done', 'item_local', 'finish', 'fail',
+                       'probe', 'probe_status', 'move', 'pause', 'resume', 'pause_all', 'resume_all', 'clear_finished', 'update_tool', 'tool_status',
+                       'next', 'progress', 'upload_chunk', 'search_results', 'sonda_result', 'tool_result', 'paused', 'item_done', 'item_local', 'finish', 'fail',
                        'heartbeat', 'dir_applied'],
 ]);

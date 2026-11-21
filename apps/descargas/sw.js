@@ -1,9 +1,9 @@
-/* Service worker de la app de descargas.
+﻿/* Service worker de la app de descargas.
    Objetivo doble: que la app se pueda INSTALAR en el movil y que abra aunque no
    haya red (la cola se actualizara sola cuando vuelva).
    Nunca intercepta POST ni la API: eso tiene que ir siempre a la red. */
 
-const CACHE = 'descargas-v6';
+const CACHE = 'descargas-v7';
 const CARCASA = [
   './',
   './index.html',
