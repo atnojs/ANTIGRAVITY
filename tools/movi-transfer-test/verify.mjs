@@ -52,11 +52,11 @@ async function borrar(nombre) {
   return fetch(`${BASE}/api/files?name=${encodeURIComponent(nombre)}`, { method: 'DELETE' });
 }
 
-function peticionCruda(pathname) {
+function peticionCruda(pathname, headers = {}) {
   const url = new URL(BASE);
   return new Promise((resolve, reject) => {
     const req = http.request(
-      { host: url.hostname, port: url.port || 80, path: pathname, method: 'GET' },
+      { host: url.hostname, port: url.port || 80, path: pathname, method: 'GET', headers },
       (res) => {
         res.resume();
         res.on('end', () => resolve(res.statusCode));
@@ -95,6 +95,13 @@ async function main() {
   const nula = await peticionCruda('/%00');
   check('URL con %00 devuelve 400', nula === 400, String(nula));
 
+  const dobleBarra = await peticionCruda('//');
+  check('GET // devuelve 400 (no tumba el servidor)', dobleBarra === 400, String(dobleBarra));
+  const hostInvalido = await peticionCruda('/', { Host: '[' });
+  check('Host inválido devuelve 400', hostInvalido === 400, String(hostInvalido));
+  const sigueVivo = await fetch(`${BASE}/api/health`);
+  check('el servidor sigue vivo tras las peticiones raras', sigueVivo.status === 200);
+
   // 3. Subida y descarga idéntica
   const contenido = randomBytes(256 * 1024);
   const subida = await subir('prueba-api.bin', contenido);
@@ -132,6 +139,13 @@ async function main() {
   const vacioJson = await vacioSubida.json();
   creados.push(vacioJson.name);
   check('archivo de 0 bytes', vacioSubida.status === 201 && vacioJson.size === 0);
+  const vacioDescarga = await descargar(vacioJson.name);
+  const vacioBytes = await vacioDescarga.arrayBuffer();
+  check(
+    'descarga de un archivo de 0 bytes (200 y cuerpo vacío)',
+    vacioDescarga.status === 200 && vacioBytes.byteLength === 0,
+    `${vacioDescarga.status}/${vacioBytes.byteLength}`,
+  );
 
   const grandeContenido = randomBytes(20 * 1024 * 1024);
   const grandeSubida = await subir('grande-20mb.bin', grandeContenido);

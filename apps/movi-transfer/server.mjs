@@ -375,6 +375,21 @@ async function handleDownload(req, res, url) {
   const type = MIME[ext] ?? 'application/octet-stream';
   const disposition = `${inline ? 'inline' : 'attachment'}; filename*=UTF-8''${encodeURIComponent(target.name)}`;
 
+  // Un archivo vacío no puede abrirse con createReadStream({end: -1}): se
+  // responde 200 con cuerpo de 0 bytes.
+  if (stat.size === 0) {
+    res.writeHead(200, {
+      ...SECURITY_HEADERS,
+      'Content-Type': type,
+      'Content-Disposition': disposition,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': 0,
+      'Cache-Control': 'no-store',
+    });
+    res.end();
+    return;
+  }
+
   let start = 0;
   let end = stat.size - 1;
   let status = 200;
@@ -439,7 +454,14 @@ const server = http.createServer(async (req, res) => {
   req.setTimeout(0);
   res.setTimeout(0);
 
-  const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
+  // Una URL o un Host malformados no pueden tumbar el proceso: se responden 400.
+  let url;
+  try {
+    url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
+  } catch {
+    sendError(res, 400, 'Dirección no válida.');
+    return;
+  }
   const { pathname } = url;
 
   try {
