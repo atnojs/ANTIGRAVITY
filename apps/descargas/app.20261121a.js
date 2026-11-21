@@ -841,15 +841,44 @@ async function pedirAlPc(modo, ruta) {
   }
 }
 
-/** Abre un fichero de la nube en una pestaña: el navegador lo reproduce. */
-function abrirEnElNavegador(fichero) {
+/**
+ * Abre un fichero de la nube en una pestaña: el navegador lo reproduce.
+ *
+ * Ojo: la copia de la nube caduca a las 48 h, así que antes de abrirla se pide
+ * el primer byte. Si ya no está, se cierra la pestaña en blanco y se avisa; de
+ * paso, la pestaña se abre al instante (en blanco) y ya no la bloquea el
+ * navegador cuando la comprobación tarda.
+ */
+async function abrirEnElNavegador(fichero) {
   const url = API + '?action=download&item=' + encodeURIComponent(fichero.id) + '&ver=1';
-  const ventana = window.open(url, '_blank');
-  if (ventana) {
-    try { ventana.opener = null; } catch (e) { /* da igual */ }
-  } else {
+  const ventana = window.open('about:blank', '_blank');
+  if (!ventana) {
     mostrarAviso('El navegador ha bloqueado la pestaña. Permite las ventanas emergentes para verlo.', 'error');
+    return;
   }
+
+  let disponible = true;
+  try {
+    const comprobacion = await fetch(url, {
+      method: 'GET',
+      headers: { Range: 'bytes=0-0' },
+      cache: 'no-store',
+    });
+    disponible = comprobacion.ok;
+  } catch (e) {
+    disponible = true; // sin red no se descarta: que el navegador lo intente
+  }
+
+  if (!disponible) {
+    try { ventana.close(); } catch (e) { /* ya cerrada */ }
+    mostrarAviso('La copia en la nube ya no está (caduca a las 48 h). El archivo sigue en el PC: ábrelo con «Carpeta».', 'error');
+    return;
+  }
+
+  try {
+    ventana.location.href = url;
+    ventana.opener = null;
+  } catch (e) { /* si la pestaña se cerró, se ignora */ }
 }
 
 /**
@@ -870,7 +899,7 @@ async function verTrabajo(id) {
 
   // La pestaña se abre ANTES de esperar nada: si no, el bloqueador la corta.
   if (enNube.length) {
-    abrirEnElNavegador(enNube[0]);
+    await abrirEnElNavegador(enNube[0]);
     return;
   }
 
