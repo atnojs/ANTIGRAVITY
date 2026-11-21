@@ -18,7 +18,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const APP_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(APP_DIR, 'public');
 
@@ -176,20 +176,80 @@ function reservarNombre(rawName) {
   return null;
 }
 
+/**
+ * Archivos que Windows crea al abrir la carpeta en el Explorador y que no son
+ * del usuario: no deben aparecer en la lista ni contar en los totales.
+ */
+function esBasuraDelSistema(nombre) {
+  const n = nombre.toLowerCase();
+  return n === 'thumbs.db' || n === 'desktop.ini' || n.startsWith('~$');
+}
+
+// Historial de actividad (nombre → {u: subida, d: descarga}). Vive en un fichero
+// oculto dentro de la bandeja para que el orden «último tocado primero» sobreviva
+// a un reinicio. El fichero empieza por punto y no se lista.
+const HISTORIAL_ACTIVIDAD = path.join(INBOX_DIR, '.descargas.json');
+const actividad = new Map();
+let guardadoPendiente = null;
+
+async function cargarActividad() {
+  try {
+    const datos = JSON.parse(await fsp.readFile(HISTORIAL_ACTIVIDAD, 'utf8'));
+    for (const [nombre, valor] of Object.entries(datos)) {
+      if (typeof nombre !== 'string') continue;
+      if (Number.isFinite(valor)) {
+        // Formato antiguo: sólo fecha de descarga.
+        actividad.set(nombre, { d: valor });
+      } else if (valor && typeof valor === 'object') {
+        actividad.set(nombre, {
+          u: Number.isFinite(valor.u) ? valor.u : undefined,
+          d: Number.isFinite(valor.d) ? valor.d : undefined,
+        });
+      }
+    }
+  } catch {
+    /* primer arranque o fichero corrupto: se empieza vacío */
+  }
+}
+
+function guardarActividad() {
+  if (guardadoPendiente) return;
+  guardadoPendiente = setTimeout(async () => {
+    guardadoPendiente = null;
+    const temporal = `${HISTORIAL_ACTIVIDAD}.tmp`;
+    try {
+      await fsp.writeFile(temporal, JSON.stringify(Object.fromEntries(actividad)), 'utf8');
+      await fsp.rename(temporal, HISTORIAL_ACTIVIDAD);
+    } catch {
+      await fsp.rm(temporal, { force: true }).catch(() => {});
+    }
+  }, 400);
+}
+
+function registrarActividad(nombre, tipo) {
+  const previo = actividad.get(nombre) ?? {};
+  previo[tipo] = Date.now();
+  actividad.set(nombre, previo);
+  guardarActividad();
+}
+
 async function listFiles() {
   const entries = await fsp.readdir(INBOX_DIR, { withFileTypes: true });
   const files = [];
   await Promise.all(
     entries
-      .filter((entry) => entry.isFile() && !entry.name.startsWith('.'))
+      .filter((entry) => entry.isFile() && !entry.name.startsWith('.') && !esBasuraDelSistema(entry.name))
       .map(async (entry) => {
         try {
           const stat = await fsp.stat(path.join(INBOX_DIR, entry.name));
           const ext = path.extname(entry.name).toLowerCase();
+          const historial = actividad.get(entry.name);
           files.push({
             name: entry.name,
             size: stat.size,
             mtime: stat.mtimeMs,
+            lastUpload: historial?.u ?? null,
+            lastDownload: historial?.d ?? null,
             kind: IMAGE_EXT.has(ext)
               ? 'image'
               : VIDEO_EXT.has(ext)
@@ -203,7 +263,13 @@ async function listFiles() {
         }
       }),
   );
-  files.sort((a, b) => b.mtime - a.mtime);
+  // El último tocado (subido o descargado) va primero. Se usa la marca del
+  // servidor porque el reloj del share puede ir desfasado respecto al PC.
+  files.sort(
+    (a, b) =>
+      Math.max(b.lastUpload ?? 0, b.lastDownload ?? 0, b.mtime) -
+      Math.max(a.lastUpload ?? 0, a.lastDownload ?? 0, a.mtime),
+  );
   return files;
 }
 
@@ -345,6 +411,7 @@ async function handleUpload(req, res, url) {
     try {
       await fsp.rename(tmp, target.full);
       const stat = await fsp.stat(target.full);
+      registrarActividad(target.name, 'u');
       sendJson(res, 201, { ok: true, name: target.name, size: stat.size, mtime: stat.mtimeMs });
     } catch {
       await fsp.rm(tmp, { force: true }).catch(() => {});
@@ -374,6 +441,10 @@ async function handleDownload(req, res, url) {
   const inline = url.searchParams.get('inline') === '1';
   const type = MIME[ext] ?? 'application/octet-stream';
   const disposition = `${inline ? 'inline' : 'attachment'}; filename*=UTF-8''${encodeURIComponent(target.name)}`;
+
+  // Una descarga real (no la vista previa ni un HEAD) sube el archivo al
+  // principio de la lista: «el último descargado, primero».
+  if (req.method === 'GET' && !inline) registrarActividad(target.name, 'd');
 
   // Un archivo vacío no puede abrirse con createReadStream({end: -1}): se
   // responde 200 con cuerpo de 0 bytes.
@@ -443,6 +514,7 @@ async function handleDelete(res, url) {
   }
   try {
     await fsp.unlink(target.full);
+    if (actividad.delete(target.name)) guardarActividad();
     sendJson(res, 200, { ok: true, name: target.name });
   } catch {
     sendError(res, 404, 'El archivo no existe.');
@@ -523,6 +595,7 @@ server.on('clientError', (err, socket) => {
 });
 
 await fsp.mkdir(INBOX_DIR, { recursive: true });
+await cargarActividad();
 
 server.listen(PORT, HOST, () => {
   const ip = localAddress();

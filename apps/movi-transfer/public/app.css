@@ -714,6 +714,10 @@ h1 {
   letter-spacing: 0.05em;
 }
 
+.archivo__descarga {
+  color: var(--acc2);
+}
+
 .archivo__acciones {
   display: flex;
   gap: 4px;

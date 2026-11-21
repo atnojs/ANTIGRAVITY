@@ -50,6 +50,9 @@ También se puede forzar por variables de entorno: `MOVI_PORT`, `MOVI_HOST`,
 - **Subida** de varios archivos a la vez, con barra de progreso, velocidad y cancelación.
   Acepta arrastrar y soltar y el selector del móvil.
 - **Lista** de la bandeja con nombre, tamaño, fecha relativa y tipo; buscador y refresco.
+  El último archivo **subido o descargado** aparece siempre primero (el orden se guarda
+  en `_inbox/.descargas.json` y sobrevive a reinicios). Los ficheros basura de Windows
+  (`Thumbs.db`, `desktop.ini`, `~$…`) no se muestran.
 - **Descarga** individual (con soporte `Range` para vídeos) y **vista previa** de
   imágenes, vídeo y audio.
 - **Borrado** con confirmación.

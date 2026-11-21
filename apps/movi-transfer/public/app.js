@@ -211,6 +211,12 @@
     tipo.textContent =
       file.kind === 'image' ? 'Imagen' : file.kind === 'video' ? 'Vídeo' : file.kind === 'audio' ? 'Audio' : 'Archivo';
     meta.append(tamaño, fecha, tipo);
+    if (file.lastDownload) {
+      const descarga = document.createElement('span');
+      descarga.className = 'archivo__descarga';
+      descarga.textContent = `Descargado ${tiempoRelativo(file.lastDownload)}`;
+      meta.append(descarga);
+    }
     cuerpo.append(meta);
     li.append(cuerpo);
 
@@ -235,6 +241,12 @@
 
     acciones.append(descargar, borrar);
     li.append(acciones);
+
+    // Al descargar (o abrir la vista previa) se refresca la lista para que el
+    // archivo recién descargado suba al primer puesto.
+    li.addEventListener('click', (evento) => {
+      if (evento.target.closest('a')) window.setTimeout(cargarArchivos, 1500);
+    });
     return li;
   }
 

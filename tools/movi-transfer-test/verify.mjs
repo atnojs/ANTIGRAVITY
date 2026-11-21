@@ -261,6 +261,30 @@ async function main() {
   const restantes = (await listar()).filter((file) => creados.includes(file.name));
   check('limpieza completa', restantes.length === 0, `${restantes.length} restantes`);
 
+  // 12. Orden: el último descargado va primero
+  const ordenA = `orden-a-${Date.now()}.bin`;
+  const ordenB = `orden-b-${Date.now()}.bin`;
+  await subir(ordenA, Buffer.from('archivo A'));
+  await new Promise((resolve) => setTimeout(resolve, 30));
+  await subir(ordenB, Buffer.from('archivo B'));
+  let orden = await listar();
+  check('el último subido va primero', orden[0]?.name === ordenB, orden[0]?.name);
+
+  await (await descargar(ordenA)).arrayBuffer();
+  orden = await listar();
+  check('el último descargado pasa al primer puesto', orden[0]?.name === ordenA, orden[0]?.name);
+  check('la descarga se marca en el listado', Number(orden[0]?.lastDownload) > 0);
+  await borrar(ordenA);
+  await borrar(ordenB);
+
+  // 13. Archivos basura de Windows fuera de la lista
+  const basura = '~$movi-test.docx';
+  await fs.writeFile(path.join(INBOX, basura), 'x');
+  const conBasura = await listar();
+  check('no lista archivos basura del sistema', !conBasura.some((file) => file.name === basura));
+  check('no lista Thumbs.db', !conBasura.some((file) => file.name.toLowerCase() === 'thumbs.db'));
+  await fs.rm(path.join(INBOX, basura), { force: true });
+
   await fs.mkdir(EVIDENCIA, { recursive: true });
   await fs.writeFile(
     path.join(EVIDENCIA, 'api.json'),
