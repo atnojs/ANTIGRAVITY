@@ -6,7 +6,8 @@
 - **Verificador independiente:** 1.ª pasada **REWORK 84,3/100** (carrera de nombres,
   CSRF, doble decodificación, foco, contraste, evidencias). 2.ª pasada **REWORK 87,4/100**
   (los 10 defectos corregidos; aparecen un DoS con URL malformada y la descarga de 0 B).
-  Ambos corregidos; 3.ª pasada pendiente de PASS.
+  Ambos corregidos. 3.ª pasada: **PASS 92,6/100** sobre `74444082` (misma nota que la
+  autoevaluación, sin defectos nuevos).
 
 ## Nota del autor (A1–A10)
 
@@ -26,7 +27,8 @@
 **Total autoevaluado:** (9,5×18 + 9,5×15 + 9,2×13 + 9,5×10 + 9,2×12 + 9,2×10 + 8,8×8 +
 9,0×6 + 9,0×5 + 9,0×3) / 10 = **92,6** (truncado).
 
-> El PASS lo emite el verificador independiente, no este documento.
+> El PASS lo emite el verificador independiente, no este documento. **PASS emitido:
+> 92,6/100** (3.ª ronda, commit `74444082`).
 
 ## Defectos corregidos
 
