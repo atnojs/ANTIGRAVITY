@@ -283,42 +283,6 @@ h1 {
 
 /* — Conectar el móvil ————————————————————————————————————— */
 
-.qr {
-  display: grid;
-  place-items: center;
-  width: 216px;
-  max-width: 100%;
-  aspect-ratio: 1;
-  margin: 20px auto 18px;
-  padding: 10px;
-  background: #e9ffff;
-  border-radius: 12px;
-  box-shadow: 0 0 0 2px rgba(0, 208, 208, 0.35), 0 12px 34px rgba(0, 0, 0, 0.35);
-}
-
-.qr svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.qr__cargando {
-  color: #0a4a52;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-}
-
-.qr--error {
-  background: rgba(0, 16, 24, 0.7);
-  box-shadow: 0 0 0 2px rgba(255, 138, 138, 0.35);
-}
-
-.qr--error .qr__cargando {
-  color: #ffb4b4;
-  padding: 0 12px;
-  text-align: center;
-}
-
 .url {
   display: flex;
   align-items: center;
@@ -1106,10 +1070,6 @@ h1 {
   .panel--conectar,
   .panel--enviar {
     grid-column: span 12;
-  }
-
-  .qr {
-    width: 196px;
   }
 }
 

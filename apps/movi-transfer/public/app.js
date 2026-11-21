@@ -25,7 +25,6 @@
     version: $('#version'),
     urlLan: $('#urlLan'),
     copiar: $('#copiar'),
-    qr: $('#qr'),
     pistaRed: $('#pistaRed'),
     zona: $('#zona'),
     archivos: $('#archivos'),
@@ -381,36 +380,6 @@
     el.estadoTexto.textContent = texto;
   }
 
-  function pintarQr(url) {
-    el.qr.textContent = '';
-    if (!url || typeof window.qrcode !== 'function') {
-      const aviso = document.createElement('span');
-      aviso.className = 'qr__cargando';
-      aviso.textContent = 'No se pudo generar el QR. Escribe la dirección a mano.';
-      el.qr.append(aviso);
-      el.qr.classList.add('qr--error');
-      return;
-    }
-    try {
-      const qr = window.qrcode(0, 'M');
-      qr.addData(url);
-      qr.make();
-      el.qr.innerHTML = qr.createSvgTag({
-        cellSize: 5,
-        margin: 0,
-        scalable: true,
-        alt: { text: `Dirección para abrir Movi Transfer en el móvil: ${url}` },
-      });
-    } catch {
-      el.qr.textContent = '';
-      const aviso = document.createElement('span');
-      aviso.className = 'qr__cargando';
-      aviso.textContent = 'No se pudo generar el QR.';
-      el.qr.append(aviso);
-      el.qr.classList.add('qr--error');
-    }
-  }
-
   async function cargarEstado() {
     try {
       const info = await api('/api/state');
@@ -422,7 +391,6 @@
       el.pieHost.textContent = info.hostname;
       el.pieBandeja.textContent = info.inbox ? ` · Bandeja: ${nombreBase(info.inbox)}` : '';
       pintarEstado(true, 'Servidor activo');
-      pintarQr(url);
 
       const partes = info.ip.split('.');
       if (partes.length === 4 && info.ip !== '127.0.0.1') {

@@ -7,8 +7,9 @@
  *
  * Requiere `playwright-core` y `axe-core` instalados fuera del repo (por
  * defecto en %TEMP%\movi-pw) y Chrome instalado. Recorre el flujo completo
- * —carga, QR, selector, foco, subida, descarga, búsqueda, copia, borrado— en
- * escritorio, móvil y tableta; audita WCAG con axe y guarda capturas + informe.
+ * —carga, selector, foco, vista previa, compartir, subida, descarga, búsqueda,
+ * copia y borrado— en escritorio, móvil y tableta; audita WCAG con axe y guarda
+ * capturas + informe.
  */
 
 import { createHash, randomBytes } from 'node:crypto';
@@ -103,7 +104,6 @@ async function main() {
 
   const textoUrl = (await page.textContent('#urlLan'))?.trim() ?? '';
   check('la página muestra la URL exacta de la red local', textoUrl === urlEsperada, textoUrl);
-  check('QR generado en SVG', (await page.locator('#qr svg').count()) === 1);
   check('estado del servidor activo', ((await page.textContent('#estadoTexto')) ?? '').includes('Servidor activo'));
   check('Electrolize carga de verdad', await page.evaluate(() => document.fonts.check('16px Electrolize')));
   await page.evaluate(() => document.fonts.ready);

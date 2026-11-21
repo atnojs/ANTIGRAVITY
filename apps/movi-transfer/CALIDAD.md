@@ -1,6 +1,6 @@
 # Autoevaluación `autocalidad-90` — Movi Transfer
 
-- **Artefacto:** `apps/movi-transfer/` + `tools/movi-transfer-test/` (versión 1.2.0)
+- **Artefacto:** `apps/movi-transfer/` + `tools/movi-transfer-test/` (versión 1.2.1)
 - **Autor:** agente principal (DSH), 2026-11-21
 - **Alcance:** app local Node (servidor + UI), pruebas y documentación.
 - **Verificador independiente:** 1.ª pasada **REWORK 84,3/100** (carrera de nombres,

@@ -14,8 +14,8 @@ móvil  ──Wi-Fi──►  PC (Node en :8099)  ──►  apps/movi-transfer/
    En este PC el firewall ya permite `node.exe` en redes privadas; si Windows
    preguntara, pulsa **Permitir**. En otro PC donde no conecte, ejecuta una vez
    **`permitir-firewall.cmd`** (pide administrador y abre el puerto 8099).
-2. En el móvil: escanea el **QR** que aparece, o escribe la dirección
-   `http://IP-DEL-PC:8099` en el navegador. Tienen que estar en la misma Wi-Fi.
+2. En el móvil: escribe la dirección `http://IP-DEL-PC:8099` en el navegador (la
+   página del PC la muestra y tiene botón **Copiar**). Tienen que estar en la misma Wi-Fi.
 3. Arrastra o elige archivos en el móvil → se guardan en la bandeja del PC.
    Desde el PC, cada archivo de la lista se descarga al móvil con su botón.
 
@@ -61,7 +61,6 @@ También se puede forzar por variables de entorno: `MOVI_PORT`, `MOVI_HOST`,
   que solo abre dentro de la Wi‑Fi; para enviar el archivo en sí hay que descargarlo y
   compartirlo desde la app de Archivos/Fotos.
 - **Borrado** con confirmación.
-- **QR** con la dirección de la red local y botón de copiar.
 
 ## Límites y seguridad
 
@@ -85,7 +84,7 @@ También se puede forzar por variables de entorno: `MOVI_PORT`, `MOVI_HOST`,
 | Archivo | Papel |
 |---|---|
 | `server.mjs` | Servidor HTTP sin dependencias: estáticos, subida, descarga, borrado. |
-| `public/` | Página (`index.html`, `app.css`, `app.js`), QR vendorizado, fuente e iconos. |
+| `public/` | Página (`index.html`, `app.css`, `app.js`), fuente e iconos. |
 | `config.json` | Puerto, bandeja y límite de tamaño. |
 | `iniciar.cmd` / `iniciar-oculto.vbs` | Arranque manual / oculto al iniciar sesión. |
 | `permitir-firewall.cmd` | Regla de entrada para el puerto 8099 (UAC). |
