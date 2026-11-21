@@ -390,7 +390,7 @@ function abrirConProgramaPredeterminado(ruta) {
     try {
       hijo = spawn('powershell.exe', [
         '-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden',
-        '-Command', 'Start-Process -LiteralPath $env:ABRIR_RUTA',
+        '-Command', 'Start-Process -FilePath $env:ABRIR_RUTA',
       ], {
         // La ruta viaja por variable de entorno: así no hay comillas ni
         // caracteres raros que puedan colarse en la orden de PowerShell.
