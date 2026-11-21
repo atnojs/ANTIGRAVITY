@@ -124,7 +124,7 @@ export default function Shortcuts() {
       ))}
 
       <Card title="Dar la vuelta al menú circular">
-        <p className="hint">Con el menú circular abierto, esta tecla o un giro de la rueda del ratón muestra su reverso. El reverso de cada menú se elige en Menú circular.</p>
+        <p className="hint">Con el menú circular abierto, esta tecla o un giro de la rueda del ratón muestra su reverso. El reverso (recortar, girar, voltear…) se edita en la app de escritorio.</p>
         <Field label="Tecla" htmlFor="flipkey">
           <div className="key-row">
             <Kbd>{settings.flipKey}</Kbd>

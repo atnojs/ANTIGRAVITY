@@ -11,8 +11,8 @@ de vidrio azulado y bordes de 2 px.
 ## Qué es
 
 Una maqueta navegable de la ventana de Filee: barra de título, barra lateral con
-las diez secciones, y cada página con sus controles reales. Se reconstruyó a partir
-de la app instalada en este equipo: se capturaron las diez pantallas y se extrajeron
+las nueve secciones, y cada página con sus controles reales. Se reconstruyó a partir
+de la app instalada en este equipo: se capturaron sus pantallas y se extrajeron
 sus textos con UI Automation, así que los rótulos son los que muestra la app en español.
 
 | Sección | Qué incluye |
