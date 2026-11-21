@@ -226,6 +226,46 @@ powershell -NoProfile -Command "Get-Content -Wait -Tail 40 -Encoding UTF8 '$env:
 
 ---
 
+## 8-bis. Botones «Ver» y «Carpeta» de la web (worker 1.2)
+
+La cola de la app tiene dos botones por descarga terminada:
+
+- **Ver**: ver o escuchar el fichero. Si la descarga está subida a la nube, la app abre
+  `api.php?action=download&item=…&ver=1` en una pestaña y el navegador lo reproduce (vale
+  también desde el móvil). Si el fichero **solo** está en el PC, la app pide al worker que lo
+  abra con el programa predeterminado de Windows.
+- **Carpeta**: abre el Explorador en `download_dir` (`D:\Descargas Y, I y T`), con el fichero
+  seleccionado cuando la app conoce su ruta.
+
+El worker los atiende en su puerto local (el mismo de `/pc`, por defecto **8125**):
+
+```text
+GET http://127.0.0.1:8125/abrir?modo=ver&ruta=<ruta completa>
+GET http://127.0.0.1:8125/abrir?modo=carpeta[&ruta=<ruta completa>]
+```
+
+Reglas de seguridad (no quitarlas):
+
+1. **Solo orígenes del proyecto**: `https://atnojs.es`, `https://www.atnojs.es` y
+   `http://127.0.0.1`/`http://localhost`. Cualquier otra web recibe `403`.
+2. **Solo rutas dentro de `download_dir`**: se resuelve la ruta y se comprueba que cuelga de
+   la carpeta de descargas; si no, `400`. Así una página abierta en el navegador no puede
+   abrir cualquier fichero del disco.
+3. La ruta viaja por **variable de entorno** a PowerShell (`Start-Process -LiteralPath`), no
+   concatenada en la orden: no hay forma de inyectar comandos.
+
+Comprobación rápida desde una consola (`curl` de Windows 10/11):
+
+```bat
+curl -s http://127.0.0.1:8125/pc
+curl -i -H "Origin: https://atnojs.es" "http://127.0.0.1:8125/abrir?modo=carpeta"
+```
+
+La primera debe devolver `{"pc":true,...,"acciones":["ver","carpeta"]}`. Si el worker es
+anterior a la 1.2, no trae `acciones` y la web mostrará que no puede abrirlo.
+
+---
+
 ## 9. Prueba de extremo a extremo
 
 En `_prueba\` hay un servidor falso (`mock-server.mjs`) que implementa el protocolo. La

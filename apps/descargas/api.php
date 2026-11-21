@@ -71,7 +71,7 @@ const ESPERAS_REINTENTO = [30, 120, 300]; // segundos entre reintentos
 const CLEANUP_EVERY_S  = 300;
 
 const APP_NAME     = 'descargas';
-const APP_VERSION  = '1.1.1';
+const APP_VERSION  = '1.2.0';
 
 function respond(int $status, array $payload): never {
     http_response_code($status);
@@ -732,6 +732,37 @@ if ($action === '') {
     }
 }
 
+/**
+ * Tipo MIME con el que el navegador puede REPRODUCIR el fichero sin bajarlo.
+ * Solo se usa en `download&ver=1` (boton VER de la cola); la descarga normal
+ * sigue sirviendose como application/octet-stream con Content-Disposition:
+ * attachment, que es lo que fuerza la bajada al movil.
+ */
+function mimeReproducible(string $extension): string {
+    $mapa = [
+        'mp4'  => 'video/mp4',
+        'm4v'  => 'video/mp4',
+        'mov'  => 'video/quicktime',
+        'mkv'  => 'video/x-matroska',
+        'webm' => 'video/webm',
+        'mp3'  => 'audio/mpeg',
+        'm4a'  => 'audio/mp4',
+        'aac'  => 'audio/aac',
+        'ogg'  => 'audio/ogg',
+        'oga'  => 'audio/ogg',
+        'opus' => 'audio/ogg',
+        'wav'  => 'audio/wav',
+        'flac' => 'audio/flac',
+        'jpg'  => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png'  => 'image/png',
+        'gif'  => 'image/gif',
+        'webp' => 'image/webp',
+        'pdf'  => 'application/pdf',
+    ];
+    return $mapa[strtolower($extension)] ?? 'application/octet-stream';
+}
+
 if ($method === 'GET' && $action === 'download') {
     requireUser();
     $itemId = cleanId((string)($_GET['item'] ?? ''));
@@ -756,8 +787,78 @@ if ($method === 'GET' && $action === 'download') {
                 respond(404, ['success' => false, 'error' => 'El fichero ya no esta disponible (caduca a las ' . RETENTION_HOURS . ' horas).']);
             }
             $filename = (string)($item['filename'] ?? basename($real));
+            $tamano = (int)filesize($real);
+            // `&ver=1`: el boton VER de la cola pide el fichero para verlo o
+            // escucharlo en el navegador (inline y con soporte de Range, para
+            // poder avanzar el video). Sin `ver`, se baja como siempre.
+            $paraVer = (string)($_GET['ver'] ?? '') !== '' && (string)($_GET['ver'] ?? '') !== '0';
+
+            if ($paraVer) {
+                $extension = strtolower(pathinfo((string)($item['filename'] ?? $real), PATHINFO_EXTENSION));
+                $tipo = mimeReproducible($extension);
+                $desde = 0;
+                $hasta = $tamano - 1;
+                $parcial = false;
+                $rango = trim((string)($_SERVER['HTTP_RANGE'] ?? ''));
+                if ($rango !== '' && preg_match('/^bytes=\s*(\d*)\s*-\s*(\d*)\s*$/i', $rango, $m)) {
+                    if ($m[1] === '' && $m[2] !== '') {
+                        $desde = max(0, $tamano - (int)$m[2]);
+                    } else {
+                        $desde = (int)$m[1];
+                        if ($m[2] !== '') {
+                            $hasta = (int)$m[2];
+                        }
+                    }
+                    if ($hasta >= $tamano) {
+                        $hasta = $tamano - 1;
+                    }
+                    if ($desde > $hasta || $desde >= $tamano) {
+                        http_response_code(416);
+                        header('Content-Range: bytes */' . $tamano);
+                        exit;
+                    }
+                    $parcial = true;
+                }
+
+                $nombreAscii = preg_replace('/[^A-Za-z0-9._ -]/', '_', $filename);
+                header_remove('Content-Type');
+                header('Content-Type: ' . $tipo);
+                header(
+                    'Content-Disposition: inline; filename="' . $nombreAscii . '"; filename*=UTF-8\'\'' . rawurlencode($filename)
+                );
+                header('Accept-Ranges: bytes');
+                header('Content-Length: ' . (string)($parcial ? ($hasta - $desde + 1) : $tamano));
+                header('X-Content-Type-Options: nosniff');
+                if ($parcial) {
+                    http_response_code(206);
+                    header('Content-Range: bytes ' . $desde . '-' . $hasta . '/' . $tamano);
+                }
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+                $manejador = @fopen($real, 'rb');
+                if ($manejador === false) {
+                    exit;
+                }
+                if ($desde > 0) {
+                    fseek($manejador, $desde);
+                }
+                $restante = $parcial ? ($hasta - $desde + 1) : $tamano;
+                while ($restante > 0 && !feof($manejador)) {
+                    $trozo = fread($manejador, min(262144, $restante));
+                    if ($trozo === false || $trozo === '') {
+                        break;
+                    }
+                    echo $trozo;
+                    $restante -= strlen($trozo);
+                    @flush();
+                }
+                fclose($manejador);
+                exit;
+            }
+
             header('Content-Type: application/octet-stream');
-            header('Content-Length: ' . (string)filesize($real));
+            header('Content-Length: ' . (string)$tamano);
             header('Content-Disposition: attachment; filename="' . rawurlencode($filename) . '"; filename*=UTF-8\'\'' . rawurlencode($filename));
             header('X-Content-Type-Options: nosniff');
             while (ob_get_level() > 0) {

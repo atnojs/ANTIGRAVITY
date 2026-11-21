@@ -34,7 +34,7 @@ import { fileURLToPath } from 'node:url';
 // ---------------------------------------------------------------------
 // Constantes generales
 // ---------------------------------------------------------------------
-const VERSION_WORKER = '1.1';
+const VERSION_WORKER = '1.2';
 const NOMBRE_WORKER = 'pc-antonio';
 const VERSION_YTDLP_POR_DEFECTO = '2026.08.19';
 
@@ -354,6 +354,141 @@ async function aplicarCambioDeCarpeta(ruta) {
  * Chrome permite http://127.0.0.1 desde una pagina https (se considera origen
  * de confianza), pero exige responder al preflight de Private Network Access.
  */
+/* ── Abrir en el PC: ver un fichero o su carpeta (botones de la web) ─────── */
+
+/**
+ * ¿La ruta pedida cuelga de la carpeta de descargas?
+ *
+ * El puerto local escucha en 127.0.0.1, pero CUALQUIER página abierta en el
+ * navegador podría llamarlo. Por eso solo se deja abrir lo que está dentro de
+ * `download_dir`: nunca un fichero cualquiera del disco.
+ */
+function rutaDentroDeDescargas(ruta) {
+  try {
+    const base = path.resolve(config.downloadDir);
+    const objetivo = path.resolve(ruta);
+    const relativa = path.relative(base, objetivo);
+    return relativa === '' || (!relativa.startsWith('..') && !path.isAbsolute(relativa));
+  } catch (e) {
+    return false;
+  }
+}
+
+/** Abre un fichero con el programa predeterminado de Windows (ver/escuchar). */
+function abrirConProgramaPredeterminado(ruta) {
+  return new Promise((resolve) => {
+    let terminado = false;
+    let reloj = null;
+    const terminar = (valor) => {
+      if (terminado) return;
+      terminado = true;
+      if (reloj) clearTimeout(reloj);
+      resolve(valor);
+    };
+
+    let hijo;
+    try {
+      hijo = spawn('powershell.exe', [
+        '-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden',
+        '-Command', 'Start-Process -LiteralPath $env:ABRIR_RUTA',
+      ], {
+        // La ruta viaja por variable de entorno: así no hay comillas ni
+        // caracteres raros que puedan colarse en la orden de PowerShell.
+        env: Object.assign({}, process.env, { ABRIR_RUTA: ruta }),
+        windowsHide: true,
+        stdio: 'ignore',
+      });
+    } catch (e) {
+      terminar({ ok: false, error: 'no se pudo abrir: ' + e.message });
+      return;
+    }
+
+    hijo.on('error', (e) => terminar({ ok: false, error: 'no se pudo abrir: ' + e.message }));
+    hijo.on('close', (codigo) => {
+      if (codigo === 0) terminar({ ok: true });
+      else terminar({ ok: false, error: 'Windows no pudo abrir el fichero (código ' + codigo + ')' });
+    });
+    // Si Windows tarda (un reproductor pesado), no se deja la petición colgada.
+    reloj = setTimeout(() => terminar({ ok: true }), 8000);
+  });
+}
+
+/** Abre el Explorador en la carpeta de descargas, con el fichero seleccionado. */
+function abrirCarpetaEnElPc(rutaFichero, carpeta) {
+  try {
+    const hijo = rutaFichero
+      ? spawn('explorer.exe', ['/select,' + rutaFichero], { windowsHide: true, stdio: 'ignore', detached: true })
+      : spawn('explorer.exe', [carpeta], { windowsHide: true, stdio: 'ignore', detached: true });
+    hijo.on('error', () => { /* el Explorador no da más información */ });
+    hijo.unref();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: 'no se pudo abrir el Explorador: ' + e.message };
+  }
+}
+
+/**
+ * Atiende `GET /abrir?modo=ver|carpeta&ruta=...`.
+ *  - ver     : abre el fichero con el programa predeterminado del PC.
+ *  - carpeta : abre el Explorador en `download_dir`; si se pasa `ruta`, deja
+ *              ese fichero seleccionado.
+ */
+async function manejarAbrir(modo, ruta) {
+  const carpeta = config.downloadDir;
+
+  if (modo === 'carpeta') {
+    let fichero = '';
+    if (ruta !== '') {
+      if (!fs.existsSync(ruta) || !rutaDentroDeDescargas(ruta)) {
+        return { ok: false, error: 'Ese fichero ya no está en la carpeta de descargas.' };
+      }
+      fichero = ruta;
+    }
+    if (!fs.existsSync(carpeta)) {
+      return { ok: false, error: 'No existe la carpeta de descargas: ' + carpeta };
+    }
+    const abierto = abrirCarpetaEnElPc(fichero, carpeta);
+    if (abierto.ok) {
+      logInfo(`Explorador abierto desde la web (${fichero || carpeta})`);
+      consola(`Abriendo el Explorador en: ${fichero || carpeta}`);
+    }
+    return Object.assign({ carpeta }, abierto);
+  }
+
+  if (modo === 'ver') {
+    if (ruta === '') {
+      return { ok: false, error: 'Falta la ruta del fichero.' };
+    }
+    let esFichero = false;
+    try {
+      esFichero = fs.existsSync(ruta) && fs.statSync(ruta).isFile();
+    } catch (e) {
+      esFichero = false;
+    }
+    if (!esFichero || !rutaDentroDeDescargas(ruta)) {
+      return { ok: false, error: 'Ese fichero ya no está en la carpeta de descargas.' };
+    }
+    const abierto = await abrirConProgramaPredeterminado(ruta);
+    if (abierto.ok) {
+      logInfo(`Fichero abierto desde la web: ${ruta}`);
+      consola(`Abriendo en el PC: ${path.basename(ruta)}`);
+    } else {
+      logAviso(`No se pudo abrir ${ruta}: ${abierto.error}`);
+    }
+    return abierto;
+  }
+
+  return { ok: false, error: 'Modo no reconocido (usa ver o carpeta).' };
+}
+
+/** Orígenes que pueden usar el puerto local. Cualquier web NO puede. */
+function origenPermitido(origen) {
+  if (!origen) return false;
+  if (/^https:\/\/(www\.)?atnojs\.es$/i.test(origen)) return true;
+  if (/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(origen)) return true;
+  return false;
+}
+
 function arrancarServidorLocal() {
   const servidor = http.createServer((peticion, respuesta) => {
     const cabeceras = {
@@ -368,7 +503,44 @@ function arrancarServidorLocal() {
       respuesta.end();
       return;
     }
-    const cuerpo = JSON.stringify({ pc: true, worker: NOMBRE_WORKER, carpeta: config.downloadDir });
+
+    let url = null;
+    try {
+      url = new URL(String(peticion.url || '/'), 'http://127.0.0.1');
+    } catch (e) {
+      url = null;
+    }
+
+    // Botones VER y CARPETA de la cola: abren cosas EN ESTE PC.
+    if (url && url.pathname === '/abrir') {
+      const responder = (estado, datos) => {
+        respuesta.writeHead(estado, Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, cabeceras));
+        respuesta.end(JSON.stringify(datos));
+      };
+      if (!origenPermitido(String(peticion.headers.origin || ''))) {
+        responder(403, { ok: false, error: 'Origen no permitido.' });
+        return;
+      }
+      if (String(peticion.method || '').toUpperCase() !== 'GET') {
+        responder(405, { ok: false, error: 'Método no permitido.' });
+        return;
+      }
+      const modo = String(url.searchParams.get('modo') || '').toLowerCase();
+      const ruta = String(url.searchParams.get('ruta') || '').trim();
+      manejarAbrir(modo, ruta)
+        .then((resultado) => responder(resultado.ok ? 200 : 400, resultado))
+        .catch((e) => responder(500, { ok: false, error: e && e.message ? e.message : 'Error inesperado.' }));
+      return;
+    }
+
+    const cuerpo = JSON.stringify({
+      pc: true,
+      worker: NOMBRE_WORKER,
+      carpeta: config.downloadDir,
+      version: VERSION_WORKER,
+      // La web lo usa para saber que este worker ya sabe abrir ficheros y carpetas.
+      acciones: ['ver', 'carpeta'],
+    });
     respuesta.writeHead(200, Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, cabeceras));
     respuesta.end(cuerpo);
   });
