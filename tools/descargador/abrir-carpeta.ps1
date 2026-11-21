@@ -45,8 +45,7 @@ if ($Fichero -ne '' -and (Test-Path -LiteralPath $Fichero)) {
 $rutaCarpeta = $Carpeta.Replace('/', '\').TrimEnd('\')
 $objetivo = $null
 $shell = New-Object -ComObject Shell.Application
-for ($i = 0; $i -lt 15; $i++) {
-  Start-Sleep -Milliseconds 300
+for ($i = 0; $i -lt 20; $i++) {
   foreach ($ventana in @($shell.Windows())) {
     $url = [string]$ventana.LocationURL
     if ($url -eq '') { continue }
@@ -57,6 +56,7 @@ for ($i = 0; $i -lt 15; $i++) {
     }
   }
   if ($objetivo) { break }
+  Start-Sleep -Milliseconds 150
 }
 
 if (-not $objetivo) {

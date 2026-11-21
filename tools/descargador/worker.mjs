@@ -780,7 +780,7 @@ async function peticionUnica(cuerpo, timeoutMs) {
 /**
  * Petición JSON con reintentos y backoff exponencial (2, 4, 8, 16, 32 s).
  */
-async function peticion(cuerpo, { etiqueta = cuerpo.action, timeoutMs } = {}) {
+async function peticion(cuerpo, { etiqueta = cuerpo.action, timeoutMs, esperas = BACKOFF_MS } = {}) {
   let ultimoError = null;
   for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
     if (parando) throw new Error('worker detenido');
@@ -790,7 +790,7 @@ async function peticion(cuerpo, { etiqueta = cuerpo.action, timeoutMs } = {}) {
       return datos;
     } catch (e) {
       ultimoError = e;
-      const espera = BACKOFF_MS[Math.min(intento - 1, BACKOFF_MS.length - 1)];
+      const espera = esperas[Math.min(intento - 1, esperas.length - 1)];
       if (intento === MAX_INTENTOS) break;
       logAviso(`[${etiqueta}] intento ${intento}/${MAX_INTENTOS} fallido: ${e.message}. Reintento en ${espera / 1000} s`);
       await dormir(espera);
@@ -2141,7 +2141,10 @@ async function principal() {
         continue;
       }
 
-      const respuesta = await peticion({ action: 'next' }, { etiqueta: 'next' });
+      // Los reintentos de `next` van más rápido que el resto: el botón
+      // «Carpeta» espera a esta vuelta, y si el servidor devuelve un 403
+      // puntual (WAF) no puede costar 2-6 s de espera.
+      const respuesta = await peticion({ action: 'next' }, { etiqueta: 'next', esperas: [500, 1000, 2000, 4000, 8000] });
       const job = respuesta.job;
 
       // El boton «elegir carpeta» de la web pide abrir el explorador en el PC.
