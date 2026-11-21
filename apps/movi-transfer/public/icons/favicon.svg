@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Movi Transfer">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#001018"/>
+      <stop offset="1" stop-color="#0E5368"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#fondo)"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="13" fill="none" stroke="#00D0D0" stroke-opacity=".85" stroke-width="2"/>
+  <path d="M22 19v26m0-26-7 7m7-7 7 7" stroke="#00D0D0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M42 45V19m0 26 7-7m-7 7-7-7" stroke="#26C626" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

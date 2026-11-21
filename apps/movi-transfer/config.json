@@ -1,0 +1,6 @@
+{
+  "port": 8099,
+  "host": "0.0.0.0",
+  "inbox": "_inbox",
+  "maxFileBytes": 26843545600
+}

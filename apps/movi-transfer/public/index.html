@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#001018" />
+    <meta
+      name="description"
+      content="Movi Transfer: pasa archivos del móvil al PC y del PC al móvil por tu red Wi-Fi, sin cables y sin cuentas."
+    />
+    <title>Movi Transfer · móvil ↔ PC</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link
+      rel="preload"
+      href="fonts/electrolize-regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="app.css" />
+    <script src="vendor/qrcode.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+    <div class="fondo" aria-hidden="true">
+      <span class="halo halo--cian"></span>
+      <span class="halo halo--verde"></span>
+      <span class="rejilla-fondo"></span>
+    </div>
+
+    <header class="cabecera">
+      <div class="marca">
+        <span class="marca__logo" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="48" height="48" fill="none">
+            <rect x="1.5" y="1.5" width="45" height="45" rx="12" stroke="url(#marcaBorde)" stroke-width="2.5" />
+            <path d="M17 20.5 24 13l7 7.5" stroke="#00D0D0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M24 13v13" stroke="#00D0D0" stroke-width="3" stroke-linecap="round" />
+            <path d="M17 27.5 24 35l7-7.5" stroke="#26C626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M24 35V22" stroke="#26C626" stroke-width="3" stroke-linecap="round" />
+            <defs>
+              <linearGradient id="marcaBorde" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00D0D0" />
+                <stop offset="1" stop-color="#26C626" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <div class="marca__texto">
+          <p class="eyebrow">Puente local</p>
+          <h1>Movi Transfer</h1>
+        </div>
+      </div>
+
+      <p class="subtitulo">
+        Del móvil al PC y del PC al móvil, por tu propia Wi-Fi. Sin cables, sin cuentas y sin nube.
+      </p>
+
+      <p class="estado" id="estado">
+        <span class="estado__punto" id="estadoPunto" aria-hidden="true"></span>
+        <span id="estadoTexto">Conectando con el servidor…</span>
+        <span class="estado__version" id="version"></span>
+      </p>
+    </header>
+
+    <main class="rejilla" id="contenido">
+      <section class="panel panel--conectar" aria-labelledby="tituloConectar">
+        <h2 id="tituloConectar"><span class="num">01</span> Conecta el móvil</h2>
+        <p class="panel__texto">
+          Abre esta dirección en el navegador del móvil. Los dos equipos tienen que estar en la misma red
+          Wi-Fi.
+        </p>
+
+        <div class="qr" id="qr" role="img" aria-label="Código QR con la dirección de este servidor">
+          <span class="qr__cargando">Generando…</span>
+        </div>
+
+        <div class="url">
+          <code id="urlLan">http://—</code>
+          <button class="boton boton--fantasma" id="copiar" type="button">Copiar</button>
+        </div>
+        <p class="pista" id="pistaRed">Comprobando la red local…</p>
+      </section>
+
+      <section class="panel panel--enviar" aria-labelledby="tituloEnviar">
+        <h2 id="tituloEnviar"><span class="num">02</span> Manda archivos al PC</h2>
+        <p class="panel__texto">
+          Elige archivos o arrástralos. Se guardan en la bandeja del PC y aparecen abajo al terminar.
+        </p>
+
+        <label class="zona" id="zona" for="archivos">
+          <span class="zona__icono" aria-hidden="true">
+            <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+              <path d="M32 44V16m0 0-10 10m10-10 10 10" stroke="url(#flecha)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M12 44v5a7 7 0 0 0 7 7h26a7 7 0 0 0 7-7v-5" stroke="rgba(0,208,208,.6)" stroke-width="3.5" stroke-linecap="round" />
+              <defs>
+                <linearGradient id="flecha" x1="32" y1="16" x2="32" y2="44" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#26C626" />
+                  <stop offset="1" stop-color="#00D0D0" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </span>
+          <span class="zona__titulo">Toca para elegir o arrastra aquí</span>
+          <span class="zona__pista">Fotos, vídeos, documentos… varios a la vez</span>
+          <input id="archivos" class="zona__input" type="file" multiple />
+        </label>
+
+        <ul class="cola" id="cola" aria-live="polite" aria-label="Subidas en curso"></ul>
+      </section>
+
+      <section class="panel panel--lista" aria-labelledby="tituloLista">
+        <div class="lista__cabecera">
+          <h2 id="tituloLista"><span class="num">03</span> Archivos en el PC</h2>
+          <div class="lista__acciones">
+            <label class="buscar">
+              <span class="visualmente-oculto">Buscar archivos por nombre</span>
+              <svg class="buscar__icono" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+                <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8" fill="none" />
+                <path d="m13 13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+              <input id="buscar" type="search" placeholder="Buscar…" autocomplete="off" spellcheck="false" />
+            </label>
+            <button class="boton boton--icono" id="refrescar" type="button" aria-label="Actualizar la lista de archivos">
+              <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+                <path d="M16.5 10a6.5 6.5 0 1 1-1.9-4.6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" />
+                <path d="M16.5 3v4h-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <p class="resumen" id="resumen">Cargando la bandeja…</p>
+
+        <ul class="archivos" id="lista" aria-label="Archivos disponibles en el PC"></ul>
+
+        <div class="vacio" id="vacio" hidden>
+          <svg viewBox="0 0 64 64" width="56" height="56" fill="none" aria-hidden="true">
+            <path d="M12 20a6 6 0 0 1 6-6h9l5 6h14a6 6 0 0 1 6 6v18a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6V20Z" stroke="rgba(0,208,208,.55)" stroke-width="2.5" />
+            <path d="M24 38h16M32 30v16" stroke="rgba(38,198,38,.75)" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+          <p class="vacio__titulo">La bandeja está vacía</p>
+          <p class="vacio__texto">Envía el primer archivo desde el móvil o desde este PC.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="pie">
+      <p>
+        Servidor local <strong id="pieHost">·</strong> · Los archivos no salen de tu red.
+        <span id="pieBandeja"></span>
+      </p>
+    </footer>
+
+    <p class="aviso" id="aviso" role="status" aria-live="polite"></p>
+
+    <noscript>
+      <p class="sin-js">Movi Transfer necesita JavaScript activado en el navegador.</p>
+    </noscript>
+  </body>
+</html>

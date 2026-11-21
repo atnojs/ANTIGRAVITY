@@ -1,0 +1,13 @@
+{
+  "name": "movi-transfer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor local para pasar archivos entre el móvil y el PC por Wi-Fi.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.mjs --open"
+  }
+}

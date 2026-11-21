@@ -308,3 +308,10 @@ tools/pasafotos/app.ico
 # anterior para demostrar el fallo. Se regenera con `git show`; no se publica.
 tools/pruebas/tmp-old-uis/
 
+# ── Movi Transfer ───────────────────────────────────────────────────────────
+# La app es una herramienta local (Node). Su .htaccess la deniega en Hostinger y
+# los iconos PWA son parte de la app, no evidencia: ambos se versionan pese a
+# las reglas globales de .htaccess y *.png.
+!apps/movi-transfer/.htaccess
+!apps/movi-transfer/public/icons/*.png
+
