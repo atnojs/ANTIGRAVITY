@@ -30,6 +30,7 @@ export default function Home() {
   const [hover, setHover] = useState(null);
   const [profileId, setProfileId] = useState('default');
   const [converting, setConverting] = useState(null);
+  const [lastDone, setLastDone] = useState(null);
   const [preview, setPreview] = useState(null);
   const input = useRef(null);
   const blobs = useRef(new Map());
@@ -70,6 +71,7 @@ export default function Home() {
       toast('En esta réplica se pueden preparar imágenes. El resto de formatos los convierte la app de escritorio.');
       return;
     }
+    setLastDone(null);
     setPending((list) => [
       ...list,
       ...images.map((f) => ({
@@ -102,6 +104,7 @@ export default function Home() {
       return;
     }
     setConverting(format);
+    setLastDone(null);
     const results = [];
     for (const item of pending) {
       try {
@@ -113,9 +116,10 @@ export default function Home() {
         toast(String(err.message || err));
       }
     }
-    setPending([]);
+    // El archivo se queda preparado: se puede volver a convertir a otro formato.
     setConverting(null);
     if (!results.length) return;
+    setLastDone(results[0].name);
 
     results.forEach((r) =>
       addHistory({
@@ -276,7 +280,9 @@ export default function Home() {
             {converting
               ? 'Generando el archivo…'
               : pending.length
-                ? 'Pasa el ratón por una porción para resaltarla y pulsa para convertir.'
+                ? lastDone
+                  ? `Listo: ${lastDone}. La imagen sigue preparada: pulsa otro formato para volver a convertirla.`
+                  : 'Pasa el ratón por una porción para resaltarla y pulsa para convertir.'
                 : 'Cuando prepares una imagen, el menú se activa.'}
           </p>
         </section>
