@@ -19,8 +19,8 @@
 - **Cambio 1.4.0:** en HTTP el navegador no puede adjuntar el archivo a WhatsApp
   (Web Share exige HTTPS). El menú de compartir pasa a priorizar «Descargar para
   compartir» con los pasos para adjuntar, mantiene los enlaces (ahora cortos, `/d/id`)
-  y muestra el botón nativo solo en contexto seguro. Pruebas 43/43 y 35/35, incluida
-  la rama HTTP real contra `192.168.18.10`.
+  y muestra el botón nativo solo en contexto seguro. Pruebas 43/43 y 38/38, incluida
+  la rama HTTP real contra `192.168.18.10` con descarga íntegra comprobada por SHA-256.
 - **Riesgo asumido:** pdf.js y mammoth se vendorizan (2,3 MB) para funcionar sin internet;
   sus actualizaciones son manuales y no hay SRI porque se sirven desde el propio host.
 
@@ -28,8 +28,8 @@
 
 | ID | Criterio | Nota | Evidencia |
 |---|---|---:|---|
-| A1 | Cobertura del contrato | 9,5 | App + pruebas + README + `.htaccess` + launchers + manifest + `CALIDAD.md`; commits aislados `95871916`, `1c5d8e68`, `a8b3c03c`, `690227c6`, `74444082`, `f08490ed`, `1add69ea` y el de la 1.4.0. |
-| A2 | Corrección funcional/técnica | 9,5 | API **43/43** (`verify.mjs`): reserva atómica con 8 subidas simultáneas, 0 B descargable, URL malformada sin tumbar el proceso, enlaces cortos, **orden por última actividad** y filtrado de basura. UI **35/35**, con PDF real dibujado por pdf.js, DOCX convertido, menú de compartir en HTTP y regresión del orden. |
+| A1 | Cobertura del contrato | 9,5 | App + pruebas + README + `.htaccess` + launchers + manifest + `CALIDAD.md`; commits aislados `95871916`, `1c5d8e68`, `a8b3c03c`, `690227c6`, `74444082`, `f08490ed`, `1add69ea` y `2fe5fcbc`. |
+| A2 | Corrección funcional/técnica | 9,5 | API **43/43** (`verify.mjs`): reserva atómica con 8 subidas simultáneas, 0 B descargable, URL malformada sin tumbar el proceso, enlaces cortos, **orden por última actividad** y filtrado de basura. UI **38/38**, con PDF real dibujado por pdf.js, DOCX convertido, menú de compartir en HTTP y descarga íntegra. |
 | A3 | Verificación real y evidencia | 9,2 | Chrome real con descarga en disco y SHA-256; capturas de escritorio, móvil (390/360) y tableta; `api.json`/`ui.json`; `axe` 0 violaciones; contrastes sobre degradado medidos por píxel (pie 5,14:1; iconos 6,5:1). |
 | A4 | Reglas del encargo/proyecto | 9,5 | Español, rama `main`, commits aislados sin trabajo ajeno, `_inbox` ignorada, `.htaccess` 403 en producción, memoria actualizada. |
 | A5 | Autoevaluación honesta | 9,2 | Este documento corrige la sobrevaloración anterior (93,3 con dos fallos abiertos); límites declarados: HTTP sin auth, sin reanudación, prueba en móvil físico pendiente. |
@@ -66,6 +66,6 @@
 ## Evidencias
 
 - `tools/evidencias/2026-11-21-movi-transfer/api.json` — 43 comprobaciones.
-- `tools/evidencias/2026-11-21-movi-transfer/ui.json` — 35 comprobaciones.
+- `tools/evidencias/2026-11-21-movi-transfer/ui.json` — 38 comprobaciones.
 - `escritorio-1440.png`, `escritorio-con-archivo.png`, `movil-390.png`,
   `movil-390-lista.png`, `movil-360.png`, `tableta-768.png`.

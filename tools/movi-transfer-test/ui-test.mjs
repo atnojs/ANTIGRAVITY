@@ -262,11 +262,12 @@ async function main() {
     viewport: { width: 390, height: 844 },
     isMobile: true,
     hasTouch: true,
+    acceptDownloads: true,
     locale: 'es-ES',
   });
   const paginaLan = await contextoLan.newPage();
   await paginaLan.goto(lanBase, { waitUntil: 'networkidle' });
-  await paginaLan.locator('.accion--compartir').first().click();
+  await paginaLan.locator(`li.archivo:has-text("${docxNombre}") .accion--compartir`).click();
   await paginaLan.waitForSelector('#capaCompartir:not([hidden])');
   const notaHttp = (await paginaLan.textContent('#compartirNota')) ?? '';
   const destacada = (await paginaLan.textContent('.hoja__opciones .opcion--destacada')) ?? '';
@@ -277,7 +278,13 @@ async function main() {
 
   const descargaLan = paginaLan.waitForEvent('download', { timeout: 15_000 });
   await paginaLan.click('.hoja__opciones .opcion--destacada');
-  await descargaLan;
+  const eventoDescarga = await descargaLan;
+  const rutaDescarga = path.join(os.tmpdir(), `movi-compartir-${Date.now()}.docx`);
+  await eventoDescarga.saveAs(rutaDescarga);
+  const referencia = await fs.readFile(path.join(ROOT, 'tools', 'movi-transfer-test', 'fixtures', 'prueba.docx'));
+  const descargadoLan = await fs.readFile(rutaDescarga);
+  check('«Descargar para compartir» baja el archivo íntegro', sha(descargadoLan) === sha(referencia), `${descargadoLan.length} B`);
+  await fs.rm(rutaDescarga, { force: true });
   await paginaLan.waitForSelector('.hoja__pasos', { timeout: 10_000 });
   const pasos = (await paginaLan.textContent('.hoja__pasos')) ?? '';
   check('tras descargar, el menú explica cómo adjuntar en WhatsApp', pasos.includes('adjuntar'), pasos.slice(0, 90));
