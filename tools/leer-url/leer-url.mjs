@@ -110,7 +110,17 @@ function esIpPrivada(ip) {
   if (ip6 === '::' || ip6 === '::1') return true;
   if (/^f[cd][0-9a-f]{2}:/.test(ip6)) return true;   // ULA fc00::/7
   if (/^fe[89ab][0-9a-f]?:/.test(ip6)) return true;  // link-local fe80::/10
-  if (ip6.startsWith('::ffff:')) return esIpPrivada(ip6.slice(7));
+  if (ip6.startsWith('::ffff:')) {
+    const resto = ip6.slice(7);
+    if (resto.includes('.')) return esIpPrivada(resto);
+    // ::ffff:7f00:1 → 127.0.0.1
+    const hex = /^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(resto);
+    if (hex) {
+      const alto = parseInt(hex[1], 16);
+      const bajo = parseInt(hex[2], 16);
+      return esIpPrivada([alto >> 8, alto & 255, bajo >> 8, bajo & 255].join('.'));
+    }
+  }
   return false;
 }
 
@@ -184,10 +194,12 @@ function limpiar(texto, max) {
 
 /* ── caché ───────────────────────────────────────────────────── */
 
+const CACHE_VERSION = 'v2'; // cambiar al tocar extracción o seguridad: invalida lo cacheado
+
 function rutaCache(clave) {
   const dir = path.join(process.env.LOCALAPPDATA || os.tmpdir(), 'leer-url', 'cache');
   fs.mkdirSync(dir, { recursive: true });
-  return path.join(dir, crypto.createHash('sha1').update(clave).digest('hex') + '.json');
+  return path.join(dir, crypto.createHash('sha1').update(CACHE_VERSION + ':' + clave).digest('hex') + '.json');
 }
 
 function leerCache(clave) {
@@ -418,7 +430,14 @@ async function main() {
   const max = Number(opcion('--max', porDefecto)) || porDefecto;
 
   const enCache = leerCache(u.href + '#' + max);
-  if (enCache) return terminar(enCache, true);
+  if (enCache) {
+    // Una entrada cacheada no puede saltarse el control de destino: si el dominio
+    // empezó a apuntar a una red privada, se descarta y se vuelve a pedir.
+    if (enCache.tipo === 'web' || enCache.tipo === 'texto') {
+      try { await comprobarDestino(u); } catch { /* fallar() ya habrá salido */ }
+    }
+    return terminar(enCache, true);
+  }
 
   const host = u.hostname.replace(/^www\./, '');
   let resultado;

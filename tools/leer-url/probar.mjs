@@ -78,10 +78,12 @@ if (SIN_RED) {
   }
 }
 
-console.log('\n3. No se cuelga con un host que no responde');
-{
+console.log('\n3. No se cuelga con un host que no responde (requiere red)');
+if (SIN_RED) {
+  console.log('  (omitido con --sin-red)');
+} else {
   const r = correr(['http://192.0.2.1/'], 30000);
-  comprobar('timeout en menos de 15 s', r.ms < 15000, 'tardó ' + r.ms + ' ms');
+  comprobar('timeout en menos de 12 s', r.ms < 12000, 'tardó ' + r.ms + ' ms');
   comprobar('sale con 3', r.codigo === 3, 'salió ' + r.codigo);
 }
 
@@ -92,7 +94,7 @@ console.log('\n4. Ayuda y códigos de error');
   comprobar('--ayuda sin shebang', !r.salida.includes('#!'));
   comprobar('--ayuda explica los códigos', /Códigos de salida/.test(r.salida));
 }
-esperarCodigo('--out a una ruta imposible (5)', ['https://example.org/', '--out', 'Z:\\noexiste\\x.txt'], 5);
+
 
 console.log('\n5. Lectura real (requiere red)');
 if (SIN_RED) {
@@ -124,6 +126,15 @@ if (SIN_RED) {
     const tam = existe ? fs.statSync(destino).size : 0;
     comprobar('--out escribe el fichero', r.codigo === 0 && existe && tam > 50, 'bytes ' + tam);
     if (existe) fs.unlinkSync(destino);
+  }
+  {
+    // --out imposible: se usa un FICHERO como si fuera carpeta, así falla en cualquier equipo
+    const bloqueo = path.join(os.tmpdir(), 'leer-url-bloque-' + Date.now());
+    fs.writeFileSync(bloqueo, 'x');
+    const imposible = path.join(bloqueo, 'sub', 'x.txt');
+    const r = correr(['https://example.org/', '--out', imposible], 40000);
+    comprobar('--out imposible sale con 5', r.codigo === 5, 'salió ' + r.codigo + ': ' + r.salida.trim().split('\n')[0]);
+    fs.unlinkSync(bloqueo);
   }
   {
     correr(['https://example.org/', '--no-cache'], 40000);

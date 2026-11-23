@@ -33,7 +33,7 @@ node ...\leer-url.mjs "https://coarena.ai/docs" --out "$env:TEMP\coarena.txt"
 
 ```powershell
 node \\Principal\e\ANTIGRAVITY\tools\leer-url\probar.mjs            # 24 comprobaciones
-node \\Principal\e\ANTIGRAVITY\tools\leer-url\probar.mjs --sin-red  # sin salir a internet
+node \\Principal\e\ANTIGRAVITY\tools\leer-url\probar.mjs --sin-red  # 11 comprobaciones, sin salir a internet
 ```
 
 ## Límites conocidos
@@ -41,4 +41,6 @@ node \\Principal\e\ANTIGRAVITY\tools\leer-url\probar.mjs --sin-red  # sin salir 
 - Vídeos sin subtítulos: no hay texto. La herramienta lo dice con código 2.
 - Desde una IP de datacenter, YouTube responde `LOGIN_REQUIRED` («no eres un bot»). Desde una IP doméstica funciona. Por eso la herramienta vive en el PC del agente y no en el hosting.
 - Webs que pintan todo con JavaScript, muros de pago y PDF: no se leen.
-- No sigue redirecciones a red privada ni acepta `localhost`, `127.0.0.1`, `10.*`, `192.168.*` ni `169.254.*`.
+- No sigue redirecciones a red privada ni acepta `localhost`, `127.0.0.1`, `10.*`, `192.168.*`, `169.254.*`, CGNAT (`100.64/10`), ULA (`fc00::/7`), link-local (`fe80::/10`) ni alias DNS que resuelvan a ellas (`localtest.me`, `127.0.0.1.nip.io`, `metadata.google.internal`).
+- Riesgo declarado: entre la comprobación del DNS y la conexión el dominio podría cambiar de dirección (TOCTOU). Cerrarlo del todo exige fijar la IP en el socket; hoy no se hace.
+- La caché está versionada (`v2`): si cambia la extracción o la seguridad, las entradas viejas se ignoran solas. Una entrada cacheada de una web se sirve sólo después de volver a validar el destino.
