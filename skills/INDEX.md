@@ -54,6 +54,7 @@
 | `SKILL_LEER_URL.md` | Antes de analizar cualquier URL (vídeo, doc, repo): saca el texto de la fuente para decidir con datos. | 3,6 |
 | `SKILL_brainstorming-pro.md` | Generar opciones con criterio y una recomendación (nombres, hooks, formatos, enfoques). | 3,0 |
 | `SKILL_planificacion-pro.md` | Pasar de idea a plan ejecutable: fases (máx. 4), riesgos, checklist. | 2,9 |
+| `SKILL_plan-anotable.md` | Revisar un plan largo punto por punto: lo publica como página local, recoge comentarios y devuelve el feedback en markdown. | 4,0 |
 | `SKILL_MEJORADOR_PROMPT.md` | Reescribir un prompt incompleto sin ejecutar la tarea. | 10,4 |
 | `SKILL_METODO_COPILOTO.md` | Construir prompts profesionales con las 3 plantillas maestras (dos fases). | 10,4 |
 | `SKILL_MEJORA_CONTINUA.md` | Un fallo costoso o algo que se repite por tercera vez → regla reutilizable con evidencia. | 4,0 |
@@ -84,6 +85,7 @@
 | Entregar web | + `CAPTURAS_VERIFICACION` + `VERIFICACION_PLAYWRIGHT` + `AUDITOR` |
 | Cerrar el trabajo | + `GIT_PUBLICAR` |
 | Encargo ambiguo | + `brainstorming-pro` o `planificacion-pro` |
+| Plan largo que hay que aprobar punto por punto | + `plan-anotable` |
 | «Examina esta URL» | + `investigacion` |
 | Trabajo que llega por GitHub | + `SUPERAGENT` |
 | App concreta | + su ficha de la sección 7 |
@@ -92,4 +94,4 @@
 
 - Al crear, renombrar o borrar un `SKILL_*.md`, **actualizar este índice en el mismo commit**.
 - Origen de cada fila: el campo `description` del frontmatter y los `##` del fichero. Si cambia la descripción, cambia la fila.
-- Conteo vigente (2026-11-09): **28** `SKILL_*.md` en `skills/`. El `AGENTS.md` de la raíz, creado en esa fecha, no lleva lista propia: apunta a este índice. La lista obsoleta de 26 fichas estaba en el `AGENTS.md` del workspace de DeepSeek Harness (fuera de este repo) y sigue sin actualizar allí.
+- Conteo vigente (2026-11-23): **29** `SKILL_*.md` en `skills/`. El `AGENTS.md` de la raíz, creado en esa fecha, no lleva lista propia: apunta a este índice. La lista del `AGENTS.md` del workspace de DeepSeek Harness (fuera de este repo) va por detrás; esto manda.

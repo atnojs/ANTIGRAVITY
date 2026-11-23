@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Plan anotable</title>
+<style>
+  :root{
+    --fondo1:#001018; --fondo2:#062f43; --fondo3:#0E5368;
+    --panel:rgba(23,79,122,.42); --borde:rgba(0,208,208,.45);
+    --acc:#00D0D0; --ok:#26C626; --mal:#ff5d5d; --aviso:#ffc14d;
+    --texto:#eaf6fa; --tenue:#9fc3d1;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh; color:var(--texto);
+    background:linear-gradient(135deg,var(--fondo1) 0%,var(--fondo2) 55%,var(--fondo3) 100%);
+    font-family:"Electrolize",Segoe UI,Verdana,sans-serif;
+    font-size:16px; line-height:1.55; padding:1.5rem 1rem 4rem;
+  }
+  .envoltura{max-width:900px;margin:0 auto}
+  header h1{font-size:clamp(1.4rem,3.4vw,2rem);margin:0 0 .3rem;letter-spacing:.02em}
+  header .meta{color:var(--tenue);font-size:.85rem;margin:0}
+  .contexto{
+    margin:1rem 0 1.4rem;padding:.9rem 1rem;border-radius:14px;
+    background:var(--panel);border:2px solid var(--borde);
+  }
+  .contexto p{margin:0;font-size:.95rem;color:var(--texto)}
+  .barra{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:0 0 1.2rem}
+  .barra .estado{color:var(--tenue);font-size:.85rem;margin-right:auto}
+  button{
+    font-family:inherit;font-size:.86rem;cursor:pointer;border-radius:10px;
+    padding:.5rem .85rem;border:1px solid var(--borde);
+    background:rgba(0,208,208,.10);color:var(--texto);transition:background .15s,transform .05s;
+  }
+  button:hover{background:rgba(0,208,208,.22)}
+  button:active{transform:translateY(1px)}
+  button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  button.principal{background:rgba(0,208,208,.28);border-color:var(--acc)}
+  .seccion{
+    background:var(--panel);border:2px solid var(--borde);border-radius:14px;
+    padding:1rem 1.1rem;margin:0 0 1rem;
+  }
+  .seccion h2{font-size:1rem;margin:0 0 .5rem;display:flex;gap:.55rem;align-items:baseline}
+  .seccion h2 .num{color:var(--acc);font-size:.85rem;opacity:.85}
+  .seccion .cuerpo{white-space:pre-wrap;color:var(--texto);font-size:.95rem}
+  .seccion .cuerpo strong{color:#fff}
+  .seccion .cuerpo ul{margin:.3rem 0 .3rem 1.1rem;padding:0}
+  .estado-fila{display:flex;flex-wrap:wrap;gap:.45rem;margin:.8rem 0 0}
+  .estado-fila button[aria-pressed="true"][data-estado="ok"]{background:rgba(38,198,38,.28);border-color:var(--ok)}
+  .estado-fila button[aria-pressed="true"][data-estado="cambio"]{background:rgba(255,193,77,.25);border-color:var(--aviso)}
+  .estado-fila button[aria-pressed="true"][data-estado="no"]{background:rgba(255,93,93,.22);border-color:var(--mal)}
+  textarea{
+    width:100%;margin-top:.6rem;min-height:4.2rem;resize:vertical;
+    font-family:inherit;font-size:.92rem;color:var(--texto);
+    background:rgba(0,16,24,.55);border:1px solid var(--borde);border-radius:10px;padding:.6rem .7rem;
+  }
+  textarea:focus{outline:2px solid var(--acc);outline-offset:1px}
+  .seccion[data-marca="ok"]{border-color:var(--ok)}
+  .seccion[data-marca="cambio"]{border-color:var(--aviso)}
+  .seccion[data-marca="no"]{border-color:var(--mal)}
+  .etiqueta-marca{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--tenue)}
+  .lista-extra{background:var(--panel);border:2px solid var(--borde);border-radius:14px;padding:1rem 1.1rem;margin:0 0 1rem}
+  .lista-extra h2{font-size:.95rem;margin:0 0 .5rem}
+  .lista-extra ul{margin:0 0 0 1.1rem;padding:0;color:var(--texto);font-size:.93rem}
+  .salida{margin-top:1.6rem}
+  .salida textarea{min-height:11rem;font-family:Consolas,monospace;font-size:.82rem}
+  .pie{color:var(--tenue);font-size:.78rem;margin-top:1.6rem;text-align:center}
+  .error{border-color:var(--mal);color:#ffd7d7}
+  @media (max-width:520px){
+    body{padding:1rem .7rem 3rem}
+    .seccion,.contexto,.lista-extra{padding:.85rem}
+  }
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <header>
+    <h1 id="titulo">Plan</h1>
+    <p class="meta"><span id="fecha"></span> · marca cada sección y copia el resultado al final</p>
+  </header>
+
+  <div class="contexto" id="contexto-wrap" hidden><p id="contexto"></p></div>
+
+  <div class="barra">
+    <span class="estado" id="estado">0 aprobadas · 0 con cambios · 0 rechazadas · 0 sin revisar</span>
+    <button type="button" id="btn-todo-ok">Marcar todo aprobado</button>
+    <button type="button" id="btn-copiar" class="principal">Copiar feedback</button>
+    <button type="button" id="btn-descargar">Descargar .md</button>
+    <button type="button" id="btn-limpiar">Limpiar marcas</button>
+  </div>
+
+  <main id="secciones" aria-live="polite"></main>
+  <div id="extras"></div>
+
+  <section class="salida">
+    <label for="salida" style="font-size:.85rem;color:var(--tenue)">Resultado (esto es lo que se pega al agente)</label>
+    <textarea id="salida" readonly spellcheck="false"></textarea>
+  </section>
+
+  <p class="pie">Archivo local · no se envía nada a ninguna red · las marcas se guardan en este navegador</p>
+</div>
+
+<!-- ▼▼ DATOS DEL PLAN: esto es lo único que se edita ▼▼ -->
+<script type="application/json" id="datos">
+{
+  "titulo": "Plan de ejemplo: sustituye este bloque",
+  "fecha": "2026-11-23",
+  "contexto": "Objetivo y alcance en una línea. Si llena más de dos líneas, no es contexto: es una sección.",
+  "secciones": [
+    { "titulo": "1. Primera decisión", "texto": "Qué se hace, en qué archivo y cómo se comprueba que está bien." },
+    { "titulo": "2. Segunda decisión", "texto": "Admite markdown mínimo: **negrita**, listas con guion y `código`." }
+  ],
+  "riesgos": ["Lo que puede salir mal y cómo se detecta."],
+  "preguntas": ["Decisión que sólo puede tomar el usuario."]
+}
+</script>
+<!-- ▲▲ fin de los datos ▲▲ -->
+
+<script>
+(function () {
+  'use strict';
+
+  var ESTADOS = { 'sin': 'SIN REVISAR', ok: 'APROBADA', cambio: 'CON CAMBIOS', no: 'RECHAZADA' };
+  var datos = null;
+  try {
+    datos = JSON.parse(document.getElementById('datos').textContent);
+  } catch (e) {
+    document.getElementById('secciones').innerHTML =
+      '<div class="seccion error"><h2>El JSON del plan no es válido</h2><p class="cuerpo">Corrige el bloque <code>id="datos"</code>. Detalle: ' +
+      String(e.message).replace(/[<>&]/g, '') + '</p></div>';
+    return;
+  }
+
+  var secciones = Array.isArray(datos.secciones) ? datos.secciones : [];
+  var clave = 'plan-anotable:' + String(datos.titulo || '') + ':' + String(datos.fecha || '');
+  var marcas = {};   // indice -> {estado, texto}
+  var contador = { ok: 0, cambio: 0, no: 0, sin: 0 };
+
+  try {
+    var guardado = window.localStorage.getItem(clave);
+    if (guardado) marcas = JSON.parse(guardado) || {};
+  } catch (e) { marcas = {}; }
+
+  document.getElementById('titulo').textContent = datos.titulo || 'Plan';
+  document.getElementById('fecha').textContent = datos.fecha || '';
+  if (datos.contexto) {
+    document.getElementById('contexto').textContent = datos.contexto;
+    document.getElementById('contexto-wrap').hidden = false;
+  }
+  document.title = 'Plan anotable · ' + (datos.titulo || '');
+
+  /* markdown mínimo: **negrita**, `código`, listas con guion */
+  function formatear(texto) {
+    var seguro = String(texto == null ? '' : texto)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    seguro = seguro.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    seguro = seguro.replace(/`([^`]+)`/g, '<code>$1</code>');
+    var lineas = seguro.split('\n');
+    var salida = [];
+    var enLista = false;
+    lineas.forEach(function (linea) {
+      if (/^\s*[-*]\s+/.test(linea)) {
+        if (!enLista) { salida.push('<ul>'); enLista = true; }
+        salida.push('<li>' + linea.replace(/^\s*[-*]\s+/, '') + '</li>');
+      } else {
+        if (enLista) { salida.push('</ul>'); enLista = false; }
+        salida.push(linea);
+      }
+    });
+    if (enLista) salida.push('</ul>');
+    return salida.join('\n').replace(/\n/g, '<br>').replace(/<\/ul><br>/g, '</ul>');
+  }
+
+  function pintar() {
+    var caja = document.getElementById('secciones');
+    caja.innerHTML = secciones.map(function (s, i) {
+      var marca = marcas[i] || {};
+      var estado = marca.estado || 'sin';
+      var comentario = marca.texto || '';
+      return '' +
+        '<section class="seccion" data-idx="' + i + '" data-marca="' + estado + '" aria-labelledby="h' + i + '">' +
+          '<h2 id="h' + i + '"><span class="num">' + (i + 1) + '.</span><span>' + formatear(s.titulo).replace(/<br>/g, ' ') + '</span></h2>' +
+          '<div class="cuerpo">' + formatear(s.texto) + '</div>' +
+          '<div class="estado-fila" role="group" aria-label="Decisión sobre ' + (i + 1) + '">' +
+            '<button type="button" data-estado="ok" aria-pressed="' + (estado === 'ok') + '">Apruebo</button>' +
+            '<button type="button" data-estado="cambio" aria-pressed="' + (estado === 'cambio') + '">Cambiar</button>' +
+            '<button type="button" data-estado="no" aria-pressed="' + (estado === 'no') + '">Rechazo</button>' +
+            '<span class="etiqueta-marca" data-rol="etiqueta">' + ESTADOS[estado] + '</span>' +
+          '</div>' +
+          '<label class="sr-only" for="t' + i + '" style="position:absolute;left:-9999px">Comentario ' + (i + 1) + '</label>' +
+          '<textarea id="t' + i + '" data-comentario="' + i + '" placeholder="Qué cambio y por qué (obligatorio si marcas «Cambiar»)">' + comentario.replace(/[<>&]/g, function (c) { return c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'; }) + '</textarea>' +
+        '</section>';
+    }).join('');
+
+    var extras = document.getElementById('extras');
+    var partes = [];
+    if (Array.isArray(datos.riesgos) && datos.riesgos.length) {
+      partes.push('<section class="lista-extra"><h2>Riesgos declarados</h2><ul>' +
+        datos.riesgos.map(function (r) { return '<li>' + formatear(r) + '</li>'; }).join('') + '</ul></section>');
+    }
+    if (Array.isArray(datos.preguntas) && datos.preguntas.length) {
+      partes.push('<section class="lista-extra"><h2>Decisiones que dependen de ti</h2><ul>' +
+        datos.preguntas.map(function (p) { return '<li>' + formatear(p) + '</li>'; }).join('') + '</ul></section>');
+    }
+    extras.innerHTML = partes.join('');
+  }
+
+  function recalcular() {
+    contador = { ok: 0, cambio: 0, no: 0, sin: 0 };
+    secciones.forEach(function (_, i) {
+      var estado = (marcas[i] && marcas[i].estado) || 'sin';
+      contador[estado] += 1;
+    });
+    document.getElementById('estado').textContent =
+      contador.ok + ' aprobadas · ' + contador.cambio + ' con cambios · ' +
+      contador.no + ' rechazadas · ' + contador.sin + ' sin revisar';
+    document.getElementById('salida').value = markdown();
+    try { window.localStorage.setItem(clave, JSON.stringify(marcas)); } catch (e) { /* modo privado */ }
+  }
+
+  function markdown() {
+    var l = [];
+    l.push('## Feedback del plan — ' + (datos.titulo || '') + ' (' + (datos.fecha || '') + ')');
+    l.push('Estado: ' + contador.ok + ' aprobadas · ' + contador.cambio + ' con cambios · ' +
+      contador.no + ' rechazadas · ' + contador.sin + ' sin revisar');
+    secciones.forEach(function (s, i) {
+      var marca = marcas[i] || {};
+      var estado = marca.estado || 'sin';
+      l.push('');
+      l.push('### ' + (i + 1) + '. ' + String(s.titulo || '').replace(/\n/g, ' '));
+      l.push(ESTADOS[estado]);
+      var comentario = String(marca.texto || '').trim();
+      if (comentario) {
+        comentario.split('\n').forEach(function (linea) { l.push('> ' + linea); });
+      }
+    });
+    l.push('');
+    l.push('_(SIN REVISAR no está aprobado: no se ejecuta.)_');
+    return l.join('\n');
+  }
+
+  function marcar(i, estado) {
+    var actual = marcas[i] || { estado: 'sin', texto: '' };
+    actual.estado = (actual.estado === estado) ? 'sin' : estado;
+    marcas[i] = actual;
+    var seccion = document.querySelector('.seccion[data-idx="' + i + '"]');
+    if (seccion) {
+      seccion.setAttribute('data-marca', actual.estado);
+      seccion.querySelectorAll('[data-estado]').forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.estado === actual.estado));
+      });
+      var etiqueta = seccion.querySelector('[data-rol="etiqueta"]');
+      if (etiqueta) etiqueta.textContent = ESTADOS[actual.estado];
+    }
+    recalcular();
+  }
+
+  document.getElementById('secciones').addEventListener('click', function (ev) {
+    var boton = ev.target.closest('[data-estado]');
+    if (!boton) return;
+    var seccion = boton.closest('.seccion');
+    if (!seccion) return;
+    marcar(Number(seccion.dataset.idx), boton.dataset.estado);
+  });
+
+  document.getElementById('secciones').addEventListener('input', function (ev) {
+    var area = ev.target.closest('[data-comentario]');
+    if (!area) return;
+    var i = Number(area.dataset.comentario);
+    marcas[i] = marcas[i] || { estado: 'sin', texto: '' };
+    marcas[i].texto = area.value;
+    recalcular();
+  });
+
+  document.getElementById('btn-todo-ok').addEventListener('click', function () {
+    secciones.forEach(function (_, i) {
+      marcas[i] = marcas[i] || { estado: 'ok', texto: '' };
+      marcas[i].estado = 'ok';
+    });
+    pintar();
+    recalcular();
+  });
+
+  document.getElementById('btn-limpiar').addEventListener('click', function () {
+    if (!window.confirm('¿Borrar todas las marcas y comentarios de este plan?')) return;
+    marcas = {};
+    pintar();
+    recalcular();
+  });
+
+  function copiar(texto, boton) {
+    var antes = boton.textContent;
+    function hecho(ok) {
+      boton.textContent = ok ? 'Copiado' : 'No se pudo copiar: usa el cuadro de abajo';
+      setTimeout(function () { boton.textContent = antes; }, 2200);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(function () { hecho(true); }, function () { hecho(caida()); });
+    } else {
+      hecho(caida());
+    }
+    function caida() {
+      var area = document.createElement('textarea');
+      area.value = texto;
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(area);
+      return ok;
+    }
+  }
+
+  document.getElementById('btn-copiar').addEventListener('click', function () {
+    copiar(document.getElementById('salida').value, this);
+  });
+
+  document.getElementById('btn-descargar').addEventListener('click', function () {
+    var nombre = 'feedback-plan-' + String(datos.fecha || '').replace(/[^0-9]/g, '') + '.md';
+    var blob = new Blob([document.getElementById('salida').value], { type: 'text/markdown;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+  });
+
+  pintar();
+  recalcular();
+})();
+</script>
+</body>
+</html>
