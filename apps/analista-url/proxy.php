@@ -38,11 +38,12 @@ function respond(int $status, array $payload): void {
     exit;
 }
 
-/** GET/POST a una URL con tope de bytes y de tiempo. Devuelve [status, cuerpo, error]. */
+/** GET/POST a una URL con tope de bytes y de tiempo. Devuelve [status, cuerpo, error, truncado]. */
 function pedir(string $url, array $cabeceras, int $timeout = 10, ?string $cuerpo = null): array {
     $ch = curl_init($url);
     $recibido = 0;
     $trozos = [];
+    $truncado = false;
     $opciones = [
         CURLOPT_HTTPHEADER => $cabeceras,
         CURLOPT_CONNECTTIMEOUT => 6,
@@ -50,10 +51,11 @@ function pedir(string $url, array $cabeceras, int $timeout = 10, ?string $cuerpo
         CURLOPT_FOLLOWLOCATION => false,
         CURLOPT_SSL_VERIFYPEER => true,
         CURLOPT_ENCODING => '',
-        CURLOPT_WRITEFUNCTION => function ($ch, string $trozo) use (&$recibido, &$trozos): int {
+        CURLOPT_WRITEFUNCTION => function ($ch, string $trozo) use (&$recibido, &$trozos, &$truncado): int {
+            if ($recibido >= MAX_BYTES) { $truncado = true; return 0; } // ya hay bastante: corta
             $recibido += strlen($trozo);
-            if ($recibido > MAX_BYTES) return 0; // corta la descarga
             $trozos[] = $trozo;
+            if ($recibido >= MAX_BYTES) { $truncado = true; return 0; }
             return strlen($trozo);
         },
     ];
@@ -66,8 +68,10 @@ function pedir(string $url, array $cabeceras, int $timeout = 10, ?string $cuerpo
     $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $error = curl_error($ch);
     curl_close($ch);
-    if ($ok === false && $error !== '') return [0, '', $error];
-    return [$status, implode('', $trozos), ''];
+    $texto = implode('', $trozos);
+    if ($ok === false && $texto === '') return [0, '', $error !== '' ? $error : 'sin respuesta', false];
+    // Si se cortó por tamaño, lo descargado vale: se devuelve marcado como truncado.
+    return [$status > 0 ? $status : 200, $texto, $ok === false ? $error : '', $truncado];
 }
 
 function limpiarTexto(string $texto, int $max): string {
@@ -330,12 +334,16 @@ function leerWeb(string $url): array {
     }
 
     $actual = $url;
+    $estado = 0;
+    $html = '';
+    $errorTransporte = '';
+    $truncado = false;
     for ($salto = 0; $salto < 3; $salto++) {
-        [$estado, $html] = pedir($actual, [
+        [$estado, $html, $errorTransporte, $truncado] = pedir($actual, [
             'Accept: text/html,application/xhtml+xml',
             'Accept-Language: es-ES,es;q=0.9,en;q=0.6',
             'User-Agent: Mozilla/5.0 (compatible; atnojs-analista-url/1.0)',
-        ], 12);
+        ], 14);
 
         if ($estado >= 300 && $estado < 400) {
             $destino = '';
@@ -358,8 +366,11 @@ function leerWeb(string $url): array {
         break;
     }
 
-    if ($estado !== 200 || trim($html) === '') {
-        return ['ok' => false, 'error' => 'La página no devolvió contenido (HTTP ' . $estado . ').'];
+    if (($estado !== 200 && $estado !== 0) || trim($html) === '') {
+        $motivo = $errorTransporte !== ''
+            ? 'La página no respondió (' . $errorTransporte . ').'
+            : 'La página no devolvió contenido (HTTP ' . $estado . ').';
+        return ['ok' => false, 'error' => $motivo];
     }
 
     $html = preg_replace('#<(script|style|noscript|svg|template|iframe)[^>]*>.*?</\1>#is', ' ', $html) ?? $html;
@@ -378,10 +389,12 @@ function leerWeb(string $url): array {
     if ($texto === '') {
         return ['ok' => false, 'error' => 'La página no tiene texto legible (¿es una aplicación en JavaScript?).'];
     }
+    $fuente = 'texto de la página' . ($titulo !== '' ? ' · ' . $titulo : '');
+    if ($truncado) $fuente .= ' (página grande: leída hasta 1,5 MB)';
     return [
         'ok' => true,
         'lectura' => [
-            'fuente' => 'texto de la página' . ($titulo !== '' ? ' · ' . $titulo : ''),
+            'fuente' => $fuente,
             'chars' => mb_strlen($texto, 'UTF-8'),
             'texto' => $texto,
         ],
@@ -408,6 +421,13 @@ if (!in_array($action, ['meta', 'leer'], true)) {
 }
 
 if ($action === 'leer') {
+    // El navegador de la app manda same-origin; otras webs, cross-site. Los clientes que
+    // no mandan la cabecera (curl, monitorización) se dejan pasar: esto filtra abuso
+    // desde navegador, no autentica.
+    $sitio = strtolower((string)($_SERVER['HTTP_SEC_FETCH_SITE'] ?? ''));
+    if ($sitio !== '' && !in_array($sitio, ['same-origin', 'same-site', 'none'], true)) {
+        respond(403, ['success' => false, 'error' => 'Origen no permitido.']);
+    }
     $tipo = strtolower(trim((string)($_GET['tipo'] ?? '')));
 
     if ($tipo === 'video') {

@@ -795,7 +795,8 @@ async function analizar(urlCruda, intencionForzada, texto, aviso) {
 
   // Primero se lee la fuente; lo que se pegue a mano manda y evita la lectura.
   const lectura = { intento: false, ok: false, fuente: '', chars: 0, motivo: '' };
-  let textoEfectivo = String(texto || '').trim();
+  const textoPegado = String(texto || '').trim();
+  let textoEfectivo = textoPegado;
   if (!textoEfectivo) {
     lectura.intento = true;
     const leido = await leerFuente(info, avisar);
@@ -812,10 +813,21 @@ async function analizar(urlCruda, intencionForzada, texto, aviso) {
 
   avisar('Clasificando el enlace...');
   const senales = detectarSenales(info, textoEfectivo);
+  // El texto leído de una fuente larga (un README, una doc) menciona precios, hardware y
+  // seguridad de pasada. Esas tres señales sólo cuentan si vienen del enlace o de un texto
+  // pegado a mano: si no, un README de 60 KB convierte cualquier repo en «tiene coste».
+  if (!textoPegado && lectura.ok) {
+    for (const id of ['pago', 'hardware', 'seguridad']) {
+      const patron = SENALES.find((s) => s.id === id);
+      if (patron && !patron.re.test(info.url)) senales.set.delete(id);
+    }
+  }
   const intencion = deducirIntencion(info, senales.set, textoEfectivo, intencionForzada);
 
   avisar('Buscando precedentes en nuestro historial...');
-  const precedentes = buscarPrecedentes(info, textoEfectivo);
+  // Los precedentes se buscan por enlace y por el texto que hayas pegado: el texto leído
+  // es demasiado ancho y metía tutoriales que no tienen nada que ver.
+  const precedentes = buscarPrecedentes(info, textoPegado);
 
   const meta = await metadatos(info, avisar);
 
@@ -1003,6 +1015,13 @@ function informeTexto(ctx) {
   l.push('- URL: ' + ctx.info.url);
   l.push('- Veredicto: ' + ctx.veredicto.etiqueta + ' (' + ctx.veredicto.total + '/100)');
   l.push('- Intención: ' + ctx.intencion.etiqueta);
+  if (ctx.lectura && ctx.lectura.ok) {
+    l.push('- Fuente leída: ' + ctx.lectura.fuente + ' · ' + ctx.lectura.chars + ' caracteres');
+  } else if (ctx.lectura && ctx.lectura.intento) {
+    l.push('- Fuente no leída: ' + (ctx.lectura.motivo || 'sin texto'));
+  } else if (ctx.textoPegado) {
+    l.push('- Texto pegado a mano');
+  }
   l.push('');
   l.push('## Datos a tener en cuenta');
   ctx.datos.forEach((d) => l.push('- **' + d.clave + '**: ' + d.valor));
