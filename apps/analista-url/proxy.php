@@ -114,7 +114,10 @@ if ($tipo === 'repo') {
     }
     $licencia = 'sin licencia declarada';
     if (isset($json['license']) && is_array($json['license'])) {
-        $licencia = recortar($json['license']['spdx_id'] ?? 'declarada', 40);
+        $spdx = strtoupper((string)($json['license']['spdx_id'] ?? ''));
+        if ($spdx !== '' && $spdx !== 'NOASSERTION' && $spdx !== 'NONE') {
+            $licencia = recortar($spdx, 40);
+        }
     }
     respond(200, [
         'success' => true,

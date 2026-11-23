@@ -503,6 +503,7 @@ async function metadatos(info, aviso) {
       aviso('Leyendo título y autor del vídeo...');
       const porServidor = await porProxy('tipo=video&id=' + encodeURIComponent(info.videoId));
       if (porServidor) { contar(porServidor, 'oEmbed de YouTube'); return meta; }
+      if (!sinProxy) throw new Error('el proxy no devolvió los metadatos');
       const r = await conTiempo(fetch('https://www.youtube.com/oembed?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + info.videoId) + '&format=json'), 8000);
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const j = await r.json();
@@ -514,6 +515,7 @@ async function metadatos(info, aviso) {
       aviso('Leyendo el repositorio en GitHub...');
       const porServidor = await porProxy('tipo=repo&repo=' + encodeURIComponent(info.repo));
       if (porServidor) { contar(porServidor, 'la API pública de GitHub'); return meta; }
+      if (!sinProxy) throw new Error('el proxy no devolvió los metadatos');
       const r = await conTiempo(fetch('https://api.github.com/repos/' + info.repo, { headers: { Accept: 'application/vnd.github+json' } }), 8000);
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const j = await r.json();
