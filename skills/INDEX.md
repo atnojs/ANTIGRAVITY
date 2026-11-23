@@ -51,6 +51,7 @@
 | Ficha | Cuándo | KB |
 |---|---|---|
 | `SKILL_investigacion.md` | «Examina esta URL», «investiga X», «¿esto nos viene bien?»: dossier con fuentes verificadas. | 5,5 |
+| `SKILL_LEER_URL.md` | Antes de analizar cualquier URL (vídeo, doc, repo): saca el texto de la fuente para decidir con datos. | 3,6 |
 | `SKILL_brainstorming-pro.md` | Generar opciones con criterio y una recomendación (nombres, hooks, formatos, enfoques). | 3,0 |
 | `SKILL_planificacion-pro.md` | Pasar de idea a plan ejecutable: fases (máx. 4), riesgos, checklist. | 2,9 |
 | `SKILL_MEJORADOR_PROMPT.md` | Reescribir un prompt incompleto sin ejecutar la tarea. | 10,4 |
