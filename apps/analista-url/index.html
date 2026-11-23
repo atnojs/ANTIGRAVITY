@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="app-version" content="20261123d" />
+  <meta name="app-version" content="20261123e" />
   <title>Analista de URL · Harness</title>
   <meta name="description" content="Pega una URL y obtén qué se puede implementar en el harness, qué mejoraría y los datos que hay que tener en cuenta." />
 
@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.20261123d.css?v=20261123d" />
+  <link rel="stylesheet" href="app.20261123e.css?v=20261123e" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -42,6 +42,7 @@
           <div id="intent-group" class="intent-group" role="group" aria-label="Intención del análisis">
             <button type="button" class="intent-chip active" data-intent="auto" aria-pressed="true">Deducir</button>
             <button type="button" class="intent-chip" data-intent="implementar" aria-pressed="false">Implementar en el flujo</button>
+            <button type="button" class="intent-chip" data-intent="catalogo" aria-pressed="false">Catálogo de herramientas</button>
             <button type="button" class="intent-chip" data-intent="modelo" aria-pressed="false">Modelo o proveedor</button>
             <button type="button" class="intent-chip" data-intent="replicar" aria-pressed="false">Replicar la app</button>
             <button type="button" class="intent-chip" data-intent="instalar" aria-pressed="false">¿Puedo instalarlo?</button>
@@ -50,10 +51,10 @@
         </fieldset>
 
         <details class="campo" id="contexto-wrap">
-          <summary>Pegar la transcripción o el texto de la página <span class="opcional">(opcional, sube mucho la precisión)</span></summary>
-          <label for="contexto-input" class="sr-only">Transcripción o texto de la página</label>
+          <summary>Pegar texto a mano <span class="opcional">(opcional: la app ya lee la fuente)</span></summary>
+          <label for="contexto-input" class="sr-only">Texto de la fuente pegado a mano</label>
           <textarea id="contexto-input" rows="7" spellcheck="false"
-                    placeholder="Pega aquí los subtítulos, el texto del artículo o la descripción del producto. Sin esto analizo la URL, el título y el autor; con esto detecto herramientas, modelos, precios, comandos y requisitos reales."></textarea>
+                    placeholder="Sólo si la lectura automática falla o quieres forzar un texto concreto. Si pegas algo aquí, se usa esto y no se lee la fuente."></textarea>
           <p id="contexto-info" class="ayuda">0 caracteres · 0 señales detectadas</p>
         </details>
 
@@ -63,7 +64,7 @@
       <section id="vacio" class="panel vacio">
         <h2 class="section-title">Cómo se usa</h2>
         <ol class="pasos">
-          <li>Pega la URL. Si es un vídeo, añade los subtítulos en el campo opcional: es la diferencia entre un informe de verdad y una corazonada.</li>
+          <li>Pega la URL. La app <strong>lee la fuente por su cuenta</strong>: subtítulos del vídeo, README del repo o texto de la página. No te lo cuenta; sólo lo usa para decidir.</li>
           <li>Lee el <strong>veredicto</strong> y los <strong>datos a tener en cuenta</strong>: coste, licencia, requisitos, riesgo y caducidad.</li>
           <li>Quédate con las tarjetas de <strong>qué se puede implementar</strong>: cada una dice en qué superficie del harness encaja y cuánto cuesta.</li>
           <li>Copia el <strong>encargo para DSH</strong> del final y pégamelo en una sesión: ahí se ejecuta de verdad.</li>
@@ -74,9 +75,9 @@
       <section id="resultado" class="resultado" aria-live="polite" aria-busy="false" hidden></section>
 
       <footer class="app-footer">
-        <span>Analista de URL · v 2026-11-23 · d</span>
+        <span>Analista de URL · v 2026-11-23 · e</span>
         <span class="punto">·</span>
-        <span>Sin claves, sin coste por consulta: el análisis es local, los metadatos se leen en público.</span>
+        <span>Sin claves y sin coste por consulta: lee la fuente en el servidor y analiza aquí.</span>
       </footer>
     </main>
 
@@ -102,6 +103,6 @@
   </div>
 
   <script src="history-manager.js"></script>
-  <script src="app.20261123d.js" defer></script>
+  <script src="app.20261123e.js" defer></script>
 </body>
 </html>

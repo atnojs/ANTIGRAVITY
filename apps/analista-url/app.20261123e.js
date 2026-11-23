@@ -252,6 +252,15 @@ const APROVECHAMIENTOS = [
     porQue: 'El intento de Tailscale acabó con un UAC elevado que esta sesión no podía cerrar: se planifica antes, no después.'
   },
   {
+    id: 'tabla-herramientas',
+    titulo: 'Montar la tabla de herramientas con su letra pequeña',
+    superficie: 'skill',
+    paso: 'Una fila por herramienta: dónde aparece, a qué sustituye, qué es, qué hay de gratis de verdad y enlace comprobado. Si se repite, va a skills/ como formato fijo de catálogo.',
+    impacto: 'alto', esfuerzo: '1-2 h',
+    aplica: (c) => c.intencion.id === 'catalogo',
+    porQue: 'Dos de tus sesiones acabaron siendo exactamente esa tabla; tenerla como formato ahorra media sesión.'
+  },
+  {
     id: 'descartar',
     titulo: 'Documentar el descarte y no volver a evaluarlo',
     superficie: 'nada',
@@ -267,10 +276,17 @@ const APROVECHAMIENTOS = [
 const MEJORAS = [
   {
     id: 'leer-url',
-    titulo: 'Una herramienta leer_url: transcripción de vídeo y texto legible de página',
+    titulo: 'La lectura de la fuente como herramienta del harness, no de una app',
     delta: 'doce llamadas menos y una intervención tuya menos por vídeo',
-    evidencia: 'Cinco sesiones analizaron vídeos. En la de Winux tuviste que pegar 18.654 caracteres de subtítulos porque no había forma de bajarlos. En la de _fgcYcSA7oo hicieron falta 15 llamadas hasta dar con la API interna con cliente ANDROID (es-ES: 39.181 caracteres). El cliente WEB devuelve UNPLAYABLE.',
-    aplica: (c) => c.sig.has('video')
+    evidencia: 'Esta app ya la tiene: subtítulo de YouTube por la API interna con cliente ANDROID, README y texto de página. Antes costaba 15 llamadas en _fgcYcSA7oo, y en Winux acabó con 18.654 caracteres pegados a mano. Lo que falta es que sea una herramienta más de DSH y que todas las sesiones la tengan.',
+    aplica: (c) => c.sig.has('video') || c.sig.has('repo') || c.sig.has('open_source')
+  },
+  {
+    id: 'catalogo',
+    titulo: 'Un catálogo de herramientas vivo, no una tabla por sesión',
+    delta: 'cada lista nueva se compara con la anterior',
+    evidencia: 'Tres sesiones pidieron «qué herramientas trae esto»: FreeLLMAPI, las once alternativas y las de Drive. Hoy cada tabla se queda en su sesión, así que no se puede ver qué ya se probó ni qué se repite.',
+    aplica: (c) => c.intencion.id === 'catalogo'
   },
   {
     id: 'no-leible',
@@ -406,6 +422,10 @@ const INTENCIONES = {
     etiqueta: 'Implementar en el flujo',
     pregunta: '¿Qué de esto nos falta y cómo se enchufa al harness?'
   },
+  catalogo: {
+    etiqueta: 'Catálogo de herramientas',
+    pregunta: '¿Qué herramientas trae, cuál sustituye a qué y qué hay de verdad en el «gratis»?'
+  },
   modelo: {
     etiqueta: 'Modelo o proveedor',
     pregunta: '¿Este modelo o proveedor nos sirve de verdad, a qué precio y con qué límites?'
@@ -428,8 +448,8 @@ function deducirIntencion(info, sig, texto, forzada) {
   if (forzada && forzada !== 'auto' && INTENCIONES[forzada]) {
     return { id: forzada, ...INTENCIONES[forzada], motivos: ['Lo has elegido tú.'] };
   }
-  const puntos = { implementar: 0, modelo: 0, replicar: 0, instalar: 0, interes: 0 };
-  const motivos = { implementar: [], modelo: [], replicar: [], instalar: [], interes: [] };
+  const puntos = { implementar: 0, catalogo: 0, modelo: 0, replicar: 0, instalar: 0, interes: 0 };
+  const motivos = { implementar: [], catalogo: [], modelo: [], replicar: [], instalar: [], interes: [] };
   const subir = (k, n, motivo) => { puntos[k] += n; if (motivo) motivos[k].push(motivo); };
 
   if (info.tipo === 'video') {
@@ -448,7 +468,15 @@ function deducirIntencion(info, sig, texto, forzada) {
   if (sig.has('hardware')) subir('instalar', 2, 'Toca hardware o dispositivos.');
   if (sig.has('open_source')) subir('replicar', 2, 'Es código abierto.');
   if (sig.has('pago')) subir('interes', 1, 'Hay precio: toca decidir si compensa.');
-  if (texto && texto.length > 400) subir('implementar', 1, 'Has pegado texto: hay materia para decidir.');
+  if (texto && texto.length > 400) subir('implementar', 1, 'Hay texto: hay materia para decidir.');
+
+  const alternativas = (texto.match(/alternativas?/gi) || []).length;
+  const enlaces = (texto.match(/https?:\/\//g) || []).length;
+  if (alternativas >= 2 || (alternativas >= 1 && enlaces >= 3)) {
+    subir('catalogo', 9, 'Es un listado de herramientas: alternativas, enlaces y comparación.');
+  } else if (alternativas === 1 || (sig.has('gratis') && enlaces >= 4)) {
+    subir('catalogo', 3, 'Menciona alternativas o muchos enlaces: puede ser un catálogo.');
+  }
 
   if (Object.values(puntos).every((n) => n === 0)) {
     return { id: 'interes', ...INTENCIONES.interes, motivos: ['Sin señales: mejor decidir si interesa antes de invertir.'] };
@@ -544,6 +572,33 @@ async function metadatos(info, aviso) {
     meta.fuente = 'sin respuesta del servidor (' + e.message + ')';
   }
   return meta;
+}
+
+/* Lee el texto de la fuente en el servidor (la CSP del hosting impide hacerlo desde el
+   navegador). Devuelve el texto para analizarlo; la interfaz nunca lo muestra. */
+async function leerFuente(info, aviso) {
+  const sinProxy = location.protocol === 'file:';
+  if (sinProxy) return { ok: false, motivo: 'la app está abierta como fichero, sin servidor' };
+
+  let consulta = '';
+  if (info.tipo === 'video' && info.videoId && info.platforma === 'YouTube') {
+    consulta = 'tipo=video&id=' + encodeURIComponent(info.videoId);
+  } else if (info.repo && info.platforma === 'GitHub') {
+    consulta = 'tipo=repo&repo=' + encodeURIComponent(info.repo);
+  } else {
+    consulta = 'tipo=web&url=' + encodeURIComponent(info.url);
+  }
+
+  aviso('Leyendo la fuente...');
+  try {
+    const r = await conTiempo(fetch('proxy.php?action=leer&' + consulta), 22000);
+    if (!r.ok) return { ok: false, motivo: 'el servidor respondió HTTP ' + r.status };
+    const j = await r.json();
+    if (!j || !j.success || !j.lectura) return { ok: false, motivo: (j && j.error) || 'sin texto' };
+    return { ok: true, fuente: j.lectura.fuente, chars: j.lectura.chars, texto: j.lectura.texto };
+  } catch (e) {
+    return { ok: false, motivo: e.message === 'sin respuesta' ? 'el servidor tardó demasiado' : e.message };
+  }
 }
 
 /* ───────────────────────── 10. Puntuación y veredicto ───────────────────────── */
@@ -706,6 +761,10 @@ function construirEncargo(ctx, plan) {
   l.push('1. Si la fuente se puede leer de verdad (vídeo: subtítulos; web: texto principal). Si no se puede, dilo en la primera respuesta y no insistas más de dos intentos.');
   l.push('2. Si lo que propone YA existe en Hermes, en ANTIGRAVITY o en el propio DSH. Si existe, el veredicto es descartar y decir dónde está.');
   l.push('3. El coste real y la cuota, aunque la URL diga que es gratis.');
+  if (ctx.lectura && ctx.lectura.ok) {
+    l.push('');
+    l.push('La fuente ya está leída (' + ctx.lectura.fuente + ', ' + ctx.lectura.chars + ' caracteres): no gastes llamadas en bajarla otra vez. Si necesitas un literal, pídelo y lo cito.');
+  }
   l.push('');
   l.push('Devuelve exactamente estas cinco secciones, en este orden:');
   l.push('1) VEREDICTO: sirve, sirve a medias o ruido, con el motivo en una frase.');
@@ -729,18 +788,37 @@ async function analizar(urlCruda, intencionForzada, texto, aviso) {
   const info = parsearUrl(urlCruda);
   if (info.error) throw new Error(info.error);
 
+  // Primero se lee la fuente; lo que se pegue a mano manda y evita la lectura.
+  const lectura = { intento: false, ok: false, fuente: '', chars: 0, motivo: '' };
+  let textoEfectivo = String(texto || '').trim();
+  if (!textoEfectivo) {
+    lectura.intento = true;
+    const leido = await leerFuente(info, avisar);
+    if (leido.ok) {
+      textoEfectivo = leido.texto;
+      lectura.ok = true;
+      lectura.fuente = leido.fuente;
+      lectura.chars = leido.chars;
+    } else {
+      lectura.motivo = leido.motivo;
+    }
+  }
+
   avisar('Clasificando el enlace...');
-  const senales = detectarSenales(info, texto);
-  const intencion = deducirIntencion(info, senales.set, texto, intencionForzada);
+  const senales = detectarSenales(info, textoEfectivo);
+  const intencion = deducirIntencion(info, senales.set, textoEfectivo, intencionForzada);
 
   avisar('Buscando precedentes en nuestro historial...');
-  const precedentes = buscarPrecedentes(info, texto);
+  const precedentes = buscarPrecedentes(info, textoEfectivo);
 
   const meta = await metadatos(info, avisar);
 
   const veredicto = calcularVeredicto(info, senales.set, intencion, precedentes);
-  const ctx = { info, meta, sig: senales.set, sigLista: senales.lista, texto, intencion, veredicto, precedentes, plan: [], mejoras: [] };
-  ctx.datos = construirDatos(info, meta, senales.set, texto, precedentes);
+  const ctx = {
+    info, meta, sig: senales.set, sigLista: senales.lista, texto: textoEfectivo, textoPegado: String(texto || '').trim(),
+    intencion, veredicto, precedentes, lectura, plan: [], mejoras: []
+  };
+  ctx.datos = construirDatos(info, meta, senales.set, textoEfectivo, precedentes);
   ctx.plan = construirPlan(ctx);
   ctx.mejoras = construirMejoras(ctx);
   ctx.encargo = construirEncargo(ctx, ctx.plan);
@@ -777,6 +855,17 @@ function lineaMeta(fuente) {
   return 'Metadatos leídos con ' + f + '.';
 }
 
+function lineaLectura(l) {
+  if (!l) return '';
+  if (l.ok) {
+    return `<p class="ayuda"><span class="etiqueta superficie">fuente leída</span> ${esc(l.fuente)} · ${Number(l.chars).toLocaleString('es-ES')} caracteres. El contenido no se muestra: sólo se usa para deducir lo que viene debajo.</p>`;
+  }
+  if (l.intento) {
+    return `<p class="ayuda"><span class="etiqueta">sin lectura</span> No se pudo leer la fuente (${esc(l.motivo || 'sin texto')}). El análisis va con el enlace.</p>`;
+  }
+  return `<p class="ayuda"><span class="etiqueta superficie">texto pegado</span> Se usa el texto que has pegado.</p>`;
+}
+
 function renderizar(ctx) {
   const r = document.getElementById('resultado');
   const partes = [];
@@ -801,6 +890,7 @@ function renderizar(ctx) {
       <p><strong style="color:var(--acc)">${esc(ctx.intencion.etiqueta)}</strong> — ${esc(ctx.intencion.pregunta)}</p>
       <p class="ayuda">${ctx.intencion.motivos.map(esc).join(' · ') || 'Sin señales claras.'}</p>
       ${ctx.intencion.alternativas && ctx.intencion.alternativas.length ? `<p class="ayuda">También encajaría como: ${ctx.intencion.alternativas.map(esc).join(' o ')}.</p>` : ''}
+      ${lineaLectura(ctx.lectura)}
     </section>`);
 
   partes.push(`
@@ -1006,6 +1096,7 @@ function resumenParaHistorial(ctx) {
     score: ctx.veredicto.total,
     intencion: ctx.intencion.etiqueta,
     fecha: new Date().toISOString(),
+    lectura: { ok: ctx.lectura.ok, fuente: ctx.lectura.fuente, chars: ctx.lectura.chars, motivo: ctx.lectura.motivo },
     datos: ctx.datos,
     plan: ctx.plan.map((p) => ({ titulo: p.titulo, superficie: p.superficie, impacto: p.impacto, esfuerzo: p.esfuerzo, paso: p.paso, porQue: p.porQue })),
     mejoras: ctx.mejoras.map((m) => ({ titulo: m.titulo, delta: m.delta, evidencia: m.evidencia })),
@@ -1092,6 +1183,7 @@ function reabrir(d) {
         <p class="veredicto-valor">${esc(d.veredicto || '')}</p>
         <p class="veredicto-motivo">${esc(d.intencion || '')}</p>
         <p style="margin-top:.55rem"><span class="url-chip"><span class="dominio">${esc(d.host || '')}</span> ${esc(acortar(d.url || '', 78))}</span></p>
+        ${d.lectura && d.lectura.ok ? `<p class="ayuda" style="margin-top:.5rem"><span class="etiqueta superficie">fuente leída</span> ${esc(d.lectura.fuente)} · ${Number(d.lectura.chars).toLocaleString('es-ES')} caracteres</p>` : ''}
       </div>
       <div class="veredicto-der"><p class="puntuacion">${esc(d.score != null ? d.score : '')}<small>/100</small></p></div>
     </section>
