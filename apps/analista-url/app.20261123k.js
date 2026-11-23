@@ -473,7 +473,7 @@ function deducirIntencion(info, sig, texto, forzada) {
   if (sig.has('hardware')) subir('instalar', 2, 'Toca hardware o dispositivos.');
   if (sig.has('open_source')) subir('replicar', 3, 'Es código abierto.');
   if (sig.has('pago')) subir('interes', 1, 'Hay precio: toca decidir si compensa.');
-  if (texto && texto.length > 400) subir('implementar', 1, 'Hay texto: hay materia para decidir.');
+  if (texto && texto.length > 400 && puntos.implementar > 0) subir('implementar', 1, 'Hay texto: hay materia para decidir.');
 
   const alternativas = (texto.match(/alternativas?/gi) || []).length;
   const enlaces = (texto.match(/https?:\/\//g) || []).length;
