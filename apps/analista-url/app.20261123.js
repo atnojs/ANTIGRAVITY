@@ -473,29 +473,61 @@ async function conTiempo(promesa, ms) {
 
 async function metadatos(info, aviso) {
   const meta = { titulo: '', autor: '', licencia: '', estrellas: '', actualizado: '', fuente: 'no consultado' };
+  const sinProxy = location.protocol === 'file:';
+
+  const contar = (m, fuente) => {
+    if (!m) return false;
+    meta.titulo = m.titulo || '';
+    meta.autor = m.autor || '';
+    meta.licencia = m.licencia || '';
+    meta.estrellas = m.estrellas || '';
+    meta.actualizado = m.actualizado || '';
+    meta.fuente = fuente || m.fuente || 'el proxy del servidor';
+    return Boolean(meta.titulo);
+  };
+
+  /* El proxy es el camino bueno en producción (la CSP del hosting bloquea lo externo).
+     Si no contesta, se intenta directo: sirve para probar en local con file://. */
+  const porProxy = async (query) => {
+    if (sinProxy) return null;
+    try {
+      const r = await conTiempo(fetch('proxy.php?action=meta&' + query), 9000);
+      if (!r.ok) return null;
+      const j = await r.json();
+      return j && j.success ? j.meta : null;
+    } catch { return null; }
+  };
+
   try {
     if (info.tipo === 'video' && info.videoId) {
       aviso('Leyendo título y autor del vídeo...');
+      const porServidor = await porProxy('tipo=video&id=' + encodeURIComponent(info.videoId));
+      if (porServidor) { contar(porServidor, 'oEmbed de YouTube'); return meta; }
       const r = await conTiempo(fetch('https://www.youtube.com/oembed?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + info.videoId) + '&format=json'), 8000);
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const j = await r.json();
-      meta.titulo = j.title || '';
-      meta.autor = j.author_name || '';
-      meta.fuente = 'el oEmbed público de YouTube';
-    } else if (info.repo) {
+      contar({ titulo: j.title, autor: j.author_name }, 'el oEmbed público de YouTube');
+      return meta;
+    }
+
+    if (info.repo) {
       aviso('Leyendo el repositorio en GitHub...');
+      const porServidor = await porProxy('tipo=repo&repo=' + encodeURIComponent(info.repo));
+      if (porServidor) { contar(porServidor, 'la API pública de GitHub'); return meta; }
       const r = await conTiempo(fetch('https://api.github.com/repos/' + info.repo, { headers: { Accept: 'application/vnd.github+json' } }), 8000);
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const j = await r.json();
-      meta.titulo = j.full_name || '';
-      meta.autor = j.owner ? j.owner.login : '';
-      meta.licencia = j.license && j.license.spdx_id ? j.license.spdx_id : (j.license ? 'declarada' : 'sin licencia declarada');
-      meta.estrellas = typeof j.stargazers_count === 'number' ? String(j.stargazers_count) : '';
-      meta.actualizado = (j.pushed_at || '').slice(0, 10);
-      meta.fuente = 'la API pública de GitHub';
-    } else {
-      meta.fuente = 'nada: esa página no se puede leer desde el navegador';
+      contar({
+        titulo: j.full_name,
+        autor: j.owner ? j.owner.login : '',
+        licencia: j.license && j.license.spdx_id ? j.license.spdx_id : (j.license ? 'declarada' : 'sin licencia declarada'),
+        estrellas: typeof j.stargazers_count === 'number' ? String(j.stargazers_count) : '',
+        actualizado: (j.pushed_at || '').slice(0, 10)
+      }, 'la API pública de GitHub');
+      return meta;
     }
+
+    meta.fuente = 'nada: esa página no se puede leer desde el navegador';
   } catch (e) {
     meta.fuente = 'sin respuesta (' + e.message + ')';
   }
