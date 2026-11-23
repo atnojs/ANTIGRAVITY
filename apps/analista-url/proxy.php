@@ -79,8 +79,23 @@ function limpiarTexto(string $texto, int $max): string {
     return $texto;
 }
 
+/** visitorData de la página del vídeo: sin él, la API interna responde «no eres un bot». */
+function visitorData(string $id): string {
+    [$estado, $html] = pedir('https://www.youtube.com/watch?v=' . $id . '&hl=es&gl=ES', [
+        'Accept: text/html,application/xhtml+xml',
+        'Accept-Language: es-ES,es;q=0.9',
+        'Cookie: CONSENT=YES+cb.20210328-17-p0.en+FX+917; SOCS=CAI',
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36',
+    ], 14);
+    if ($estado !== 200) return '';
+    if (preg_match('/"visitorData":"([^"]{10,400})"/', $html, $m)) {
+        return str_replace('\\u003d', '=', str_replace('\\u0026', '&', $m[1]));
+    }
+    return '';
+}
+
 /** Pide el reproductor con un cliente concreto. Devuelve [json|null, estado, motivo]. */
-function reproductor(string $id, array $cliente): array {
+function reproductor(string $id, array $cliente, string $visitante = ''): array {
     $cuerpo = json_encode([
         'context' => ['client' => $cliente],
         'videoId' => $id,
@@ -96,6 +111,10 @@ function reproductor(string $id, array $cliente): array {
         'Content-Type: application/json',
         'Accept-Language: es-ES,es;q=0.9',
         'User-Agent: ' . $ua,
+        'X-Goog-Visitor-Id: ' . $visitante,
+        'X-Youtube-Client-Name: 1',
+        'X-Youtube-Client-Version: ' . (string)($cliente['clientVersion'] ?? ''),
+        'Cookie: CONSENT=YES+cb.20210328-17-p0.en+FX+917; SOCS=CAI',
     ], 12, $cuerpo);
 
     if ($estado !== 200) return [null, $estado, 'HTTP ' . $estado];
@@ -168,8 +187,9 @@ function leerVideo(string $id): array {
 
     $ultimoMotivo = $pistas === [] ? 'ni el HTML ni la API dieron pistas' : '';
     if ($pistas === []) {
+        $visitante = visitorData($id);
         foreach ($clientes as $cliente) {
-            [$json, , $motivo] = reproductor($id, $cliente);
+            [$json, , $motivo] = reproductor($id, $cliente, $visitante);
             if (!is_array($json)) { $ultimoMotivo = $motivo; continue; }
             $estadoRepro = (string)($json['playabilityStatus']['status'] ?? '');
             $razon = (string)($json['playabilityStatus']['reason'] ?? '');
