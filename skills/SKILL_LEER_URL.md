@@ -52,6 +52,7 @@ Códigos de salida: `0` bien · `2` la fuente no tiene texto · `3` error de red
 
 ## Reglas de uso
 
+0. **La lectura se hace en el equipo, no en el servidor.** `leer-url.mjs` corre en el PC: ahí YouTube y las webs responden. La app «Analista de URL» lee desde el hosting y falla por IP de datacenter; es un extra cómodo, **nunca la fuente de verdad**. Si una tarea se apoya en lo que leyó la app, se comprueba con `leer-url.mjs` antes de concluir.
 1. **Se lee antes de responder**, no después de que el usuario lo pida.
 2. **Si falla, se dice en una línea y se sigue.** Nunca tres intentos con la misma URL: si la herramienta devuelve `2` o `3`, se reporta y se pide el texto pegado, o se analiza solo el enlace diciendo que no se ha leído.
 3. **No se vuelca el texto en la respuesta.** Se usa para extraer: qué propone, qué cuesta, qué requisitos pide, qué promete y qué cumple, con minuto o cita cuando la fuente lo permita.

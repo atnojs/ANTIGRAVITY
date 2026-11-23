@@ -610,7 +610,7 @@ async function leerFuente(info, aviso) {
 
 /* ───────────────────────── 10. Puntuación y veredicto ───────────────────────── */
 
-function calcularVeredicto(info, sig, intencion, precedentes) {
+function calcularVeredicto(info, sig, intencion, precedentes, sinLectura) {
   const partes = [{ texto: 'base', valor: 40 }];
   const sumar = (texto, valor) => partes.push({ texto, valor });
   if (sig.has('open_source')) sumar('código abierto', 10);
@@ -630,6 +630,15 @@ function calcularVeredicto(info, sig, intencion, precedentes) {
 
   let total = partes.reduce((n, p) => n + p.valor, 0);
   total = Math.max(5, Math.min(97, total));
+  // Sin texto no hay veredicto (regla de la casa): lo que sale de la URL es un pre-análisis.
+  // Se conserva el número para el historial y el informe, pero no se presenta como juicio.
+  if (sinLectura) {
+    return {
+      total, etiqueta: 'Sin veredicto', clase: 'es-parcial', partes, sinLectura: true,
+      motivo: 'No se ha leído la fuente, así que esto no es un veredicto: es un pre-análisis del enlace (dominio, título y señales de la URL). Pega el texto o léela en el equipo y vuelve a analizar.'
+    };
+  }
+
   const etiqueta = total >= 70 ? 'Nos sirve' : total >= 45 ? 'Sirve a medias' : 'Es ruido';
   const clase = total >= 70 ? '' : total >= 45 ? 'es-parcial' : 'es-ruido';
   const motivo = total >= 70
@@ -637,7 +646,7 @@ function calcularVeredicto(info, sig, intencion, precedentes) {
     : total >= 45
       ? 'Hay algo aprovechable, pero el coste o el riesgo se comen parte del beneficio. Léelo antes de mover ficha.'
       : 'Poco que rascar: o duplica lo que ya hay, o el precio y el riesgo superan lo que aporta.';
-  return { total, etiqueta, clase, motivo, partes };
+  return { total, etiqueta, clase, motivo, partes, sinLectura: false };
 }
 
 /* ───────────────────────── 11. Datos a tener en cuenta ───────────────────────── */
@@ -708,7 +717,7 @@ function construirDatos(info, meta, sig, texto, precedentes) {
 /* ───────────────────────── 12. Implementaciones y mejoras ───────────────────────── */
 
 function construirPlan(ctx) {
-  const esRuido = ctx.veredicto.total < 45;
+  const esRuido = !ctx.sinLectura && ctx.veredicto.total < 45;
   const orden = { alto: 3, medio: 2, bajo: 1 };
   const elegidas = APROVECHAMIENTOS.filter((a) => {
     if (a.id === 'descartar') return esRuido;
@@ -836,21 +845,23 @@ async function analizar(urlCruda, intencionForzada, texto, aviso) {
 
   const meta = await metadatos(info, avisar);
 
-  const veredicto = calcularVeredicto(info, senales.set, intencion, precedentes);
+  const veredicto = calcularVeredicto(info, senales.set, intencion, precedentes, !textoEfectivo);
   const ctx = {
     info, meta, sig: senales.set, sigLista: senales.lista, texto: textoEfectivo, textoPegado: String(texto || '').trim(),
-    intencion, veredicto, precedentes, lectura, plan: [], mejoras: []
+    intencion, veredicto, precedentes, lectura, plan: [], mejoras: [], sinLectura: !textoEfectivo
   };
   ctx.datos = construirDatos(info, meta, senales.set, textoEfectivo, precedentes);
   ctx.plan = construirPlan(ctx);
   ctx.mejoras = construirMejoras(ctx);
   ctx.encargo = construirEncargo(ctx, ctx.plan);
-  ctx.vacio = veredicto.total < 45;
-  ctx.siguiente = ctx.vacio
-    ? 'Descartarlo y anotar por qué. Si vuelve a aparecer, el historial de esta app ya tiene la respuesta.'
-    : ctx.plan.length
-      ? ctx.plan[0].paso
-      : 'Leer la fuente con calma antes de tocar nada.';
+  ctx.vacio = !ctx.sinLectura && veredicto.total < 45;
+  ctx.siguiente = ctx.sinLectura
+    ? 'Leer la fuente antes de decidir: abre el cuadro de pegado con los subtítulos, o léela en el equipo con leer-url y vuelve a analizar. Sin texto no hay veredicto.'
+    : ctx.vacio
+      ? 'Descartarlo y anotar por qué. Si vuelve a aparecer, el historial de esta app ya tiene la respuesta.'
+      : ctx.plan.length
+        ? ctx.plan[0].paso
+        : 'Leer la fuente con calma antes de tocar nada.';
   return ctx;
 }
 
@@ -900,17 +911,24 @@ function renderizar(ctx) {
   const r = document.getElementById('resultado');
   const partes = [];
 
+  // Regla de la casa: sin lectura no hay veredicto. Se dice antes que nada, no se disimula.
+  if (ctx.sinLectura) {
+    partes.push('<p class="alerta alerta-info"><strong>Sin lectura no hay veredicto.</strong> No he podido leer la fuente y no has pegado texto, así que lo que viene abajo es un <strong>pre-análisis del enlace</strong>: no cuenta como juicio. Pega los subtítulos o el texto en «Pegar texto a mano», o léela en el equipo con <code>leer-url</code>, y vuelve a analizar.</p>');
+  }
+
   partes.push(`
-    <section class="veredicto" aria-label="Veredicto">
+    <section class="veredicto" aria-label="${ctx.sinLectura ? 'Pre-análisis' : 'Veredicto'}">
       <div class="veredicto-izq">
-        <p class="veredicto-etiqueta">Veredicto</p>
+        <p class="veredicto-etiqueta">${ctx.sinLectura ? 'Pre-análisis (sin lectura)' : 'Veredicto'}</p>
         <p class="veredicto-valor ${ctx.veredicto.clase}">${esc(ctx.veredicto.etiqueta)}</p>
         <p class="veredicto-motivo">${esc(ctx.veredicto.motivo)}</p>
         <p style="margin-top:.55rem"><span class="url-chip" title="${esc(ctx.info.url)}"><span class="dominio">${esc(ctx.info.host)}</span> ${esc(acortar(ctx.info.url, 78))}</span></p>
       </div>
       <div class="veredicto-der">
-        <p class="puntuacion">${ctx.veredicto.total}<small>/100</small></p>
-        <p class="desglose">${ctx.veredicto.partes.map((p) => esc(p.texto) + ' ' + (p.valor > 0 ? '+' : '') + p.valor).join(' · ')}</p>
+        ${ctx.sinLectura
+    ? '<p class="puntuacion">—<small>sin veredicto</small></p>'
+    : `<p class="puntuacion">${ctx.veredicto.total}<small>/100</small></p>`}
+        <p class="desglose">${ctx.sinLectura ? 'Señales de la URL: ' : ''}${ctx.veredicto.partes.map((p) => esc(p.texto) + ' ' + (p.valor > 0 ? '+' : '') + p.valor).join(' · ')}</p>
       </div>
     </section>`);
 
@@ -1022,7 +1040,9 @@ function informeTexto(ctx) {
   l.push('# ' + (ctx.meta.titulo || ctx.info.host));
   l.push('');
   l.push('- URL: ' + ctx.info.url);
-  l.push('- Veredicto: ' + ctx.veredicto.etiqueta + ' (' + ctx.veredicto.total + '/100)');
+  l.push(ctx.sinLectura
+    ? '- Sin veredicto: la fuente no se ha leído. Pre-análisis del enlace (indicios ' + ctx.veredicto.total + '/100): no vale como juicio.'
+    : '- Veredicto: ' + ctx.veredicto.etiqueta + ' (' + ctx.veredicto.total + '/100)');
   l.push('- Intención: ' + ctx.intencion.etiqueta);
   if (ctx.lectura && ctx.lectura.ok) {
     l.push('- Fuente leída: ' + ctx.lectura.fuente + ' · ' + Number(ctx.lectura.chars).toLocaleString('es-ES') + ' caracteres');
