@@ -333,7 +333,6 @@ function parsearUrl(texto) {
   const conEsquema = /^https?:\/\//i.test(limpio) ? limpio : 'https://' + limpio;
   let u;
   try { u = new URL(conEsquema); } catch { return { error: 'Esa URL no se puede leer. Revisa que no falte nada.' }; }
-  if (!/^https?:$/.test(u.protocol)) return { error: 'Sólo se pueden analizar enlaces http o https.' };
   if (!u.hostname.includes('.')) return { error: 'Al dominio le falta algo: por ejemplo youtube.com.' };
 
   const host = u.hostname.replace(/^www\./, '');
