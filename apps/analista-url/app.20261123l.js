@@ -145,7 +145,7 @@ const SENALES = [
   { id: 'modelo_ia', nombre: 'Modelo de IA', re: /\b(llm|modelo|gpt|claude|gemini|qwen|deepseek|llama|mistral|flux|nano banana|veo|sora)\b/i, reEstricta: /\b(llm|gpt|claude|gemini|qwen|deepseek|llama|mistral|flux|nano banana|veo|sora|modelo de lenguaje)\b/i },
   { id: 'api', nombre: 'API', re: /\b(api|endpoint|sdk|rest|token|clave api|api key|base url)\b/i, reEstricta: /(\bapi\b|\bendpoint\b|base url|\bsdk\b|api key|clave api)/i },
   { id: 'mcp', nombre: 'MCP', re: /\b(mcp|model context protocol|servidor mcp)\b/i },
-  { id: 'gratis', nombre: 'Gratis', re: /\b(gratis|free|sin coste|sin tarjeta|ilimitad[oa]|open source)\b/i, reEstricta: /(gratis|gratuit[oa]|free tier|\bplan free\b|sin coste|sin tarjeta|prueba gratis)/i },
+  { id: 'gratis', nombre: 'Gratis', re: /\b(gratis|free|sin coste|sin tarjeta|ilimitad[oa]|open source)\b/i, reEstricta: /(gratis|gratuit[oa]|free (tier|plan|credits|of charge)|\bfor free\b|\bplan free\b|sin coste|sin tarjeta|prueba gratis|free\b[^.\n]{0,20}\bno card)/i },
   { id: 'pago', nombre: 'De pago', re: /(\$\s?\d|€\s?\d|\bprecio\b|suscripci[oó]n|\bde pago\b|plan pro|facturaci[oó]n|\b(usd|eur)\b)/i },
   { id: 'instalador', nombre: 'Instalador', re: /(\.exe|\.msi|\.iso|\.dmg|instalador|installer|wine|setup\.exe)/i, reEstricta: /(\.exe\b|\.msi\b|\.dmg\b|\.iso\b|instalador|installer|\bdescargar\b|\bdownload\b)/i },
   { id: 'automatizacion', nombre: 'Automatización', re: /\b(n8n|zapier|make\.com|cron|automatizar|automatizaci[oó]n|workflow|flujo de trabajo)\b/i },
@@ -1021,7 +1021,7 @@ function informeTexto(ctx) {
   l.push('- Veredicto: ' + ctx.veredicto.etiqueta + ' (' + ctx.veredicto.total + '/100)');
   l.push('- Intención: ' + ctx.intencion.etiqueta);
   if (ctx.lectura && ctx.lectura.ok) {
-    l.push('- Fuente leída: ' + ctx.lectura.fuente + ' · ' + ctx.lectura.chars + ' caracteres');
+    l.push('- Fuente leída: ' + ctx.lectura.fuente + ' · ' + Number(ctx.lectura.chars).toLocaleString('es-ES') + ' caracteres');
   } else if (ctx.lectura && ctx.lectura.intento) {
     l.push('- Fuente no leída: ' + (ctx.lectura.motivo || 'sin texto'));
   } else if (ctx.textoPegado) {
@@ -1318,8 +1318,8 @@ function arrancar() {
     try {
       const ctx = await analizar(url, intencionElegida, inputTexto.value.trim(), aviso);
       renderizar(ctx);
-      await guardarEnHistorial(ctx);
       if (ctx.lectura && ctx.lectura.sugerirPegar) ofrecerPegar(ctx);
+      await guardarEnHistorial(ctx);
       document.getElementById('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
       error.textContent = e.message || 'No se pudo analizar la URL.';
