@@ -235,6 +235,16 @@ details > summary:focus-visible { outline: 2px solid var(--acc); outline-offset:
   border: 1px solid rgba(239, 68, 68, 0.45);
   color: #ffb4b4;
 }
+.alerta-info {
+  background: rgba(0, 208, 208, 0.10);
+  border: 1px solid rgba(0, 208, 208, 0.45);
+  color: var(--text);
+  margin-bottom: 0.6rem;
+  line-height: 1.45;
+}
+.alerta-info strong { color: #fff; font-weight: 400; }
+.alerta a { color: var(--acc); text-decoration: underline; }
+.alerta a:hover { color: #fff; }
 
 /* ── Estado vacío ───────────────────────────────────────────── */
 .section-title {

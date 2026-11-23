@@ -278,7 +278,7 @@ const MEJORAS = [
     id: 'leer-url',
     titulo: 'La lectura de la fuente como herramienta del harness, no de una app',
     delta: 'doce llamadas menos y una intervención tuya menos por vídeo',
-    evidencia: 'Esta app ya la tiene: subtítulo de YouTube por la API interna con cliente ANDROID, README y texto de página. Antes costaba 15 llamadas en _fgcYcSA7oo, y en Winux acabó con 18.654 caracteres pegados a mano. Lo que falta es que sea una herramienta más de DSH y que todas las sesiones la tengan.',
+    evidencia: 'El harness corre en tu PC, con IP de casa: ahí YouTube sí entrega los subtítulos (lo hizo el 9 de noviembre en 15 llamadas). Desde el hosting es imposible: responde «Inicia sesión para confirmar que no eres un bot». Esta app ya lee páginas y READMEs; para vídeos, la herramienta tiene que vivir donde vive el agente.',
     aplica: (c) => c.sig.has('video') || c.sig.has('repo') || c.sig.has('open_source')
   },
   {
@@ -594,10 +594,12 @@ async function leerFuente(info, aviso) {
     const r = await conTiempo(fetch('proxy.php?action=leer&' + consulta), 22000);
     if (!r.ok) return { ok: false, motivo: 'el servidor respondió HTTP ' + r.status };
     const j = await r.json();
-    if (!j || !j.success || !j.lectura) return { ok: false, motivo: (j && j.error) || 'sin texto' };
+    if (!j || !j.success || !j.lectura) {
+      return { ok: false, motivo: (j && j.error) || 'sin texto', sugerirPegar: info.tipo === 'video' };
+    }
     return { ok: true, fuente: j.lectura.fuente, chars: j.lectura.chars, texto: j.lectura.texto };
   } catch (e) {
-    return { ok: false, motivo: e.message === 'sin respuesta' ? 'el servidor tardó demasiado' : e.message };
+    return { ok: false, motivo: e.message === 'sin respuesta' ? 'el servidor tardó demasiado' : e.message, sugerirPegar: info.tipo === 'video' };
   }
 }
 
@@ -764,6 +766,9 @@ function construirEncargo(ctx, plan) {
   if (ctx.lectura && ctx.lectura.ok) {
     l.push('');
     l.push('La fuente ya está leída (' + ctx.lectura.fuente + ', ' + ctx.lectura.chars + ' caracteres): no gastes llamadas en bajarla otra vez. Si necesitas un literal, pídelo y lo cito.');
+  } else if (ctx.lectura && ctx.lectura.intento) {
+    l.push('');
+    l.push('Ojo: la app no ha podido leer la fuente desde el servidor (el hosting está bloqueado). Léela tú antes de concluir: en tu equipo YouTube y las páginas sí responden.');
   }
   l.push('');
   l.push('Devuelve exactamente estas cinco secciones, en este orden:');
@@ -801,6 +806,7 @@ async function analizar(urlCruda, intencionForzada, texto, aviso) {
       lectura.chars = leido.chars;
     } else {
       lectura.motivo = leido.motivo;
+      lectura.sugerirPegar = Boolean(leido.sugerirPegar);
     }
   }
 
@@ -861,6 +867,9 @@ function lineaLectura(l) {
     return `<p class="ayuda"><span class="etiqueta superficie">fuente leída</span> ${esc(l.fuente)} · ${Number(l.chars).toLocaleString('es-ES')} caracteres. El contenido no se muestra: sólo se usa para deducir lo que viene debajo.</p>`;
   }
   if (l.intento) {
+    if (l.sugerirPegar) {
+      return '<p class="ayuda"><span class="etiqueta">sin lectura</span> YouTube no deja bajar los subtítulos desde el servidor. Te he abierto el cuadro para pegarlos: en cuanto haya texto, el informe cambia.</p>';
+    }
     return `<p class="ayuda"><span class="etiqueta">sin lectura</span> No se pudo leer la fuente (${esc(l.motivo || 'sin texto')}). El análisis va con el enlace.</p>`;
   }
   return `<p class="ayuda"><span class="etiqueta superficie">texto pegado</span> Se usa el texto que has pegado.</p>`;
@@ -1168,6 +1177,30 @@ function mostrarOverlay(si) {
   document.body.style.overflow = si ? 'hidden' : '';
 }
 
+/* YouTube no deja leer los subtítulos desde el servidor del hosting (bloqueo por IP).
+   En vez de dejar al usuario con un «no se pudo», se abre el cuadro de pegado y se le
+   da el atajo para copiarlos en dos clics. */
+function ofrecerPegar(ctx) {
+  const caja = document.getElementById('contexto-wrap');
+  const area = document.getElementById('contexto-input');
+  if (!caja || !area) return;
+  caja.open = true;
+
+  let avisoEl = document.getElementById('aviso-pegar');
+  if (!avisoEl) {
+    avisoEl = document.createElement('div');
+    avisoEl.id = 'aviso-pegar';
+    avisoEl.className = 'alerta alerta-info';
+    caja.insertBefore(avisoEl, caja.querySelector('textarea'));
+  }
+  const enlace = ctx.info.videoId
+    ? `<a href="https://youtubetotranscript.com/transcript?v=${encodeURIComponent(ctx.info.videoId)}" target="_blank" rel="noopener noreferrer">abrir la transcripción en otra pestaña</a>`
+    : '';
+  avisoEl.innerHTML = `<strong>No he podido leer el vídeo desde el servidor</strong> (YouTube bloquea la descarga de subtítulos por IP de hosting). ${enlace ? 'Puedes ' + enlace + ', copiarla aquí y volver a analizar: en cuanto haya texto, el informe cambia.' : 'Pega los subtítulos aquí y vuelve a analizar.'}`;
+  avisoEl.hidden = false;
+  area.focus({ preventScroll: true });
+}
+
 let intencionElegida = 'auto';
 
 function reabrir(d) {
@@ -1262,6 +1295,7 @@ function arrancar() {
       const ctx = await analizar(url, intencionElegida, inputTexto.value.trim(), aviso);
       renderizar(ctx);
       await guardarEnHistorial(ctx);
+      if (ctx.lectura && ctx.lectura.sugerirPegar) ofrecerPegar(ctx);
       document.getElementById('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
       error.textContent = e.message || 'No se pudo analizar la URL.';
