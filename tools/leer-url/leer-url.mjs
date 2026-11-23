@@ -5,34 +5,62 @@
  *   node tools/leer-url/leer-url.mjs <url> [opciones]
  *
  * Qué sabe leer:
- *   · YouTube        → subtítulos (prefiere español manual, luego español automático, luego inglés).
- *                      Usa la API interna con cliente ANDROID y parsea el XML srv3 (format=3),
- *                      que es lo que devuelve YouTube de verdad; `fmt=json3` se ignora desde 2026.
- *   · GitHub         → README del repositorio (y metadatos: estrellas, licencia, último push).
+ *   · YouTube        → subtítulos (español manual, luego automático, luego inglés).
+ *                      Usa la API interna con cliente ANDROID y parsea el XML srv3
+ *                      (format=3), que es lo que devuelve el `baseUrl` de la pista.
+ *                      json3 sigue funcionando, pero el `baseUrl` ya trae fmt=srv3 y
+ *                      añadir otro `fmt=` al final no lo cambia: por eso se parsea srv3.
+ *   · GitHub         → README del repositorio (y metadatos: estrellas, licencia, push).
  *   · Cualquier web  → texto principal de la página.
  *
  * Opciones:
- *   --max N        tope de caracteres devueltos (por defecto 40000; vídeo 60000)
- *   --json         salida JSON {ok, tipo, fuente, chars, url, texto}
- *   --out RUTA     guarda el texto en un fichero y devuelve solo la ruta y el recuento
- *   --no-cache     ignora la caché local
+ *   --max N        tope de caracteres devueltos (40.000; 60.000 en vídeo)
+ *   --json         salida JSON {ok, url, tipo, fuente, chars, texto, extra}
+ *   --out RUTA     guarda el texto en un fichero y devuelve solo ruta y recuento
+ *   --no-cache     ignora la caché local (7 días en %LOCALAPPDATA%\leer-url\cache)
  *   --ayuda        esta ayuda
  *
- * Códigos de salida: 0 bien · 2 no hay texto · 3 error de red/HTTP · 4 URL no válida.
+ * Códigos de salida: 0 bien · 2 sin texto · 3 red o HTTP · 4 URL no válida o privada
+ *                    5 no se pudo escribir el fichero de --out.
+ *
+ * Límites de red: 9 s por petición, 20 s en total, sin reintentar timeouts.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
+import dns from 'node:dns/promises';
+
+const AYUDA = `leer-url — lee una URL y devuelve su texto para analizarla.
+
+Uso:
+  node leer-url.mjs <url> [opciones]
+
+Opciones:
+  --max N        tope de caracteres (40.000; 60.000 en vídeo)
+  --json         salida JSON {ok, url, tipo, fuente, chars, texto, extra}
+  --out RUTA     guarda el texto en un fichero y devuelve ruta y recuento
+  --no-cache     ignora la caché local (7 días)
+  --ayuda        muestra esta ayuda
+
+Códigos de salida:
+  0 bien · 2 sin texto · 3 red o HTTP · 4 URL no válida o privada · 5 error de escritura
+
+Límites: 9 s por petición, 20 s en total. No sigue redirecciones a red privada.
+`;
 
 const UA_NAVEGADOR = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36';
 const UA_ANDROID = 'com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip';
 const UA_IOS = 'com.google.ios.youtube/20.10.1 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X)';
 
+const TIMEOUT_PETICION = 9000;
+const DEADLINE_TOTAL = 20000;
+const inicio = Date.now();
+
 const args = process.argv.slice(2);
-if (args.includes('--ayuda') || args.includes('-h') || args.includes('--help') || args.length === 0) {
-  console.log(fs.readFileSync(new URL(import.meta.url), 'utf8').split('*/')[0].replace(/^\/\*\*?/, '').replace(/^ \* ?/gm, '').trim());
+if (args.length === 0 || args.includes('--ayuda') || args.includes('-h') || args.includes('--help')) {
+  console.log(AYUDA);
   process.exit(0);
 }
 
@@ -52,42 +80,88 @@ function fallar(mensaje, codigo = 3) {
   process.exit(codigo);
 }
 
-/* ── URL y seguridad ─────────────────────────────────────────── */
+/* ── URL, DNS y red ─────────────────────────────────────────── */
 
 function analizarUrl(entrada) {
   if (!entrada) fallar('Falta la URL. Uso: leer-url.mjs <url>', 4);
   const conEsquema = /^https?:\/\//i.test(entrada) ? entrada : 'https://' + entrada;
   let u;
   try { u = new URL(conEsquema); } catch { fallar('URL no válida: ' + entrada, 4); }
-  if (!/^https?:$/.test(u.protocol)) fallar('Sólo http o https.', 4);
+  if (!/^https?:$/.test(u.protocol)) fallar('Sólo se leen enlaces http o https.', 4);
   if (!u.hostname.includes('.')) fallar('Eso no parece una URL: falta el dominio (ejemplo.com).', 4);
   return u;
 }
 
-const BLOQUEADOS = /^(localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|169\.254\.|::1|\[::1\])/i;
-
-function esPrivada(host) {
-  if (BLOQUEADOS.test(host)) return true;
-  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+/** ¿Es una dirección de red privada, local o reservada? IPv4 e IPv6. */
+function esIpPrivada(ip) {
+  const v4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(ip);
+  if (v4) {
+    const a = Number(v4[1]);
+    const b = Number(v4[2]);
+    if (a === 0 || a === 10 || a === 127) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+    if (a >= 224) return true;                        // multicast y reservadas
+    return false;
+  }
+  const ip6 = String(ip).toLowerCase();
+  if (ip6 === '::' || ip6 === '::1') return true;
+  if (/^f[cd][0-9a-f]{2}:/.test(ip6)) return true;   // ULA fc00::/7
+  if (/^fe[89ab][0-9a-f]?:/.test(ip6)) return true;  // link-local fe80::/10
+  if (ip6.startsWith('::ffff:')) return esIpPrivada(ip6.slice(7));
   return false;
 }
 
-/* ── Utilidades ──────────────────────────────────────────────── */
+const NOMBRES_VETADOS = /^(localhost|metadata\.google\.internal|metadata\.goog|instance-data)$/i;
+
+/** Comprueba el destino resolviendo DNS: un alias a 127.0.0.1 también cuenta. */
+async function comprobarDestino(u) {
+  const host = u.hostname.replace(/^\[|\]$/g, '');
+  if (NOMBRES_VETADOS.test(host)) fallar('Esa dirección es local o de metadatos; no la leo.', 4);
+
+  // Si ya es una IP, se comprueba tal cual.
+  if (esIpPrivada(host)) fallar('Esa dirección es de red privada o local; no la leo.', 4);
+
+  let direcciones = [];
+  try {
+    direcciones = await dns.lookup(host, { all: true, verbatim: true });
+  } catch {
+    fallar('El dominio no resuelve: ' + host, 3);
+  }
+  if (!direcciones.length) fallar('El dominio no resuelve: ' + host, 3);
+  for (const d of direcciones) {
+    if (esIpPrivada(d.address)) {
+      fallar('Ese dominio apunta a una red privada (' + d.address + '); no la leo.', 4);
+    }
+  }
+}
 
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+const queda = () => DEADLINE_TOTAL - (Date.now() - inicio);
 
 async function pedir(url, opciones = {}, intentos = 2) {
   let ultimo;
   for (let i = 0; i < intentos; i++) {
+    const ms = Math.min(TIMEOUT_PETICION, queda());
+    if (ms <= 500) {
+      fallar('Se agotó el tiempo de espera (' + Math.round(DEADLINE_TOTAL / 1000) + ' s).');
+    }
     try {
-      const r = await fetch(url, { redirect: 'manual', ...opciones });
-      return r;
+      return await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(ms), ...opciones });
     } catch (e) {
       ultimo = e;
-      await dormir(400 + i * 600);
+      const esTiempo = e && (e.name === 'TimeoutError' || e.name === 'AbortError' || /timeout|tiempo/i.test(e.message));
+      if (esTiempo) break; // un timeout no se reintenta: es el techo, no un fallo pasajero
+      await dormir(300 + i * 400);
     }
   }
-  throw ultimo;
+  const motivo = (ultimo && ultimo.cause && ultimo.cause.code) || (ultimo && ultimo.name) || 'sin respuesta';
+  if (/Timeout/i.test(String(motivo)) || (ultimo && ultimo.name === 'TimeoutError')) {
+    fallar('La página no respondió en ' + Math.round(TIMEOUT_PETICION / 1000) + ' s (tiempo agotado).');
+  }
+  fallar('No se pudo conectar: ' + motivo + '.');
 }
 
 function decodificar(s) {
@@ -128,9 +202,7 @@ function leerCache(clave) {
 }
 
 function guardarCache(clave, resultado) {
-  try {
-    fs.writeFileSync(rutaCache(clave), JSON.stringify({ guardado: Date.now(), resultado }), 'utf8');
-  } catch { /* sin caché, da igual */ }
+  try { fs.writeFileSync(rutaCache(clave), JSON.stringify({ guardado: Date.now(), resultado }), 'utf8'); } catch { /* da igual */ }
 }
 
 /* ── YouTube ─────────────────────────────────────────────────── */
@@ -163,7 +235,7 @@ async function reproductor(id, cliente) {
   };
 }
 
-/** El XML de YouTube (format=3) trae el texto en <p t="…" d="…">…</p>; el antiguo, en <text>. */
+/** El XML de YouTube (srv3) trae el texto en <p t="…" d="…">…</p>; el antiguo, en <text>. */
 function textoDeSubtitulo(xml) {
   const parrafos = [...xml.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1].replace(/<[^>]+>/g, ''));
   if (parrafos.length) return decodificar(parrafos.join(' '));
@@ -206,7 +278,7 @@ async function leerYoutube(u, max) {
   }
   return {
     ok: false,
-    error: 'YouTube no dio subtítulos (' + ultimo + '). Si es un vídeo sin subtítulos, no hay texto que leer; si es un bloqueo, prueba más tarde.'
+    error: 'YouTube no dio subtítulos (' + ultimo + '). Si el vídeo no tiene subtítulos, no hay texto que leer; si es un bloqueo, prueba más tarde.'
   };
 }
 
@@ -214,19 +286,22 @@ async function leerYoutube(u, max) {
 
 async function leerGithub(u, max) {
   const partes = u.pathname.split('/').filter(Boolean);
-  if (partes.length < 2) return { ok: false, error: 'La URL no apunta a un repositorio.' };
+  if (partes.length < 2) fallar('La URL no apunta a un repositorio.', 4);
   const repo = partes[0] + '/' + partes[1];
-  const cabeceras = { 'User-Agent': 'leer-url', Accept: 'application/vnd.github.raw' };
 
-  const r = await pedir('https://api.github.com/repos/' + repo + '/readme', { headers: cabeceras });
-  if (!r.ok) {
-    return { ok: false, error: 'GitHub no devolvió el README de ' + repo + ' (HTTP ' + r.status + ').' };
-  }
+  const r = await pedir('https://api.github.com/repos/' + repo + '/readme', {
+    headers: { 'User-Agent': 'leer-url', Accept: 'application/vnd.github.raw' }
+  });
+  if (!r.ok) fallar('GitHub respondió HTTP ' + r.status + ' para ' + repo + ' (¿no existe, es privado o se agotó la cuota?).');
+
   const texto = limpiar(await r.text(), max);
+  if (texto.length < 20) return { ok: false, error: 'Ese repositorio tiene el README vacío.' };
 
   let meta = {};
   try {
-    const rm = await pedir('https://api.github.com/repos/' + repo, { headers: { 'User-Agent': 'leer-url', Accept: 'application/vnd.github+json' } });
+    const rm = await pedir('https://api.github.com/repos/' + repo, {
+      headers: { 'User-Agent': 'leer-url', Accept: 'application/vnd.github+json' }
+    });
     if (rm.ok) {
       const j = await rm.json();
       meta = {
@@ -244,7 +319,7 @@ async function leerGithub(u, max) {
 /* ── Web genérica ────────────────────────────────────────────── */
 
 async function leerWeb(u, max) {
-  if (esPrivada(u.hostname)) fallar('Esa dirección es de red privada o local; no la leo.', 4);
+  await comprobarDestino(u);
 
   let actual = u.href;
   let r = null;
@@ -256,7 +331,7 @@ async function leerWeb(u, max) {
       const destino = r.headers.get('location');
       if (!destino) break;
       const siguiente = new URL(destino, actual);
-      if (esPrivada(siguiente.hostname)) fallar('La página redirige a una dirección privada; no la sigo.', 4);
+      await comprobarDestino(siguiente);
       actual = siguiente.href;
       continue;
     }
@@ -266,7 +341,7 @@ async function leerWeb(u, max) {
   if (!r || !r.ok) fallar('La página no respondió bien (HTTP ' + (r ? r.status : '?') + ').');
   const tipo = r.headers.get('content-type') || '';
   if (tipo && !/text\/html|application\/xhtml|text\/plain|application\/json|text\/markdown/i.test(tipo)) {
-    fallar('Ese enlace no es texto (' + tipo + ').');
+    return { ok: false, error: 'Ese enlace no es texto (' + tipo + ').' };
   }
 
   let html = await r.text();
@@ -288,9 +363,9 @@ async function leerWeb(u, max) {
     return limpiar(decodificar(t), max);
   };
 
-  // El documento entero siempre funciona; si hay <main>/<article> con suficiente sustancia,
-  // se prefiere porque llega sin menús ni pies. Cuando el <main> es un caparazón vacío
-  // (pasa en webs de documentación hechas con JavaScript), se usa el documento.
+  // El documento entero siempre funciona; si hay <main>/<article> con sustancia, se
+  // prefiere porque llega sin menús ni pies. Cuando el <main> es un caparazón vacío
+  // (webs de documentación hechas con JavaScript), se usa el documento.
   const completo = aTexto(html, false);
   const bloque = (html.match(/<main[^>]*>([\s\S]*?)<\/main>/i) || html.match(/<article[^>]*>([\s\S]*?)<\/article>/i) || [])[1];
   const deBloque = bloque ? aTexto(bloque, true) : '';
@@ -312,9 +387,35 @@ async function leerWeb(u, max) {
 
 /* ── principal ───────────────────────────────────────────────── */
 
+function terminar(salida, deCache) {
+  if (rutaSalida) {
+    try {
+      const destino = path.resolve(rutaSalida);
+      fs.mkdirSync(path.dirname(destino), { recursive: true });
+      fs.writeFileSync(destino, salida.texto, 'utf8');
+      if (json) console.log(JSON.stringify({ ok: true, url: salida.url, fuente: salida.fuente, chars: salida.chars, fichero: destino, cache: deCache }, null, 2));
+      else console.log(`${destino} · ${salida.chars} caracteres · ${salida.fuente}`);
+    } catch (e) {
+      fallar('No se pudo escribir el fichero de --out (' + (e.code || e.message) + '): ' + rutaSalida, 5);
+    }
+    return;
+  }
+
+  if (json) {
+    console.log(JSON.stringify({ ...salida, cache: deCache }, null, 2));
+    return;
+  }
+
+  console.log(`# ${salida.fuente} · ${salida.chars} caracteres ${deCache ? '· (caché)' : ''}`);
+  console.log(`# ${salida.url}`);
+  console.log('');
+  console.log(salida.texto);
+}
+
 async function main() {
   const u = analizarUrl(urlCruda);
-  const max = Number(opcion('--max', u.hostname.includes('youtube') || u.hostname.includes('youtu.be') ? 60000 : 40000)) || 40000;
+  const porDefecto = u.hostname.includes('youtube') || u.hostname.includes('youtu.be') ? 60000 : 40000;
+  const max = Number(opcion('--max', porDefecto)) || porDefecto;
 
   const enCache = leerCache(u.href + '#' + max);
   if (enCache) return terminar(enCache, true);
@@ -340,27 +441,9 @@ async function main() {
   terminar(salida, false);
 }
 
-function terminar(salida, deCache) {
-  if (rutaSalida) {
-    fs.mkdirSync(path.dirname(path.resolve(rutaSalida)), { recursive: true });
-    fs.writeFileSync(path.resolve(rutaSalida), salida.texto, 'utf8');
-    if (json) console.log(JSON.stringify({ ok: true, url: salida.url, fuente: salida.fuente, chars: salida.chars, fichero: path.resolve(rutaSalida), cache: deCache }, null, 2));
-    else console.log(`${path.resolve(rutaSalida)} · ${salida.chars} caracteres · ${salida.fuente}`);
-    return;
-  }
-
-  if (json) {
-    console.log(JSON.stringify({ ...salida, cache: deCache }, null, 2));
-    return;
-  }
-
-  console.log(`# ${salida.fuente} · ${salida.chars} caracteres ${deCache ? '· (caché)' : ''}`);
-  console.log(`# ${salida.url}`);
-  console.log('');
-  console.log(salida.texto);
-}
-
 main().catch((e) => {
-  const motivo = (e && e.cause && e.cause.code) || (e && e.message) || String(e);
-  fallar('No se pudo conectar: ' + motivo + '. Comprueba el enlace o la red.');
+  if (e && (e.name === 'TimeoutError' || (e.cause && e.cause.code === 'UND_ERR_CONNECT_TIMEOUT'))) {
+    fallar('Tiempo agotado al pedir la fuente.');
+  }
+  fallar('Error inesperado: ' + ((e && e.message) || String(e)));
 });

@@ -6,7 +6,7 @@ Lee una URL y devuelve su texto para que el agente la analice con datos.
 node \\Principal\e\ANTIGRAVITY\tools\leer-url\leer-url.mjs "<url>"
 ```
 
-- **YouTube** → subtítulos (español manual, luego automático, luego inglés). Usa la API interna con cliente ANDROID y parsea el XML `format=3`: el `fmt=json3` que circula por los ejemplos ya no devuelve nada.
+- **YouTube** → subtítulos (español manual, luego automático, luego inglés). Usa la API interna con cliente ANDROID y parsea el XML srv3 (`format=3`) que ya viene en el `baseUrl` de la pista. `fmt=json3` sigue funcionando, pero añadirlo al final no cambia nada: el `baseUrl` ya trae `fmt=srv3` y el parámetro duplicado se ignora.
 - **GitHub** → README y metadatos (estrellas, licencia, último push).
 - **Cualquier web** → texto principal. Si la página trae `<main>` con sustancia se usa eso; si es un caparazón de JavaScript, el documento entero.
 
@@ -19,7 +19,7 @@ node \\Principal\e\ANTIGRAVITY\tools\leer-url\leer-url.mjs "<url>"
 | `--out RUTA` | Guarda el texto y devuelve solo ruta y recuento |
 | `--no-cache` | Ignora la caché (7 días en `%LOCALAPPDATA%\leer-url\cache`) |
 
-Códigos de salida: `0` bien · `2` sin texto · `3` red/HTTP · `4` URL no válida o privada.
+Códigos de salida: `0` bien · `2` sin texto (incluye lo que no es texto: PDF, imágenes) · `3` red o HTTP · `4` URL no válida o privada · `5` no se pudo escribir el `--out`.
 
 ## Ejemplos
 
@@ -27,6 +27,13 @@ Códigos de salida: `0` bien · `2` sin texto · `3` red/HTTP · `4` URL no vál
 node ...\leer-url.mjs "https://www.youtube.com/watch?v=_fgcYcSA7oo"
 node ...\leer-url.mjs "https://github.com/nightly-labs/openbot" --max 4000 --json
 node ...\leer-url.mjs "https://coarena.ai/docs" --out "$env:TEMP\coarena.txt"
+```
+
+## Pruebas
+
+```powershell
+node \\Principal\e\ANTIGRAVITY\tools\leer-url\probar.mjs            # 24 comprobaciones
+node \\Principal\e\ANTIGRAVITY\tools\leer-url\probar.mjs --sin-red  # sin salir a internet
 ```
 
 ## Límites conocidos

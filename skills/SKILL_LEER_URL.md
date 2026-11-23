@@ -40,13 +40,13 @@ node ...\leer-url.mjs "<url>" --max 8000
 
 Salida normal: dos líneas de cabecera (`# fuente · N caracteres` y `# url`), una línea en blanco y el texto.
 
-Códigos de salida: `0` bien · `2` la fuente no tiene texto · `3` error de red o HTTP · `4` URL no válida o privada.
+Códigos de salida: `0` bien · `2` la fuente no tiene texto · `3` error de red o HTTP · `4` URL no válida o privada · `5` no se pudo escribir el `--out` (y `probar.mjs` verifica todo esto).
 
 ## Qué sabe leer (y qué no)
 
 | Fuente | Cómo | Límite real |
 |---|---|---|
-| YouTube | API interna con cliente ANDROID → XML `format=3` (`<p>`), no `json3` | Sin subtítulos no hay texto. Con IP de datacenter YouTube responde `LOGIN_REQUIRED`; desde el PC de casa funciona |
+| YouTube | API interna con cliente ANDROID → XML srv3 (`format=3`, texto en `<p>`) | Sin subtítulos no hay texto. Con IP de datacenter YouTube responde `LOGIN_REQUIRED`; desde el PC de casa funciona |
 | GitHub | API de GitHub, README en crudo | Repos sin README o privados |
 | Cualquier web | HTML → texto principal (`<main>` si tiene sustancia) | Webs que pintan todo con JavaScript, muros de pago, PDF (no los convierte) |
 
