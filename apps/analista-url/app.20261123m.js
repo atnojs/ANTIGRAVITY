@@ -867,8 +867,12 @@ function acortar(s, n) {
   return t.length > n ? t.slice(0, n - 1) + '…' : t;
 }
 
-function lineaMeta(fuente) {
+function lineaMeta(fuente, lectura) {
   const f = String(fuente || '');
+  // Si la fuente se ha leído, no tiene sentido decir que «no se puede leer»: el texto ya está.
+  if (lectura && lectura.ok && (f.startsWith('nada') || f.startsWith('sin respuesta'))) {
+    return 'Metadatos: no hacen falta aparte, el análisis va sobre el texto leído.';
+  }
   if (f.startsWith('nada:')) {
     return 'Metadatos: ' + f.slice(5).trim() + '. Si pegas el texto de la página, el análisis se afina.';
   }
@@ -929,7 +933,7 @@ function renderizar(ctx) {
             <p class="dato-valor ${esc(d.tono)}">${esc(d.valor)}</p>
           </div>`).join('')}
       </div>
-      <p class="ayuda">${esc(lineaMeta(ctx.meta.fuente))}</p>
+      <p class="ayuda">${esc(lineaMeta(ctx.meta.fuente, ctx.lectura))}</p>
     </section>`);
 
   if (ctx.plan.length) {
