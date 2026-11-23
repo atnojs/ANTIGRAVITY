@@ -11,7 +11,7 @@
 
   --text: #eaffff;
   --muted: #99CCCC;
-  --faint: #669999;
+  --faint: #7CB2B2;
 
   --border: rgba(0, 208, 208, 0.7);
   --border-soft: rgba(0, 208, 208, 0.28);
@@ -90,7 +90,7 @@ body::after {
   margin: 0 auto;
   width: 100%;
 }
-.main-col { flex: 1 1 auto; min-width: 0; max-width: 1180px; }
+.main-col { flex: 1 1 auto; min-width: 0; width: 100%; max-width: 1180px; }
 .container { position: relative; z-index: 1; }
 
 /* ── Cabecera ───────────────────────────────────────────────── */
@@ -311,7 +311,7 @@ details > summary:focus-visible { outline: 2px solid var(--acc); outline-offset:
 .desglose { font-size: 0.74rem; color: var(--faint); margin-top: 0.35rem; line-height: 1.4; }
 
 .url-chip {
-  display: inline-flex; align-items: center; gap: 0.5rem;
+  display: inline-block;
   max-width: 100%;
   font-size: 0.82rem;
   color: var(--muted);
@@ -351,7 +351,7 @@ details > summary:focus-visible { outline: 2px solid var(--acc); outline-offset:
 .implementaciones { display: grid; gap: 10px; }
 .impl {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
   border: 1px solid var(--border-soft);
@@ -371,7 +371,7 @@ details > summary:focus-visible { outline: 2px solid var(--acc); outline-offset:
 .impl-titulo { color: var(--text); font-size: 0.98rem; }
 .impl-paso { color: var(--muted); font-size: 0.87rem; margin-top: 0.2rem; }
 .impl-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.5rem; }
-.impl-lado { text-align: right; font-size: 0.72rem; color: var(--faint); white-space: nowrap; }
+.impl-lado { text-align: right; font-size: 0.72rem; color: var(--faint); white-space: normal; overflow-wrap: anywhere; min-width: 0; }
 
 .etiqueta {
   display: inline-block;
@@ -399,7 +399,7 @@ details > summary:focus-visible { outline: 2px solid var(--acc); outline-offset:
 }
 .mejora-cab { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .mejora-titulo { color: var(--text); font-size: 0.95rem; }
-.mejora-delta { color: var(--acc); font-size: 0.78rem; white-space: nowrap; }
+.mejora-delta { color: var(--acc); font-size: 0.78rem; white-space: normal; }
 .mejora-evidencia { color: var(--faint); font-size: 0.8rem; margin-top: 0.25rem; }
 
 .precedente {
@@ -604,7 +604,8 @@ details > summary:focus-visible { outline: 2px solid var(--acc); outline-offset:
   .history-col { flex-basis: 320px; width: 320px; }
 }
 @media (max-width: 900px) {
-  .main-layout { flex-direction: column; }
+  .main-layout { flex-direction: column; align-items: stretch; }
+  .main-col { width: 100%; max-width: 100%; }
   .history-col {
     flex: none; width: 100%; position: static; max-height: none;
     border-radius: var(--radius-sm); order: 2;

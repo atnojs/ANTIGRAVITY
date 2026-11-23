@@ -61,6 +61,10 @@ function recortar($valor, int $max = 300): string {
 
 $action = strtolower(trim((string)($_GET['action'] ?? $_POST['action'] ?? 'health')));
 
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
+    respond(405, ['success' => false, 'error' => 'Método no permitido.']);
+}
+
 if ($action === 'health') {
     respond(200, [
         'success' => true,
@@ -72,10 +76,6 @@ if ($action === 'health') {
 
 if ($action !== 'meta') {
     respond(404, ['success' => false, 'error' => 'Acción no disponible.']);
-}
-
-if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
-    respond(405, ['success' => false, 'error' => 'Método no permitido.']);
 }
 
 $tipo = strtolower(trim((string)($_GET['tipo'] ?? '')));

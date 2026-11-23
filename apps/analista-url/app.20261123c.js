@@ -43,7 +43,7 @@ const PRECEDENTES = [
     titulo: 'Tutorial de flujo de trabajo · se quedó en el índice de skills',
     tipo: 'video',
     veredicto: 'parcial',
-    texto: 'Se creó skills/INDEX.md (27 fichas, ~360 KB que ya no hay que leer enteros). El panel que proponía el vídeo ya existía en Hermes: portarlo habría sido duplicar. El transcript sí se consiguió, por la API interna con cliente ANDROID, tras 15 llamadas.',
+    texto: 'Se creó skills/INDEX.md (el índice de las fichas: ~360 KB que ya no hay que leer enteros). El panel que proponía el vídeo ya existía en Hermes: portarlo habría sido duplicar. El transcript sí se consiguió, por la API interna con cliente ANDROID, tras 15 llamadas.',
     claves: ['skill', 'index', 'panel', 'flujo', 'hermes']
   },
   {
@@ -88,7 +88,7 @@ const PRECEDENTES = [
     tipo: 'video',
     veredicto: 'si',
     texto: 'Se creó un perfil DSH aparte, coarena, en read-only y sin danger-full-access, y se comprobó con --dump-config. El cliente WEB de YouTube devolvió UNPLAYABLE: sólo dio el título. 51 llamadas de herramienta en total.',
-    claves: ['modelo', 'gratis', 'api', 'proveedor', 'perfil', 'harness']
+    claves: ['coarena', 'modelo', 'gratis', 'api', 'proveedor', 'perfil', 'harness']
   },
   {
     id: 'openbot',
@@ -165,10 +165,10 @@ const APROVECHAMIENTOS = [
     id: 'ficha-skill',
     titulo: 'Convertirlo en ficha de skill reutilizable',
     superficie: 'skill',
-    paso: 'Escribir skills/SKILL_<tema>.md con el procedimiento exacto y el criterio de parada, y añadirlo a skills/INDEX.md para no tener que leer los 360 KB.',
+    paso: 'Escribir skills/SKILL_<tema>.md con el procedimiento exacto y el criterio de parada, y añadirlo a skills/INDEX.md para no tener que leer todas las fichas (~360 KB).',
     impacto: 'alto', esfuerzo: '2-3 h',
     aplica: (c) => c.sig.has('automatizacion') || c.sig.has('agente') || c.intencion.id === 'implementar',
-    porQue: 'El harness ya tiene 28 fichas: lo que se repite dos veces, va a ficha.'
+    porQue: 'El harness ya tiene su catálogo de fichas: lo que se repite dos veces, va a ficha.'
   },
   {
     id: 'perfil-aislado',
@@ -290,7 +290,7 @@ const MEJORAS = [
     id: 'precedentes',
     titulo: 'Memoria de precedentes entre sesiones',
     delta: 'evita repetir investigaciones de cincuenta llamadas',
-    evidencia: 'OpenBot se evaluó dos veces (22 y 23 de noviembre) y se intentó instalar Tailscale para un caso que terminó descartado. Sin memoria, la segunda sesión empieza de cero.',
+    evidencia: 'OpenBot: 51 llamadas de herramienta en una sola sesión para acabar en «no», y el intento de Tailscale dejó un UAC elevado que la sesión no podía cerrar. Sin memoria de ese descarte, la siguiente evaluación empieza de cero.',
     aplica: () => true
   },
   {
@@ -328,6 +328,8 @@ const MEJORAS = [
 function parsearUrl(texto) {
   const limpio = String(texto || '').trim();
   if (!limpio) return { error: 'Escribe una URL.' };
+  const esquema = limpio.match(/^([a-z][a-z0-9+.-]*):\/\//i);
+  if (esquema && !/^https?$/i.test(esquema[1])) return { error: 'Sólo se pueden analizar enlaces http o https.' };
   const conEsquema = /^https?:\/\//i.test(limpio) ? limpio : 'https://' + limpio;
   let u;
   try { u = new URL(conEsquema); } catch { return { error: 'Esa URL no se puede leer. Revisa que no falte nada.' }; }
@@ -363,7 +365,7 @@ function parsearUrl(texto) {
     platforma = host.split('.').slice(-2).join('.');
   } else if (/\.pdf$/i.test(u.pathname)) {
     tipo = 'pdf';
-  } else if (/(docs?|documentation|manual|guia|guide|readme)\./i.test(host) || /\/(docs?|documentation|manual|guia|guide)\//i.test(u.pathname)) {
+  } else if (/(docs?|documentation|manual|guia|guide|readme)\./i.test(host) || /\/(docs?|documentation|manual|guia|guide)(\/|$)/i.test(u.pathname)) {
     tipo = 'docs';
   } else if (/(tienda|shop|store|amazon|aliexpress|pccomponentes)/i.test(host)) {
     tipo = 'tienda';
@@ -475,6 +477,15 @@ async function metadatos(info, aviso) {
   const meta = { titulo: '', autor: '', licencia: '', estrellas: '', actualizado: '', fuente: 'no consultado' };
   const sinProxy = location.protocol === 'file:';
 
+  if (info.tipo === 'video' && info.platforma !== 'YouTube') {
+    meta.fuente = 'nada: por ahora sólo se leen metadatos de YouTube y de GitHub';
+    return meta;
+  }
+  if (info.tipo === 'repo' && info.platforma !== 'GitHub') {
+    meta.fuente = 'nada: por ahora sólo se leen metadatos de YouTube y de GitHub';
+    return meta;
+  }
+
   const contar = (m, fuente) => {
     if (!m) return false;
     meta.titulo = m.titulo || '';
@@ -529,9 +540,9 @@ async function metadatos(info, aviso) {
       return meta;
     }
 
-    meta.fuente = 'nada: esa página no se puede leer desde el navegador';
+    meta.fuente = 'nada: esta página no se puede leer desde el navegador';
   } catch (e) {
-    meta.fuente = 'sin respuesta (' + e.message + ')';
+    meta.fuente = 'sin respuesta del servidor (' + e.message + ')';
   }
   return meta;
 }
@@ -584,7 +595,7 @@ function construirDatos(info, meta, sig, texto, precedentes) {
   const anadir = (clave, valor, tono) => filas.push({ clave, valor, tono: tono || '' });
   const t = texto || '';
 
-  anadir('Fuente', info.platforma + ' · ' + info.host);
+  anadir('Fuente', info.platforma === info.host ? info.host : info.platforma + ' · ' + info.host);
   anadir('Tipo de enlace', {
     video: 'Vídeo', repo: 'Repositorio', codigo: 'Código en un repositorio', docs: 'Documentación',
     pdf: 'PDF', tienda: 'Tienda', web: 'Página web'
@@ -648,6 +659,7 @@ function construirPlan(ctx) {
     .slice(0, esRuido ? 1 : 4);
   if (!esRuido && plan.length < 2) plan.push(APROVECHAMIENTOS.find((a) => a.id === 'verificador'));
   if (esRuido) plan.push(APROVECHAMIENTOS.find((a) => a.id === 'descartar'));
+  if (plan.length < 2) plan.push(APROVECHAMIENTOS.find((a) => a.id === 'verificador'));
   if (!plan.length) plan.push(APROVECHAMIENTOS.find((a) => a.id === 'verificador'));
   return plan.filter(Boolean);
 }
@@ -755,6 +767,17 @@ function acortar(s, n) {
   return t.length > n ? t.slice(0, n - 1) + '…' : t;
 }
 
+function lineaMeta(fuente) {
+  const f = String(fuente || '');
+  if (f.startsWith('nada:')) {
+    return 'Metadatos: ' + f.slice(5).trim() + '. Si pegas el texto de la página, el análisis se afina.';
+  }
+  if (f.startsWith('sin respuesta')) {
+    return 'Metadatos: ' + f + '. Se ha analizado la URL sin ellos.';
+  }
+  return 'Metadatos leídos con ' + f + '.';
+}
+
 function renderizar(ctx) {
   const r = document.getElementById('resultado');
   const partes = [];
@@ -791,7 +814,7 @@ function renderizar(ctx) {
             <p class="dato-valor ${esc(d.tono)}">${esc(d.valor)}</p>
           </div>`).join('')}
       </div>
-      <p class="ayuda">Metadatos leídos con ${esc(ctx.meta.fuente)}. Lo que falta es porque el navegador no puede leerlo: si pegas el texto, se afina.</p>
+      <p class="ayuda">${esc(lineaMeta(ctx.meta.fuente))}</p>
     </section>`);
 
   if (ctx.plan.length) {
@@ -1139,6 +1162,8 @@ function arrancar() {
 
     boton.disabled = true;
     etiquetaBoton.textContent = 'Analizando...';
+    const panelResultado = document.getElementById('resultado');
+    panelResultado.setAttribute('aria-busy', 'true');
     mostrarOverlay(true);
     aviso('Leyendo el enlace...');
 
@@ -1152,6 +1177,7 @@ function arrancar() {
       error.hidden = false;
     } finally {
       mostrarOverlay(false);
+      panelResultado.setAttribute('aria-busy', 'false');
       boton.disabled = false;
       etiquetaBoton.textContent = 'Analizar';
     }
