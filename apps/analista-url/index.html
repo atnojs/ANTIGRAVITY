@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="app-version" content="20261123" />
+  <title>Analista de URL · Harness</title>
+  <meta name="description" content="Pega una URL y obtén qué se puede implementar en el harness, qué mejoraría y los datos que hay que tener en cuenta." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="app.20261123.css?v=20261123" />
+  <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
+</head>
+<body>
+  <div class="main-layout">
+    <main class="container main-col">
+      <header class="app-header">
+        <h1 class="app-title">Analista de URL</h1>
+        <p class="app-subtitle">Pega el enlace que te ha llamado la atención. Te devuelvo <strong>qué hacer con él</strong>: qué se puede implementar en el harness, qué mejoraría y qué datos hay que mirar antes de tocar nada.</p>
+      </header>
+
+      <form id="analizar-form" class="panel" novalidate>
+        <div class="campo">
+          <label for="url-input">URL a examinar</label>
+          <div class="url-row">
+            <input id="url-input" name="url" type="url" inputmode="url" autocomplete="url" spellcheck="false"
+                   placeholder="https://www.youtube.com/watch?v=…  ·  https://github.com/…  ·  https://…" required
+                   aria-describedby="url-help" />
+            <button id="analizar-btn" class="btn-primary" type="submit">
+              <span id="analizar-btn-label">Analizar</span>
+            </button>
+          </div>
+          <p id="url-help" class="ayuda">Acepta vídeos, repos, documentación, tiendas, PDFs y páginas de producto.</p>
+        </div>
+
+        <fieldset class="campo campo-intencion">
+          <legend>¿Qué quieres de esta URL?</legend>
+          <p class="ayuda" style="margin-bottom:.6rem">Si no lo eliges, lo deduzco del enlace y te digo por qué.</p>
+          <div id="intent-group" class="intent-group" role="group" aria-label="Intención del análisis">
+            <button type="button" class="intent-chip active" data-intent="auto" aria-pressed="true">Deducir</button>
+            <button type="button" class="intent-chip" data-intent="implementar" aria-pressed="false">Implementar en el flujo</button>
+            <button type="button" class="intent-chip" data-intent="modelo" aria-pressed="false">Modelo o proveedor</button>
+            <button type="button" class="intent-chip" data-intent="replicar" aria-pressed="false">Replicar la app</button>
+            <button type="button" class="intent-chip" data-intent="instalar" aria-pressed="false">¿Puedo instalarlo?</button>
+            <button type="button" class="intent-chip" data-intent="interes" aria-pressed="false">¿Nos interesa?</button>
+          </div>
+        </fieldset>
+
+        <details class="campo" id="contexto-wrap">
+          <summary>Pegar la transcripción o el texto de la página <span class="opcional">(opcional, sube mucho la precisión)</span></summary>
+          <label for="contexto-input" class="sr-only">Transcripción o texto de la página</label>
+          <textarea id="contexto-input" rows="7" spellcheck="false"
+                    placeholder="Pega aquí los subtítulos, el texto del artículo o la descripción del producto. Sin esto analizo la URL, el título y el autor; con esto detecto herramientas, modelos, precios, comandos y requisitos reales."></textarea>
+          <p id="contexto-info" class="ayuda">0 caracteres · 0 señales detectadas</p>
+        </details>
+
+        <div id="form-error" class="alerta alerta-error" role="alert" hidden></div>
+      </form>
+
+      <section id="vacio" class="panel vacio">
+        <h2 class="section-title">Cómo se usa</h2>
+        <ol class="pasos">
+          <li>Pega la URL. Si es un vídeo, añade los subtítulos en el campo opcional: es la diferencia entre un informe de verdad y una corazonada.</li>
+          <li>Lee el <strong>veredicto</strong> y los <strong>datos a tener en cuenta</strong>: coste, licencia, requisitos, riesgo y caducidad.</li>
+          <li>Quédate con las tarjetas de <strong>qué se puede implementar</strong>: cada una dice en qué superficie del harness encaja y cuánto cuesta.</li>
+          <li>Copia el <strong>encargo para DSH</strong> del final y pégamelo en una sesión: ahí se ejecuta de verdad.</li>
+        </ol>
+        <p class="ayuda">Prueba con: <button type="button" class="ejemplo" data-url="https://www.youtube.com/watch?v=_fgcYcSA7oo">un tutorial de YouTube</button> · <button type="button" class="ejemplo" data-url="https://github.com/nightly-labs/openbot">un repo de GitHub</button> · <button type="button" class="ejemplo" data-url="https://coarena.ai/docs">la doc de un proveedor</button></p>
+      </section>
+
+      <section id="resultado" class="resultado" aria-live="polite" aria-busy="false" hidden></section>
+
+      <footer class="app-footer">
+        <span>Analista de URL · v 2026-11-23</span>
+        <span class="punto">·</span>
+        <span>Sin claves, sin coste por consulta: el análisis es local, los metadatos se leen en público.</span>
+      </footer>
+    </main>
+
+    <aside class="history-col" id="history-section" aria-label="Historial de análisis">
+      <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+      <div id="history-grid"></div>
+      <div id="history-empty" class="history-empty">Aquí se irán guardando los análisis. Sirven para no repetir la misma investigación dos veces.</div>
+      <button id="history-clear-btn" class="btn-danger-outline" style="display:none;" type="button">Limpiar</button>
+    </aside>
+  </div>
+
+  <div id="overlay" class="loading-overlay hidden" role="status" aria-live="polite" aria-busy="true">
+    <div class="spinner-triple" aria-hidden="true">
+      <span class="ring ring-1"></span>
+      <span class="ring ring-2"></span>
+      <span class="ring ring-3"></span>
+    </div>
+    <p class="loading-text">Analizando la URL...</p>
+    <div class="overlay-panel">
+      <div class="overlay-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso del análisis"><span></span></div>
+      <p id="overlay-status" class="overlay-status">Leyendo el enlace...</p>
+    </div>
+  </div>
+
+  <script src="history-manager.js"></script>
+  <script src="app.20261123.js" defer></script>
+</body>
+</html>
