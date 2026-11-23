@@ -104,29 +104,43 @@ function reproductor(string $id, array $cliente): array {
     return [$json, $estado, ''];
 }
 
+/** Pistas de subtítulos leyendo el HTML público del vídeo (la vía que menos depende del cliente). */
+function pistasDesdeHtml(string $id): array {
+    [$estado, $html] = pedir('https://www.youtube.com/watch?v=' . $id . '&hl=es&gl=ES', [
+        'Accept: text/html,application/xhtml+xml',
+        'Accept-Language: es-ES,es;q=0.9',
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36',
+    ], 14);
+    if ($estado !== 200 || $html === '') return [];
+    if (!preg_match('/"captionTracks":(\[.*?\])/s', $html, $m)) return [];
+    $pistas = json_decode($m[1], true);
+    return is_array($pistas) ? $pistas : [];
+}
+
 /** Texto de los subtítulos de un vídeo de YouTube, por la API interna. */
 function leerVideo(string $id): array {
-    // YouTube cambia el comportamiento según el cliente y según la IP de salida:
-    // se prueban varios hasta dar con uno que devuelva las pistas de subtítulos.
+    // Primero el HTML público; si no hay pistas, se prueban clientes de la API interna.
+    $pistas = pistasDesdeHtml($id);
+
     $clientes = [
-        ['clientName' => 'ANDROID', 'clientVersion' => '20.10.38', 'androidSdkVersion' => 30, 'hl' => 'es', 'gl' => 'ES'],
-        ['clientName' => 'IOS', 'clientVersion' => '20.10.1', 'deviceModel' => 'iPhone16,2', 'hl' => 'es', 'gl' => 'ES'],
+        ['clientName' => 'ANDROID', 'clientVersion' => '21.03.36', 'androidSdkVersion' => 34, 'hl' => 'es', 'gl' => 'ES'],
+        ['clientName' => 'IOS', 'clientVersion' => '21.02.1', 'deviceModel' => 'iPhone16,2', 'hl' => 'es', 'gl' => 'ES'],
+        ['clientName' => 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', 'clientVersion' => '2.0', 'hl' => 'es', 'gl' => 'ES'],
         ['clientName' => 'MWEB', 'clientVersion' => '2.20241120.01.00', 'hl' => 'es', 'gl' => 'ES'],
         ['clientName' => 'WEB', 'clientVersion' => '2.20241120.00.00', 'hl' => 'es', 'gl' => 'ES'],
-        ['clientName' => 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', 'clientVersion' => '2.0', 'hl' => 'es', 'gl' => 'ES'],
     ];
 
-    $pistas = [];
-    $ultimoMotivo = '';
-    foreach ($clientes as $cliente) {
-        [$json, , $motivo] = reproductor($id, $cliente);
-        if (!is_array($json)) { $ultimoMotivo = $motivo; continue; }
-        $estadoRepro = (string)($json['playabilityStatus']['status'] ?? '');
-        $razon = (string)($json['playabilityStatus']['reason'] ?? '');
-        $pistas = $json['captions']['playerCaptionsTracklistRenderer']['captionTracks'] ?? [];
-        if (is_array($pistas) && $pistas !== []) break;
-        $pistas = [];
-        $ultimoMotivo = trim($estadoRepro . ' ' . $razon) ?: 'sin pistas de subtítulos';
+    $ultimoMotivo = $pistas === [] ? 'ni el HTML ni la API dieron pistas' : '';
+    if ($pistas === []) {
+        foreach ($clientes as $cliente) {
+            [$json, , $motivo] = reproductor($id, $cliente);
+            if (!is_array($json)) { $ultimoMotivo = $motivo; continue; }
+            $estadoRepro = (string)($json['playabilityStatus']['status'] ?? '');
+            $razon = (string)($json['playabilityStatus']['reason'] ?? '');
+            $posibles = $json['captions']['playerCaptionsTracklistRenderer']['captionTracks'] ?? [];
+            if (is_array($posibles) && $posibles !== []) { $pistas = $posibles; break; }
+            $ultimoMotivo = trim($estadoRepro . ' ' . $razon) ?: 'sin pistas de subtítulos';
+        }
     }
 
     if (!is_array($pistas) || $pistas === []) {
