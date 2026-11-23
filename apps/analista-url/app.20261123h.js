@@ -457,7 +457,7 @@ function deducirIntencion(info, sig, texto, forzada) {
     if (sig.has('agente') || sig.has('automatizacion')) subir('implementar', 2, 'Habla de agentes o de automatizar.');
   }
   if (info.tipo === 'repo' || info.tipo === 'codigo') {
-    subir('replicar', 6, 'Es un repositorio: lo natural es mirar si se copia o se usa.');
+    subir('replicar', 8, 'Es un repositorio: lo natural es mirar si se copia o se usa.');
     subir('implementar', 2, 'Un repo también puede entrar como herramienta.');
   }
   if (info.tipo === 'docs') subir('modelo', 2, 'Es documentación: suele venir de un proveedor del que quieres datos.');
@@ -466,7 +466,7 @@ function deducirIntencion(info, sig, texto, forzada) {
   if (sig.has('gratis') && sig.has('modelo_ia')) subir('modelo', 2, 'El gancho es «gratis» con modelo: la pregunta real es el límite.');
   if (sig.has('instalador')) subir('instalar', 5, 'Hay instaladores de por medio.');
   if (sig.has('hardware')) subir('instalar', 2, 'Toca hardware o dispositivos.');
-  if (sig.has('open_source')) subir('replicar', 2, 'Es código abierto.');
+  if (sig.has('open_source')) subir('replicar', 3, 'Es código abierto.');
   if (sig.has('pago')) subir('interes', 1, 'Hay precio: toca decidir si compensa.');
   if (texto && texto.length > 400) subir('implementar', 1, 'Hay texto: hay materia para decidir.');
 
