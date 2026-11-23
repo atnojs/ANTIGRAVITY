@@ -117,6 +117,42 @@ function pistasDesdeHtml(string $id): array {
     return is_array($pistas) ? $pistas : [];
 }
 
+/** Plan B: servicios públicos que sí pueden leer el vídeo. Devuelve texto o ''. */
+function textoDeServicio(string $id): string {
+    // 1) youtubetranscript.com devuelve XML con <text>
+    [$estado, $xml] = pedir('https://youtubetranscript.com/?server_vid2=' . rawurlencode($id), [
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36',
+        'Accept: text/xml,application/xml,text/plain',
+    ], 14);
+    if ($estado === 200 && stripos($xml, '<transcript') !== false) {
+        if (preg_match_all('#<text[^>]*>(.*?)</text>#is', $xml, $m)) {
+            $texto = html_entity_decode(implode(' ', $m[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if (trim($texto) !== '') return $texto;
+        }
+    }
+
+    // 2) tactiq.io devuelve JSON con captions[]
+    $cuerpo = json_encode(['videoUrl' => 'https://www.youtube.com/watch?v=' . $id, 'langCode' => 'es']);
+    [$estado2, $json] = pedir('https://tactiq-apps-prod.tactiq.io/transcript', [
+        'Content-Type: application/json',
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36',
+    ], 14, $cuerpo);
+    if ($estado2 === 200) {
+        $j = json_decode($json, true);
+        if (is_array($j) && isset($j['captions']) && is_array($j['captions'])) {
+            $partes = [];
+            foreach ($j['captions'] as $c) {
+                $t = (string)($c['text'] ?? '');
+                if ($t !== '') $partes[] = $t;
+            }
+            $texto = trim(implode(' ', $partes));
+            if ($texto !== '') return $texto;
+        }
+    }
+
+    return '';
+}
+
 /** Texto de los subtítulos de un vídeo de YouTube, por la API interna. */
 function leerVideo(string $id): array {
     // Primero el HTML público; si no hay pistas, se prueban clientes de la API interna.
@@ -144,7 +180,19 @@ function leerVideo(string $id): array {
     }
 
     if (!is_array($pistas) || $pistas === []) {
-        return ['ok' => false, 'error' => 'YouTube no dio subtítulos desde el servidor (' . $ultimoMotivo . '). Pega el texto a mano si lo necesitas.'];
+        $alternativa = textoDeServicio($id);
+        if ($alternativa !== '') {
+            $texto = limpiarTexto($alternativa, MAX_VIDEO_CHARS);
+            return [
+                'ok' => true,
+                'lectura' => [
+                    'fuente' => 'transcripción de un servicio público (YouTube bloquea la lectura desde este servidor)',
+                    'chars' => mb_strlen($texto, 'UTF-8'),
+                    'texto' => $texto,
+                ],
+            ];
+        }
+        return ['ok' => false, 'error' => 'YouTube bloquea la lectura de subtítulos desde este servidor (' . $ultimoMotivo . '). Pega el texto a mano y sigo.'];
     }
 
     $elegida = null;
