@@ -3130,3 +3130,12 @@ las cabeceras.
 - **Integración:** regla 3 en el `AGENTS.md` del workspace (leer la URL antes de opinar, y no volcar el texto en la respuesta), `SKILL_LEER_URL` y fila en `skills/INDEX.md`.
 - **Verificación:** verificador independiente en tres rondas (**8,5 → 9,0 → PASS 9,3** sobre `c195ad77`). Las dos primeras destaparon un cuelgue de 10 minutos y un SSRF por alias DNS. Suite `probar.mjs`: **24/24** con red y **11/11** con `--sin-red` (que ya no sale a internet).
 - **Commits:** `75cb0c82` (herramienta + skill + índice), `96ee0b17` (timeout, DNS, códigos y tests), `c195ad77` (caché sin bypass y `--sin-red` offline).
+
+### 2026-11-23 (noche, 3) — analista-url: sin leer no hay veredicto · skill plan-anotable
+- **Encargo:** dos huecos detectados al analizar un vídeo-resumen de repos: (1) la app daba veredicto sin haber leído la fuente; (2) los planes largos se corrigen a ciegas en el chat.
+- **Qué hay:** pps/analista-url v 20261123n: si no hay texto (ni lectura ni pegado), el bloque pasa a «Sin veredicto» con banda de aviso, marcador «—» y siguiente paso «leer la fuente»; el número se conserva solo para historial e informe. skills/SKILL_plan-anotable.md + ecursos/plan-anotable/plantilla.html: publica el plan como página local, se marca por sección (apruebo/cambiar/rechazo), persiste en localStorage y devuelve el feedback en markdown con lo no revisado como no aprobado.
+- **Regla nueva:** SKILL_LEER_URL §0 — la lectura se hace en el equipo con leer-url.mjs; lo que lea la app desde el hosting es un extra, nunca la fuente de verdad.
+- **Medido:** el vídeo que motivó el cambio, 40.547 caracteres leídos en una llamada local; proxy.php?action=read desde el hosting falla con ese mismo vídeo (IP de datacenter).
+- **Despliegue:** el CDN sirvió un 404 cacheado del JS nuevo; se añadió ?v= al <script> (ca4f8189). Sin eso el cambio no llegaba al usuario.
+- **Verificación:** verificador independiente ronda 1 = REWORK **91,8** (A6 8,6): numeración duplicada en la plantilla, comando start "" inválido en PowerShell 5.1 y conteo del índice (31 fichas, 30 filas). Corregidos en este commit.
+- **Commits:** `ca56f6e1` (app), `169f95ec` (skill + índice), `ca4f8189` (cache-bust) y el de estas correcciones.

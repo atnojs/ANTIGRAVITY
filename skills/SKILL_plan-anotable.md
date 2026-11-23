@@ -28,18 +28,18 @@ No se usa para: planes de dos líneas (se contestan en el chat), ni para revisar
      "titulo": "Plan: <título>",
      "fecha": "AAAA-MM-DD",
      "contexto": "una línea con el objetivo y el alcance",
-     "secciones": [{ "titulo": "1. <paso>", "texto": "<qué se hace y cómo se comprueba>" }],
+     "secciones": [{ "titulo": "<paso>", "texto": "<qué se hace y cómo se comprueba>" }],
      "riesgos": ["<lo que puede salir mal>"],
      "preguntas": ["<decisión que depende del usuario>"]
    }
    ```
 
-   El orden de `secciones` es el que se ve. Los `texto` admiten markdown mínimo (`**negrita**`, `-` listas, `código`).
+   El orden de `secciones` es el que se ve. Los `texto` admiten markdown mínimo (`**negrita**`, `-` listas, `código`). **No pongas el número en `titulo`**: la plantilla ya numera sola («1. Primera decisión»).
 
 2. **Abrirla y pasarla.** Copiar la plantilla a `tools/evidencias/<AAAA-MM-DD>-plan-<tema>/plan.html` (así queda la evidencia con fecha) y abrirla:
 
    ```powershell
-   start "" "\\Principal\e\ANTIGRAVITY\tools\evidencias\2026-11-23-plan-tema\plan.html"
+   Invoke-Item "\\Principal\e\ANTIGRAVITY\tools\evidencias\2026-11-23-plan-tema\plan.html"
    ```
 
    En la respuesta al usuario, una línea: qué se está revisando y el enlace al archivo. **El plan no se vuelca en el chat.**

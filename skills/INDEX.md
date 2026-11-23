@@ -31,6 +31,7 @@
 |---|---|---|
 | `SKILL_EDITAR_cirujano-codigo-produccion.md` | Corregir, ampliar o refactorizar código existente sin destruir lo previo (8 pasos + gate). | 8,8 |
 | `SKILL_RECREAR_DESDE_REFERENCIA.md` | Recrear una interfaz desde captura/Dribbble/mockup, mapeada a tokens de marca. No copia al píxel. | 4,6 |
+| `SKILL_REPLICAR_APP.md` | Clonar una app o web real desde su URL (o un `.exe`/`.dll`): inventario de pantallas, flujos y endpoints con REA, y réplica con paridad medida. | 8,7 |
 
 ## 4. Verificar y entregar
 
@@ -94,4 +95,4 @@
 
 - Al crear, renombrar o borrar un `SKILL_*.md`, **actualizar este índice en el mismo commit**.
 - Origen de cada fila: el campo `description` del frontmatter y los `##` del fichero. Si cambia la descripción, cambia la fila.
-- Conteo vigente (2026-11-23): **29** `SKILL_*.md` en `skills/`. El `AGENTS.md` de la raíz, creado en esa fecha, no lleva lista propia: apunta a este índice. La lista del `AGENTS.md` del workspace de DeepSeek Harness (fuera de este repo) va por detrás; esto manda.
+- Conteo vigente (2026-11-23): **31** `SKILL_*.md` en `skills/`, y las 31 tienen fila en este índice. El `AGENTS.md` de la raíz no lleva lista propia: apunta aquí. La lista del `AGENTS.md` del workspace de DeepSeek Harness (fuera de este repo) es una copia de cortesía: si discrepa, manda este índice.
