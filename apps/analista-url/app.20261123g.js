@@ -457,7 +457,7 @@ function deducirIntencion(info, sig, texto, forzada) {
     if (sig.has('agente') || sig.has('automatizacion')) subir('implementar', 2, 'Habla de agentes o de automatizar.');
   }
   if (info.tipo === 'repo' || info.tipo === 'codigo') {
-    subir('replicar', 3, 'Es un repositorio: lo natural es mirar si se copia o se usa.');
+    subir('replicar', 6, 'Es un repositorio: lo natural es mirar si se copia o se usa.');
     subir('implementar', 2, 'Un repo también puede entrar como herramienta.');
   }
   if (info.tipo === 'docs') subir('modelo', 2, 'Es documentación: suele venir de un proveedor del que quieres datos.');
