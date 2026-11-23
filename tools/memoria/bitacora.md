@@ -2812,7 +2812,7 @@ las cabeceras.
   imágenes por generación**, límites de referencias/formato/resolución y verificación en
   producción), a petición expresa de Antonio.
 
-## 2026-10-28 (noche) — Fidelidad prompt/imágenes: Flow literal y OpenAI con todas las imágenes (4712b74, de9e9f05)
+## 2026-10-28 (noche) — Fidelidad prompt/imágenes: Flow literal y OpenAI con todas las imágenes (4712b74, de9e9f05)
 
 - **Síntoma del usuario:** «los modelos no siguen ni el prompt ni las imágenes dadas».
 - **Causa 1 — la app envolvía el prompt de Flow.** `buildFlowPrompt` añadía «Combine the N
@@ -3036,7 +3036,7 @@ las cabeceras.
 ## 2026-11-02 (noche) — UIS·Hoola 3.2.0: zonas numeradas de máscara con prompt propio
 - **Encargo:** «al marcar una zona con la máscara se enumere… cada máscara su propio campo para su prompt».
 - **Cambios:** mask.zones (id + prompt) y stroke.zone; numeración automática (trazo pegado = misma zona, separado = nueva), «＋ Zona» arma el siguiente trazo; panel «Zonas de la máscara» con un campo por zona; la goma no tiene zona y borra en todas; «Rellenar las N zonas» recorre zona a zona con su máscara y su prompt y compone una sola vista previa; «Limpiar» borra también las zonas; máximo 12. Versión 3.2.0-hoola y UIS_VERSION.
-- **Publicación:** commits 716d5999 (app, skill y verificación) y 1cd39f85 (versión del servidor) en main; producción sirve pp.20261102o.js y hoola.20261102.css.
+- **Publicación:** commits 716d5999 (app, skill y verificación) y 1cd39f85 (versión del servidor) en main; producción sirve app.20261102o.js y hoola.20261102.css.
 - **Verificación:** Chrome real por CDP (sin tiempo virtual), 11/11 comprobaciones en PASS (4 zonas numeradas, prompts por zona, máscara distinta por zona, trazo pegado a la zona 1, trazo separado = zona nueva, goma por zona, borrado de zona, «＋ Zona», serialización). Producción: build v3.2.0, 3 zonas numeradas y «Rellenar las 3 zonas», 0 errores JS. **Pendiente:** una generación real con proveedor de 2+ zonas (no se gastó crédito).
 - **Commit:** ver git log -1 -- tools/memoria/bitacora.md.
 ## 2026-11-06 — Bingo Los Gambusinos 2026: 8 folios Word/PDF y regla de entrega en `D:\Descargas`
@@ -3131,11 +3131,12 @@ las cabeceras.
 - **Verificación:** verificador independiente en tres rondas (**8,5 → 9,0 → PASS 9,3** sobre `c195ad77`). Las dos primeras destaparon un cuelgue de 10 minutos y un SSRF por alias DNS. Suite `probar.mjs`: **24/24** con red y **11/11** con `--sin-red` (que ya no sale a internet).
 - **Commits:** `75cb0c82` (herramienta + skill + índice), `96ee0b17` (timeout, DNS, códigos y tests), `c195ad77` (caché sin bypass y `--sin-red` offline).
 
+
 ### 2026-11-23 (noche, 3) — analista-url: sin leer no hay veredicto · skill plan-anotable
-- **Encargo:** dos huecos detectados al analizar un vídeo-resumen de repos: (1) la app daba veredicto sin haber leído la fuente; (2) los planes largos se corrigen a ciegas en el chat.
-- **Qué hay:** pps/analista-url v 20261123n: si no hay texto (ni lectura ni pegado), el bloque pasa a «Sin veredicto» con banda de aviso, marcador «—» y siguiente paso «leer la fuente»; el número se conserva solo para historial e informe. skills/SKILL_plan-anotable.md + ecursos/plan-anotable/plantilla.html: publica el plan como página local, se marca por sección (apruebo/cambiar/rechazo), persiste en localStorage y devuelve el feedback en markdown con lo no revisado como no aprobado.
-- **Regla nueva:** SKILL_LEER_URL §0 — la lectura se hace en el equipo con leer-url.mjs; lo que lea la app desde el hosting es un extra, nunca la fuente de verdad.
-- **Medido:** el vídeo que motivó el cambio, 40.547 caracteres leídos en una llamada local; proxy.php?action=read desde el hosting falla con ese mismo vídeo (IP de datacenter).
-- **Despliegue:** el CDN sirvió un 404 cacheado del JS nuevo; se añadió ?v= al <script> (ca4f8189). Sin eso el cambio no llegaba al usuario.
-- **Verificación:** verificador independiente ronda 1 = REWORK **91,8** (A6 8,6): numeración duplicada en la plantilla, comando start "" inválido en PowerShell 5.1 y conteo del índice (31 fichas, 30 filas). Corregidos en este commit.
-- **Commits:** `ca56f6e1` (app), `169f95ec` (skill + índice), `ca4f8189` (cache-bust) y el de estas correcciones.
+- **Encargo:** dos huecos detectados al analizar un vídeo-resumen de repos (`https://www.youtube.com/watch?v=9oPorHRKsoY`): (1) la app daba veredicto sin haber leído la fuente; (2) los planes largos se corrigen a ciegas en el chat.
+- **Qué hay:** `apps/analista-url` v `20261123n`: sin texto (ni lectura ni pegado) el bloque pasa a «Sin veredicto» con banda de aviso, marcador «—» y siguiente paso «leer la fuente»; el número se conserva solo para historial e informe. `skills/SKILL_plan-anotable.md` + `recursos/plan-anotable/plantilla.html`: publica el plan como página local, se marca por sección (apruebo/cambiar/rechazo), persiste en `localStorage` y devuelve el feedback en markdown, con lo no revisado como no aprobado.
+- **Regla nueva:** `SKILL_LEER_URL` §0 — la lectura se hace en el equipo con `leer-url.mjs`; lo que lea la app desde el hosting es un extra, nunca la fuente de verdad.
+- **Medido:** ese vídeo, 40.547 caracteres leídos en una llamada local con `leer-url.mjs`; `proxy.php?action=leer` desde el hosting no lo consigue (IP de datacenter).
+- **Despliegue:** el CDN sirvió un 404 cacheado del JS nuevo; se añadió `?v=` al `<script>` (`ca4f8189`). Sin eso el cambio no llegaba al usuario.
+- **Verificación:** verificador independiente, dos rondas: ronda 1 REWORK **91,8** (A6 8,6: numeración duplicada, comando `start` inválido en PowerShell 5.1, conteo del índice); ronda 2 REWORK **92,9** (A6 8,8, todo en esta bitácora). Corregido aquí.
+- **Commits:** `ca56f6e1` (app), `169f95ec` (skill + índice), `ca4f8189` (cache-bust) y el de las correcciones.
