@@ -142,12 +142,12 @@ const SENALES = [
   { id: 'video', nombre: 'Vídeo', re: /(youtube\.com|youtu\.be|vimeo\.com|tiktok\.com)/i },
   { id: 'repo', nombre: 'Repositorio', re: /(github\.com|gitlab\.com|codeberg\.org|bitbucket\.org)/i },
   { id: 'open_source', nombre: 'Código abierto', re: /\b(open[\s-]?source|c[oó]digo abierto|github|licencia mit|apache 2|gpl)\b/i },
-  { id: 'modelo_ia', nombre: 'Modelo de IA', re: /\b(llm|modelo|gpt|claude|gemini|qwen|deepseek|llama|mistral|flux|nano banana|veo|sora)\b/i },
-  { id: 'api', nombre: 'API', re: /\b(api|endpoint|sdk|rest|token|clave api|api key|base url)\b/i },
+  { id: 'modelo_ia', nombre: 'Modelo de IA', re: /\b(llm|modelo|gpt|claude|gemini|qwen|deepseek|llama|mistral|flux|nano banana|veo|sora)\b/i, reEstricta: /\b(llm|gpt|claude|gemini|qwen|deepseek|llama|mistral|flux|nano banana|veo|sora|modelo de lenguaje)\b/i },
+  { id: 'api', nombre: 'API', re: /\b(api|endpoint|sdk|rest|token|clave api|api key|base url)\b/i, reEstricta: /(\bapi\b|\bendpoint\b|base url|\bsdk\b|api key|clave api)/i },
   { id: 'mcp', nombre: 'MCP', re: /\b(mcp|model context protocol|servidor mcp)\b/i },
-  { id: 'gratis', nombre: 'Gratis', re: /\b(gratis|free|sin coste|sin tarjeta|ilimitad[oa]|open source)\b/i },
-  { id: 'pago', nombre: 'De pago', re: /(\$|€|usd|eur|precio|suscripci[oó]n|de pago|plan pro|facturaci[oó]n)/i },
-  { id: 'instalador', nombre: 'Instalador', re: /(\.exe|\.msi|\.iso|\.dmg|instalador|installer|wine|setup\.exe)/i },
+  { id: 'gratis', nombre: 'Gratis', re: /\b(gratis|free|sin coste|sin tarjeta|ilimitad[oa]|open source)\b/i, reEstricta: /(gratis|gratuit[oa]|free tier|\bplan free\b|sin coste|sin tarjeta|prueba gratis)/i },
+  { id: 'pago', nombre: 'De pago', re: /(\$\s?\d|€\s?\d|\bprecio\b|suscripci[oó]n|\bde pago\b|plan pro|facturaci[oó]n|\b(usd|eur)\b)/i },
+  { id: 'instalador', nombre: 'Instalador', re: /(\.exe|\.msi|\.iso|\.dmg|instalador|installer|wine|setup\.exe)/i, reEstricta: /(\.exe\b|\.msi\b|\.dmg\b|\.iso\b|instalador|installer|\bdescargar\b|\bdownload\b)/i },
   { id: 'automatizacion', nombre: 'Automatización', re: /\b(n8n|zapier|make\.com|cron|automatizar|automatizaci[oó]n|workflow|flujo de trabajo)\b/i },
   { id: 'agente', nombre: 'Agente', re: /\b(agente|agent|subagente|multiagente|orquestador)\b/i },
   { id: 'seguridad', nombre: 'Seguridad', re: /\b(seguridad|privacidad|malware|riesgo|vulnerab|filtraci[oó]n|tracking)\b/i },
@@ -400,12 +400,17 @@ function parsearUrl(texto) {
 
 /* ───────────────────────── 7. Señales del texto ───────────────────────── */
 
-function detectarSenales(info, texto) {
+function detectarSenales(info, texto, estricto) {
+  // Con texto leído de una fuente larga se usan los patrones estrictos: «wine» en un
+  // artículo sobre España no es un instalador, ni «the free encyclopedia» es un plan gratis.
   const heno = [info.url || '', info.path || '', texto || ''].join(' \n ');
+  const soloEnlace = [info.url || '', info.path || ''].join(' \n ');
   const encontradas = new Set();
   const detalle = [];
   for (const s of SENALES) {
-    if (s.re.test(heno)) {
+    const patron = (estricto && s.reEstricta) ? s.reEstricta : s.re;
+    // El enlace siempre se mira con el patrón normal: ahí «wine» o «free» sí son pistas.
+    if (patron.test(heno) || s.re.test(soloEnlace)) {
       encontradas.add(s.id);
       detalle.push(s);
     }
@@ -812,7 +817,7 @@ async function analizar(urlCruda, intencionForzada, texto, aviso) {
   }
 
   avisar('Clasificando el enlace...');
-  const senales = detectarSenales(info, textoEfectivo);
+  const senales = detectarSenales(info, textoEfectivo, !textoPegado && lectura.ok);
   // El texto leído de una fuente larga (un README, una doc) menciona precios, hardware y
   // seguridad de pasada. Esas tres señales sólo cuentan si vienen del enlace o de un texto
   // pegado a mano: si no, un README de 60 KB convierte cualquier repo en «tiene coste».

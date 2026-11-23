@@ -411,7 +411,7 @@ if ($action === 'health') {
     respond(200, [
         'success' => true,
         'app' => 'analista-url',
-        'version' => '20261123e',
+        'version' => '20261123j',
         'acciones' => ['health', 'meta', 'leer'],
     ]);
 }
