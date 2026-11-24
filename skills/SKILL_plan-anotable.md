@@ -48,9 +48,10 @@ No se usa para: planes de dos líneas (se contestan en el chat), ni para revisar
 
 2. **Abrirla y pasarla.** La vía rápida ya la deja escrita en `tools/evidencias/<AAAA-MM-DD>-plan-<tema>/plan.html` (o donde diga `-Salida`), así que **no copies nada encima**: si la sobrescribes con la plantilla vacía, pierdes el plan. Solo si vas a mano, copia ahí la plantilla ya rellenada. Abrirla:
 
-   **Con Chrome por ruta, no con doble clic.** En este PC `.html` está asociado a
-   Internet Explorer, así que el doble clic o `Invoke-Item` abren una ventana que no
-   pinta la página (o ninguna). Abrir siempre así:
+   **Con Chrome por ruta, no por asociación.** Abrir el archivo con el manejador del
+   sistema depende de `assoc` y de `UserChoice`, y no siempre acaba en Chrome: en esta
+   máquina `assoc .html` apunta a `iexplore.exe`, que no pinta la página. Abrir siempre
+   con la ruta del navegador:
 
    ```powershell
    Start-Process "C:\Program Files\Google\Chrome\Application\chrome.exe" `

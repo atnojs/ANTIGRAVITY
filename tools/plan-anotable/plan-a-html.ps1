@@ -49,6 +49,7 @@
 .NOTES
     PowerShell 5.1. Sin `??` ni operador ternario.
     Exit 0 = HTML escrito y el JSON releido cuadra. Exit 1 = error o desajuste.
+    Exit 2 = HTML escrito pero no se pudo abrir el navegador (solo con -Abrir).
 #>
 [CmdletBinding()]
 param(
@@ -67,9 +68,21 @@ $dryRun = [bool]$WhatIf
 
 function Convert-Slug {
     param([string]$Texto)
+    # Sin literales acentuados en el codigo: se quitan los diacriticos descomponiendo
+    # en Unicode (FormD) y tirando las marcas. Asi el script da igual con BOM que sin
+    # el, y bajo cualquier code page (un .ps1 UTF-8 sin BOM se lee como ANSI en PS 5.1
+    # y un mapa de acentos escrito a mano nunca casaria).
     $s = $Texto.ToLowerInvariant()
-    $mapa = @{ 'á' = 'a'; 'é' = 'e'; 'í' = 'i'; 'ó' = 'o'; 'ú' = 'u'; 'ü' = 'u'; 'ñ' = 'n'; 'ç' = 'c'; 'à' = 'a'; 'è' = 'e' }
-    foreach ($k in $mapa.Keys) { $s = $s.Replace($k, $mapa[$k]) }
+    $descompuesto = $s.Normalize([System.Text.NormalizationForm]::FormD)
+    $limpio = New-Object System.Text.StringBuilder
+    foreach ($ch in $descompuesto.ToCharArray()) {
+        $categoria = [System.Globalization.CharUnicodeInfo]::GetUnicodeCategory($ch)
+        if ($categoria -ne [System.Globalization.UnicodeCategory]::NonSpacingMark) {
+            [void]$limpio.Append($ch)
+        }
+    }
+    $s = $limpio.ToString()
+    $s = $s.Replace([char]0x00E7, 'c')   # cedilla: no se descompone, se sustituye por codigo
     $s = [regex]::Replace($s, '[^a-z0-9]+', '-').Trim('-')
     if ($s.Length -gt 40) { $s = $s.Substring(0, 40).Trim('-') }
     if ([string]::IsNullOrWhiteSpace($s)) { return 'plan' }
@@ -282,6 +295,7 @@ if ($Abrir) {
     if ($null -eq $nav) {
         Write-Output 'AVISO: no encuentro Chrome ni Edge en las rutas habituales.'
         Write-Output ("Abre el fichero a mano: {0}" -f $Salida)
+        exit 2
     } else {
         try {
             Start-Process -FilePath $nav -ArgumentList ('"{0}"' -f $Salida) | Out-Null
@@ -289,6 +303,7 @@ if ($Abrir) {
         } catch {
             Write-Output ("AVISO: no se pudo lanzar {0}: {1}" -f $nav, $_.Exception.Message)
             Write-Output ("Abre el fichero a mano: {0}" -f $Salida)
+            exit 2
         }
     }
 } else {
