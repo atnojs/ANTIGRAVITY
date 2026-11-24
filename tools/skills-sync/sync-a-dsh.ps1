@@ -9,6 +9,10 @@
     Copia:
       - skills\SKILL_*.md            (solo el nivel superior; INDEX.md y demas NO se copian)
       - skills\recursos\**           (recursivo)
+      - skills\history.php y skills\history-manager.js
+                                     (soporte tecnico de history-server; se espejan como
+                                      skills/<fichero> para que la ruta relativa de la skill
+                                      resuelva igual desde el repo y desde el catalogo)
 
     No borra nada que no haya puesto el mismo: guarda un estado en
     %USERPROFILE%\.dsh\skills-sync.state.json (FUERA del directorio de skills, para no
@@ -110,9 +114,30 @@ if (Test-Path -LiteralPath $recursosSrc) {
     Write-Output ("AVISO: el origen no tiene carpeta recursos\ ({0})" -f $recursosSrc)
 }
 
-$srcSkillCount = $srcSkills.Count
-$srcRecCount   = @($srcItems | Where-Object { $_.Rel.StartsWith('recursos/') }).Count
-Write-Output ("Origen: {0} SKILL_*.md + {1} ficheros en recursos\ = {2} elementos" -f $srcSkillCount, $srcRecCount, $srcItems.Count)
+# ---------- 2-ter. soporte tecnico de skills ----------
+# history-server apunta a "skills/history.php" y "skills/history-manager.js". Esos ficheros
+# viven en la raiz de la biblioteca, asi que se espejan bajo "skills/" en el destino: la ruta
+# relativa de la skill resuelve igual desde la raiz del repo que desde el catalogo de DSH.
+$soporte = @(
+    [pscustomobject]@{ Rel = 'skills/history.php';        Src = (Join-Path $Source 'history.php') },
+    [pscustomobject]@{ Rel = 'skills/history-manager.js'; Src = (Join-Path $Source 'history-manager.js') }
+)
+foreach ($s in $soporte) {
+    if (-not (Test-Path -LiteralPath $s.Src)) {
+        Write-Output ("AVISO: falta en el origen el soporte {0}" -f $s.Src)
+        continue
+    }
+    $srcItems += [pscustomobject]@{
+        Rel  = $s.Rel
+        Src  = $s.Src
+        Hash = (Get-Sha256 -Path $s.Src)
+    }
+}
+
+$srcSkillCount   = $srcSkills.Count
+$srcRecCount     = @($srcItems | Where-Object { $_.Rel.StartsWith('recursos/') }).Count
+$srcSupportCount = @($srcItems | Where-Object { $_.Rel.StartsWith('skills/') }).Count
+Write-Output ("Origen: {0} SKILL_*.md + {1} ficheros en recursos\ + {2} de soporte = {3} elementos" -f $srcSkillCount, $srcRecCount, $srcSupportCount, $srcItems.Count)
 
 # ---------- 3. estado previo (que pusimos nosotros la ultima vez) ----------
 $state = $null
@@ -251,14 +276,17 @@ $sha.Dispose()
 # Se cuenta SOLO lo que el script rastrea. Un SKILL_*.md ajeno que viva en el destino
 # (otra herramienta, una skill escrita a mano) no es un fallo: se respeta y se informa.
 $problems = @()
-$dstSkillCount = 0
-$dstRecCount   = 0
+$dstSkillCount   = 0
+$dstRecCount     = 0
+$dstSupportCount = 0
 $foreign       = @()
 if (Test-Path -LiteralPath $Destination) {
     foreach ($it in $srcItems) {
         $dst = Join-Path $Destination ($it.Rel.Replace('/', '\'))
         if (Test-Path -LiteralPath $dst) {
-            if ($it.Rel.StartsWith('recursos/')) { $dstRecCount++ } else { $dstSkillCount++ }
+            if ($it.Rel.StartsWith('recursos/')) { $dstRecCount++ }
+            elseif ($it.Rel.StartsWith('skills/')) { $dstSupportCount++ }
+            else { $dstSkillCount++ }
         }
     }
     foreach ($f in (Get-ChildItem -LiteralPath $Destination -File -Force -ErrorAction SilentlyContinue)) {
@@ -271,6 +299,9 @@ if (-not $dryRun) {
     }
     if ($dstRecCount -ne $srcRecCount) {
         $problems += ("conteo recursos rastreados destino={0} origen={1}" -f $dstRecCount, $srcRecCount)
+    }
+    if ($dstSupportCount -ne $srcSupportCount) {
+        $problems += ("conteo soporte rastreado destino={0} origen={1}" -f $dstSupportCount, $srcSupportCount)
     }
     foreach ($it in $srcItems) {
         $dst = Join-Path $Destination ($it.Rel.Replace('/', '\'))
@@ -286,11 +317,11 @@ Write-Output ("Destino        : {0}" -f $Destination)
 Write-Output ("Copiados       : {0}" -f $copied)
 Write-Output ("Sin cambios    : {0}" -f $unchanged.Count)
 Write-Output ("Eliminados     : {0}" -f $deleted)
-Write-Output ("Origen total   : {0} SKILL_*.md + {1} recursos = {2}" -f $srcSkillCount, $srcRecCount, $srcItems.Count)
+Write-Output ("Origen total   : {0} SKILL_*.md + {1} recursos + {2} soporte = {3}" -f $srcSkillCount, $srcRecCount, $srcSupportCount, $srcItems.Count)
 if ($dryRun) {
     Write-Output 'Destino total  : (no comprobado en -WhatIf)'
 } else {
-    Write-Output ("Destino total  : {0} SKILL_*.md + {1} recursos (rastreados por este script)" -f $dstSkillCount, $dstRecCount)
+    Write-Output ("Destino total  : {0} SKILL_*.md + {1} recursos + {2} soporte (rastreados por este script)" -f $dstSkillCount, $dstRecCount, $dstSupportCount)
     if ($foreign.Count -gt 0) {
         Write-Output ("Ajenos         : {0} en el destino, respetados sin tocar ({1})" -f $foreign.Count, ($foreign -join ', '))
     }

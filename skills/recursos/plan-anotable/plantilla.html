@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan anotable</title>
+<style>
+  :root {
+    --fondo: #f5f6f8;
+    --superficie: #ffffff;
+    --texto: #16181d;
+    --suave: #5b6270;
+    --borde: #d8dce3;
+    --acento: #1f5eff;
+    --ok: #0f7b3f;
+    --cambio: #a86b00;
+    --no: #b3261e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--fondo);
+    color: var(--texto);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 24px 16px 132px;
+    overflow-x: hidden;
+  }
+  .hoja { max-width: 820px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  .eyebrow {
+    margin: 0 0 6px; font-size: 12px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--suave); font-weight: 600;
+  }
+  h1 { font-size: 26px; line-height: 1.25; margin: 0 0 8px; overflow-wrap: anywhere; }
+  .meta { margin: 0 0 6px; font-size: 13px; color: var(--suave); }
+  .contexto { margin: 0; color: var(--suave); overflow-wrap: anywhere; }
+  .error {
+    background: #fdecea; border: 1px solid #f3b7b1; color: var(--no);
+    padding: 12px 14px; border-radius: 10px; margin: 0 0 16px;
+    white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .seccion {
+    background: var(--superficie); border: 1px solid var(--borde);
+    border-radius: 12px; padding: 16px; margin: 0 0 12px;
+  }
+  .seccion h2 { font-size: 17px; margin: 0 0 8px; overflow-wrap: anywhere; }
+  .texto { color: var(--texto); overflow-wrap: anywhere; }
+  .texto p { margin: 0 0 8px; }
+  .texto p:last-child { margin-bottom: 0; }
+  .texto ul { margin: 0 0 8px; padding-left: 20px; }
+  .texto code {
+    background: #eef0f4; border-radius: 4px; padding: 1px 5px;
+    font: 13px/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
+    overflow-wrap: anywhere;
+  }
+  .votos { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+  .votos button {
+    font: inherit; font-size: 14px; cursor: pointer;
+    background: #fff; color: var(--texto);
+    border: 1px solid var(--borde); border-radius: 999px;
+    padding: 7px 13px;
+  }
+  .votos button:hover { border-color: var(--suave); }
+  .votos button[aria-pressed="true"][data-v="APROBADA"] { background: #e7f5ec; border-color: var(--ok); color: var(--ok); font-weight: 600; }
+  .votos button[aria-pressed="true"][data-v="CAMBIOS"] { background: #fdf3e2; border-color: var(--cambio); color: var(--cambio); font-weight: 600; }
+  .votos button[aria-pressed="true"][data-v="RECHAZADA"] { background: #fdecea; border-color: var(--no); color: var(--no); font-weight: 600; }
+  .comentario { display: block; margin: 12px 0 0; }
+  .comentario span { display: block; font-size: 13px; color: var(--suave); margin-bottom: 6px; }
+  .comentario textarea {
+    width: 100%; font: inherit; font-size: 14px; color: var(--texto);
+    background: #fbfbfc; border: 1px solid var(--borde); border-radius: 8px;
+    padding: 9px 10px; resize: vertical; min-height: 46px;
+  }
+  .comentario textarea:focus { outline: 2px solid var(--acento); outline-offset: 1px; }
+  .marca { margin: 10px 0 0; font-size: 12px; font-weight: 600; color: var(--suave); }
+  .marca[data-estado="APROBADA"] { color: var(--ok); }
+  .marca[data-estado="CAMBIOS"] { color: var(--cambio); }
+  .marca[data-estado="RECHAZADA"] { color: var(--no); }
+  h2.grupo { font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--suave); margin: 24px 0 8px; }
+  ul.lista { margin: 0 0 12px; padding-left: 20px; overflow-wrap: anywhere; }
+  footer {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: rgba(255,255,255,.97); border-top: 1px solid var(--borde);
+    padding: 12px 16px; box-shadow: 0 -6px 18px rgba(0,0,0,.05);
+  }
+  .pie { max-width: 820px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+  .estado { font-size: 14px; color: var(--suave); }
+  .acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+  .acciones button {
+    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    background: var(--acento); color: #fff; border: 1px solid var(--acento);
+    border-radius: 8px; padding: 9px 14px;
+  }
+  .acciones button.sec { background: #fff; color: var(--acento); }
+  .aviso { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--ok); }
+  .aviso.mal { color: var(--no); }
+  #autotest { white-space: pre-wrap; font: 13px/1.4 ui-monospace, Consolas, monospace; }
+  @media print {
+    body { padding: 0; background: #fff; }
+    footer, .votos, .comentario { display: none; }
+    .seccion { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="hoja">
+  <header>
+    <p class="eyebrow">Plan anotable — decide sección por sección</p>
+    <h1 id="titulo">Cargando…</h1>
+    <p class="meta" id="meta"></p>
+    <p class="contexto" id="contexto"></p>
+  </header>
+
+  <div class="error" id="error" hidden></div>
+
+  <main id="secciones"></main>
+
+  <section id="riesgos-wrap" hidden>
+    <h2 class="grupo">Riesgos</h2>
+    <ul class="lista" id="riesgos"></ul>
+  </section>
+
+  <section id="preguntas-wrap" hidden>
+    <h2 class="grupo">Decisiones que dependen de ti</h2>
+    <ul class="lista" id="preguntas"></ul>
+  </section>
+</div>
+
+<footer>
+  <div class="pie">
+    <div class="estado" id="estado">Estado: sin secciones</div>
+    <div class="acciones">
+      <button type="button" id="copiar">Copiar feedback</button>
+      <button type="button" id="descargar" class="sec">Descargar .md</button>
+    </div>
+    <p class="aviso" id="aviso" hidden></p>
+  </div>
+</footer>
+
+<pre id="autotest" hidden></pre>
+
+<script type="application/json" id="datos">
+{
+  "titulo": "Plan: ejemplo de revisión",
+  "fecha": "2026-11-24",
+  "contexto": "Sustituye este bloque por el plan real: objetivo y alcance en una línea.",
+  "secciones": [
+    { "titulo": "Primera decisión", "texto": "Qué se hace y **cómo se comprueba**. Una sección, una decisión." },
+    { "titulo": "Segunda decisión", "texto": "Admite markdown mínimo: **negrita**, `código` y listas.\n- primer punto\n- segundo punto" }
+  ],
+  "riesgos": ["Lo que puede salir mal y cómo se detecta."],
+  "preguntas": ["La decisión que depende de ti."]
+}
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  var DECISIONES = ['APROBADA', 'CAMBIOS', 'RECHAZADA'];
+  var ETIQUETA = { APROBADA: 'Aprobada', CAMBIOS: 'Con cambios', RECHAZADA: 'Rechazada' };
+
+  function $(id) { return document.getElementById(id); }
+
+  function escapar(texto) {
+    return String(texto == null ? '' : texto)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // Markdown mínimo sobre texto YA escapado: **negrita**, `código`, listas "- ".
+  function mdAHtml(texto) {
+    var lineas = String(texto == null ? '' : texto).split(/\r?\n/);
+    var salida = [];
+    var enLista = false;
+    function cerrar() { if (enLista) { salida.push('</ul>'); enLista = false; } }
+    for (var i = 0; i < lineas.length; i++) {
+      var linea = lineas[i];
+      if (/^\s*-\s+/.test(linea)) {
+        if (!enLista) { salida.push('<ul>'); enLista = true; }
+        salida.push('<li>' + enLinea(linea.replace(/^\s*-\s+/, '')) + '</li>');
+        continue;
+      }
+      cerrar();
+      if (linea.trim() === '') { continue; }
+      salida.push('<p>' + enLinea(linea) + '</p>');
+    }
+    cerrar();
+    return salida.join('');
+  }
+
+  function enLinea(texto) {
+    return escapar(texto)
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>');
+  }
+
+  function claveAlmacen(datos) {
+    return 'plan-anotable:v1:' + String(datos.fecha || '') + '::' + String(datos.titulo || '');
+  }
+
+  function contar(estado, total) {
+    var n = { APROBADA: 0, CAMBIOS: 0, RECHAZADA: 0 };
+    for (var i = 0; i < total; i++) {
+      var v = estado.v[i];
+      if (v && n.hasOwnProperty(v)) { n[v]++; }
+    }
+    return { aprobadas: n.APROBADA, cambios: n.CAMBIOS, rechazadas: n.RECHAZADA, sinRevisar: total - n.APROBADA - n.CAMBIOS - n.RECHAZADA };
+  }
+
+  function seccionesSinComentario(est, total) {
+    var faltan = [];
+    for (var i = 0; i < total; i++) {
+      var comentario = String(est.c[i] == null ? '' : est.c[i]).trim();
+      if (est.v[i] === 'CAMBIOS' && comentario === '') { faltan.push(i); }
+    }
+    return faltan;
+  }
+
+  function textoEstado(estado, total) {
+    var c = contar(estado, total);
+    return 'Estado: ' + c.aprobadas + ' aprobadas \u00b7 ' + c.cambios + ' con cambios \u00b7 ' +
+      c.rechazadas + ' rechazadas \u00b7 ' + c.sinRevisar + ' sin revisar';
+  }
+
+  // Contrato de salida: markdown que el agente aplica tal cual.
+  function construirFeedback(datos, estado) {
+    var secciones = datos.secciones || [];
+    var partes = [];
+    partes.push('## Feedback del plan \u2014 ' + String(datos.titulo || '') + ' (' + String(datos.fecha || '') + ')');
+    partes.push(textoEstado(estado, secciones.length));
+    for (var i = 0; i < secciones.length; i++) {
+      var v = estado.v[i] || null;
+      var titulo = String(secciones[i].titulo || '');
+      partes.push('');
+      partes.push('### ' + (i + 1) + '. ' + titulo);
+      if (v === 'CAMBIOS') {
+        partes.push('CON CAMBIOS');
+        var comentario = String(estado.c[i] == null ? '' : estado.c[i]).replace(/\r?\n/g, '\n');
+        var lineas = comentario.split('\n');
+        for (var j = 0; j < lineas.length; j++) { partes.push('> ' + lineas[j]); }
+      } else if (v) {
+        partes.push(ETIQUETA[v].toUpperCase());
+      } else {
+        partes.push('SIN REVISAR');
+      }
+    }
+    return partes.join('\n');
+  }
+
+  function slug(texto) {
+    return String(texto || 'plan').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'plan';
+  }
+
+  // ---------- estado de la página ----------
+  var datos = null;
+  var estado = { v: {}, c: {} };
+  var guardable = true;
+
+  function cargarGuardado(clave) {
+    try {
+      var bruto = window.localStorage.getItem(clave);
+      if (!bruto) { return; }
+      var guardado = JSON.parse(bruto);
+      if (guardado && guardado.v) { estado.v = guardado.v; }
+      if (guardado && guardado.c) { estado.c = guardado.c; }
+    } catch (e) {
+      guardable = false;
+    }
+  }
+
+  function guardar(clave) {
+    if (!guardable) { return; }
+    try {
+      window.localStorage.setItem(clave, JSON.stringify(estado));
+    } catch (e) {
+      guardable = false;
+      avisar('No se puede guardar en este navegador: copia el feedback antes de cerrar.', true);
+    }
+  }
+
+  function avisar(mensaje, esError) {
+    var caja = $('aviso');
+    caja.textContent = mensaje;
+    caja.hidden = false;
+    caja.className = esError ? 'aviso mal' : 'aviso';
+  }
+
+  // ---------- pintado ----------
+  function pintar() {
+    var secciones = datos.secciones || [];
+    $('titulo').textContent = String(datos.titulo || 'Plan');
+    $('meta').textContent = datos.fecha ? 'Fecha: ' + String(datos.fecha) : '';
+    $('contexto').textContent = String(datos.contexto || '');
+
+    var cont = $('secciones');
+    cont.textContent = '';
+    for (var i = 0; i < secciones.length; i++) {
+      cont.appendChild(tarjeta(i, secciones[i]));
+    }
+
+    var riesgos = datos.riesgos || [];
+    $('riesgos-wrap').hidden = riesgos.length === 0;
+    $('riesgos').textContent = '';
+    for (var r = 0; r < riesgos.length; r++) {
+      var li = document.createElement('li');
+      li.textContent = String(riesgos[r]);
+      $('riesgos').appendChild(li);
+    }
+
+    var preguntas = datos.preguntas || [];
+    $('preguntas-wrap').hidden = preguntas.length === 0;
+    $('preguntas').textContent = '';
+    for (var q = 0; q < preguntas.length; q++) {
+      var lq = document.createElement('li');
+      lq.textContent = String(preguntas[q]);
+      $('preguntas').appendChild(lq);
+    }
+
+    refrescar();
+  }
+
+  function tarjeta(indice, seccion) {
+    var art = document.createElement('article');
+    art.className = 'seccion';
+
+    var h = document.createElement('h2');
+    h.textContent = (indice + 1) + '. ' + String(seccion.titulo || '');
+    art.appendChild(h);
+
+    var cuerpo = document.createElement('div');
+    cuerpo.className = 'texto';
+    cuerpo.innerHTML = mdAHtml(seccion.texto == null ? '' : seccion.texto);
+    art.appendChild(cuerpo);
+
+    var votos = document.createElement('div');
+    votos.className = 'votos';
+    votos.setAttribute('role', 'group');
+    votos.setAttribute('aria-label', 'Decisión para la sección ' + (indice + 1));
+    for (var d = 0; d < DECISIONES.length; d++) {
+      votos.appendChild(botonDecision(indice, DECISIONES[d]));
+    }
+    art.appendChild(votos);
+
+    var etiqueta = document.createElement('label');
+    etiqueta.className = 'comentario';
+    var span = document.createElement('span');
+    span.textContent = 'Comentario (obligatorio si pides cambios)';
+    etiqueta.appendChild(span);
+    var area = document.createElement('textarea');
+    area.rows = 2;
+    area.setAttribute('data-comentario', String(indice));
+    area.placeholder = 'Qué cambia y cómo debería quedar\u2026';
+    area.value = estado.c[indice] == null ? '' : String(estado.c[indice]);
+    area.addEventListener('input', function () {
+      estado.c[indice] = area.value;
+      guardar(claveAlmacen(datos));
+    });
+    etiqueta.appendChild(area);
+    art.appendChild(etiqueta);
+
+    var marca = document.createElement('p');
+    marca.className = 'marca';
+    marca.setAttribute('data-marca', String(indice));
+    art.appendChild(marca);
+
+    return art;
+  }
+
+  function botonDecision(indice, decision) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('data-v', decision);
+    b.setAttribute('data-i', String(indice));
+    b.textContent = ETIQUETA[decision];
+    b.setAttribute('aria-pressed', estado.v[indice] === decision ? 'true' : 'false');
+    b.addEventListener('click', function () {
+      estado.v[indice] = estado.v[indice] === decision ? null : decision;
+      pintarMarcas();
+      refrescar();
+      guardar(claveAlmacen(datos));
+    });
+    return b;
+  }
+
+  function pintarMarcas() {
+    var botones = document.querySelectorAll('.votos button');
+    for (var i = 0; i < botones.length; i++) {
+      var b = botones[i];
+      var idx = b.getAttribute('data-i');
+      b.setAttribute('aria-pressed', estado.v[idx] === b.getAttribute('data-v') ? 'true' : 'false');
+    }
+    var marcas = document.querySelectorAll('[data-marca]');
+    for (var m = 0; m < marcas.length; m++) {
+      var el = marcas[m];
+      var k = el.getAttribute('data-marca');
+      var v = estado.v[k] || null;
+      el.textContent = v ? ETIQUETA[v] : 'Sin revisar';
+      if (v) { el.setAttribute('data-estado', v); } else { el.removeAttribute('data-estado'); }
+    }
+  }
+
+  function refrescar() {
+    var total = (datos.secciones || []).length;
+    $('estado').textContent = textoEstado(estado, total);
+    pintarMarcas();
+  }
+
+  // ---------- salida ----------
+  function feedback() { return construirFeedback(datos, estado); }
+
+  // «Con cambios» sin comentario no es una decisión aplicable: se bloquea la salida.
+  function bloqueoSalida() {
+    var total = (datos.secciones || []).length;
+    var faltan = seccionesSinComentario(estado, total);
+    if (faltan.length === 0) { return false; }
+    var numeros = [];
+    for (var i = 0; i < faltan.length; i++) { numeros.push(faltan[i] + 1); }
+    avisar('Falta el comentario en la sección ' + numeros.join(', ') +
+      ': «Con cambios» exige decir qué cambia. No se ha copiado nada.', true);
+    return true;
+  }
+
+  function copiar() {
+    if (bloqueoSalida()) { return; }
+    var texto = feedback();
+    function listo() { avisar('Copiado. Pégalo en el chat del agente.'); }
+    function fallo() { avisar('El navegador no deja copiar: usa «Descargar .md».', true); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(listo, function () { copiaClasica(texto, listo, fallo); });
+    } else {
+      copiaClasica(texto, listo, fallo);
+    }
+  }
+
+  function copiaClasica(texto, listo, fallo) {
+    try {
+      var area = document.createElement('textarea');
+      area.value = texto;
+      area.setAttribute('readonly', 'readonly');
+      area.style.position = 'fixed';
+      area.style.left = '-9999px';
+      document.body.appendChild(area);
+      area.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(area);
+      if (ok) { listo(); } else { fallo(); }
+    } catch (e) {
+      fallo();
+    }
+  }
+
+  function descargar() {
+    if (bloqueoSalida()) { return; }
+    try {
+      var nombre = String(datos.fecha || '') + '-feedback-' + slug(datos.titulo) + '.md';
+      var blob = new Blob([feedback()], { type: 'text/markdown;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = nombre;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      avisar('Descargado: ' + nombre);
+    } catch (e) {
+      avisar('No se pudo descargar: ' + e.message, true);
+    }
+  }
+
+  // ---------- autocomprobación (?autotest) ----------
+  function autotest() {
+    var res = [];
+    var muestra = {
+      titulo: 'Plan: <b>prueba</b> & "comillas"',
+      fecha: '2026-01-02',
+      contexto: 'contexto',
+      secciones: [
+        { titulo: 'Uno', texto: 'texto **fuerte** y `codigo`\n- a\n- b' },
+        { titulo: 'Dos', texto: 'otro' },
+        { titulo: 'Tres', texto: 'otro mas' }
+      ]
+    };
+    var st = { v: { 0: 'APROBADA', 1: 'CAMBIOS', 2: null }, c: { 1: 'línea 1\nlínea 2' } };
+    var esperado = [
+      '## Feedback del plan \u2014 Plan: <b>prueba</b> & "comillas" (2026-01-02)',
+      'Estado: 1 aprobadas \u00b7 1 con cambios \u00b7 0 rechazadas \u00b7 1 sin revisar',
+      '',
+      '### 1. Uno',
+      'APROBADA',
+      '',
+      '### 2. Dos',
+      'CON CAMBIOS',
+      '> línea 1',
+      '> línea 2',
+      '',
+      '### 3. Tres',
+      'SIN REVISAR'
+    ].join('\n');
+    var obtenido = construirFeedback(muestra, st);
+    res.push((obtenido === esperado ? 'PASS' : 'FAIL') + ' export-contract');
+
+    var inyectado = mdAHtml('<img src=x onerror=alert(1)> y **ok**');
+    var escapaBien = inyectado.indexOf('&lt;img') !== -1 && inyectado.indexOf('<img') === -1 && inyectado.indexOf('<strong>ok</strong>') !== -1;
+    res.push((escapaBien ? 'PASS' : 'FAIL') + ' escape-html');
+
+    var numerado = mdAHtml('x');
+    res.push((datos && (datos.secciones || []).length > 0 ? 'PASS' : 'FAIL') + ' datos-cargados');
+
+    res.push((textoEstado({ v: {}, c: {} }, 2) === 'Estado: 0 aprobadas \u00b7 0 con cambios \u00b7 0 rechazadas \u00b7 2 sin revisar' ? 'PASS' : 'FAIL') + ' estado-vacio');
+
+    var raiz = document.documentElement;
+    var sinScroll = raiz.scrollWidth <= raiz.clientWidth + 1;
+    res.push((sinScroll ? 'PASS' : 'FAIL') + ' sin-scroll-x (' + raiz.clientWidth + 'x' + raiz.scrollWidth + ')');
+
+    var faltan = seccionesSinComentario({ v: { 0: 'CAMBIOS' }, c: {} }, 2);
+    res.push((faltan.length === 1 && faltan[0] === 0 ? 'PASS' : 'FAIL') + ' exige-comentario');
+    var cubiertos = seccionesSinComentario({ v: { 0: 'CAMBIOS' }, c: { 0: 'texto' } }, 2);
+    res.push((cubiertos.length === 0 ? 'PASS' : 'FAIL') + ' comentario-cuenta');
+
+    var fallos = res.filter(function (r) { return r.indexOf('FAIL') === 0; }).length;
+    var caja = $('autotest');
+    caja.hidden = false;
+    caja.textContent = 'AUTOTEST ' + (fallos === 0 ? 'PASS' : 'FAIL') + ' ' + (res.length - fallos) + '/' + res.length + '\n' + res.join('\n');
+    document.body.setAttribute('data-autotest', fallos === 0 ? 'PASS' : 'FAIL');
+  }
+
+  // ---------- arranque ----------
+  function arrancar() {
+    var error = $('error');
+    try {
+      datos = JSON.parse($('datos').textContent);
+    } catch (e) {
+      error.hidden = false;
+      error.textContent = 'El bloque <script id="datos"> no es JSON válido:\n' + e.message +
+        '\n\nRevisa comas y comillas. Sin datos no se puede revisar el plan.';
+      $('titulo').textContent = 'Plan ilegible';
+      $('estado').textContent = 'Estado: sin secciones';
+      document.body.setAttribute('data-autotest', 'FAIL');
+      return;
+    }
+    if (!datos || !(datos.secciones instanceof Array) || datos.secciones.length === 0) {
+      error.hidden = false;
+      error.textContent = 'El plan no tiene "secciones": añade al menos una decisión al JSON.';
+      document.body.setAttribute('data-autotest', 'FAIL');
+      return;
+    }
+    cargarGuardado(claveAlmacen(datos));
+    pintar();
+    $('copiar').addEventListener('click', copiar);
+    $('descargar').addEventListener('click', descargar);
+    var avisos = [];
+    if (!guardable) { avisos.push('Este navegador no permite guardar: copia el feedback antes de cerrar.'); }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(datos.fecha || ''))) { avisos.push('La fecha no tiene formato AAAA-MM-DD.'); }
+    if (avisos.length > 0) { avisar(avisos.join(' '), true); }
+    if (/[?&]autotest/.test(window.location.search)) { autotest(); }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', arrancar);
+  } else {
+    arrancar();
+  }
+})();
+</script>
+</body>
+</html>
