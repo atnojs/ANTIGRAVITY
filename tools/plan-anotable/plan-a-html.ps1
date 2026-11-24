@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Convierte un plan en markdown en la pagina anotable ya rellena (plan.html).
 
@@ -99,8 +99,15 @@ if (-not (Test-Path -LiteralPath $Plantilla)) {
     Write-Output ("ERROR: no existe la plantilla: {0}" -f $Plantilla)
     exit 1
 }
-if ($Fecha -notmatch '^\d{4}-\d{2}-\d{2}$') {
+if (-not ($Fecha -match '^\d{4}-\d{2}-\d{2}$')) {
     Write-Output ("ERROR: la fecha debe ser AAAA-MM-DD, no '{0}'" -f $Fecha)
+    exit 1
+}
+# Una forma valida no es una fecha real: 2026-13-45 cuadra el patron y no existe.
+try {
+    [void][datetime]::ParseExact($Fecha, 'yyyy-MM-dd', [System.Globalization.CultureInfo]::InvariantCulture)
+} catch {
+    Write-Output ("ERROR: '{0}' no es una fecha real (AAAA-MM-DD)." -f $Fecha)
     exit 1
 }
 
