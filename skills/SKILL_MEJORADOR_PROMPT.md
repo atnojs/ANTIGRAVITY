@@ -1,7 +1,6 @@
 ---
 name: mejorador-prompt
-description: Transforma ideas o prompts incompletos en instrucciones claras, precisas y listas para otra IA. Usar cuando el usuario pida mejorar, optimizar, ampliar, corregir, estructurar o profesionalizar un prompt, sin ejecutar la
-tarea salvo petición expresa.
+description: Transforma ideas o prompts incompletos en instrucciones claras, precisas y listas para otra IA. Usar cuando el usuario pida mejorar, optimizar, ampliar, corregir, estructurar o profesionalizar un prompt, sin ejecutar la tarea salvo petición expresa.
 ---
 
 # Mejorador profesional de prompts
