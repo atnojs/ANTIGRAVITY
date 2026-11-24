@@ -198,6 +198,15 @@
       .replace(/`([^`]+)`/g, '<code>$1</code>');
   }
 
+  // Campos de una sola linea (contexto, riesgos, preguntas): texto plano, sin marcas.
+  function textoLimpio(valor) {
+    return String(valor == null ? '' : valor)
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/^\s*[-*]\s+/, '')
+      .trim();
+  }
+
   function claveAlmacen(datos) {
     return 'plan-anotable:v1:' + String(datos.fecha || '') + '::' + String(datos.titulo || '');
   }
@@ -295,7 +304,7 @@
     var secciones = datos.secciones || [];
     $('titulo').textContent = String(datos.titulo || 'Plan');
     $('meta').textContent = datos.fecha ? 'Fecha: ' + String(datos.fecha) : '';
-    $('contexto').textContent = String(datos.contexto || '');
+    $('contexto').textContent = textoLimpio(datos.contexto);
 
     var cont = $('secciones');
     cont.textContent = '';
@@ -308,7 +317,7 @@
     $('riesgos').textContent = '';
     for (var r = 0; r < riesgos.length; r++) {
       var li = document.createElement('li');
-      li.textContent = String(riesgos[r]);
+      li.textContent = textoLimpio(riesgos[r]);
       $('riesgos').appendChild(li);
     }
 
@@ -317,7 +326,7 @@
     $('preguntas').textContent = '';
     for (var q = 0; q < preguntas.length; q++) {
       var lq = document.createElement('li');
-      lq.textContent = String(preguntas[q]);
+      lq.textContent = textoLimpio(preguntas[q]);
       $('preguntas').appendChild(lq);
     }
 
@@ -522,6 +531,7 @@
     res.push((faltan.length === 1 && faltan[0] === 0 ? 'PASS' : 'FAIL') + ' exige-comentario');
     var cubiertos = seccionesSinComentario({ v: { 0: 'CAMBIOS' }, c: { 0: 'texto' } }, 2);
     res.push((cubiertos.length === 0 ? 'PASS' : 'FAIL') + ' comentario-cuenta');
+    res.push((textoLimpio('**a** y `b`') === 'a y b' ? 'PASS' : 'FAIL') + ' texto-limpio');
 
     var fallos = res.filter(function (r) { return r.indexOf('FAIL') === 0; }).length;
     var caja = $('autotest');

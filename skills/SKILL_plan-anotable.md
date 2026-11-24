@@ -21,7 +21,17 @@ No se usa para: planes de dos líneas (se contestan en el chat), ni para revisar
 
 ## Cómo se usa
 
-1. **Rellenar los datos.** En `recursos/plan-anotable/plantilla.html`, sustituir el bloque `<script type="application/json" id="datos">` por el plan real:
+1. **Rellenar los datos.**
+
+   **Vía rápida (por defecto).** Escribe el plan en markdown y que el generador monte la página:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File \\Principal\e\ANTIGRAVITY\tools\plan-anotable\plan-a-html.ps1 plan.md -Abrir
+   ```
+
+   Traduce `# título` → título, los párrafos previos al primer `##` → contexto, cada `##` → una sección revisable, y `## Riesgos` / `## Preguntas` → sus listas. Genera el JSON con `ConvertTo-Json` y lo **relee para verificar**: aquí no se escribe JSON a mano. Con `-WhatIf` enseña qué secciones saldrían; con `-Salida` se elige destino (por defecto `tools/evidencias/<fecha>-plan-<slug>/plan.html`).
+
+   **A mano (solo si el generador no encaja).** En `recursos/plan-anotable/plantilla.html`, sustituir el bloque `<script type="application/json" id="datos">` por el plan real:
 
    ```json
    {
