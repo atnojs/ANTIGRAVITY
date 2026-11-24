@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Convierte un plan en markdown en la pagina anotable ya rellena (plan.html).
 
@@ -33,7 +33,9 @@
     Raiz del repo ANTIGRAVITY. Por defecto el share.
 
 .PARAMETER Abrir
-    Abre la pagina generada al terminar.
+    Abre la pagina en Chrome o Edge, elegidos explicitamente. No usa la asociacion
+    del sistema para .html: en este PC apunta a Internet Explorer, que no pinta la
+    pagina (y es lo que hacia que "abrir" fallara).
 
 .PARAMETER WhatIf
     Ensenya el plan de ejecucion sin escribir nada.
@@ -72,6 +74,20 @@ function Convert-Slug {
     if ($s.Length -gt 40) { $s = $s.Substring(0, 40).Trim('-') }
     if ([string]::IsNullOrWhiteSpace($s)) { return 'plan' }
     return $s
+}
+
+function Get-Navegador {
+    $candidatos = @(
+        'C:\Program Files\Google\Chrome\Application\chrome.exe',
+        'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
+        (Join-Path $env:LOCALAPPDATA 'Google\Chrome\Application\chrome.exe'),
+        'C:\Program Files\Microsoft\Edge\Application\msedge.exe',
+        'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
+    )
+    foreach ($c in $candidatos) {
+        if (Test-Path -LiteralPath $c) { return $c }
+    }
+    return $null
 }
 
 function Get-Vinetas {
@@ -260,9 +276,24 @@ Write-Output 'RESULTADO: OK. HTML escrito y JSON releido sin desajustes.'
 Write-Output ("Tamanyo: {0} bytes" -f (Get-Item -LiteralPath $Salida).Length)
 
 if ($Abrir) {
-    Invoke-Item $Salida
-    Write-Output 'Abierta en el navegador.'
+    # Nunca Invoke-Item: depende de la asociacion de .html del sistema, que aqui es
+    # Internet Explorer. Se lanza un navegador moderno por ruta explicita.
+    $nav = Get-Navegador
+    if ($null -eq $nav) {
+        Write-Output 'AVISO: no encuentro Chrome ni Edge en las rutas habituales.'
+        Write-Output ("Abre el fichero a mano: {0}" -f $Salida)
+    } else {
+        try {
+            Start-Process -FilePath $nav -ArgumentList ('"{0}"' -f $Salida) | Out-Null
+            Write-Output ("Abierta con {0}" -f (Split-Path -Leaf $nav))
+        } catch {
+            Write-Output ("AVISO: no se pudo lanzar {0}: {1}" -f $nav, $_.Exception.Message)
+            Write-Output ("Abre el fichero a mano: {0}" -f $Salida)
+        }
+    }
 } else {
-    Write-Output ("Siguiente: Invoke-Item `"{0}`"" -f $Salida)
+    Write-Output ("Siguiente: abre el fichero con Chrome (no con doble clic: el doble clic")
+    Write-Output ("           usa la asociacion del sistema y puede caer en Internet Explorer).")
+    Write-Output ("           {0}" -f $Salida)
 }
 exit 0

@@ -48,9 +48,16 @@ No se usa para: planes de dos líneas (se contestan en el chat), ni para revisar
 
 2. **Abrirla y pasarla.** La vía rápida ya la deja escrita en `tools/evidencias/<AAAA-MM-DD>-plan-<tema>/plan.html` (o donde diga `-Salida`), así que **no copies nada encima**: si la sobrescribes con la plantilla vacía, pierdes el plan. Solo si vas a mano, copia ahí la plantilla ya rellenada. Abrirla:
 
+   **Con Chrome por ruta, no con doble clic.** En este PC `.html` está asociado a
+   Internet Explorer, así que el doble clic o `Invoke-Item` abren una ventana que no
+   pinta la página (o ninguna). Abrir siempre así:
+
    ```powershell
-   Invoke-Item "\\Principal\e\ANTIGRAVITY\tools\evidencias\2026-11-23-plan-tema\plan.html"
+   Start-Process "C:\Program Files\Google\Chrome\Application\chrome.exe" `
+     "\\Principal\e\ANTIGRAVITY\tools\evidencias\2026-11-23-plan-tema\plan.html"
    ```
+
+   O más simple: `plan-a-html.ps1 plan.md -Abrir` ya lo lanza así.
 
    En la respuesta al usuario, una línea: qué se está revisando y el enlace al archivo. **El plan no se vuelca en el chat.**
 
