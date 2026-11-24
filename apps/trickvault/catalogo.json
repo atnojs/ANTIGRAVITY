@@ -434,9 +434,9 @@
         {
             "title": "expresiones faciales",
             "description": "",
-            "category": "xl-carteles",
+            "category": "xl-dobleexposicion",
             "tags": [],
-            "codeSnippet": "",
+            "codeSnippet": "ttttttttttttt",
             "imageUrl": "",
             "sourceUrl": "",
             "difficulty": "beginner",
@@ -445,7 +445,7 @@
             "id": "mwv4eujdvpkqd84vs",
             "lote": "2026-11-24",
             "createdAt": 1795550507545,
-            "updatedAt": 1795550507545,
+            "updatedAt": 1795550825307,
             "sortOrder": 44
         }
     ],
@@ -612,7 +612,6 @@
             "reel-cmd-138"
         ],
         "xl-carteles": [
-            "mwv4eujdvpkqd84vs",
             "ig-dcek-594",
             "viral-cmd-020",
             "muzrldq0pyjtdj8fe",
@@ -1694,6 +1693,7 @@
             "cap-cmd-113"
         ],
         "xl-dobleexposicion": [
+            "mwv4eujdvpkqd84vs",
             "ig-dcek-004"
         ],
         "f_mv73ghs02h22sxpzp": [
@@ -2171,5 +2171,5 @@
         "xl-dobleexposicion",
         "f_mvmm88u2iao4ez2zn"
     ],
-    "actualizado": "2026-11-24T20:04:42+00:00"
+    "actualizado": "2026-11-24T20:07:38+00:00"
 }
