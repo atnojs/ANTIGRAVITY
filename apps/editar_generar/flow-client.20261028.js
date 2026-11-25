@@ -252,6 +252,16 @@
         });
     }
 
+    /* Algunos fallos del worker son detalles técnicos de Playwright. Al usuario se
+       le da una frase accionable; el detalle crudo queda en la consola. */
+    function friendlyError(raw) {
+        var text = String(raw || '');
+        if (/TimeoutError|Locator\.wait_for|wait_for/i.test(text)) {
+            return 'Google Flow no abrió el editor en el PC (tiempo de espera agotado). Revisa la sesión de Flow en ese equipo y vuelve a intentarlo.';
+        }
+        return text;
+    }
+
     function waitJob(id, options) {
         var opts = options || {};
         var deadline = Date.now() + (Number(opts.timeoutMs) || MAX_WAIT_MS);
@@ -272,7 +282,8 @@
                     }
                     if (job.status === 'done') { return job; }
                     if (job.status === 'error') {
-                        throw new Error(job.error || 'Flow no pudo generar la imagen.');
+                        try { console.warn('[Flow] trabajo ' + id + ' falló: ' + (job.error || '')); } catch (e) { /* consola no disponible */ }
+                        throw new Error(friendlyError(job.error) || 'Flow no pudo generar la imagen.');
                     }
                     if (typeof opts.onProgress === 'function') {
                         opts.onProgress(job.status === 'running' ? 'running' : 'queued', data);
