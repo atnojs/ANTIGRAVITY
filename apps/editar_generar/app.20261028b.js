@@ -907,7 +907,7 @@ const generateImage = async (params) => {
                     ? `${sizeInfo} Use the ${sourceImages.length} attached images as visual references (subjects, identity, composition, colors and style), combining what each one contributes. Create a new complete, high-quality image that follows this instruction: ${fullStylePrompt}. Fill the ${params.aspectRatio} format perfectly.`
                     : `${sizeInfo} Use the attached image as visual reference (subject, identity, composition, colors and style). Create a new complete, high-quality image that follows this instruction: ${fullStylePrompt}. Fill the ${params.aspectRatio} format perfectly.`)
                 : (asTransformReference
-                    ? `${sizeInfo} Use the FIRST attached image as the base to edit. Edit it following this instruction: ${fullStylePrompt}. Use the remaining attached image(s) only as a visual reference for subject, identity, style, colors and materials, without copying their composition. Keep the base image's main subject coherent. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`
+                    ? `${sizeInfo} Use the FIRST attached image as the base to edit. Use the remaining attached image(s) ONLY as a visual reference for style, colors, lighting, textures and materials; do not copy their composition, subjects or background. Keep the base image's subject, identity, pose and framing intact. Follow this instruction: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`
                     : (manySources
                         ? `${sizeInfo} TRANSFORM these ${sourceImages.length} images, merging them into one, into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`
                         : `${sizeInfo} TRANSFORM this entire image into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`));
@@ -925,12 +925,15 @@ const generateImage = async (params) => {
     }
 
     // Modelos de Google Flow: se generan en el PC del worker, no por proxy.php.
-    // Se envía la instrucción del usuario TAL CUAL (con su estilo): la cola ya
-    // antepone «Usando la imagen adjunta como referencia…», y las plantillas del
-    // proxy (en inglés y con roles inventados) hacían que el resultado dejara de
-    // seguir el prompt y la imagen.
+    // Se envía la instrucción del usuario con su estilo y, si hay dos imágenes,
+    // el rol de cada una (base/referencia); el worker ya no fuerza el «combina».
     if (isFlowModel(window.selectedModel)) {
-        const flowInstruction = [basePrompt, styleSuffix].filter(Boolean).join('. ')
+        // Con dos imágenes, la app dice explícitamente cuál es la base y cuál la
+        // referencia; el worker ya no fuerza «combina su contenido».
+        const flowRole = (asTransformReference && sourceImages.length > 1)
+            ? 'La primera imagen es la base que se edita; la segunda es solo una referencia de estilo, colores e iluminación. No copies su composición ni su sujeto.'
+            : '';
+        const flowInstruction = [flowRole, basePrompt, styleSuffix].filter(Boolean).join('. ')
             || 'Crea una imagen de alta calidad a partir de la imagen adjunta.';
         return generateImageWithFlow({
             prompt: flowInstruction,
@@ -1587,6 +1590,14 @@ const App = () => {
         try {
             const eraSuffix = (selectedEra && selectedEra.promptSuffix || '').trim();
             const styleSuffix = `${eraSuffix} ${(selectedStyle.promptSuffix || '').trim()}`.trim();
+            // El estilo por defecto (Fotorrealismo Ultra) no debe imponerse cuando
+            // se edita con una imagen de referencia: la referencia manda en el
+            // estilo y el sufijo fotorrealista hacía que el modelo la ignorara.
+            const defaultStyle = STYLE_GROUPS.fotografia[1];
+            const styleIsDefault = !selectedStyle || selectedStyle.id === defaultStyle.id;
+            const effectiveStyleSuffix = (mode === 'remix' && remixRef && styleIsDefault)
+                ? eraSuffix
+                : styleSuffix;
             // Imagenes del modo: base obligatoria al Editar (con su referencia
             // opcional), hasta dos referencias al Generar.
             let finalSources = (mode === 'remix'
@@ -1617,7 +1628,7 @@ const App = () => {
                 try {
                     const imageUrl = await generateImage({
                         prompt: effectivePrompt,
-                        styleSuffix,
+                        styleSuffix: effectiveStyleSuffix,
                         aspectRatio: selectedAR,
                         resolution: selectedRes,
                         sourceImages: finalSources,
