@@ -305,23 +305,11 @@ $token = (string) ($body['token'] ?? ($_SERVER['HTTP_X_QUEUE_TOKEN'] ?? ''));
 
 // --- request: encolar imágenes o vídeos -----------------------------------
 if ($reqAction === 'request') {
-    // Esta app y flow_studio_hoola escriben en la MISMA cola
-    // (apps/flow_studio/flow_store): cerrar solo una de las dos no cierra nada,
-    // porque se entra por la otra. La sesión es la común del proyecto
-    // (cookie antigravity_auth), así que haber entrado en cualquier app del
-    // sitio vale para las dos. Si el núcleo de Hoola no estuviera, se cierra
-    // igual: ante la duda, no se encola.
-    $boot = dirname(__DIR__) . '/flow_studio_hoola/lib/bootstrap.php';
-    if (is_file($boot)) {
-        require_once $boot;
-    }
-    if (!function_exists('uis_authenticated') || !uis_authenticated()) {
-        respond([
-            'ok' => false,
-            'error' => 'Inicia sesión con la contraseña de acceso para encolar en Flow.',
-            'auth' => false,
-        ], 401);
-    }
+    // Sin contraseña por decisión del propietario (2026-11-25). El 2026-11-09 se
+    // añadió aquí un requisito de sesión (cookie antigravity_auth) que dejaba la
+    // generación muerta con un 401 en cuanto no había login: esta app debe entrar
+    // y funcionar. La cola sigue protegida por sus topes (MAX_QUEUE, MAX_PROMPT,
+    // MAX_REFS, MAX_VIDEO_QUEUE) y por el token del worker para claim/complete/fail.
     $prompt = trim((string) ($body['prompt'] ?? ''));
     if ($prompt === '') {
         respond(['ok' => false, 'error' => 'El prompt está vacío'], 400);
