@@ -4360,8 +4360,10 @@ function clearDeletedFolders() {
 // Una tarjeta ya guardada en el navegador conserva su carpeta mientras exista
 // (normalizeTrickCategory respeta la guardada), así que el reparto se apunta
 // aquí: solo se mueven las tarjetas que seguían en la carpeta vieja y se elige
-// destino por código. Un código desconocido (tarjeta propia sin comando del
-// catálogo) cae en «3D», que es el grupo mayoritario.
+// destino por código. El código se compara sin mayúsculas ni espacios porque el
+// catálogo tiene códigos con otra caja (/METAAD). Si la tarjeta no trae un código
+// del reparto (tarjeta editada o con numeración vieja), manda el código que el
+// catálogo da a su id; y si tampoco, cae en «3D», que es el grupo mayoritario.
 const LETRAS3D_LETRAS = new Set([
     '/3dtypography',
     '/balloontype',
@@ -4384,8 +4386,28 @@ const LETRAS3D_LETRAS = new Set([
     '/patternfill',
     '/ascii',
 ]);
+const LETRAS3D_TRESD = new Set([
+    '/actionfigure', '/3drender', '/3danimal', '/3dcycle', '/3dcell', '/3dexploded',
+    '/3dinside', '/3dcutaway', '/3dlabeled', '/3dprocess', '/3dplant', '/funkostyle',
+    '/minifig', '/keychain', '/gashapon', '/bobblehead', '/dioramabox', '/glassmorphism',
+    '/iridescent', '/velvet', '/furry', '/balloonart', '/vinyltoy', '/floatingisland',
+    '/pedestal', '/abstractshapes', '/miniaturecity', '/cloudshape', '/menushot',
+    '/sugarskull', '/blisterpack', '/headswing', '/keyloop', '/capsuletoy', '/nodhead',
+    '/yarnfigure', '/boxdiorama', '/plushtoy', '/figurine', '/toyversion',
+]);
+let _letras3dCodigoPorId = null;
+function letras3dCodigoDeId(id) {
+    if (!_letras3dCodigoPorId) {
+        _letras3dCodigoPorId = new Map(SEED_TRICKS.map(t => [String(t.id), String(t.codeSnippet || '')]));
+    }
+    return String(_letras3dCodigoPorId.get(String(id)) || '').trim().toLowerCase();
+}
 function letras3dDestino(item) {
-    return LETRAS3D_LETRAS.has(getImageCommandKey(item)) ? 'xl-letras' : 'xl-3d';
+    const propio = getImageCommandKey(item).trim().toLowerCase();
+    const clave = (LETRAS3D_LETRAS.has(propio) || LETRAS3D_TRESD.has(propio))
+        ? propio
+        : letras3dCodigoDeId(item.id);
+    return LETRAS3D_LETRAS.has(clave) ? 'xl-letras' : 'xl-3d';
 }
 // Recategorizaciones puntuales: un comando que CAMBIA de carpeta en el catálogo
 // no se mueve solo en las tarjetas ya guardadas (normalizeTrickCategory respeta
@@ -6477,6 +6499,15 @@ function migrateGeneratedCardImages(items) {
         if (isBrokenStoreImage(command) && !String(item.imageUrl || '').startsWith('data:image/')) {
             const own = seedAssetImage(command);
             return own && own !== item.imageUrl ? { ...item, imageUrl: own } : item;
+        }
+        // Mudanza del 2026-11-27: los ejemplos de «Letras y 3D» pasaron a
+        // assets/xl-letras/ y assets/xl-3d/. Una tarjeta con la ruta vieja
+        // apuntaría a un fichero que ya no está en el repositorio, así que se
+        // corrige por código (vale también para ids no canónicos, como
+        // reel2-cmd-001 o turn-cmd-002).
+        if (String(item.imageUrl || '').startsWith('assets/xl-letras3d/')) {
+            const own = seedAssetImage(command);
+            if (own) return { ...item, imageUrl: own };
         }
         // El ejemplo nuevo al que pertenece la tarjeta se deduce del CÓDIGO, no
         // del id ni de la carpeta guardada: así también lo reciben las tarjetas
