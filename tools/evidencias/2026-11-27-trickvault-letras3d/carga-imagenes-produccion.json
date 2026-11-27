@@ -1,15 +1,23 @@
-﻿{
-    "letras":  {
-                   "rotas":  0,
-                   "pintadas":  20,
-                   "total":  20
-               },
-    "url":  "https://atnojs.es/apps/trickvault/index.html",
-    "tresd":  {
-                  "rotas":  0,
-                  "pintadas":  40,
-                  "total":  40
-              },
-    "metodo":  "scroll completo + naturalWidth",
-    "comprobado":  "2026-11-27T20:06:35.0900856Z"
+{
+  "comprobado": "2026-11-27T20:39:02Z",
+  "url": "https://atnojs.es/apps/trickvault/index.html?cb=<guid nuevo>",
+  "version": "5fa33584 (app: da1fe24d + 6529a6d1)",
+  "metodo": "scroll completo hasta el final + espera a img.complete + naturalWidth > 0",
+  "letras": {
+    "total": 20,
+    "pintadas": 20,
+    "rotas": 0,
+    "pendientes": 0
+  },
+  "tresd": {
+    "total": 40,
+    "pintadas": 40,
+    "rotas": 0,
+    "pendientes": 0
+  },
+  "http": {
+    "rutas": 60,
+    "ok": 60,
+    "mal": 0
+  }
 }

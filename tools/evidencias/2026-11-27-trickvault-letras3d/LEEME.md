@@ -1,7 +1,7 @@
 # Evidencias — TrickVault · «Letras y 3D» partida en «Letras» y «3D» + atajo a Editar y Generar (2026-11-27)
 
 Producción: `https://atnojs.es/apps/trickvault/`. Commits: `5a76e279` (reparto + assets + botón),
-`3b4a7d8c` (botón debajo de la guía y en llamarada), `6529a6d1` (reparto 20/40 en la capa publicada
+`da1fe24d` (botón debajo de la guía y en llamarada), `6529a6d1` (reparto 20/40 en la capa publicada
 y ejemplos con la ruta nueva). Todo comprobado sobre la versión **servida**, no solo sobre el repo.
 
 ## Qué prueba cada fichero
