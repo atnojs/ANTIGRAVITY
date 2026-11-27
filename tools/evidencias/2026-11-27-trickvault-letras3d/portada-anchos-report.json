@@ -1,7 +1,7 @@
 {
-  "tag": "ok-home",
-  "url": "http://127.0.0.1:8791/apps/trickvault/index.html",
-  "startedAt": "2026-11-27T19:57:18.283Z",
+  "tag": "prod-home",
+  "url": "https://atnojs.es/apps/trickvault/index.html",
+  "startedAt": "2026-11-27T20:01:44.826Z",
   "widths": {},
   "console": [
     {
@@ -11,26 +11,9 @@
     {
       "type": "error",
       "text": "[BABEL] Note: The code generator has deoptimised the styling of /Inline Babel script as it exceeds the max of 500KB."
-    },
-    {
-      "type": "error",
-      "text": "[TrickVault] No se pudieron cargar las imágenes de Hostinger: Error: El servidor devolvió una respuesta inválida (HTTP 404).\n    at <anonymous>:451:240\n    at Generator.throw (<anonymous>)\n    at asyncGeneratorStep (<anonymous>:1:58)\n    at _throw (<anonymous>:1:351)"
-    },
-    {
-      "type": "error",
-      "text": "[TrickVault] No se pudieron cargar los favoritos de Hostinger: Error: El servidor devolvió una respuesta inválida (HTTP 404).\n    at <anonymous>:451:240\n    at Generator.throw (<anonymous>)\n    at asyncGeneratorStep (<anonymous>:1:58)\n    at _throw (<anonymous>:1:351)"
     }
   ],
-  "network": [
-    {
-      "status": 404,
-      "url": "http://127.0.0.1:8791/apps/trickvault/image_store.php?action=list&t=1795809441501"
-    },
-    {
-      "status": 404,
-      "url": "http://127.0.0.1:8791/apps/trickvault/image_store.php?action=fav_list&t=1795809441504"
-    }
-  ],
+  "network": [],
   "home": [
     "📰 🪧 Carteles y materiales 51 trucos",
     "🧩 🔬 Ver por dentro 47 trucos",
@@ -56,7 +39,7 @@
     "⌨️ 💻 Dev y productividad 16 trucos",
     "🖼️ 🕰️ Restauración de fotos antiguas 3 trucos",
     "💄 👗 Moda 27 trucos",
-    "💛 ⭐ Favoritos 5 trucos",
+    "💛 ⭐ Favoritos 40 trucos",
     "🗂️ 📁 Doble Exposición 14 trucos",
     "🌄 🌀 Propia 3 trucos"
   ],
