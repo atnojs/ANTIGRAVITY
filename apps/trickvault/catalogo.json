@@ -138,7 +138,7 @@
             "id": "muzrldq0pyjtdj8fe",
             "createdAt": 1791477744141,
             "updatedAt": 1791480876948,
-            "sortOrder": 0
+            "sortOrder": 2
         },
         {
             "title": "Dobleexposicion",
@@ -156,7 +156,7 @@
             "lote": "2026-10-24",
             "createdAt": 1792860700648,
             "updatedAt": 1792958863470,
-            "sortOrder": 0
+            "sortOrder": 13
         },
         {
             "id": "cap-cmd-138",
@@ -177,7 +177,7 @@
             "updatedAt": 1792854396843,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 1
+            "sortOrder": 12
         },
         {
             "id": "cap-cmd-143",
@@ -198,7 +198,7 @@
             "updatedAt": 1792854353932,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 2
+            "sortOrder": 11
         },
         {
             "id": "cap-cmd-154",
@@ -219,7 +219,7 @@
             "updatedAt": 1792854320839,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 3
+            "sortOrder": 10
         },
         {
             "id": "cap-cmd-155",
@@ -240,7 +240,7 @@
             "updatedAt": 1792857129752,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 4
+            "sortOrder": 9
         },
         {
             "id": "cap-cmd-158",
@@ -261,7 +261,7 @@
             "updatedAt": 1792854290730,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 5
+            "sortOrder": 8
         },
         {
             "id": "cap-cmd-160",
@@ -282,7 +282,7 @@
             "updatedAt": 1792854235849,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 6
+            "sortOrder": 7
         },
         {
             "id": "cap-cmd-164",
@@ -303,7 +303,7 @@
             "updatedAt": 1792854215149,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 7
+            "sortOrder": 6
         },
         {
             "id": "cap-cmd-168",
@@ -324,7 +324,7 @@
             "updatedAt": 1792854178619,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 8
+            "sortOrder": 5
         },
         {
             "id": "cap-cmd-177",
@@ -345,7 +345,7 @@
             "updatedAt": 1792854145064,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 9
+            "sortOrder": 4
         },
         {
             "id": "cap-cmd-185",
@@ -366,7 +366,7 @@
             "updatedAt": 1792854103405,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 10
+            "sortOrder": 3
         },
         {
             "id": "cap-cmd-186",
@@ -387,7 +387,7 @@
             "updatedAt": 1792854076494,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 11
+            "sortOrder": 2
         },
         {
             "id": "cap-cmd-191",
@@ -408,7 +408,7 @@
             "updatedAt": 1792854027635,
             "lote": "2026-10-06",
             "customPrompt": "",
-            "sortOrder": 12
+            "sortOrder": 1
         },
         {
             "id": "cap-cmd-198",
@@ -429,7 +429,7 @@
             "updatedAt": 1792864320654,
             "lote": "2026-10-06",
             "customPrompt": "/dobleexposicion-verano If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. /dobleexposicion-verano /dobleexposicion-verano If the user attaches an image, you must apply the style solely to that image, ensuring the original image remains completely unaltered; in other words, you must recreate the image provided by the user and apply exclusively the requested style. Double-exposure photograph: a side profile (from image 1) combined with a beach at sunset, palm trees, ocean waves, a surfer, and birds in flight; summery atmosphere, cinematic style, vibrant colors, high level of detail, realistic appearance. all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English",
-            "sortOrder": 13
+            "sortOrder": 0
         },
         {
             "title": "expresiones faciales",
@@ -437,7 +437,7 @@
             "category": "xl-dobleexposicion",
             "tags": [],
             "codeSnippet": "ttttttttttttt",
-            "imageUrl": "",
+            "imageUrl": "uploads/example_mwv4eujdvpkqd84vs_4d0989611580.webp",
             "sourceUrl": "",
             "difficulty": "beginner",
             "isFavorite": false,
@@ -445,8 +445,27 @@
             "id": "mwv4eujdvpkqd84vs",
             "lote": "2026-11-24",
             "createdAt": 1795550507545,
-            "updatedAt": 1795550825307,
-            "sortOrder": 44
+            "updatedAt": 1795808187997,
+            "sortOrder": 0,
+            "ownImage": true
+        },
+        {
+            "title": "mniaturas comic",
+            "description": "",
+            "category": "xl-dobleexposicion",
+            "tags": [],
+            "codeSnippet": "/444",
+            "imageUrl": "uploads/example_mwzdrjmerypfx72x0_5833ab83d533.webp",
+            "sourceUrl": "",
+            "difficulty": "beginner",
+            "isFavorite": false,
+            "customPrompt": "Apply the following prompt to the image.\n\nTransform the reference image into a semi-realistic, comic-style digital illustration, with a professional finish reminiscent of contemporary American graphic novels and comics.\n\nIncorporate the following visual characteristics:\n\n- Defined, expressive black outlines of varying thickness.\n- Hand-drawn ink strokes.\n- Vivid, warm, intense, and saturated colors.\n- Shading achieved through a combination of cel-shading and soft gradients.\n- High-contrast shadows and pronounced highlights.\n- Subtle textures evocative of traditional illustration on skin, hair, and clothing.\n- Realistic, detailed, and expressive facial features.\n- Carefully delineated expression lines and wrinkles.\n- Hair rendered through individual ink strokes.\n- Cinematic lighting and a strong sense of depth.\n- A digital painterly finish blended with traditional inking techniques.\n- Maximum sharpness, visual richness, and professional-grade quality in 4K resolution.\n\nFaithfully preserve the identity, facial features, age, build, anatomical proportions, expression, posture, clothing, accessories, background, framing, and composition of the original image.\n\nApply only the requested artistic style; do not add, remove, shift, or modify any elements from the reference image.\n\nAvoid a childlike aesthetic, anime, manga, Disney or Pixar-style visuals, exaggerated caricatures, 3D rendering, or anatomical distortions.\n\nAny visible text must be in Spanish.",
+            "id": "mwzdrjmerypfx72x0",
+            "lote": "2026-11-27",
+            "createdAt": 1795808081174,
+            "updatedAt": 1795808165859,
+            "sortOrder": 2,
+            "ownImage": true
         }
     ],
     "borradas": [
@@ -1693,6 +1712,7 @@
             "cap-cmd-113"
         ],
         "xl-dobleexposicion": [
+            "mwzdrjmerypfx72x0",
             "mwv4eujdvpkqd84vs",
             "ig-dcek-004"
         ],
@@ -2171,5 +2191,5 @@
         "xl-dobleexposicion",
         "f_mvmm88u2iao4ez2zn"
     ],
-    "actualizado": "2026-11-24T20:07:38+00:00"
+    "actualizado": "2026-11-27T19:37:03+00:00"
 }
