@@ -6,7 +6,9 @@
         },
         "cap-cmd-111": [],
         "cap-cmd-109": [],
-        "cap-cmd-110": [],
+        "cap-cmd-110": {
+            "category": "xl-3d"
+        },
         "xl-cmd-053": [],
         "xl-cmd-055": [],
         "xl-cmd-060": [],
@@ -121,6 +123,9 @@
         },
         "cap-cmd-159": {
             "customPrompt": "/dobleexposicion-animal Cinematic double-exposure portrait. On the left, a close-up profile shot (image 1) looking to the left. Blended organically into the back and right side of the head is the detailed, realistic head of a Canarian Warren Hound (Podenco Canario) looking toward the right. Within the silhouette and in the background, there is a dense, fog-covered pine forest, distant mountains, and a massive, bright full moon in the night sky. In the bottom-right corner, there is a rustic, weathered wooden sign with carved, uppercase text reading \"TEXT,\" and a smaller plaque below it that also reads \"TEXT.\" A cool, desaturated color palette in shades of grayish-blue, high contrast, movie-poster-style lighting, hyper-realistic textures, and a mysterious atmosphere."
+        },
+        "cap-cmd-108": {
+            "category": "xl-3d"
         }
     },
     "nuevas": [
@@ -446,7 +451,7 @@
             "lote": "2026-11-24",
             "createdAt": 1795550507545,
             "updatedAt": 1795808187997,
-            "sortOrder": 0,
+            "sortOrder": 1,
             "ownImage": true
         },
         {
@@ -464,7 +469,7 @@
             "lote": "2026-11-27",
             "createdAt": 1795808081174,
             "updatedAt": 1795808165859,
-            "sortOrder": 2,
+            "sortOrder": 0,
             "ownImage": true
         }
     ],
@@ -1980,6 +1985,70 @@
             "ig-dcek-463",
             "ig-dcek-464",
             "ig-dcek-593"
+        ],
+        "xl-3d": [
+            "reel2-cmd-001",
+            "turn-cmd-002",
+            "ig-dcek-033",
+            "ig-dcek-280",
+            "ig-dcek-481",
+            "ig-dcek-482",
+            "ig-dcek-483",
+            "ig-dcek-484",
+            "ig-dcek-485",
+            "ig-dcek-486",
+            "ig-dcek-487",
+            "ig-dcek-488",
+            "ig-dcek-489",
+            "ig-dcek-522",
+            "ig-dcek-523",
+            "ig-dcek-525",
+            "ig-dcek-526",
+            "ig-dcek-527",
+            "ig-dcek-529",
+            "xl-cmd-049",
+            "xl-cmd-050",
+            "xl-cmd-051",
+            "xl-cmd-052",
+            "xl-cmd-053",
+            "xl-cmd-054",
+            "xl-cmd-055",
+            "xl-cmd-056",
+            "xl-cmd-057",
+            "xl-cmd-059",
+            "xl-cmd-060",
+            "xl-cmd-076",
+            "xl-cmd-274",
+            "cap-cmd-108",
+            "cap-cmd-110",
+            "reel-cmd-131",
+            "reel-cmd-132",
+            "reel-cmd-133",
+            "reel-cmd-134",
+            "reel-cmd-135",
+            "reel-cmd-136",
+            "reel-cmd-137",
+            "reel-cmd-138"
+        ],
+        "xl-letras": [
+            "xl-cmd-058",
+            "xl-cmd-061",
+            "xl-cmd-062",
+            "xl-cmd-063",
+            "xl-cmd-064",
+            "xl-cmd-065",
+            "xl-cmd-066",
+            "xl-cmd-067",
+            "xl-cmd-068",
+            "xl-cmd-069",
+            "xl-cmd-070",
+            "xl-cmd-071",
+            "xl-cmd-072",
+            "xl-cmd-073",
+            "xl-cmd-074",
+            "xl-cmd-075",
+            "cap-cmd-109",
+            "cap-cmd-111"
         ]
     },
     "listaCarpetas": [
@@ -2200,5 +2269,5 @@
         "f_mvmm88u2iao4ez2zn",
         "xl-letras3d"
     ],
-    "actualizado": "2026-11-27T19:37:03+00:00"
+    "actualizado": "2026-11-27T20:12:28+00:00"
 }
