@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20261127-letras3d">
+    <link rel="stylesheet" href="app.css?v=20261127-llama">
 </head>
 <body>
     <div id="root"></div>
@@ -8367,18 +8367,6 @@ function App() {
                     <div className="app-title">TrickVault</div>
                     <div className="app-subtitle">Tu colección personal de trucos</div>
                 </div>
-                {/* Atajo a la app de edición de imágenes (2026-11-27). */}
-                <a
-                    className="app-link-btn"
-                    href="https://atnojs.es/apps/editar_generar/index.html"
-                    aria-label="Abrir la app Editar y Generar en una pestaña nueva"
-                    target="_blank"
-                    rel="noopener"
-                >
-                    <span className="app-link-btn-icon" aria-hidden="true">✨</span>
-                    <span>Abrir Editar y Generar</span>
-                    <span className="app-link-btn-arrow" aria-hidden="true">↗</span>
-                </a>
             </div>
 
             <div className="prompt-guide" role="note">
@@ -8387,6 +8375,20 @@ function App() {
                     <span className="prompt-guide-kicker">CÓDIGOS DE IMAGEN · GUÍA RÁPIDA</span>
                     <p>{IMAGE_PROMPT_HINT}</p>
                 </div>
+            </div>
+
+            {/* Atajo a la app de edición de imágenes (2026-11-27): debajo de la guía. */}
+            <div className="app-link-wrap">
+                <a
+                    className="app-link-btn"
+                    href="https://atnojs.es/apps/editar_generar/index.html"
+                    aria-label="Abrir la app Editar y Generar en una pestaña nueva"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <span>Abrir Editar y Generar</span>
+                    <span className="app-link-btn-arrow" aria-hidden="true">↗</span>
+                </a>
             </div>
 
             {/* STATS — solo aparecen en la portada */}
