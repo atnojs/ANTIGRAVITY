@@ -1,0 +1,115 @@
+{
+  "tag": "ok-home",
+  "url": "http://127.0.0.1:8791/apps/trickvault/index.html",
+  "startedAt": "2026-11-27T19:57:18.283Z",
+  "widths": {},
+  "console": [
+    {
+      "type": "warning",
+      "text": "You are using the in-browser Babel transformer. Be sure to precompile your scripts for production - https://babeljs.io/docs/setup/"
+    },
+    {
+      "type": "error",
+      "text": "[BABEL] Note: The code generator has deoptimised the styling of /Inline Babel script as it exceeds the max of 500KB."
+    },
+    {
+      "type": "error",
+      "text": "[TrickVault] No se pudieron cargar las imágenes de Hostinger: Error: El servidor devolvió una respuesta inválida (HTTP 404).\n    at <anonymous>:451:240\n    at Generator.throw (<anonymous>)\n    at asyncGeneratorStep (<anonymous>:1:58)\n    at _throw (<anonymous>:1:351)"
+    },
+    {
+      "type": "error",
+      "text": "[TrickVault] No se pudieron cargar los favoritos de Hostinger: Error: El servidor devolvió una respuesta inválida (HTTP 404).\n    at <anonymous>:451:240\n    at Generator.throw (<anonymous>)\n    at asyncGeneratorStep (<anonymous>:1:58)\n    at _throw (<anonymous>:1:351)"
+    }
+  ],
+  "network": [
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:8791/apps/trickvault/image_store.php?action=list&t=1795809441501"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:8791/apps/trickvault/image_store.php?action=fav_list&t=1795809441504"
+    }
+  ],
+  "home": [
+    "📰 🪧 Carteles y materiales 51 trucos",
+    "🧩 🔬 Ver por dentro 47 trucos",
+    "🧵 ✋ Hecho a mano 54 trucos",
+    "🎁 📸 Foto de producto 61 trucos",
+    "🔦 🎬 Luz, cámara y personas 63 trucos",
+    "📢 🧪 Escena, prueba y anuncio 69 trucos",
+    "🖌️ 🎨 Pintura y dibujo 42 trucos",
+    "✏️ 🖼️ Ilustración y arte 55 trucos",
+    "✒️ 🔤 Letras 20 trucos",
+    "🎲 🧊 3D 40 trucos",
+    "🍰 🍽️ Comida 26 trucos",
+    "✈️ 🏠 Casa y viajes 60 trucos",
+    "📷 🤳 Cámara y retrato 62 trucos",
+    "🚀 🪐 Tú en otro mundo 82 trucos",
+    "💼 📈 Negocio y redes 51 trucos",
+    "📦 ✨ Efectos y empaque 106 trucos",
+    "🎓 📼 Retro y educativo 54 trucos",
+    "🎲 🎮 Juegos y temporadas 44 trucos",
+    "🌈 🎞️ Estilos y acabado 66 trucos",
+    "🖼️ 🎥 Planos y encuadres 67 trucos",
+    "📝 💬 Comandos de texto 179 trucos",
+    "⌨️ 💻 Dev y productividad 16 trucos",
+    "🖼️ 🕰️ Restauración de fotos antiguas 3 trucos",
+    "💄 👗 Moda 27 trucos",
+    "💛 ⭐ Favoritos 5 trucos",
+    "🗂️ 📁 Doble Exposición 14 trucos",
+    "🌄 🌀 Propia 3 trucos"
+  ],
+  "homeCount": 27,
+  "homeWidths": {
+    "390": {
+      "width": 390,
+      "scrollWidth": 390,
+      "horizontalScroll": false,
+      "boton": {
+        "w": 251,
+        "h": 38,
+        "x": 70,
+        "y": 178,
+        "dentroDePantalla": true
+      }
+    },
+    "768": {
+      "width": 768,
+      "scrollWidth": 768,
+      "horizontalScroll": false,
+      "boton": {
+        "w": 289,
+        "h": 40,
+        "x": 240,
+        "y": 186,
+        "dentroDePantalla": true
+      }
+    },
+    "1440": {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "horizontalScroll": false,
+      "boton": {
+        "w": 289,
+        "h": 40,
+        "x": 576,
+        "y": 201,
+        "dentroDePantalla": true
+      }
+    }
+  },
+  "branding": {
+    "href": "https://atnojs.es/apps/editar_generar/index.html",
+    "text": "✨ ABRIR EDITAR Y GENERAR ↗",
+    "target": "_blank",
+    "rel": "noopener",
+    "w": 289,
+    "h": 40,
+    "x": 576,
+    "y": 201,
+    "color": "rgb(234, 255, 255)",
+    "borderColor": "rgb(0, 208, 208)",
+    "radius": "999px"
+  }
+}

@@ -2040,11 +2040,18 @@
             "bgIcon": "✏️"
         },
         {
-            "id": "xl-letras3d",
-            "label": "Letras y 3D",
+            "id": "xl-letras",
+            "label": "Letras",
             "icon": "🔤",
             "color": "emerald",
-            "bgIcon": "🧊"
+            "bgIcon": "✒️"
+        },
+        {
+            "id": "xl-3d",
+            "label": "3D",
+            "icon": "🧊",
+            "color": "cyan",
+            "bgIcon": "🎲"
         },
         {
             "id": "xl-comidamoda",
@@ -2168,7 +2175,8 @@
         "xl-escenaprueba",
         "xl-pintura",
         "xl-ilustracion",
-        "xl-letras3d",
+        "xl-letras",
+        "xl-3d",
         "xl-comidamoda",
         "xl-casaviajes",
         "xl-camararetrato",
@@ -2189,7 +2197,8 @@
     ],
     "carpetasBorradas": [
         "xl-dobleexposicion",
-        "f_mvmm88u2iao4ez2zn"
+        "f_mvmm88u2iao4ez2zn",
+        "xl-letras3d"
     ],
     "actualizado": "2026-11-27T19:37:03+00:00"
 }

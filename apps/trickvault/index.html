@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20261024-renombrar">
+    <link rel="stylesheet" href="app.css?v=20261127-letras3d">
 </head>
 <body>
     <div id="root"></div>
@@ -57,7 +57,11 @@ const EXCEL_FOLDERS = [
     { id: 'xl-escenaprueba', label: 'Escena, prueba y anuncio', icon: '🧪', color: 'cyan', bgIcon: '📢' },
     { id: 'xl-pintura', label: 'Pintura y dibujo', icon: '🎨', color: 'pink', bgIcon: '🖌️' },
     { id: 'xl-ilustracion', label: 'Ilustración y arte', icon: '🖼️', color: 'purple', bgIcon: '✏️' },
-    { id: 'xl-letras3d', label: 'Letras y 3D', icon: '🔤', color: 'emerald', bgIcon: '🧊' },
+    // 2026-11-27: «Letras y 3D» se partió en dos. La carpeta mezclaba lettering y
+    // tipografía con figuras y objetos 3D, así que no se podía comparar el mismo
+    // sujeto. Los códigos de letras van a «Letras» y los de volumen a «3D».
+    { id: 'xl-letras', label: 'Letras', icon: '🔤', color: 'emerald', bgIcon: '✒️' },
+    { id: 'xl-3d', label: '3D', icon: '🧊', color: 'cyan', bgIcon: '🎲' },
     { id: 'xl-comidamoda', label: 'Comida', icon: '🍽️', color: 'amber', bgIcon: '🍰' },
     { id: 'xl-casaviajes', label: 'Casa y viajes', icon: '🏠', color: 'cyan', bgIcon: '✈️' },
     { id: 'xl-camararetrato', label: 'Cámara y retrato', icon: '🤳', color: 'pink', bgIcon: '📷' },
@@ -110,7 +114,10 @@ const FOLDERS_SCHEMA_KEY = 'trickvault_folders_schema';
 // v5 (2026-10-13): añade la carpeta «Restauración de fotos antiguas» (xl-restauracion)
 // a quien ya tuviera su lista guardada en el navegador.
 // v7 (2026-10-22): añade la carpeta «Doble exposición» (xl-dobleexposicion).
-const FOLDERS_SCHEMA_VERSION = 7;
+// v8 (2026-11-27): «Letras y 3D» (xl-letras3d) se parte en «Letras» (xl-letras)
+// y «3D» (xl-3d). La vieja se retira con FOLDERS_REMOVED y sus tarjetas se
+// recolocan solas por código (ver SPLIT_LETRAS3D).
+const FOLDERS_SCHEMA_VERSION = 8;
 // Nombres por defecto antiguos de cada carpeta: si el guardado coincide con uno
 // de estos, al subir el esquema se actualiza al nombre nuevo (ver loadFolders).
 const FOLDERS_LABELS_ANTIGUOS = { 'xl-comidamoda': ['Comida y moda'] };
@@ -118,7 +125,7 @@ const FOLDERS_LABELS_ANTIGUOS = { 'xl-comidamoda': ['Comida y moda'] };
 // el navegador aunque su versión de esquema ya esté al día. NO subir
 // FOLDERS_SCHEMA_VERSION para esto: al subirla se volverían a añadir todas las
 // carpetas por defecto, incluidas las que el usuario haya borrado a mano.
-const FOLDERS_REMOVED = ['xl-transfer1to2'];
+const FOLDERS_REMOVED = ['xl-transfer1to2', 'xl-letras3d'];
 
 // Mapa comando de imagen -> carpeta
 const CODE_FOLDER = {
@@ -139,7 +146,7 @@ const CODE_FOLDER = {
     // Estilos visuales
     '/handwritten': 'xl-verdentro', '/napkinsketch': 'xl-verdentro', '/whiteboard': 'xl-verdentro', '/moodboard': 'xl-verdentro',
     '/pencilsketch': 'xl-verdentro', '/notebookpage': 'xl-hechomano', '/collage': 'xl-hechomano', '/redpen': 'xl-hechomano',
-    '/storyboard': 'xl-hechomano', '/tornpaper': 'xl-hechomano', '/actionfigure': 'xl-letras3d', '/claymation': 'xl-carteles',
+    '/storyboard': 'xl-hechomano', '/tornpaper': 'xl-hechomano', '/actionfigure': 'xl-3d', '/claymation': 'xl-carteles',
     '/papercraft': 'xl-carteles', '/lowpoly': 'xl-hechomano', '/pixelart': 'xl-carteles', '/linocut': 'xl-hechomano',
     '/risograph': 'xl-hechomano', '/halftone': 'xl-hechomano', '/stainedglass': 'xl-hechomano', '/chromemetal': 'xl-carteles',
     '/embroidery': 'xl-hechomano', '/minime': 'xl-carteles', '/statue': 'xl-carteles', '/silhouettestudy': 'xl-hechomano',
@@ -192,7 +199,7 @@ const CODE_FOLDER = {
     '/dollyzoom': 'xl-planos', '/mediumshot': 'xl-planos', '/orbit': 'xl-planos', '/eyelevel': 'xl-planos', '/groundlevel': 'xl-planos', '/timelapse': 'xl-planos', '/panorama': 'xl-planos', '/portraitmode': 'xl-planos', '/pan': 'xl-planos', '/tilt': 'xl-planos', '/zoom': 'xl-planos', '/establishing': 'xl-planos', '/hyperlapse': 'xl-planos', '/slowmo': 'xl-planos',
     '/lighttrail': 'xl-luzcamara', '/reflection': 'xl-luzcamara', '/nightshot': 'xl-luzcamara', '/startrail': 'xl-luzcamara', '/shadowplay': 'xl-luzcamara',
     '/cinematicworld': 'xl-casaviajes', '/cityscape': 'xl-casaviajes', '/travel': 'xl-casaviajes', '/festival': 'xl-casaviajes', '/forest': 'xl-casaviajes', '/medieval': 'xl-otromundo', '/superhero': 'xl-otromundo', '/beach': 'xl-casaviajes', '/postapocalyptic': 'xl-otromundo', '/samurai': 'xl-otromundo', '/scifi': 'xl-otromundo', '/mountains': 'xl-casaviajes', '/nightcity': 'xl-casaviajes', '/fantasy': 'xl-otromundo', '/daytonight': 'xl-casaviajes', '/seasonchange': 'xl-casaviajes', '/autumn': 'xl-juegos',
-    '/foodphoto': 'xl-comidamoda', '/interior': 'xl-casaviajes', '/blackandwhite': 'xl-camararetrato', '/abstract': 'xl-ilustracion', '/workspace': 'xl-casaviajes', '/anime': 'xl-ilustracion', '/3drender': 'xl-letras3d', '/quotes': 'xl-carteles', '/hdr': 'xl-estilos', '/polaroid': 'xl-carteles', '/noir': 'xl-estilos', '/doubleexposure': 'xl-camararetrato', '/dreamcore': 'xl-ilustracion', '/glassart': 'xl-ilustracion', '/glitch': 'xl-efectosempaque', '/watercolor': 'xl-pintura', '/oilpainting': 'xl-pintura', '/comicbook': 'xl-ilustracion', '/detective': 'xl-estilos', '/disposablecamera': 'xl-estilos', '/sketch': 'xl-ilustracion', '/neonoir': 'xl-estilos', '/mercury': 'xl-estilos',
+    '/foodphoto': 'xl-comidamoda', '/interior': 'xl-casaviajes', '/blackandwhite': 'xl-camararetrato', '/abstract': 'xl-ilustracion', '/workspace': 'xl-casaviajes', '/anime': 'xl-ilustracion', '/3drender': 'xl-3d', '/quotes': 'xl-carteles', '/hdr': 'xl-estilos', '/polaroid': 'xl-carteles', '/noir': 'xl-estilos', '/doubleexposure': 'xl-camararetrato', '/dreamcore': 'xl-ilustracion', '/glassart': 'xl-ilustracion', '/glitch': 'xl-efectosempaque', '/watercolor': 'xl-pintura', '/oilpainting': 'xl-pintura', '/comicbook': 'xl-ilustracion', '/detective': 'xl-estilos', '/disposablecamera': 'xl-estilos', '/sketch': 'xl-ilustracion', '/neonoir': 'xl-estilos', '/mercury': 'xl-estilos',
     '/petphoto': 'xl-camararetrato', '/coupleshot': 'xl-camararetrato', '/babyphoto': 'xl-camararetrato',
     '/ideas': 'xl-texto', '/studyplan': 'xl-texto', '/language': 'xl-texto', '/website': 'xl-texto', '/appidea': 'xl-texto', '/podcast': 'xl-texto', '/youtube': 'xl-texto', '/instagram': 'xl-texto', '/marketing': 'xl-texto', '/productivity': 'xl-texto', '/health': 'xl-texto', '/cooking': 'xl-texto', '/money': 'xl-texto', '/books': 'xl-texto', '/career': 'xl-texto', '/motivation': 'xl-texto', '/creative': 'xl-texto', '/solve': 'xl-texto', '/anything': 'xl-texto', '/planner': 'xl-texto', '/socialpost': 'xl-texto', '/goals': 'xl-texto', '/calendar': 'xl-texto', '/learn': 'xl-texto', '/fitness': 'xl-texto', '/summarize': 'xl-texto', '/recipes': 'xl-texto', '/translate': 'xl-texto', '/itinerary': 'xl-texto', '/code': 'xl-texto', '/business': 'xl-texto', '/resume': 'xl-texto', '/invest': 'xl-texto', '/email': 'xl-texto', '/meditate': 'xl-texto', '/analyze': 'xl-texto', '/roleplay': 'xl-texto',     // 352-464 (capturas WhatsApp 2026-09-25)
     '/35mmfilm': 'xl-estilos', '/holographic': 'xl-estilos', '/architecture': 'xl-casaviajes', '/group': 'xl-camararetrato', '/candid': 'xl-camararetrato', '/illustration': 'xl-ilustracion', '/cartoon': 'xl-ilustracion', '/logo': 'xl-negocioredes', '/poster': 'xl-carteles', '/banner': 'xl-carteles', '/flyer': 'xl-negocioredes', '/wallpaper': 'xl-carteles', '/invitation': 'xl-carteles', '/quitaobjeto': 'xl-camararetrato',
@@ -205,10 +212,10 @@ const CODE_FOLDER = {
     '/json': 'xl-texto', '/reverse': 'xl-texto', '/ultimate': 'xl-texto',
     // 465-592 (capturas WhatsApp 2026-09-26)
     '/reveal': 'xl-planos', '/bullettime': 'xl-planos', '/dronview': 'xl-planos', '/aerial': 'xl-planos', '/lifestyle': 'xl-camararetrato', '/bw': 'xl-estilos', '/pet': 'xl-camararetrato', '/instantphoto': 'xl-estilos', '/legoify': 'xl-otromundo', '/futureversion': 'xl-otromundo', '/postapocalypse': 'xl-otromundo', '/iceversion': 'xl-otromundo', '/candyversion': 'xl-otromundo', '/miniatureworld': 'xl-efectosempaque',
-    '/giantmode': 'xl-efectosempaque', '/tinyhumans': 'xl-efectosempaque', '/3danimal': 'xl-letras3d', '/3dcycle': 'xl-letras3d', '/3dcell': 'xl-letras3d', '/3dexploded': 'xl-letras3d', '/3dinside': 'xl-letras3d', '/3dcutaway': 'xl-letras3d', '/3dlabeled': 'xl-letras3d', '/3dprocess': 'xl-letras3d', '/3dplant': 'xl-letras3d', '/transferbackground': 'xl-otromundo', '/balanced3Lightportrait': 'xl-luzcamara', '/removepeoplebg': 'xl-camararetrato',
+    '/giantmode': 'xl-efectosempaque', '/tinyhumans': 'xl-efectosempaque', '/3danimal': 'xl-3d', '/3dcycle': 'xl-3d', '/3dcell': 'xl-3d', '/3dexploded': 'xl-3d', '/3dinside': 'xl-3d', '/3dcutaway': 'xl-3d', '/3dlabeled': 'xl-3d', '/3dprocess': 'xl-3d', '/3dplant': 'xl-3d', '/transferbackground': 'xl-otromundo', '/balanced3Lightportrait': 'xl-luzcamara', '/removepeoplebg': 'xl-camararetrato',
     '/pourshot': 'xl-fotoproducto', '/whiteback': 'xl-fotoproducto', '/inhandshot': 'xl-fotoproducto', '/scalereference': 'xl-fotoproducto', '/bundleshot': 'xl-fotoproducto', '/variantgrid': 'xl-fotoproducto', '/levitationrig': 'xl-fotoproducto', '/liquidmotion': 'xl-fotoproducto', '/unboxingsequence': 'xl-fotoproducto', '/boxset': 'xl-fotoproducto', '/sachetrow': 'xl-fotoproducto', '/materialswatch': 'xl-fotoproducto', '/refillsystem': 'xl-fotoproducto', '/processsteps': 'xl-escenaprueba',
     '/handmadedetail': 'xl-escenaprueba', '/sourcemap': 'xl-escenaprueba', '/activesmap': 'xl-escenaprueba', '/splitproof': 'xl-escenaprueba', '/versusgrid': 'xl-escenaprueba', '/durabilitytest': 'xl-escenaprueba', '/weartimeline': 'xl-pintura', '/resultchart': 'xl-pintura', '/testimonialframe': 'xl-pintura', '/claimproof': 'xl-pintura', '/adcreative': 'xl-pintura', '/hookframe': 'xl-pintura', '/uglyad': 'xl-pintura', '/pricecard': 'xl-pintura',
-    '/toypackaging': 'xl-efectosempaque', '/funkostyle': 'xl-letras3d', '/minifig': 'xl-letras3d', '/plushie': 'xl-hechomano', '/keychain': 'xl-letras3d', '/gashapon': 'xl-letras3d', '/bobblehead': 'xl-letras3d', '/crochetdoll': 'xl-hechomano', '/dioramabox': 'xl-letras3d', '/miniatureroom': 'xl-casaviajes', '/isometricroom': 'xl-casaviajes', '/ingredientexplosion': 'xl-comidamoda', '/ingredientbreakdown': 'xl-comidamoda', '/footweartechpack': 'xl-verdentro',
+    '/toypackaging': 'xl-efectosempaque', '/funkostyle': 'xl-3d', '/minifig': 'xl-3d', '/plushie': 'xl-hechomano', '/keychain': 'xl-3d', '/gashapon': 'xl-3d', '/bobblehead': 'xl-3d', '/crochetdoll': 'xl-hechomano', '/dioramabox': 'xl-3d', '/miniatureroom': 'xl-casaviajes', '/isometricroom': 'xl-casaviajes', '/ingredientexplosion': 'xl-comidamoda', '/ingredientbreakdown': 'xl-comidamoda', '/footweartechpack': 'xl-verdentro',
     '/timelineboard': 'xl-carteles', '/tradingcard': 'xl-carteles', '/cerealbox': 'xl-carteles', '/vinylsleeve': 'xl-carteles', '/arcadecabinet': 'xl-carteles', '/museumplaque': 'xl-carteles', '/spectable': 'xl-verdentro', '/sizechart': 'xl-verdentro', '/dieline': 'xl-verdentro', '/3dadcreative': 'xl-escenaprueba', '/brandworld': 'xl-hechomano', '/anglepack': 'xl-luzcamara', '/gridboard': 'xl-luzcamara', '/cameramove': 'xl-luzcamara',
     '/keyframepair': 'xl-luzcamara', '/spinturntable': 'xl-luzcamara', '/shotsetup': 'xl-luzcamara', '/gobopattern': 'xl-luzcamara', '/colorgelset': 'xl-luzcamara', '/reflectionsetup': 'xl-luzcamara', '/lightingdiagram': 'xl-luzcamara', '/handsinuse': 'xl-escenaprueba', '/founderframe': 'xl-escenaprueba', '/3dmagazinecover': 'xl-escenaprueba', '/3danatomy': 'xl-verdentro', '/3dsoftcutaway': 'xl-verdentro', '/luxurylifestyle': 'xl-moda', '/glasssculpture': 'xl-carteles',
     '/voxelart': 'xl-carteles', '/crossstitch': 'xl-carteles', '/holographiccard': 'xl-carteles', '/yearbook90s': 'xl-carteles', '/tattooflash': 'xl-carteles', '/neonsign': 'xl-carteles', '/wantedposter': 'xl-carteles', '/securitycam': 'xl-carteles', '/layercut': 'xl-verdentro', '/texturemacro': 'xl-verdentro', '/construction': 'xl-verdentro', '/materialcallout': 'xl-verdentro', '/microscopeview': 'xl-verdentro', '/grainpattern': 'xl-hechomano',
@@ -244,21 +251,21 @@ const CODE_FOLDER = {
     '/memphis': 'xl-ilustracion', '/swissstyle': 'xl-ilustracion', '/surrealism': 'xl-ilustracion', '/cubism': 'xl-ilustracion',
     '/vaporwave': 'xl-ilustracion', '/synthwave': 'xl-ilustracion', '/y2k': 'xl-ilustracion', '/brutalism': 'xl-ilustracion',
     '/retrofuturism': 'xl-ilustracion', '/3dicon': 'xl-ilustracion', '/inflated': 'xl-ilustracion', '/clayrender': 'xl-ilustracion',
-    // Letras y 3D
-    '/glassmorphism': 'xl-letras3d', '/iridescent': 'xl-letras3d', '/velvet': 'xl-letras3d', '/furry': 'xl-letras3d',
-    '/balloonart': 'xl-letras3d', '/vinyltoy': 'xl-letras3d', '/floatingisland': 'xl-letras3d', '/pedestal': 'xl-letras3d',
-    '/abstractshapes': 'xl-letras3d', '/3dtypography': 'xl-letras3d', '/miniaturecity': 'xl-letras3d', '/cloudshape': 'xl-letras3d',
-    '/balloontype': 'xl-letras3d', '/graffiti': 'xl-letras3d', '/chalklettering': 'xl-letras3d', '/goldleaf': 'xl-letras3d',
-    '/handlettering': 'xl-letras3d', '/letterpress': 'xl-letras3d', '/embroideredpatch': 'xl-letras3d', '/woodcarved': 'xl-letras3d',
-    '/icingtext': 'xl-letras3d', '/sandwriting': 'xl-letras3d', '/skywriting': 'xl-letras3d', '/foodtype': 'xl-letras3d',
-    '/ransomnote': 'xl-letras3d', '/chrometype': 'xl-letras3d', '/stencil': 'xl-letras3d', '/menushot': 'xl-letras3d',
+    // Letras (lettering y tipografía) y 3D (figuras y objetos): reparto 2026-11-27.
+    '/glassmorphism': 'xl-3d', '/iridescent': 'xl-3d', '/velvet': 'xl-3d', '/furry': 'xl-3d',
+    '/balloonart': 'xl-3d', '/vinyltoy': 'xl-3d', '/floatingisland': 'xl-3d', '/pedestal': 'xl-3d',
+    '/abstractshapes': 'xl-3d', '/3dtypography': 'xl-letras', '/miniaturecity': 'xl-3d', '/cloudshape': 'xl-3d',
+    '/balloontype': 'xl-letras', '/graffiti': 'xl-letras', '/chalklettering': 'xl-letras', '/goldleaf': 'xl-letras',
+    '/handlettering': 'xl-letras', '/letterpress': 'xl-letras', '/embroideredpatch': 'xl-letras', '/woodcarved': 'xl-letras',
+    '/icingtext': 'xl-letras', '/sandwriting': 'xl-letras', '/skywriting': 'xl-letras', '/foodtype': 'xl-letras',
+    '/ransomnote': 'xl-letras', '/chrometype': 'xl-letras', '/stencil': 'xl-letras', '/menushot': 'xl-3d',
     // Rellenos de la silueta (captura WhatsApp 2026-10-07): el objeto se construye
     // SOLO con lettering, como la guitarra de rótulos del rock de la referencia.
-    '/logomosaic': 'xl-letras3d', '/typefill': 'xl-letras3d', '/patternfill': 'xl-letras3d',
+    '/logomosaic': 'xl-letras', '/typefill': 'xl-letras', '/patternfill': 'xl-letras',
     // Calavera de azúcar (2026-10-08): código GENÉRICO. El cuerpo del prompt lleva
     // [OBJETO], así que cada usuario pone su propio objeto (escrito o subiendo su
     // foto) y el estilo se le aplica a ESE objeto. No lleva sujeto de carpeta.
-    '/sugarskull': 'xl-letras3d',
+    '/sugarskull': 'xl-3d',
     // Comida y moda
     '/recipecard': 'xl-comidamoda', '/plating': 'xl-comidamoda', '/cheesepull': 'xl-comidamoda', '/steamshot': 'xl-comidamoda',
     '/tablespread': 'xl-comidamoda', '/cookingstep': 'xl-comidamoda', '/bakerywindow': 'xl-comidamoda', '/streetfood': 'xl-comidamoda',
@@ -428,7 +435,7 @@ const CODE_FOLDER = {
     '/gradientmesh': 'xl-estilos',
     '/imax': 'xl-estilos',
     '/terminal': 'xl-dev',
-    '/ascii': 'xl-letras3d',
+    '/ascii': 'xl-letras',
     // Reel de Instagram (2026-10-13): las 3 tarjetas de restauración de fotos
     // antiguas (los 9 códigos del reel, fundidos de tres en tres).
     '/restaurarfotoantigua': 'xl-restauracion',
@@ -658,14 +665,14 @@ const CODE_FOLDER = {
     '/paperlayer': 'xl-fotoproducto',
     '/holoshine': 'xl-estilos',
     '/neonoutline': 'xl-estilos',
-    '/blisterpack': 'xl-letras3d',
-    '/headswing': 'xl-letras3d',
-    '/keyloop': 'xl-letras3d',
-    '/capsuletoy': 'xl-letras3d',
-    '/nodhead': 'xl-letras3d',
-    '/yarnfigure': 'xl-letras3d',
-    '/boxdiorama': 'xl-letras3d',
-    '/plushtoy': 'xl-letras3d',
+    '/blisterpack': 'xl-3d',
+    '/headswing': 'xl-3d',
+    '/keyloop': 'xl-3d',
+    '/capsuletoy': 'xl-3d',
+    '/nodhead': 'xl-3d',
+    '/yarnfigure': 'xl-3d',
+    '/boxdiorama': 'xl-3d',
+    '/plushtoy': 'xl-3d',
     '/softglow': 'xl-luzcamara',
     '/hardshadow': 'xl-luzcamara',
     '/beamlight': 'xl-luzcamara',
@@ -806,7 +813,7 @@ const CODE_FOLDER = {
     //    en el reel; se conservan tal cual para no falsear el comando original
     //    (la búsqueda de la app ya ignora mayúsculas).
     //    Del reel de manuelgilcontent, /METAAD NO entra: ya existe como /metaad.
-    '/figurine': 'xl-letras3d',
+    '/figurine': 'xl-3d',
     '/lego': 'xl-otromundo',
     '/miniature': 'xl-efectosempaque',
     '/couplefunselfie': 'xl-camararetrato',
@@ -861,7 +868,7 @@ const CODE_FOLDER = {
     '/midjourneystyle': 'xl-estilos',
     // ── Infografía de 30 transformaciones (2026-10-19) ──
     '/clay': 'xl-efectosempaque',
-    '/toyversion': 'xl-letras3d',
+    '/toyversion': 'xl-3d',
     '/dollhouse': 'xl-efectosempaque',
     '/glass': 'xl-efectosempaque',
     '/gold': 'xl-efectosempaque',
@@ -1986,49 +1993,49 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/pearlescent': 'assets/xl-efectosempaque/pearlescent.jpg',
     '/marble': 'assets/xl-efectosempaque/marble.jpg',
     '/lightning': 'assets/xl-efectosempaque/lightning.jpg',
-    '/3danimal': 'assets/xl-letras3d/3danimal.jpg',
-    '/3dcycle': 'assets/xl-letras3d/3dcycle.jpg',
-    '/3dcell': 'assets/xl-letras3d/3dcell.jpg',
-    '/3dexploded': 'assets/xl-letras3d/3dexploded.jpg',
-    '/3dinside': 'assets/xl-letras3d/3dinside.jpg',
-    '/3dcutaway': 'assets/xl-letras3d/3dcutaway.jpg',
-    '/3dlabeled': 'assets/xl-letras3d/3dlabeled.jpg',
-    '/3dprocess': 'assets/xl-letras3d/3dprocess.jpg',
-    '/3dplant': 'assets/xl-letras3d/3dplant.jpg',
-    '/funkostyle': 'assets/xl-letras3d/funkostyle.jpg',
-    '/minifig': 'assets/xl-letras3d/minifig.jpg',
-    '/keychain': 'assets/xl-letras3d/keychain.jpg?v=20261015-sujeto-unico',
-    '/gashapon': 'assets/xl-letras3d/gashapon.jpg',
-    '/bobblehead': 'assets/xl-letras3d/bobblehead.jpg',
-    '/dioramabox': 'assets/xl-letras3d/dioramabox.jpg?v=20261015-sujeto-unico',
-    '/glassmorphism': 'assets/xl-letras3d/glassmorphism.jpg',
-    '/iridescent': 'assets/xl-letras3d/iridescent.jpg',
-    '/velvet': 'assets/xl-letras3d/velvet.jpg',
-    '/furry': 'assets/xl-letras3d/furry.jpg',
-    '/balloonart': 'assets/xl-letras3d/balloonart.jpg',
-    '/vinyltoy': 'assets/xl-letras3d/vinyltoy.jpg',
-    '/floatingisland': 'assets/xl-letras3d/floatingisland.jpg',
-    '/pedestal': 'assets/xl-letras3d/pedestal.jpg',
-    '/abstractshapes': 'assets/xl-letras3d/abstractshapes.jpg',
-    '/3dtypography': 'assets/xl-letras3d/3dtypography.jpg',
-    '/miniaturecity': 'assets/xl-letras3d/miniaturecity.jpg',
-    '/cloudshape': 'assets/xl-letras3d/cloudshape.jpg',
-    '/balloontype': 'assets/xl-letras3d/balloontype.jpg',
-    '/graffiti': 'assets/xl-letras3d/graffiti.jpg',
-    '/chalklettering': 'assets/xl-letras3d/chalklettering.jpg',
-    '/goldleaf': 'assets/xl-letras3d/goldleaf.jpg',
-    '/handlettering': 'assets/xl-letras3d/handlettering.jpg',
-    '/letterpress': 'assets/xl-letras3d/letterpress.jpg',
-    '/embroideredpatch': 'assets/xl-letras3d/embroideredpatch.jpg',
-    '/woodcarved': 'assets/xl-letras3d/woodcarved.jpg',
-    '/icingtext': 'assets/xl-letras3d/icingtext.jpg',
-    '/sandwriting': 'assets/xl-letras3d/sandwriting.jpg',
-    '/skywriting': 'assets/xl-letras3d/skywriting.jpg',
-    '/foodtype': 'assets/xl-letras3d/foodtype.jpg',
-    '/ransomnote': 'assets/xl-letras3d/ransomnote.jpg',
-    '/chrometype': 'assets/xl-letras3d/chrometype.jpg',
-    '/stencil': 'assets/xl-letras3d/stencil.jpg',
-    '/menushot': 'assets/xl-letras3d/menushot.jpg?v=20261015-sujeto-unico',
+    '/3danimal': 'assets/xl-3d/3danimal.jpg',
+    '/3dcycle': 'assets/xl-3d/3dcycle.jpg',
+    '/3dcell': 'assets/xl-3d/3dcell.jpg',
+    '/3dexploded': 'assets/xl-3d/3dexploded.jpg',
+    '/3dinside': 'assets/xl-3d/3dinside.jpg',
+    '/3dcutaway': 'assets/xl-3d/3dcutaway.jpg',
+    '/3dlabeled': 'assets/xl-3d/3dlabeled.jpg',
+    '/3dprocess': 'assets/xl-3d/3dprocess.jpg',
+    '/3dplant': 'assets/xl-3d/3dplant.jpg',
+    '/funkostyle': 'assets/xl-3d/funkostyle.jpg',
+    '/minifig': 'assets/xl-3d/minifig.jpg',
+    '/keychain': 'assets/xl-3d/keychain.jpg?v=20261015-sujeto-unico',
+    '/gashapon': 'assets/xl-3d/gashapon.jpg',
+    '/bobblehead': 'assets/xl-3d/bobblehead.jpg',
+    '/dioramabox': 'assets/xl-3d/dioramabox.jpg?v=20261015-sujeto-unico',
+    '/glassmorphism': 'assets/xl-3d/glassmorphism.jpg',
+    '/iridescent': 'assets/xl-3d/iridescent.jpg',
+    '/velvet': 'assets/xl-3d/velvet.jpg',
+    '/furry': 'assets/xl-3d/furry.jpg',
+    '/balloonart': 'assets/xl-3d/balloonart.jpg',
+    '/vinyltoy': 'assets/xl-3d/vinyltoy.jpg',
+    '/floatingisland': 'assets/xl-3d/floatingisland.jpg',
+    '/pedestal': 'assets/xl-3d/pedestal.jpg',
+    '/abstractshapes': 'assets/xl-3d/abstractshapes.jpg',
+    '/3dtypography': 'assets/xl-letras/3dtypography.jpg',
+    '/miniaturecity': 'assets/xl-3d/miniaturecity.jpg',
+    '/cloudshape': 'assets/xl-3d/cloudshape.jpg',
+    '/balloontype': 'assets/xl-letras/balloontype.jpg',
+    '/graffiti': 'assets/xl-letras/graffiti.jpg',
+    '/chalklettering': 'assets/xl-letras/chalklettering.jpg',
+    '/goldleaf': 'assets/xl-letras/goldleaf.jpg',
+    '/handlettering': 'assets/xl-letras/handlettering.jpg',
+    '/letterpress': 'assets/xl-letras/letterpress.jpg',
+    '/embroideredpatch': 'assets/xl-letras/embroideredpatch.jpg',
+    '/woodcarved': 'assets/xl-letras/woodcarved.jpg',
+    '/icingtext': 'assets/xl-letras/icingtext.jpg',
+    '/sandwriting': 'assets/xl-letras/sandwriting.jpg',
+    '/skywriting': 'assets/xl-letras/skywriting.jpg',
+    '/foodtype': 'assets/xl-letras/foodtype.jpg',
+    '/ransomnote': 'assets/xl-letras/ransomnote.jpg',
+    '/chrometype': 'assets/xl-letras/chrometype.jpg',
+    '/stencil': 'assets/xl-letras/stencil.jpg',
+    '/menushot': 'assets/xl-3d/menushot.jpg?v=20261015-sujeto-unico',
     '/illustration': 'assets/xl-ilustracion/illustration.jpg',
     '/cartoon': 'assets/xl-ilustracion/cartoon.jpg',
     '/childrensbook': 'assets/xl-ilustracion/childrensbook.jpg',
@@ -2325,19 +2332,19 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/ingredientbreakdown': 'assets/comida-moda/ingredientbreakdown.jpg',
     '/luxurylifestyle': 'assets/comida-moda/luxurylifestyle.jpg',
     '/shotsetup': 'assets/luz-camara-personas/shotsetup.jpg?v=20261015-sujeto-unico',
-    '/ascii': 'assets/xl-letras3d/ascii.jpg',
+    '/ascii': 'assets/xl-letras/ascii.jpg',
     // Los tres rellenos se rehicieron el 2026-10-07: primero con el sujeto
     // genérico «a vintage film camera» y después con el modelo de cámara
     // concreto (réflex de 35 mm), que es el que comparten ahora. El CDN de
     // Hostinger cachea los .jpg 7 días (Cache-Control: max-age=604800) y el
     // navegador también, así que cada rehacer sube el ?v= de la URL para que la
     // imagen nueva llegue de verdad.
-    '/logomosaic': 'assets/xl-letras3d/logomosaic.jpg?v=3',
-    '/typefill': 'assets/xl-letras3d/typefill.jpg?v=2',
-    '/patternfill': 'assets/xl-letras3d/patternfill.jpg?v=2',
+    '/logomosaic': 'assets/xl-letras/logomosaic.jpg?v=3',
+    '/typefill': 'assets/xl-letras/typefill.jpg?v=2',
+    '/patternfill': 'assets/xl-letras/patternfill.jpg?v=2',
     // El ejemplo de /sugarskull se rehízo el mismo 2026-10-08 (una tetera en vez de
     // la cámara), así que también sube su ?v= para saltar la caché del CDN.
-    '/sugarskull': 'assets/xl-letras3d/sugarskull.jpg?v=3',
+    '/sugarskull': 'assets/xl-3d/sugarskull.jpg?v=3',
     // Captura TikTok 2026-10-08: detrás de las cámaras de un rodaje y restauración
     // de una fotografía antigua dañada.
     '/bts': 'assets/luz-camara-personas/bts.jpg?v=20261015-sujeto-unico-3',
@@ -2581,14 +2588,14 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/dungeonmap2': 'assets/xl-juegos/dungeonmap2.jpg',
     '/achievement': 'assets/xl-juegos/achievement.jpg',
     '/skilltree': 'assets/xl-juegos/skilltree.jpg',
-    '/blisterpack': 'assets/xl-letras3d/blisterpack.jpg?v=20261015-sujeto-unico',
-    '/headswing': 'assets/xl-letras3d/headswing.jpg?v=20261015-sujeto-unico',
-    '/keyloop': 'assets/xl-letras3d/keyloop.jpg?v=20261015-sujeto-unico',
-    '/capsuletoy': 'assets/xl-letras3d/capsuletoy.jpg?v=20261015-sujeto-unico',
-    '/nodhead': 'assets/xl-letras3d/nodhead.jpg?v=20261015-sujeto-unico',
-    '/yarnfigure': 'assets/xl-letras3d/yarnfigure.jpg?v=20261015-sujeto-unico',
-    '/boxdiorama': 'assets/xl-letras3d/boxdiorama.jpg?v=20261015-sujeto-unico',
-    '/plushtoy': 'assets/xl-letras3d/plushtoy.jpg?v=20261015-sujeto-unico',
+    '/blisterpack': 'assets/xl-3d/blisterpack.jpg?v=20261015-sujeto-unico',
+    '/headswing': 'assets/xl-3d/headswing.jpg?v=20261015-sujeto-unico',
+    '/keyloop': 'assets/xl-3d/keyloop.jpg?v=20261015-sujeto-unico',
+    '/capsuletoy': 'assets/xl-3d/capsuletoy.jpg?v=20261015-sujeto-unico',
+    '/nodhead': 'assets/xl-3d/nodhead.jpg?v=20261015-sujeto-unico',
+    '/yarnfigure': 'assets/xl-3d/yarnfigure.jpg?v=20261015-sujeto-unico',
+    '/boxdiorama': 'assets/xl-3d/boxdiorama.jpg?v=20261015-sujeto-unico',
+    '/plushtoy': 'assets/xl-3d/plushtoy.jpg?v=20261015-sujeto-unico',
     '/oldscreen': 'assets/infografias/oldscreen.jpg',
     '/matchpack': 'assets/infografias/matchpack.jpg',
     '/tinlabel': 'assets/infografias/tinlabel.jpg',
@@ -2708,8 +2715,8 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/wireframe': 'assets/xl-verdentro/wireframe.jpg',
     '/whiteboard': 'assets/xl-verdentro/whiteboard.jpg',
     '/moodboard': 'assets/xl-verdentro/moodboard.jpg?v=20261015-sujeto-unico',
-    '/actionfigure': 'assets/xl-letras3d/actionfigure.jpg',
-    '/3drender': 'assets/xl-letras3d/3drender.jpg',
+    '/actionfigure': 'assets/xl-3d/actionfigure.jpg',
+    '/3drender': 'assets/xl-3d/3drender.jpg',
     '/roadmap': 'assets/xl-negocioredes/roadmap.jpg',
     '/abstract': 'assets/xl-ilustracion/abstract.jpg',
     '/comicbook': 'assets/xl-ilustracion/comicbook.jpg',
@@ -2719,7 +2726,7 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/phantom': 'assets/xl-carteles/phantom.jpg',
     '/speedframe': 'assets/planos/speedframe.jpg',
     '/hairstylegrid': 'assets/comida-moda/hairstylegrid.jpg',
-    '/figurine': 'assets/xl-letras3d/figurine.jpg',
+    '/figurine': 'assets/xl-3d/figurine.jpg',
     '/lego': 'assets/xl-otromundo/lego.jpg',
     '/TOMJERRYCHAOS': 'assets/xl-otromundo/TOMJERRYCHAOS.jpg',
     '/PINKPANIC': 'assets/xl-otromundo/PINKPANIC.jpg',
@@ -2758,7 +2765,7 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/posterdesign': 'assets/xl-carteles/posterdesign.jpg',
     '/midjourneystyle': 'assets/xl-estilos/midjourneystyle.jpg',
     '/clay': 'assets/xl-efectosempaque/clay.jpg',
-    '/toyversion': 'assets/xl-letras3d/toyversion.jpg',
+    '/toyversion': 'assets/xl-3d/toyversion.jpg',
     '/dollhouse': 'assets/xl-efectosempaque/dollhouse.jpg',
     '/glass': 'assets/xl-efectosempaque/glass.jpg',
     '/gold': 'assets/xl-efectosempaque/gold.jpg',
@@ -4295,7 +4302,7 @@ function loadFoldersBase() {
     // Mantener el orden, los nombres personalizados y las demás carpetas borradas.
     if (saved.some(f => f && f.id === 'xl-500')) {
         saved = saved.filter(f => f && f.id !== 'xl-500');
-        const destinations = new Set(['xl-verdentro', 'xl-letras3d', 'xl-hechomano',
+        const destinations = new Set(['xl-verdentro', 'xl-letras', 'xl-3d', 'xl-hechomano',
             'xl-efectosempaque', 'xl-casaviajes', 'xl-comidamoda',
             'xl-escenaprueba', 'xl-luzcamara']);
         const known = new Set(saved.map(f => f.id));
@@ -4349,13 +4356,44 @@ function rememberDeletedFolder(id) {
 function clearDeletedFolders() {
     try { localStorage.removeItem(FOLDERS_BORRADAS_KEY); } catch { /* ignorar */ }
 }
+// 2026-11-27: reparto de la carpeta «Letras y 3D» en «Letras» y «3D».
+// Una tarjeta ya guardada en el navegador conserva su carpeta mientras exista
+// (normalizeTrickCategory respeta la guardada), así que el reparto se apunta
+// aquí: solo se mueven las tarjetas que seguían en la carpeta vieja y se elige
+// destino por código. Un código desconocido (tarjeta propia sin comando del
+// catálogo) cae en «3D», que es el grupo mayoritario.
+const LETRAS3D_LETRAS = new Set([
+    '/3dtypography',
+    '/balloontype',
+    '/graffiti',
+    '/chalklettering',
+    '/goldleaf',
+    '/handlettering',
+    '/letterpress',
+    '/embroideredpatch',
+    '/woodcarved',
+    '/icingtext',
+    '/sandwriting',
+    '/skywriting',
+    '/foodtype',
+    '/ransomnote',
+    '/chrometype',
+    '/stencil',
+    '/logomosaic',
+    '/typefill',
+    '/patternfill',
+    '/ascii',
+]);
+function letras3dDestino(item) {
+    return LETRAS3D_LETRAS.has(getImageCommandKey(item)) ? 'xl-letras' : 'xl-3d';
+}
 // Recategorizaciones puntuales: un comando que CAMBIA de carpeta en el catálogo
 // no se mueve solo en las tarjetas ya guardadas (normalizeTrickCategory respeta
 // la carpeta guardada si sigue existiendo), así que se apunta aquí para moverlo
-// UNA vez. /patternfill nació en «Hecho a mano» y se movió el 2026-10-07 a
-// «Letras y 3D», con los otros dos rellenos.
+// UNA vez. /patternfill nació en «Hecho a mano» y se movió el 2026-10-07 a la
+// carpeta de letras (hoy «Letras»), con los otros dos rellenos.
 const CATEGORY_MOVES = {
-    '/patternfill': 'xl-letras3d',
+    '/patternfill': 'xl-letras',
     // «Comida y moda» se partió en dos el 2026-10-15: los códigos de ropa, estilismo,
     // belleza y joyería pasan a «Moda». Sin esto, una tarjeta ya guardada conservaría
     // la carpeta vieja (normalizeTrickCategory respeta la guardada si sigue existiendo)
@@ -4397,6 +4435,12 @@ function normalizeTrickCodes(items) {
 }
 function normalizeTrickCategory(item, folderIds) {
     const cat = String(item.category || '');
+    // Carpeta partida en dos (2026-11-27): las tarjetas que seguían en
+    // «Letras y 3D» se reparten por código, se mire como se mire la lista.
+    if (cat === 'xl-letras3d') {
+        const destino = letras3dDestino(item);
+        if (folderIds.includes(destino)) return { ...item, category: destino };
+    }
     const movida = CATEGORY_MOVES[getImageCommandKey(item)];
     if (movida && cat !== movida && folderIds.includes(movida)) {
         return { ...item, category: movida };
@@ -6395,7 +6439,8 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-dev', prefix: 'assets/xl-dev/', key: 'trickvault-xl-dev-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-estilos', prefix: 'assets/xl-estilos/', key: 'trickvault-xl-estilos-images-version', version: '20261021-80s-foto' },
     { category: 'xl-efectosempaque', prefix: 'assets/xl-efectosempaque/', key: 'trickvault-xl-efectosempaque-images-version', version: '20261019-infografias' },
-    { category: 'xl-letras3d', prefix: 'assets/xl-letras3d/', key: 'trickvault-xl-letras3d-images-version', version: '20261019-infografias' },
+    { category: 'xl-letras', prefix: 'assets/xl-letras/', key: 'trickvault-xl-letras-images-version', version: '20261127-split' },
+    { category: 'xl-3d', prefix: 'assets/xl-3d/', key: 'trickvault-xl-3d-images-version', version: '20261127-split' },
     { category: 'xl-ilustracion', prefix: 'assets/xl-ilustracion/', key: 'trickvault-xl-ilustracion-images-version', version: '20261019-infografias' },
     { category: 'xl-casaviajes', prefix: 'assets/xl-casaviajes/', key: 'trickvault-xl-casaviajes-images-version', version: '20261019-infografias' },
     { category: 'xl-camararetrato', prefix: 'assets/xl-camararetrato/', key: 'trickvault-xl-camararetrato-images-version', version: '20261019-infografias' },
@@ -8322,6 +8367,18 @@ function App() {
                     <div className="app-title">TrickVault</div>
                     <div className="app-subtitle">Tu colección personal de trucos</div>
                 </div>
+                {/* Atajo a la app de edición de imágenes (2026-11-27). */}
+                <a
+                    className="app-link-btn"
+                    href="https://atnojs.es/apps/editar_generar/index.html"
+                    aria-label="Abrir la app Editar y Generar en una pestaña nueva"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <span className="app-link-btn-icon" aria-hidden="true">✨</span>
+                    <span>Abrir Editar y Generar</span>
+                    <span className="app-link-btn-arrow" aria-hidden="true">↗</span>
+                </a>
             </div>
 
             <div className="prompt-guide" role="note">

@@ -1,0 +1,26 @@
+{
+  "foco": {
+    "esActivo": true,
+    "outline": "3px none",
+    "sombra": "rgba(0, 208, 208, 0.32) 0px 0px 16px 0px, rgba(0, 208, 208, "
+  },
+  "pestañas": [
+    "https://atnojs.es/apps/editar_generar/index.html",
+    "http://127.0.0.1:8791/apps/trickvault/index.html"
+  ],
+  "abrioDestino": true,
+  "sigueEnTrickVault": true,
+  "tituloNueva": "DISEÑA COMO UN PRO | Edición y Generación de Imágenes con IA",
+  "carpeta": {
+    "tarjetas": 20,
+    "titulo": "🔤 Letras (20 trucos)",
+    "chips": [
+      "🔤 Letras (20 trucos) 🔍"
+    ]
+  },
+  "volver": {
+    "ok": true,
+    "txt": "← Volver a carpetas"
+  },
+  "portadaTrasVolver": 27
+}
