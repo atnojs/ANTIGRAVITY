@@ -1,7 +1,7 @@
 {
-  "tag": "prod-home",
-  "url": "https://atnojs.es/apps/trickvault/index.html",
-  "startedAt": "2026-11-27T20:01:44.826Z",
+  "tag": "prod2-home",
+  "url": "https://atnojs.es/apps/trickvault/index.html?cb=63c947c356374b1e92886f2721e93da8",
+  "startedAt": "2026-11-27T20:24:51.278Z",
   "widths": {},
   "console": [
     {
@@ -50,10 +50,10 @@
       "scrollWidth": 390,
       "horizontalScroll": false,
       "boton": {
-        "w": 251,
+        "w": 222,
         "h": 38,
-        "x": 70,
-        "y": 178,
+        "x": 84,
+        "y": 296,
         "dentroDePantalla": true
       }
     },
@@ -62,10 +62,10 @@
       "scrollWidth": 768,
       "horizontalScroll": false,
       "boton": {
-        "w": 289,
-        "h": 40,
-        "x": 240,
-        "y": 186,
+        "w": 262,
+        "h": 41,
+        "x": 253,
+        "y": 287,
         "dentroDePantalla": true
       }
     },
@@ -74,25 +74,25 @@
       "scrollWidth": 1440,
       "horizontalScroll": false,
       "boton": {
-        "w": 289,
-        "h": 40,
-        "x": 576,
-        "y": 201,
+        "w": 262,
+        "h": 41,
+        "x": 589,
+        "y": 311,
         "dentroDePantalla": true
       }
     }
   },
   "branding": {
     "href": "https://atnojs.es/apps/editar_generar/index.html",
-    "text": "✨ ABRIR EDITAR Y GENERAR ↗",
+    "text": "ABRIR EDITAR Y GENERAR ↗",
     "target": "_blank",
     "rel": "noopener",
-    "w": 289,
-    "h": 40,
-    "x": 576,
-    "y": 201,
-    "color": "rgb(234, 255, 255)",
-    "borderColor": "rgb(0, 208, 208)",
+    "w": 262,
+    "h": 41,
+    "x": 589,
+    "y": 311,
+    "color": "rgb(43, 11, 2)",
+    "borderColor": "rgb(255, 179, 71)",
     "radius": "999px"
   }
 }

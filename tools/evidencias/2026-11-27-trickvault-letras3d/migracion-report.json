@@ -33,8 +33,8 @@
     "tresd": 40
   },
   "montado": {
-    "total": 1363,
-    "enVieja": 61,
+    "total": 1362,
+    "enVieja": 60,
     "ids": [
       "mwzdrjmerypfx72x0",
       "mwv4eujdvpkqd84vs",
@@ -1397,12 +1397,11 @@
       "turn-cmd-005",
       "turn-cmd-006",
       "turn-cmd-007",
-      "turn-cmd-008",
-      "prueba-propia-sin-codigo"
+      "turn-cmd-008"
     ]
   },
   "despues": {
-    "total": 1362,
+    "total": 1361,
     "porCarpeta": {
       "xl-dobleexposicion": 3,
       "f_mv73ghs02h22sxpzp": 13,
@@ -1411,7 +1410,7 @@
       "xl-ilustracion": 55,
       "xl-dev": 16,
       "xl-verdentro": 47,
-      "xl-3d": 41,
+      "xl-3d": 40,
       "xl-fotoproducto": 61,
       "xl-luzcamara": 63,
       "xl-escenaprueba": 69,
@@ -1441,7 +1440,7 @@
       "🖌️ 🎨 Pintura y dibujo 42 trucos",
       "✏️ 🖼️ Ilustración y arte 55 trucos",
       "✒️ 🔤 Letras 20 trucos",
-      "🎲 🧊 3D 41 trucos",
+      "🎲 🧊 3D 40 trucos",
       "🍰 🍽️ Comida 26 trucos",
       "✈️ 🏠 Casa y viajes 60 trucos",
       "📷 🤳 Cámara y retrato 62 trucos",
@@ -1456,7 +1455,7 @@
       "⌨️ 💻 Dev y productividad 16 trucos",
       "🖼️ 🕰️ Restauración de fotos antiguas 3 trucos",
       "💄 👗 Moda 27 trucos",
-      "💛 ⭐ Favoritos 5 trucos",
+      "💛 ⭐ Favoritos 40 trucos",
       "🗂️ 📁 Doble Exposición 13 trucos",
       "🌄 🌀 Propia 3 trucos"
     ],
@@ -1489,7 +1488,7 @@
       "xl-dobleexposicion"
     ],
     "viejaPresente": false,
-    "nuevaPropia": "xl-3d",
+    "nuevaPropia": null,
     "ids": [
       "mwzdrjmerypfx72x0",
       "mwv4eujdvpkqd84vs",
@@ -2851,16 +2850,11 @@
       "turn-cmd-005",
       "turn-cmd-006",
       "turn-cmd-007",
-      "turn-cmd-008",
-      "prueba-propia-sin-codigo"
+      "turn-cmd-008"
     ]
   },
   "consolaErrores": [
     "[BABEL] Note: The code generator has deoptimised the styling of /Inline Babel script as it exceeds the max of 500KB.",
-    "[TrickVault] No se pudieron cargar las imágenes de Hostinger: Error: El servidor devolvió una respuesta inválida (HTTP 404).\n    at <anonymous>:451:240\n    at Generator.throw (<anonymous>)\n    at asyncGeneratorStep (<anonymous>:1:58)\n    at _throw (<anonymous>:1:351)",
-    "[TrickVault] No se pudieron cargar los favoritos de Hostinger: Error: El servidor devolvió una respuesta inválida (HTTP 404).\n    at <anonymous>:451:240\n    at Generator.throw (<anonymous>)\n    at asyncGeneratorStep (<anonymous>:1:58)\n    at _throw (<anonymous>:1:351)",
-    "[BABEL] Note: The code generator has deoptimised the styling of /Inline Babel script as it exceeds the max of 500KB.",
-    "[TrickVault] No se pudieron cargar las imágenes de Hostinger: Error: El servidor devolvió una respuesta inválida (HTTP 404).\n    at <anonymous>:451:240\n    at Generator.throw (<anonymous>)\n    at asyncGeneratorStep (<anonymous>:1:58)\n    at _throw (<anonymous>:1:351)",
-    "[TrickVault] No se pudieron cargar los favoritos de Hostinger: Error: El servidor devolvió una respuesta inválida (HTTP 404).\n    at <anonymous>:451:240\n    at Generator.throw (<anonymous>)\n    at asyncGeneratorStep (<anonymous>:1:58)\n    at _throw (<anonymous>:1:351)"
+    "[BABEL] Note: The code generator has deoptimised the styling of /Inline Babel script as it exceeds the max of 500KB."
   ]
 }

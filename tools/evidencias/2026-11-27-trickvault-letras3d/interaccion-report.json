@@ -2,11 +2,11 @@
   "foco": {
     "esActivo": true,
     "outline": "3px none",
-    "sombra": "rgba(0, 208, 208, 0.32) 0px 0px 16px 0px, rgba(0, 208, 208, "
+    "sombra": "rgba(255, 90, 31, 0.55) 0px 0px 22px 0px, rgba(255, 214, 140"
   },
   "pestañas": [
     "https://atnojs.es/apps/editar_generar/index.html",
-    "http://127.0.0.1:8791/apps/trickvault/index.html"
+    "https://atnojs.es/apps/trickvault/index.html?cb=9b1fc477aead4fefbd24aee8e1a0f6ba"
   ],
   "abrioDestino": true,
   "sigueEnTrickVault": true,

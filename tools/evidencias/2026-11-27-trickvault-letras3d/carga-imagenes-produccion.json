@@ -1,0 +1,15 @@
+﻿{
+    "letras":  {
+                   "rotas":  0,
+                   "pintadas":  20,
+                   "total":  20
+               },
+    "url":  "https://atnojs.es/apps/trickvault/index.html",
+    "tresd":  {
+                  "rotas":  0,
+                  "pintadas":  40,
+                  "total":  40
+              },
+    "metodo":  "scroll completo + naturalWidth",
+    "comprobado":  "2026-11-27T20:06:35.0900856Z"
+}
