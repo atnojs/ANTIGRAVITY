@@ -3140,3 +3140,15 @@ las cabeceras.
 - **Despliegue:** el CDN sirvió un 404 cacheado del JS nuevo; se añadió `?v=` al `<script>` (`ca4f8189`). Sin eso el cambio no llegaba al usuario.
 - **Verificación:** verificador independiente, dos rondas: ronda 1 REWORK **91,8** (A6 8,6: numeración duplicada, comando `start` inválido en PowerShell 5.1, conteo del índice); ronda 2 REWORK **92,9** (A6 8,8, todo en esta bitácora). Corregido aquí.
 - **Commits:** `ca56f6e1` (app), `169f95ec` (skill + índice), `ca4f8189` (cache-bust) y el de las correcciones.
+
+
+### 2026-11-27 (noche) — trickvault: «Letras y 3D» se parte en dos carpetas y atajo a Editar y Generar
+- **Encargo:** la carpeta «Letras y 3D» (60 trucos) mezclaba lettering con figuras 3D. Dividirla en «Letras» y «3D» dentro de la misma app y añadir en la cabecera un botón que lleve a `apps/editar_generar`.
+- **Qué hay:** carpetas nuevas `xl-letras` (20 trucos: graffiti, chalklettering, handlettering, letterpress, goldleaf, icingtext, sandwriting, skywriting, foodtype, ransomnote, chrometype, stencil, balloontype, 3dtypography, typefill, patternfill, logomosaic, ascii, embroideredpatch, woodcarved) y `xl-3d` (40: figuras, juguetes, cristal, islas, pedestales, calavera y versiones toy). Cada grupo con su carpeta de imágenes (`assets/xl-letras/`, `assets/xl-3d/`, 60 ficheros movidos con `git mv`) y su release de versión. Botón `✨ ABRIR EDITAR Y GENERAR ↗` en `.app-branding` (píldora cian, foco visible, pestaña nueva con `rel="noopener"`).
+- **Migración:** `FOLDERS_SCHEMA_VERSION` 7→8 para que los navegadores con lista guardada reciban las dos carpetas, `FOLDERS_REMOVED` retira `xl-letras3d` y `normalizeTrickCategory` reparte las tarjetas ya guardadas por código (`LETRAS3D_LETRAS`); un código desconocido cae en «3D».
+- **Capa publicada:** el `catalogo.json` del repo estaba en el de 2026-11-01 y el de producción traía ya 17 tarjetas nuevas (publish del 2026-11-27 19:37). Se partió del fichero real de producción para no perder datos al desplegar, y el rebase sobre `main` lo dejó con el reparto.
+- **Medido en Chrome (producción):** 27 carpetas; «Letras 20 trucos» y «3D 40 trucos»; 60/60 imágenes nuevas con HTTP 200; sin scroll horizontal a 1440/768/390; botón 289×40 (escritorio) y 251×38 (390), dentro de pantalla; foco de teclado con anillo cian de 3 px.
+- **Migración probada:** navegador simulado con 61 tarjetas en `xl-letras3d` y esquema 7 → tras recargar, 20 en «Letras», 41 en «3D» (40 + una tarjeta propia sin código), carpeta vieja fuera y `xl-dev` intacta (16).
+- **Conocido y no provocado aquí:** `ig-dcek-004` (/crosssection) desaparece al recargar por la deduplicación de tarjetas que ya existía; se comprobó que pasa igual con el código de producción anterior.
+- **Commits:** `5a76e279` (app + assets + evidencias).
+- **Evidencias:** `tools/evidencias/2026-11-27-trickvault-letras3d/`.
