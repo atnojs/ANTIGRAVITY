@@ -17,9 +17,8 @@ texto «GENERA IMAGEN»). Todo comprobado sobre la versión **servida**, no solo
 | `despues-3d-1440.png` | «3D» con sus 40 tarjetas. |
 | `comparativa_trickvault_letras_3d.png` | Antes/después de la portada en una sola imagen, etiquetada. |
 | `comparativa_trickvault_boton.png` | Cabecera antes (sin atajo) y después (botón bajo la guía). |
-| `detalle_boton_glass.png` | La guía y el botón juntos, y el botón a 1440 y a 390: mismo vidrio, borde en llamarada. |
+| `detalle_boton_glass.png` | La guía y el botón juntos, y el botón a 1440 y a 390: el relleno es el mismo vidrio de la guía y solo el borde va en llamarada. Contraste del texto medido sobre el relleno del PNG de producción: **mediana 8,2:1** (mínimo 6,1:1; se excluyen glifos y borde). |
 | `foco-teclado-boton.png` | Anillo de foco real al llegar con **Tab** (`0 0 0 3px rgba(255,138,31,.75)`). |
-| `detalle_boton_glass.png` | Botón final: relleno igual que la guía (`rgba(0,208,208,.2)` → `rgba(23,79,122,.68)` → `rgba(38,198,38,.14)`), borde de 2 px `#ff5a1f`, texto `#f2fffb`. Contraste medido sobre el fondo real: **9,4–13,4:1**. |
 | `portada-anchos-report.json` | Medidas de portada: 1440/768/390, `scrollWidth == innerWidth`, caja del botón. |
 | `interaccion-report.json` | Clic real: abre `editar_generar` en pestaña nueva (título comprobado) y TrickVault sigue abierta; «Volver a carpetas» restaura 27. |
 | `migracion-report.json` | Navegador simulado con las **60** tarjetas guardadas en `xl-letras3d` y esquema 7: tras recargar, 20 / 40, carpeta vieja fuera, `xl-dev` en 16 y ninguna tarjeta huérfana. |
